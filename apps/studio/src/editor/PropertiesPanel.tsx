@@ -83,6 +83,9 @@ function SceneProperties({ project, scene, hotspots, canEdit }: {
           </Field>
           <Field label={t("alt_text")} htmlFor="sc-alt" hint={t("alt_required")}>
             <Textarea id="sc-alt" rows={2} value={String(meta.altText ?? "")} disabled={!canEdit} onChange={(e) => patchMeta({ altText: e.target.value })} />
+            {scene.mediaId != null && canEdit && (
+              <AiAltButton mediaId={scene.mediaId} onSuggestion={(text) => patchMeta({ altText: text })} />
+            )}
           </Field>
           <Field label={t("description")} htmlFor="sc-desc">
             <Textarea id="sc-desc" rows={2} value={String(meta.description ?? "")} disabled={!canEdit} onChange={(e) => patchMeta({ description: e.target.value })} />
@@ -688,6 +691,38 @@ function HotspotProperties({ project, scene, hotspot, canEdit }: {
         }}
       />
     </div>
+  );
+}
+
+/**
+ * Sugerencia de alt-text con Workers AI (§2.11): siempre revisable; el
+ * boton solo aparece si la instancia tiene el binding de IA (404 lo oculta).
+ */
+function AiAltButton({ mediaId, onSuggestion }: { mediaId: string; onSuggestion: (text: string) => void }): React.ReactNode {
+  const [busy, setBusy] = useState(false);
+  const [available, setAvailable] = useState(true);
+  if (!available) return null;
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      loading={busy}
+      className="mt-1"
+      onClick={() => {
+        setBusy(true);
+        void import("../api")
+          .then(({ api }) => api<{ suggestion: string }>("/ai/alt-text", { method: "POST", body: { imageUrl: `/api/v1/media/${mediaId}/derived/thumb` } }))
+          .then((r) => {
+            if (r.suggestion !== "") onSuggestion(r.suggestion);
+          })
+          .catch((err: { status?: number }) => {
+            if (err.status === 404) setAvailable(false);
+          })
+          .finally(() => setBusy(false));
+      }}
+    >
+      Sugerir con IA
+    </Button>
   );
 }
 

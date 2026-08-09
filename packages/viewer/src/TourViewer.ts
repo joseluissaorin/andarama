@@ -774,7 +774,32 @@ export class TourViewer {
     });
   }
 
+  /** Soporte opcional de gamepad (§2.6): stick izquierdo gira, derecho zoom. */
+  private startGamepadLoop(): void {
+    if (this.tour.controls?.gamepad !== true || typeof navigator.getGamepads !== "function") return;
+    const tick = (): void => {
+      if (this.destroyed) return;
+      requestAnimationFrame(tick);
+      const pad = navigator.getGamepads()[0];
+      if (pad == null) return;
+      const dead = (v: number): number => (Math.abs(v) < 0.15 ? 0 : v);
+      const dx = dead(pad.axes[0] ?? 0);
+      const dy = dead(pad.axes[1] ?? 0);
+      const dz = dead(pad.axes[3] ?? 0);
+      if (dx !== 0 || dy !== 0 || dz !== 0) {
+        const v = this.view();
+        this.setView({
+          yaw: v.yaw + dx * 0.04,
+          pitch: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, v.pitch - dy * 0.03)),
+          fov: Math.max(0.35, Math.min(2.4, v.fov + dz * 0.03)),
+        });
+      }
+    };
+    requestAnimationFrame(tick);
+  }
+
   private setupInteractionListeners(): void {
+    this.startGamepadLoop();
     const onFirstInteraction = (): void => this.audio.unlock();
     this.container.addEventListener("pointerdown", onFirstInteraction, { once: true });
     this.container.addEventListener("keydown", onFirstInteraction, { once: true });

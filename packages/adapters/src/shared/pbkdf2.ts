@@ -8,7 +8,8 @@ import type { PasswordHasher } from "../types.js";
  * soporta ambos formatos PHC.
  */
 
-const ITERATIONS = 310_000;
+// Limite de la plataforma: Workers WebCrypto rechaza mas de 100k iteraciones.
+const ITERATIONS = 100_000;
 const KEYLEN = 32;
 
 function toB64(bytes: Uint8Array): string {

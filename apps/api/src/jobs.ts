@@ -54,13 +54,22 @@ export async function processJob(ctx: JobContext, jobId: string): Promise<void> 
   }
 }
 
+/**
+ * Import dinamico con especificador no literal: evita que el bundler del
+ * Worker intente empaquetar modulos solo-Node (sharp, ws...). Estos caminos
+ * solo se ejecutan cuando heavyCapable=true (proceso Node/contenedor).
+ */
+async function importNodeOnly<T>(specifier: string): Promise<T> {
+  return (await import(/* @vite-ignore */ specifier)) as T;
+}
+
 async function tileJob(ctx: JobContext, mediaId: string): Promise<void> {
   const { db, runtime } = ctx;
   const row = (await db.select().from(media).where(eq(media.id, mediaId)).limit(1))[0];
   if (row == null) throw new Error("Medio no encontrado");
   const original = await runtime.storage.getBytes(row.r2Key);
   if (original == null) throw new Error("Original no disponible en almacenamiento");
-  const { tilePanoramaNode } = await import("@ull360/tiler/node");
+  const { tilePanoramaNode } = await importNodeOnly<typeof import("@ull360/tiler/node")>("@ull360/tiler/node");
   const buffer = Buffer.from(original);
   const result = await tilePanoramaNode(buffer, { format: "webp" }, async (tile) => {
     await runtime.storage.put(`tiles/${mediaId}/${tile.key}`, tile.data, {

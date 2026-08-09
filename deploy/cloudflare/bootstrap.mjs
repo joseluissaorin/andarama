@@ -22,10 +22,12 @@ const root = resolve(here, "../..");
 const configPath = join(here, "wrangler.jsonc");
 
 const wrangler = (args, opts = {}) => {
+  // Con input hay que canalizar stdin (stdio "inherit" lo ignoraria)
+  const stdin = opts.input != null ? "pipe" : "inherit";
   const res = spawnSync("npx", ["wrangler", ...args], {
     cwd: root,
     encoding: "utf8",
-    stdio: opts.capture ? ["inherit", "pipe", "pipe"] : "inherit",
+    stdio: opts.capture ? [stdin, "pipe", "pipe"] : [stdin, "inherit", "inherit"],
     input: opts.input,
     env: process.env,
   });

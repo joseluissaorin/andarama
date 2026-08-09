@@ -6,7 +6,7 @@ title: Seguridad y RGPD
 
 - **HTTPS** obligatorio con HSTS; **CSP estricta** con nonces (sin `unsafe-inline` en scripts); `frame-ancestors` segun la configuracion de embebido de cada tour; sandbox estricto en iframes de hotspots web.
 - **Sesiones** con cookies HttpOnly + Secure + SameSite=Lax y **CSRF de doble token** en todas las mutaciones.
-- **Contrasenas**: Argon2id en self-host; en Cloudflare Workers se usa PBKDF2-SHA256 (310.000 iteraciones, WebCrypto) porque la plataforma no permite compilar WASM en tiempo de ejecucion y el coste de CPU de Argon2 excede los limites del free tier. La verificacion acepta ambos formatos.
+- **Contrasenas**: Argon2id en self-host; en Cloudflare Workers se usa PBKDF2-SHA256 (100.000 iteraciones, el maximo que permite WebCrypto en Workers) porque la plataforma no permite compilar WASM en tiempo de ejecucion y el coste de CPU de Argon2 excede los limites del free tier. La verificacion acepta ambos formatos.
 - **Rate limiting** en login, registro, restablecimiento, formularios publicos e ingesta de analitica; **Turnstile** en formularios publicos.
 - **Autorizacion en servidor** en cada operacion; IDs no adivinables.
 - **Validacion de contenido**: tipo real por magic bytes, saneado de SVG en servidor, Markdown renderizado con lista blanca (nunca se interpreta HTML de entrada), CSS de autor saneado.

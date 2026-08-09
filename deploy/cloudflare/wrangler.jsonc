@@ -18,7 +18,7 @@
     {
       "binding": "DB",
       "database_name": "ull360",
-      "database_id": "REPLACE_D1_ID",
+      "database_id": "2f1cd3a6-5255-45e4-a60e-ea90d2dfe525",
       "migrations_dir": "../../packages/db/migrations"
     }
   ],
@@ -33,7 +33,7 @@
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "REPLACE_KV_ID"
+      "id": "e72cb40130224aef87d64ee07c7a144b"
     }
   ],
 
@@ -56,6 +56,9 @@
     { "binding": "ANALYTICS", "dataset": "ull360_events" }
   ],
 
+  // Workers AI: sugerencia de texto alternativo en el editor (§2.11)
+  "ai": { "binding": "AI" },
+
   // Cloudflare Queues requiere plan Workers Paid. El bootstrap descomenta
   // este bloque si detecta que la cuenta lo soporta; sin Queues, los
   // trabajos quedan en la tabla `jobs` para el contenedor de procesado.
@@ -70,8 +73,8 @@
 
   "vars": {
     "ANALYTICS_BACKEND": "d1",
-    "ANALYTICS_DATASET": "ull360_events"
-    // PUBLIC_URL se fija tras el primer deploy (workers.dev o dominio propio)
+    "ANALYTICS_DATASET": "ull360_events",
+    "PUBLIC_URL": "https://ull360.jlsf2005.workers.dev"
   },
 
   "observability": {

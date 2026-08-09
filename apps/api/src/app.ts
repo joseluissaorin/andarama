@@ -19,6 +19,7 @@ import { ltiRoutes } from "./routes/lti.js";
 import { adminRoutes } from "./routes/admin.js";
 import { tokenRoutes } from "./routes/tokens.js";
 import { liveRoutes } from "./routes/live.js";
+import { aiRoutes } from "./routes/ai.js";
 import { openApiSpec } from "./openapi.js";
 
 export interface CreateAppOptions {
@@ -26,6 +27,8 @@ export interface CreateAppOptions {
   config: AppConfig;
   /** Crea una sala de visita en vivo (DO en Cloudflare, ws en Node). */
   createLiveRoom?: () => Promise<{ code: string; guideKey: string }>;
+  /** Binding de Workers AI (opcional; sugerencia de alt-text §2.11). */
+  getAi?: () => { run(model: string, input: Record<string, unknown>): Promise<unknown> } | null;
 }
 
 /**
@@ -73,7 +76,8 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   app.onError((err, c) => {
     if (err instanceof ApiError) return problem(c, err);
     console.error("[api] error no controlado:", err);
-    return problem(c, serverError());
+    const debug = (c.env as Record<string, unknown> | undefined)?.DEBUG_ERRORS === "1";
+    return problem(c, serverError(debug && err instanceof Error ? `${err.name}: ${err.message}` : undefined));
   });
 
   // Subida directa pass-through (firmada HMAC; sin sesion ni CSRF)
@@ -99,6 +103,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/admin", adminRoutes());
   api.route("/tokens", tokenRoutes());
   api.route("/live", liveRoutes(opts.createLiveRoom ?? null));
+  api.route("/ai", aiRoutes(opts.getAi ?? (() => null)));
   api.route("/", analyticsRoutes());
   api.route("/", formRoutes());
   api.get("/openapi.json", (c) => c.json(openApiSpec(c.get("config").publicUrl)));

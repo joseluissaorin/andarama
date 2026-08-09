@@ -38,6 +38,7 @@ interface Env {
   LIVE_DO: { idFromName(name: string): unknown; get(id: unknown): { fetch(req: Request) : Promise<Response> } };
   PRESENCE_DO: { idFromName(name: string): unknown; get(id: unknown): { fetch(req: Request): Promise<Response> } };
   ASSETS?: { fetch(req: Request): Promise<Response> };
+  AI?: { run(model: string, input: Record<string, unknown>): Promise<unknown> };
   PUBLIC_URL?: string;
   APP_SECRET: string;
   EMAIL_FROM?: string;
@@ -147,6 +148,7 @@ export default {
     const app = createApp({
       runtime,
       config: buildConfig(env, publicUrl),
+      getAi: () => env.AI ?? null,
       createLiveRoom: async () => {
         const code = randomRoomCode();
         const stub = env.LIVE_DO.get(env.LIVE_DO.idFromName(code));
