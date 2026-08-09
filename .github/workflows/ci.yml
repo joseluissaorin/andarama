@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Compilar paquetes
+        run: pnpm build:packages
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Tests unitarios e integracion
+        run: pnpm test
+      - name: Compilar Studio + visor + docs
+        run: |
+          pnpm --filter @ull360/docs build
+          pnpm --filter @ull360/studio build
+      - name: Tests E2E (Playwright)
+        run: |
+          pnpm exec playwright install chromium --with-deps
+          pnpm test:e2e
+      - name: Subir trazas E2E si fallan
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Auditoria de dependencias (§4.2)
+        run: pnpm audit --prod --audit-level high || true
+      - name: OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2
+        with:
+          scan-args: --lockfile=pnpm-lock.yaml
+        continue-on-error: true
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen self-host
+        run: docker build -f deploy/docker/Dockerfile -t ull360:ci .
+      - name: Humo de la imagen
+        run: |
+          docker run -d --name ull360 -p 8788:8788 -e APP_SECRET=ci-secret ull360:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8788/api/v1/health > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          docker logs ull360
+          exit 1
+
+  # Despliegue de preview por PR (requiere secretos CLOUDFLARE_API_TOKEN y
+  # CLOUDFLARE_ACCOUNT_ID en el repositorio; se omite en forks).
+  preview:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:packages && pnpm --filter @ull360/studio build
+      - name: Deploy preview (workers.dev con sufijo de PR)
+        if: env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler versions upload -c deploy/cloudflare/wrangler.jsonc --tag pr-${{ github.event.number }} || true

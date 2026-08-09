@@ -16,3 +16,5 @@ data/
 *.tsbuildinfo
 .turbo/
 tmp/
+test-results/
+playwright-report/
