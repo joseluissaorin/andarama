@@ -112,12 +112,44 @@ export function buildThumbnails(viewer: TourViewer, t: Translator, baseUrl: stri
 
 export function buildCompass(viewer: TourViewer, t: Translator): HTMLElement {
   const root = el("div", { className: "ull360-compass", role: "img", "aria-label": t("compass"), title: t("compass") });
-  const icon = createIconSvg("navigation", 22);
-  root.appendChild(icon);
-  viewer.on("viewChange", (v) => {
-    icon.style.transform = `rotate(${(-v.yaw * 180) / Math.PI - 45}deg)`;
+  // Aguja simetrica dibujada sobre el centro exacto del viewBox: la rotacion
+  // ocurre sobre si misma, sin orbitar. El aro y la "N" quedan fijos.
+  root.innerHTML =
+    '<svg viewBox="0 0 44 44" width="30" height="30" aria-hidden="true">' +
+    '<circle cx="22" cy="22" r="19" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.5"/>' +
+    '<text x="22" y="10.5" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor" fill-opacity="0.8">N</text>' +
+    '<g class="ull360-compass__needle">' +
+    '<path d="M22 9 L25.4 22 L22 25 L18.6 22 Z" fill="var(--u3-accent, #e05252)"/>' +
+    '<path d="M22 35 L18.6 22 L22 19 L25.4 22 Z" fill="currentColor" fill-opacity="0.85"/>' +
+    '<circle cx="22" cy="22" r="2" fill="currentColor"/>' +
+    "</g></svg>";
+  const needle = root.querySelector<SVGGElement>(".ull360-compass__needle")!;
+  const sceneNorth = (): number => viewer.currentScene()?.map?.north ?? 0;
+  // Angulo desenrollado: al cruzar +-180 no se anima la vuelta entera.
+  let acc = 0;
+  let last: number | null = null;
+  const update = (): void => {
+    const v = viewer.view();
+    // La aguja marca donde queda el norte respecto a la vista actual
+    // (misma convencion que el radar del plano, con signo opuesto).
+    const target = (-(v.yaw + sceneNorth()) * 180) / Math.PI;
+    if (last != null) {
+      let delta = target - last;
+      while (delta > 180) delta -= 360;
+      while (delta < -180) delta += 360;
+      acc += delta;
+    } else {
+      acc = target;
+    }
+    last = target;
+    needle.style.transform = `rotate(${acc.toFixed(2)}deg)`;
+  };
+  viewer.on("viewChange", update);
+  viewer.on("sceneChange", () => {
+    last = null;
+    update();
   });
-  root.addEventListener("click", () => viewer.lookTo({ yaw: 0 }, 600));
+  root.addEventListener("click", () => viewer.lookTo({ yaw: -sceneNorth() }, 600));
   return root;
 }
 

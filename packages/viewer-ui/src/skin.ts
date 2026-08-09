@@ -79,7 +79,29 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   const t0 = createTranslator(viewer.currentLang());
   let t: Translator = t0;
   const baseUrl = options.baseUrl ?? "";
-  const ui = tour.ui ?? {};
+  const edit = options.editMode === true;
+  // Modo edicion: el editor solo necesita el lienzo, la brujula y el zoom.
+  // El resto del cromo (menus, miniaturas, compartir, VR, pantalla completa,
+  // postMessage...) pertenece al tour publicado y en el editor estorba o se
+  // solapa con la interfaz propia del Studio.
+  const ui: NonNullable<typeof tour.ui> = edit
+    ? {
+        titleBar: false,
+        sceneMenu: false,
+        thumbnails: false,
+        compass: true,
+        loadingIndicator: true,
+        zoomControls: true,
+        gyroToggle: false,
+        vr: false,
+        fullscreen: false,
+        share: false,
+        mute: false,
+        langSelector: false,
+        help: false,
+        accessibleMode: false,
+      }
+    : (tour.ui ?? {});
 
   const panelHost = new PanelHost({
     viewer,
@@ -154,7 +176,9 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   if (ui.thumbnails !== false) container.appendChild(buildThumbnails(viewer, t, baseUrl));
 
   // ------- Plano / mapa -------
-  const mapPanel = buildMapPanel(viewer, t, baseUrl);
+  const mapPanel = edit
+    ? { root: el("div"), toggle: (): void => {}, available: false }
+    : buildMapPanel(viewer, t, baseUrl);
   if (mapPanel.available) container.appendChild(mapPanel.root);
 
   // ------- Indicador de carga -------
@@ -174,12 +198,14 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     controlsLeft.appendChild(iconButton("map", t("map"), mapPanel.toggle));
   }
   // Volver a la escena anterior
-  const backBtn = iconButton("arrow-left", t("previous_scene"), () => void viewer.back());
-  backBtn.disabled = true;
-  viewer.on("sceneChange", () => {
-    backBtn.disabled = !viewer.canGoBack();
-  });
-  controlsLeft.appendChild(backBtn);
+  if (!edit) {
+    const backBtn = iconButton("arrow-left", t("previous_scene"), () => void viewer.back());
+    backBtn.disabled = true;
+    viewer.on("sceneChange", () => {
+      backBtn.disabled = !viewer.canGoBack();
+    });
+    controlsLeft.appendChild(backBtn);
+  }
 
   // Autopilot
   if ((tour.autopilot?.length ?? 0) > 0 && options.editMode !== true) {
@@ -274,6 +300,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   }
 
   // Selector de proyeccion
+  if (!edit) {
   const projBtn = iconButton("globe", t("projection"), () => {
     const existing = container.querySelector(".ull360-menu-pop");
     if (existing != null) {
@@ -294,6 +321,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     container.appendChild(pop);
   });
   controls.appendChild(projBtn);
+  }
 
   if (ui.help !== false) {
     controls.appendChild(iconButton("circle-help", t("help"), () => showHelp(t, container)));
@@ -320,8 +348,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     skip.remove();
   }
 
-  container.appendChild(controls);
-  container.appendChild(controlsLeft);
+  if (controls.childElementCount > 0) container.appendChild(controls);
+  if (controlsLeft.childElementCount > 0) container.appendChild(controlsLeft);
 
   // ------- Video 360: barra de controles -------
   const videoBar = el("div", { className: "ull360-videobar", hidden: true });
@@ -371,7 +399,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   viewer.on("ready", refreshVideoBar);
 
   // ------- Busqueda del tesoro -------
-  if (tour.treasureHunt?.enabled === true) {
+  if (tour.treasureHunt?.enabled === true && !edit) {
     const hud = el("div", {
       className: "ull360-toast ull360-toast--hud",
       role: "status",
@@ -391,6 +419,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
   // ------- Informe de quiz + certificado -------
   viewer.on("quizChange", (state) => {
+    if (edit) return;
     if (state.total > 0 && state.answered === state.total && tour.quiz?.finalReport !== false) {
       panelHost.close();
       const card = el("div", { className: "ull360-screen__card" });
@@ -517,32 +546,34 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         break;
     }
   };
-  window.addEventListener("message", onMessage);
-  // Emitir eventos hacia el padre si estamos embebidos
-  if (window.parent !== window) {
-    viewer.on("sceneChange", (e) =>
-      window.parent.postMessage({ ull360: "sceneChange", scene: e.scene.id }, "*"),
-    );
-    viewer.on("quizChange", (state) => window.parent.postMessage({ ull360: "quizChange", state }, "*"));
-  }
+  if (!edit) {
+    window.addEventListener("message", onMessage);
+    // Emitir eventos hacia el padre si estamos embebidos
+    if (window.parent !== window) {
+      viewer.on("sceneChange", (e) =>
+        window.parent.postMessage({ ull360: "sceneChange", scene: e.scene.id }, "*"),
+      );
+      viewer.on("quizChange", (state) => window.parent.postMessage({ ull360: "quizChange", state }, "*"));
+    }
 
-  // ------- Estado global para integraciones (adaptador SCORM, kiosko) -------
-  const visited = new Set<string>();
-  const publishState = (): void => {
-    if (viewer.currentSceneId() != null) visited.add(viewer.currentSceneId()!);
-    const state = {
-      scene: viewer.currentSceneId(),
-      scenesVisited: visited.size,
-      scenesTotal: tour.scenes.filter((s) => s.hidden !== true).length,
-      quiz: viewer.quizState(),
-      treasure: viewer.treasureState(),
+    // ------- Estado global para integraciones (adaptador SCORM, kiosko) -------
+    const visited = new Set<string>();
+    const publishState = (): void => {
+      if (viewer.currentSceneId() != null) visited.add(viewer.currentSceneId()!);
+      const state = {
+        scene: viewer.currentSceneId(),
+        scenesVisited: visited.size,
+        scenesTotal: tour.scenes.filter((s) => s.hidden !== true).length,
+        quiz: viewer.quizState(),
+        treasure: viewer.treasureState(),
+      };
+      (window as unknown as Record<string, unknown>).__ULL360_STATE__ = state;
+      window.dispatchEvent(new CustomEvent("ull360:state", { detail: state }));
     };
-    (window as unknown as Record<string, unknown>).__ULL360_STATE__ = state;
-    window.dispatchEvent(new CustomEvent("ull360:state", { detail: state }));
-  };
-  viewer.on("sceneChange", publishState);
-  viewer.on("quizChange", publishState);
-  viewer.on("ready", publishState);
+    viewer.on("sceneChange", publishState);
+    viewer.on("quizChange", publishState);
+    viewer.on("ready", publishState);
+  }
 
   return {
     viewer,

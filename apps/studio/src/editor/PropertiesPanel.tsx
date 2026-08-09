@@ -1,6 +1,32 @@
 import { useState } from "react";
-import { ChevronRight, Crosshair, Plus, Trash2 } from "lucide-react";
-import { Button, Field, Input, Select, Switch, Textarea } from "@ull360/ui";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
+  BookOpen,
+  Building2,
+  Camera,
+  ChevronRight,
+  Coffee,
+  Crosshair,
+  DoorOpen,
+  Eye,
+  FlaskConical,
+  Footprints,
+  GraduationCap,
+  Landmark,
+  LogIn,
+  LogOut,
+  Maximize2,
+  Plus,
+  Star,
+  Trash2,
+  Trees,
+  type LucideIcon,
+} from "lucide-react";
+import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@ull360/ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
@@ -13,6 +39,38 @@ const HOTSPOT_TYPES = [
   "navigation", "text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf",
   "model3d", "web", "form", "compare", "quiz", "polygon", "tooltip", "link", "state",
 ] as const;
+
+/** Iconos elegibles (registrados también en el visor). */
+const ICON_OPTIONS: { name: string; Icon: LucideIcon }[] = [
+  { name: "arrow-up", Icon: ArrowUp },
+  { name: "arrow-down", Icon: ArrowDown },
+  { name: "arrow-left", Icon: ArrowLeft },
+  { name: "arrow-right", Icon: ArrowRight },
+  { name: "arrow-up-right", Icon: ArrowUpRight },
+  { name: "door-open", Icon: DoorOpen },
+  { name: "log-in", Icon: LogIn },
+  { name: "log-out", Icon: LogOut },
+  { name: "footprints", Icon: Footprints },
+  { name: "building-2", Icon: Building2 },
+  { name: "landmark", Icon: Landmark },
+  { name: "trees", Icon: Trees },
+  { name: "graduation-cap", Icon: GraduationCap },
+  { name: "book-open", Icon: BookOpen },
+  { name: "flask-conical", Icon: FlaskConical },
+  { name: "coffee", Icon: Coffee },
+  { name: "camera", Icon: Camera },
+  { name: "eye", Icon: Eye },
+  { name: "star", Icon: Star },
+];
+
+/** parseInt con guarda: un campo vacío no debe escribir NaN/null en el JSON. */
+function num(value: string, fallback: number): number {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+const RAD = Math.PI / 180;
+const toDeg = (rad: number): string => (rad / RAD).toFixed(1);
 
 export function PropertiesPanel({ project, scene, canEdit }: {
   project: ProjectInfo;
@@ -326,6 +384,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   const style = readJson<Record<string, any>>(hotspot.styleJson, {});
   const conditions = readJson<Record<string, any>>(hotspot.conditionsJson, {});
   const [pickerField, setPickerField] = useState<string | null>(null);
+  const [expand, setExpand] = useState<{ key: string; label: string } | null>(null);
 
   const patch = (fn: (h: HotspotRow) => void): void => {
     editor.apply((draft) => {
@@ -351,7 +410,18 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   const text = (key: string, label: string, opts: { textarea?: boolean; hint?: string } = {}): React.ReactNode => (
     <Field label={label} htmlFor={`hs-${key}`} hint={opts.hint}>
       {opts.textarea === true ? (
-        <Textarea id={`hs-${key}`} rows={4} value={String(content[key] ?? "")} disabled={!canEdit} onChange={(e) => setContent({ [key]: e.target.value })} />
+        <div className="relative">
+          <Textarea id={`hs-${key}`} rows={4} value={String(content[key] ?? "")} disabled={!canEdit} onChange={(e) => setContent({ [key]: e.target.value })} />
+          <button
+            type="button"
+            title={t("expand_editor")}
+            aria-label={t("expand_editor")}
+            className="absolute bottom-1.5 right-1.5 rounded-md p-1 text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)] hover:text-[var(--ull-text)]"
+            onClick={() => setExpand({ key, label })}
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
       ) : (
         <Input id={`hs-${key}`} value={String(content[key] ?? "")} disabled={!canEdit} onChange={(e) => setContent({ [key]: e.target.value })} />
       )}
@@ -399,9 +469,57 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       <Field label={t("label")} htmlFor="hs-label">
         <Input id="hs-label" value={String(content.label ?? "")} disabled={!canEdit} onChange={(e) => setContent({ label: e.target.value })} />
       </Field>
+      <Field label={t("label_visibility")} htmlFor="hs-labelvis">
+        <Select id="hs-labelvis" value={String(content.labelVisibility ?? "hover")} disabled={!canEdit} onChange={(e) => setContent({ labelVisibility: e.target.value === "hover" ? undefined : e.target.value })}>
+          <option value="hover">{t("label_vis_hover")}</option>
+          <option value="always">{t("label_vis_always")}</option>
+          <option value="never">{t("label_vis_never")}</option>
+        </Select>
+      </Field>
       <Field label={t("alt_text")} htmlFor="hs-alt">
         <Input id="hs-alt" value={String(content.altText ?? "")} disabled={!canEdit} onChange={(e) => setContent({ altText: e.target.value })} />
       </Field>
+
+      {/* Posición: arrastrable en la vista previa y editable en grados */}
+      <Section title={t("position")}>
+        <p className="mb-1 text-xs text-[var(--ull-text-dim)]">{t("position_drag_hint")}</p>
+        <div className="grid grid-cols-2 gap-2">
+          <Field label={`${t("yaw")} (°)`} htmlFor="hs-yaw">
+            <Input
+              id="hs-yaw"
+              type="number"
+              step="0.5"
+              value={toDeg(Number(readJson<Record<string, number>>(hotspot.positionJson, {}).yaw ?? 0))}
+              disabled={!canEdit}
+              onChange={(e) => {
+                const deg = parseFloat(e.target.value);
+                if (!Number.isFinite(deg)) return;
+                patch((h) => {
+                  const p = readJson<Record<string, unknown>>(h.positionJson, {});
+                  h.positionJson = JSON.stringify({ ...p, yaw: deg * RAD });
+                });
+              }}
+            />
+          </Field>
+          <Field label={`${t("pitch")} (°)`} htmlFor="hs-pitch">
+            <Input
+              id="hs-pitch"
+              type="number"
+              step="0.5"
+              value={toDeg(Number(readJson<Record<string, number>>(hotspot.positionJson, {}).pitch ?? 0))}
+              disabled={!canEdit}
+              onChange={(e) => {
+                const deg = parseFloat(e.target.value);
+                if (!Number.isFinite(deg)) return;
+                patch((h) => {
+                  const p = readJson<Record<string, unknown>>(h.positionJson, {});
+                  h.positionJson = JSON.stringify({ ...p, pitch: deg * RAD });
+                });
+              }}
+            />
+          </Field>
+        </div>
+      </Section>
 
       {/* Contenido por tipo */}
       <Section title={t("content")}>
@@ -430,6 +548,20 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 <Crosshair className="h-4 w-4" /> {t("use_current_view")}
               </Button>
             )}
+            <Field label={t("transition")} htmlFor="hs-trans">
+              <Select
+                id="hs-trans"
+                value={String(content.transition?.kind ?? "")}
+                disabled={!canEdit}
+                onChange={(e) => setContent({ transition: e.target.value === "" ? undefined : { kind: e.target.value } })}
+              >
+                <option value="">{t("transition_default")}</option>
+                <option value="fade">{t("transition_fade")}</option>
+                <option value="cut">{t("transition_cut")}</option>
+                <option value="crossRotate">{t("transition_crossrotate")}</option>
+                <option value="zoom">{t("transition_zoom")}</option>
+              </Select>
+            </Field>
             <Switch
               id="hs-floorarrow"
               checked={content.variant === "floorArrow"}
@@ -453,12 +585,30 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         {hotspot.type === "videoFile" && (
           <>
             {mediaButton("url", t("hotspot_videoFile"), "video")}
-            <Field label="Modo" htmlFor="hs-vmode">
+            <Field label={t("mode")} htmlFor="hs-vmode">
               <Select id="hs-vmode" value={String(content.mode ?? "lightbox")} disabled={!canEdit} onChange={(e) => setContent({ mode: e.target.value })}>
                 <option value="lightbox">Lightbox</option>
-                <option value="projected">Pantalla proyectada</option>
+                <option value="projected">{t("projected_screen")}</option>
               </Select>
             </Field>
+            {content.mode === "projected" && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!canEdit}
+                  onClick={() => setPlacementMode({ kind: "corners", hotspotId: hotspot.id, points: [] })}
+                >
+                  <Crosshair className="h-4 w-4" /> {t("define_corners")}
+                </Button>
+                <p className="text-xs text-[var(--ull-text-dim)]">
+                  {Array.isArray(content.corners) && content.corners.length === 4 ? t("corners_defined") : t("corners_hint")}
+                </p>
+              </>
+            )}
+            <Switch id="hs-vauto" checked={content.autoplay !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ autoplay: v })} label={t("autoplay")} />
+            <Switch id="hs-vloop" checked={content.loop !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ loop: v })} label={t("loop")} />
+            <Switch id="hs-vmuted" checked={content.muted !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ muted: v })} label={t("muted")} />
           </>
         )}
         {hotspot.type === "embedVideo" && (
@@ -470,21 +620,37 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 <option value="peertube">PeerTube</option>
               </Select>
             </Field>
-            {text("videoId", "ID de video")}
-            {content.provider === "peertube" && text("host", "Host de la instancia")}
-            <Switch id="hs-nocookie" checked={content.nocookie !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ nocookie: v })} label="Sin cookies" />
+            {text("videoId", t("video_id"))}
+            {content.provider === "peertube" && text("host", t("instance_host"))}
+            <Field label={t("start_at_s")} htmlFor="hs-start">
+              <Input id="hs-start" type="number" min="0" value={String(content.start ?? 0)} disabled={!canEdit}
+                onChange={(e) => setContent({ start: num(e.target.value, 0) || undefined })} />
+            </Field>
+            <Switch id="hs-eauto" checked={content.autoplay === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ autoplay: v || undefined })} label={t("autoplay")} />
+            <Switch id="hs-nocookie" checked={content.nocookie !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ nocookie: v })} label={t("no_cookies")} />
           </>
         )}
         {hotspot.type === "audio" && (
           <>
             {mediaButton("url", t("hotspot_audio"), "audio")}
-            <Field label="Modo" htmlFor="hs-amode">
+            <Field label={t("mode")} htmlFor="hs-amode">
               <Select id="hs-amode" value={String(content.mode ?? "player")} disabled={!canEdit} onChange={(e) => setContent({ mode: e.target.value })}>
-                <option value="player">Reproductor</option>
+                <option value="player">{t("audio_player")}</option>
                 <option value="spatial">{t("spatial_audio")}</option>
               </Select>
             </Field>
-            {text("transcript", "Transcripcion", { textarea: true })}
+            <Field label={`${t("volume")} (%)`} htmlFor="hs-vol">
+              <Input id="hs-vol" type="number" min="0" max="100" value={String(Math.round((Number(content.volume ?? 1)) * 100))} disabled={!canEdit}
+                onChange={(e) => setContent({ volume: Math.min(100, Math.max(0, num(e.target.value, 100))) / 100 })} />
+            </Field>
+            {content.mode === "spatial" && (
+              <Field label={`${t("audio_radius")} (°)`} htmlFor="hs-radius" hint={t("audio_radius_hint")}>
+                <Input id="hs-radius" type="number" min="10" max="180" value={String(Math.round(((Number(content.radius ?? Math.PI / 2)) * 180) / Math.PI))} disabled={!canEdit}
+                  onChange={(e) => setContent({ radius: (Math.min(180, Math.max(10, num(e.target.value, 90))) * Math.PI) / 180 })} />
+              </Field>
+            )}
+            <Switch id="hs-aloop" checked={content.loop === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ loop: v || undefined })} label={t("loop")} />
+            {text("transcript", t("transcript"), { textarea: true })}
           </>
         )}
         {hotspot.type === "pdf" && (
@@ -496,26 +662,42 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         {hotspot.type === "model3d" && (
           <>
             {mediaButton("url", t("hotspot_model3d"), "model")}
-            <Field label="Formato" htmlFor="hs-format">
+            <Field label={t("format")} htmlFor="hs-format">
               <Select id="hs-format" value={String(content.format ?? "glb")} disabled={!canEdit} onChange={(e) => setContent({ format: e.target.value })}>
-                <option value="glb">glTF/GLB</option>
+                <option value="glb">GLB</option>
+                <option value="gltf">glTF</option>
                 <option value="obj">OBJ</option>
                 <option value="stl">STL</option>
               </Select>
             </Field>
-            <Switch id="hs-ar" checked={content.ar === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ ar: v })} label="AR en moviles" />
+            {mediaButton("usdz", "USDZ (AR iOS)", "model")}
+            {mediaButton("poster", t("poster_image"), "image")}
+            <Switch id="hs-ar" checked={content.ar === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ ar: v })} label={t("ar_mobile")} />
           </>
         )}
         {hotspot.type === "web" && (
           <>
             {text("url", "URL")}
-            <Field label="Alto (px)" htmlFor="hs-height">
-              <Input id="hs-height" type="number" value={String(content.height ?? 480)} disabled={!canEdit} onChange={(e) => setContent({ height: parseInt(e.target.value, 10) })} />
+            <Field label={t("height_px")} htmlFor="hs-height">
+              <Input id="hs-height" type="number" value={String(content.height ?? 480)} disabled={!canEdit} onChange={(e) => setContent({ height: num(e.target.value, 480) })} />
             </Field>
+            <Switch
+              id="hs-wsandbox"
+              checked={content.sandbox !== "permissive"}
+              disabled={!canEdit}
+              onCheckedChange={(v) => setContent({ sandbox: v ? undefined : "permissive" })}
+              label={t("strict_sandbox")}
+            />
+            <p className="text-xs text-[var(--ull-text-dim)]">{t("strict_sandbox_hint")}</p>
           </>
         )}
         {hotspot.type === "form" && (
-          <FormEditor fields={(content.fields as any[]) ?? []} destination={content.destination ?? { api: true }} turnstile={content.turnstile === true} canEdit={canEdit} onChange={setContent} />
+          <>
+            {text("title", t("title"))}
+            {text("successMessage", t("success_message"))}
+            {text("submitLabel", t("submit_label"))}
+            <FormEditor fields={(content.fields as any[]) ?? []} destination={content.destination ?? { api: true }} turnstile={content.turnstile === true} canEdit={canEdit} onChange={setContent} />
+          </>
         )}
         {hotspot.type === "compare" && (
           <>
@@ -554,6 +736,16 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 </Field>
               </>
             )}
+            <div className="grid grid-cols-2 gap-2">
+              <Field label={`${t("label")} (${t("before")})`} htmlFor="hs-cbl">
+                <Input id="hs-cbl" value={String(content.before?.label ?? "")} disabled={!canEdit}
+                  onChange={(e) => setContent({ before: { ...content.before, label: e.target.value || undefined } })} />
+              </Field>
+              <Field label={`${t("label")} (${t("after")})`} htmlFor="hs-cal">
+                <Input id="hs-cal" value={String(content.after?.label ?? "")} disabled={!canEdit}
+                  onChange={(e) => setContent({ after: { ...content.after, label: e.target.value || undefined } })} />
+              </Field>
+            </div>
           </>
         )}
         {hotspot.type === "quiz" && (
@@ -561,10 +753,30 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         )}
         {hotspot.type === "polygon" && (
           <>
-            <Field label="Relleno" htmlFor="hs-fill">
-              <Input id="hs-fill" type="color" value={String(content.fill ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ fill: e.target.value })} />
-            </Field>
-            <Field label="Accion" htmlFor="hs-paction">
+            <div className="grid grid-cols-2 gap-2">
+              <Field label={t("fill")} htmlFor="hs-fill">
+                <Input id="hs-fill" type="color" value={String(content.fill ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ fill: e.target.value })} />
+              </Field>
+              <Field label={t("stroke")} htmlFor="hs-stroke">
+                <Input id="hs-stroke" type="color" value={String(content.stroke ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ stroke: e.target.value })} />
+              </Field>
+              <Field label={t("fill_opacity")} htmlFor="hs-fillop">
+                <Input id="hs-fillop" type="number" min="0" max="100" value={String(Math.round(Number(content.fillOpacity ?? 0.25) * 100))} disabled={!canEdit}
+                  onChange={(e) => setContent({ fillOpacity: Math.min(100, Math.max(0, num(e.target.value, 25))) / 100 })} />
+              </Field>
+              <Field label={t("hover_fill")} htmlFor="hs-hoverfill">
+                <Input id="hs-hoverfill" type="color" value={String(content.hoverFill ?? content.fill ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ hoverFill: e.target.value })} />
+              </Field>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!canEdit}
+              onClick={() => setPlacementMode({ kind: "polygon", points: [], replaceId: hotspot.id })}
+            >
+              <Crosshair className="h-4 w-4" /> {t("redraw_polygon")}
+            </Button>
+            <Field label={t("action")} htmlFor="hs-paction">
               <Select
                 id="hs-paction"
                 value={String(content.action?.kind ?? "none")}
@@ -586,25 +798,35 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 </Select>
               </Field>
             )}
-            {content.action?.kind === "openUrl" && text("action", "URL")}
+            {content.action?.kind === "openUrl" && (
+              <Field label="URL" htmlFor="hs-purl">
+                <Input
+                  id="hs-purl"
+                  value={String(content.action?.url ?? "")}
+                  disabled={!canEdit}
+                  onChange={(e) => setContent({ action: { kind: "openUrl", url: e.target.value } })}
+                />
+              </Field>
+            )}
           </>
         )}
         {hotspot.type === "tooltip" && (
           <>
             {text("text", t("body_text"))}
-            <Switch id="hs-perm" checked={content.permanent === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ permanent: v })} label="Permanente" />
+            <Switch id="hs-perm" checked={content.permanent === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ permanent: v })} label={t("permanent")} />
           </>
         )}
         {hotspot.type === "link" && (
           <>
             {text("url", "URL")}
-            <Field label="Tipo" htmlFor="hs-scheme">
+            <Field label={t("type")} htmlFor="hs-scheme">
               <Select id="hs-scheme" value={String(content.scheme ?? "url")} disabled={!canEdit} onChange={(e) => setContent({ scheme: e.target.value })}>
                 <option value="url">URL</option>
-                <option value="tel">Telefono</option>
+                <option value="tel">{t("phone")}</option>
                 <option value="mailto">Email</option>
               </Select>
             </Field>
+            <Switch id="hs-newtab" checked={content.newTab !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ newTab: v })} label={t("open_new_tab")} />
           </>
         )}
         {hotspot.type === "state" && (
@@ -614,16 +836,53 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
 
       {/* Estilo */}
       <Section title={t("style")}>
+        <Field label={t("icon")}>
+          <div className="grid grid-cols-7 gap-1">
+            <button
+              type="button"
+              title={t("icon_default")}
+              aria-label={t("icon_default")}
+              disabled={!canEdit}
+              onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name: undefined } })}
+              className={`flex h-8 items-center justify-center rounded-lg border text-[10px] font-semibold ${
+                style.icon?.name == null
+                  ? "border-[var(--ull-primary)] bg-[var(--ull-primary-soft)] text-[var(--ull-primary)]"
+                  : "border-[var(--ull-border)] text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)]"
+              }`}
+            >
+              Auto
+            </button>
+            {ICON_OPTIONS.map(({ name, Icon }) => (
+              <button
+                key={name}
+                type="button"
+                title={name}
+                aria-label={name}
+                disabled={!canEdit}
+                onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name } })}
+                className={`flex h-8 items-center justify-center rounded-lg border ${
+                  style.icon?.name === name
+                    ? "border-[var(--ull-primary)] bg-[var(--ull-primary-soft)] text-[var(--ull-primary)]"
+                    : "border-[var(--ull-border)] text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)]"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
+        </Field>
         <div className="grid grid-cols-2 gap-2">
           <Field label={t("icon_size")} htmlFor="hs-size">
-            <Input id="hs-size" type="number" value={String(style.icon?.size ?? 44)} disabled={!canEdit}
-              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), size: parseInt(e.target.value, 10) } })} />
+            <Input id="hs-size" type="number" min="24" max="96" value={String(style.icon?.size ?? 44)} disabled={!canEdit}
+              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), size: num(e.target.value, 44) } })} />
           </Field>
           <Field label={t("icon_color")} htmlFor="hs-color">
             <Input id="hs-color" type="color" value={String(style.icon?.color ?? "#ffffff")} disabled={!canEdit}
               onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), color: e.target.value } })} />
           </Field>
         </div>
+        <Switch id="hs-chip" checked={style.icon?.chip !== false} disabled={!canEdit}
+          onCheckedChange={(v) => setStyle({ icon: { ...(style.icon ?? {}), chip: v } })} label={t("icon_chip")} />
         <Switch id="hs-pulse" checked={style.pulse === true} disabled={!canEdit} onCheckedChange={(v) => setStyle({ pulse: v })} label={t("pulse")} />
         <Switch id="hs-dscale" checked={style.distanceScale !== false} disabled={!canEdit} onCheckedChange={(v) => setStyle({ distanceScale: v })} label={t("distance_scale")} />
       </Section>
@@ -669,6 +928,33 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           />
         </Field>
       </Section>
+
+      {/* Editor ampliado para textos largos (Markdown) */}
+      <Dialog
+        open={expand != null}
+        onOpenChange={(o) => {
+          if (!o) setExpand(null);
+        }}
+        title={expand?.label ?? ""}
+        wide
+        footer={
+          <Button onClick={() => setExpand(null)}>{t("close")}</Button>
+        }
+      >
+        {expand != null && (
+          <div className="space-y-2">
+            <Textarea
+              rows={18}
+              autoFocus
+              className="font-mono text-[13px] leading-relaxed"
+              value={String(content[expand.key] ?? "")}
+              disabled={!canEdit}
+              onChange={(e) => setContent({ [expand.key]: e.target.value })}
+            />
+            <p className="text-xs text-[var(--ull-text-dim)]">{t("markdown_hint")}</p>
+          </div>
+        )}
+      </Dialog>
 
       <MediaPicker
         open={pickerField != null}
@@ -816,6 +1102,10 @@ function FormEditor({ fields, destination, turnstile, canEdit, onChange }: {
         <Input id="form-wh" value={destination.webhook ?? ""} disabled={!canEdit}
           onChange={(e) => onChange({ destination: { ...destination, webhook: e.target.value || undefined } })} />
       </Field>
+      <Field label={t("notify_email")} htmlFor="form-em">
+        <Input id="form-em" type="email" value={destination.email ?? ""} disabled={!canEdit}
+          onChange={(e) => onChange({ destination: { ...destination, email: e.target.value || undefined } })} />
+      </Field>
       <Switch id="form-ts" checked={turnstile} disabled={!canEdit} onCheckedChange={(v) => onChange({ turnstile: v })} label="Turnstile anti-spam" />
     </div>
   );
@@ -862,10 +1152,10 @@ function QuizEditor({ content, canEdit, onChange }: {
       </Field>
       <div className="grid grid-cols-2 gap-2">
         <Field label={t("points")} htmlFor="qz-pts">
-          <Input id="qz-pts" type="number" value={String(content.points ?? 1)} disabled={!canEdit} onChange={(e) => onChange({ points: parseInt(e.target.value, 10) })} />
+          <Input id="qz-pts" type="number" min="0" value={String(content.points ?? 1)} disabled={!canEdit} onChange={(e) => onChange({ points: num(e.target.value, 1) })} />
         </Field>
         <Field label={t("attempts")} htmlFor="qz-att">
-          <Input id="qz-att" type="number" value={String(content.attempts ?? 0)} disabled={!canEdit} onChange={(e) => onChange({ attempts: parseInt(e.target.value, 10) })} />
+          <Input id="qz-att" type="number" min="0" value={String(content.attempts ?? 0)} disabled={!canEdit} onChange={(e) => onChange({ attempts: num(e.target.value, 0) })} />
         </Field>
       </div>
       <Field label="Feedback correcto" htmlFor="qz-fc">
@@ -893,12 +1183,27 @@ function StateEditor({ content, scenes, canEdit, onChange }: {
         <div key={i} className="flex items-center gap-1.5">
           <Input value={a.var} placeholder="variable" disabled={!canEdit} aria-label="Variable"
             onChange={(e) => onChange({ actions: actions.map((x, j) => (j === i ? { ...x, var: e.target.value } : x)) })} />
-          <Select value={a.op} disabled={!canEdit} aria-label="Operacion" className="max-w-24"
+          <Select value={a.op} disabled={!canEdit} aria-label={t("operation")} className="max-w-24"
             onChange={(e) => onChange({ actions: actions.map((x, j) => (j === i ? { ...x, op: e.target.value } : x)) })}>
             {["set", "inc", "dec", "toggle"].map((op) => (
               <option key={op} value={op}>{op}</option>
             ))}
           </Select>
+          {a.op === "set" && (
+            <Input
+              value={String(a.value ?? "")}
+              placeholder={t("value")}
+              disabled={!canEdit}
+              aria-label={t("value")}
+              className="max-w-24"
+              onChange={(e) => {
+                // Números y booleanos se guardan tipados; el resto, como texto.
+                const raw = e.target.value;
+                const value = raw === "true" ? true : raw === "false" ? false : raw !== "" && !Number.isNaN(Number(raw)) ? Number(raw) : raw;
+                onChange({ actions: actions.map((x, j) => (j === i ? { ...x, value } : x)) });
+              }}
+            />
+          )}
           <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("delete")} disabled={!canEdit}
             onClick={() => onChange({ actions: actions.filter((_, j) => j !== i) })}>
             <Trash2 className="h-3.5 w-3.5" />

@@ -66,9 +66,14 @@ export const VIEWER_CSS = `
 .ull360-viewer button { font-family: inherit; }
 .ull360-viewer :focus-visible { outline: 2px solid var(--u3-primary-strong); outline-offset: 2px; border-radius: 6px; }
 
-/* ============ Hotspots ============ */
-.ull360-hotspot { position: absolute; transform: translate(-50%, -50%); background: none; border: none;
-  cursor: pointer; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 7px; color: #fff; }
+/* ============ Hotspots ============
+   El ancla exterior (.ull360-hotspot-anchor) la posiciona Marzipano, que
+   reescribe display y transform en cada frame: no debe llevar estilo propio.
+   Todo el estilo vive en el boton interior, centrado sobre el ancla. */
+.ull360-hotspot-anchor { pointer-events: none; }
+.ull360-hotspot { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); background: none; border: none;
+  cursor: pointer; padding: 0; color: #fff; pointer-events: auto; }
+.ull360-hotspot__scale { display: flex; align-items: center; justify-content: center; }
 .ull360-hotspot__icon { display: flex; align-items: center; justify-content: center; transition: transform .18s cubic-bezier(.2,.8,.3,1.2); }
 .ull360-hotspot__icon--chip { position: relative; background: rgba(10, 14, 28, 0.55); backdrop-filter: blur(10px) saturate(1.4);
   -webkit-backdrop-filter: blur(10px) saturate(1.4); border: 1.5px solid rgba(255, 255, 255, 0.65); border-radius: 50%;
@@ -76,21 +81,27 @@ export const VIEWER_CSS = `
 .ull360-hotspot:hover .ull360-hotspot__icon, .ull360-hotspot:focus-visible .ull360-hotspot__icon { transform: scale(1.12); }
 .ull360-hotspot:hover .ull360-hotspot__icon--chip, .ull360-hotspot:focus-visible .ull360-hotspot__icon--chip {
   border-color: #fff; background: rgba(20, 28, 54, 0.75); box-shadow: 0 4px 18px rgba(0,0,0,.5), 0 0 0 5px rgba(255,255,255,.14); }
-.ull360-hotspot__label { background: rgba(10, 14, 28, 0.62); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,.16); color: #fff; padding: 5px 13px; border-radius: 999px;
-  font-size: 12.5px; font-weight: 600; letter-spacing: .01em; white-space: nowrap; max-width: 250px; overflow: hidden;
-  text-overflow: ellipsis; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-.ull360-hotspot__label--hover { opacity: 0; transform: translateY(-3px); transition: opacity .18s ease, transform .18s ease; }
-.ull360-hotspot:hover .ull360-hotspot__label--hover, .ull360-hotspot:focus-visible .ull360-hotspot__label--hover { opacity: 1; transform: none; }
+/* Etiqueta bajo el chip, en absoluto y centrada: su anchura no mueve el ancla. */
+.ull360-hotspot__label { position: absolute; top: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+  background: rgba(10, 14, 28, 0.62); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.16); color: #fff; padding: 5px 13px; border-radius: 14px;
+  font-size: 12.5px; font-weight: 600; letter-spacing: .01em; line-height: 1.3; text-align: center;
+  width: max-content; max-width: min(260px, 42vw); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+.ull360-hotspot__label--hover { opacity: 0; transform: translateX(-50%) translateY(-3px); transition: opacity .18s ease, transform .18s ease; }
+.ull360-hotspot:hover .ull360-hotspot__label--hover, .ull360-hotspot:focus-visible .ull360-hotspot__label--hover { opacity: 1; transform: translateX(-50%); }
 .ull360-hotspot--pulse .ull360-hotspot__icon--chip::after { content: ""; position: absolute; inset: -7px; border-radius: 50%;
   border: 2px solid rgba(255,255,255,.8); animation: u3pulse 2.2s ease-out infinite; }
 @keyframes u3pulse { 0% { transform: scale(.75); opacity: .9; } 100% { transform: scale(1.55); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ull360-hotspot--pulse .ull360-hotspot__icon--chip::after { animation: none; display: none; } }
 .ull360-degraded .ull360-hotspot--pulse .ull360-hotspot__icon--chip::after { animation: none; display: none; }
-.ull360-hotspot--floor-arrow .ull360-hotspot__icon { transform: perspective(300px) rotateX(52deg); }
-.ull360-hotspot--floor-arrow:hover .ull360-hotspot__icon { transform: perspective(300px) rotateX(52deg) scale(1.12); }
+.ull360-hotspot--floor-arrow .ull360-hotspot__scale { transform: perspective(300px) rotateX(52deg); }
+.ull360-hotspot--dragging { cursor: grabbing; }
+.ull360-hotspot--dragging .ull360-hotspot__icon--chip { border-color: var(--u3-primary-strong); box-shadow: 0 0 0 5px rgba(139,152,232,.35), 0 6px 22px rgba(0,0,0,.5); }
 .ull360-hotspot--projected { pointer-events: auto; }
 .ull360-hotspot--projected video { border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+/* Proyeccion activa: los hotspots dejan de corresponder a lo visible */
+.ull360-projection-active .ull360-hotspot-anchor, .ull360-projection-active .ull360-polygons { visibility: hidden; }
 
 /* ============ Barra superior flotante ============ */
 .ull360-topbar { position: absolute; top: max(14px, env(safe-area-inset-top)); left: 14px; right: 14px;
@@ -175,7 +186,8 @@ export const VIEWER_CSS = `
   z-index: 18; background: var(--u3-glass); backdrop-filter: var(--u3-blur); -webkit-backdrop-filter: var(--u3-blur);
   border: 1px solid var(--u3-glass-border); border-radius: 50%; display: flex; align-items: center; justify-content: center;
   color: var(--u3-glass-fg); box-shadow: var(--u3-shadow); cursor: pointer; }
-.ull360-compass svg { transition: transform .1s linear; }
+.ull360-compass__needle { transform-box: view-box; transform-origin: 50% 50%; transition: transform .12s linear; }
+@media (prefers-reduced-motion: reduce) { .ull360-compass__needle { transition: none; } }
 
 /* ============ Paneles / lightbox ============ */
 .ull360-panel-backdrop { position: absolute; inset: 0; background: rgba(4, 7, 18, .62);

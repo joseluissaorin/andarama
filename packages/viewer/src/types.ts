@@ -57,6 +57,8 @@ export type ViewerEventMap = {
   viewChange: ViewParams;
   hotspotActivate: HotspotActivateEvent;
   hotspotDeactivate: Record<string, never>;
+  /** Modo edicion: un marcador se esta arrastrando o se ha soltado. */
+  hotspotMove: { hotspot: Hotspot; yaw: number; pitch: number; phase: "move" | "end" };
   varsChange: Record<string, string | number | boolean>;
   quizChange: QuizStateEvent;
   langChange: { lang: string };

@@ -32,6 +32,16 @@ function detectTileExtension(src: MultiresSource): string {
   return "webp";
 }
 
+/**
+ * URLs de las tiles del nivel base de una fuente multirres (una tile por cara).
+ * Se usan para precargar la escena antes del fundido de cambio.
+ */
+export function baseLevelTileUrls(src: MultiresSource, baseUrl: string): string[] {
+  const ext = detectTileExtension(src);
+  const base = resolveUrl(baseUrl, src.base).replace(/\/$/, "");
+  return ["f", "b", "l", "r", "u", "d"].map((f) => `${base}/0/${f}/0/0.${ext}`);
+}
+
 export function buildLimiter(scene: Scene, faceSize: number): any {
   const limits: ViewLimits = scene.limits ?? {};
   const fns: any[] = [
@@ -95,8 +105,10 @@ export async function buildScene(scene: Scene, baseUrl: string, initialViewParam
   const src = scene.source;
   switch (src.kind) {
     case "multires": {
-      const geometryLevels: { tileSize: number; size: number; fallbackOnly?: boolean }[] = [];
-      // Nivel de fallback (preview) + piramide real.
+      // Piramide real; el nivel base (una tile por cara) actua de fallback.
+      // Nota: NO se usa cubeMapPreviewUrl — exige una tira vertical de 6 caras
+      // y nuestro preview es equirectangular (el preview queda para VR/poster).
+      const geometryLevels: { tileSize: number; size: number }[] = [];
       let size = src.faceSize;
       const sizes: number[] = [];
       for (let i = 0; i < src.levels; i++) {
@@ -107,9 +119,7 @@ export async function buildScene(scene: Scene, baseUrl: string, initialViewParam
       const geometry = new Marzipano.CubeGeometry(geometryLevels);
       const ext = detectTileExtension(src);
       const base = resolveUrl(baseUrl, src.base).replace(/\/$/, "");
-      const source = Marzipano.ImageUrlSource.fromString(`${base}/{z}/{f}/{y}/{x}.${ext}`, {
-        cubeMapPreviewUrl: src.preview != null ? resolveUrl(baseUrl, src.preview) : undefined,
-      });
+      const source = Marzipano.ImageUrlSource.fromString(`${base}/{z}/{f}/{y}/{x}.${ext}`);
       const view = new Marzipano.RectilinearView(initialViewParams, buildLimiter(scene, src.faceSize));
       return { geometry, source, view };
     }

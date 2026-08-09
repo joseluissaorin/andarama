@@ -18,7 +18,7 @@ import type {
   ViewerEventMap,
   ViewerEventName,
 } from "./types.js";
-import { buildScene, resolveUrl, type BuiltScene } from "./engine/sources.js";
+import { baseLevelTileUrls, buildScene, resolveUrl, type BuiltScene } from "./engine/sources.js";
 import { AudioEngine } from "./engine/audio.js";
 import { evalConditions, VariableStore } from "./engine/state.js";
 import { buildDeepLink, parseDeepLink, replaceHash } from "./engine/deeplink.js";
@@ -68,6 +68,8 @@ export class TourViewer {
   private fpsWindow: number[] = [];
   private lastFrame = 0;
   private degraded = false;
+  private basePreloaded = new Set<string>();
+  private sceneUse = new Map<string, number>();
   private baseUrl: string;
   private destroyed = false;
   private idleMovementActive = false;
@@ -154,7 +156,17 @@ export class TourViewer {
     );
 
     if (this.supportsProjections()) {
-      this.projectionPass = new ProjectionPass(this.container, () => this.stageCanvas());
+      this.projectionPass = new ProjectionPass(this.container, {
+        getView: () => (this.currentId != null ? this.view() : null),
+        getEnvironment: async () => {
+          try {
+            const env = await this.buildVrEnvironment();
+            return { element: env.element as TexImageSource, dynamic: env.dynamic };
+          } catch {
+            return null;
+          }
+        },
+      });
     }
 
     this.setupInteractionListeners();
@@ -325,29 +337,96 @@ export class TourViewer {
     return new SceneMarkers(scene, marzScene, view, this.container, this.vars, {
       lang: () => this.lang,
       defaultLang: this.tour.meta.defaultLang,
+      baseUrl: this.baseUrl,
+      editable: this.options.editMode === true,
+      onDrag: (hotspot, yaw, pitch, phase) => this.emit("hotspotMove", { hotspot, yaw, pitch, phase }),
       onActivate: (hotspot, element) => this.activateHotspot(hotspot, element),
     });
   }
 
-  /** Precarga de escenas vecinas segun el grafo (con presupuesto). */
-  private preloadNeighbors(sceneId: string): void {
-    const scene = this.tour.scenes.find((s) => s.id === sceneId);
-    if (scene == null) return;
-    const targets = new Set<string>();
-    for (const hs of scene.hotspots) {
-      if (hs.type === "navigation") targets.add(hs.target);
+  /**
+   * Precarga el nivel base de una escena multirres (6 tiles pequenas) para
+   * que el fundido de entrada ocurra siempre sobre imagen valida.
+   */
+  private preloadBase(entry: LoadedScene): Promise<void> {
+    const src = entry.scene.source;
+    if (src.kind !== "multires" || this.basePreloaded.has(entry.scene.id)) return Promise.resolve();
+    this.basePreloaded.add(entry.scene.id);
+    const loads = baseLevelTileUrls(src, this.baseUrl).map(
+      (u) =>
+        new Promise<void>((res) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => res();
+          img.onerror = () => res();
+          img.src = u;
+        }),
+    );
+    return Promise.race([
+      Promise.all(loads).then(() => undefined),
+      new Promise<void>((r) => setTimeout(r, 2500)),
+    ]);
+  }
+
+  /** Libera las escenas menos usadas para no acumular memoria en tours grandes. */
+  private evictStaleScenes(): void {
+    const MAX_LOADED = 12;
+    if (this.loaded.size <= MAX_LOADED) return;
+    const current = this.currentId;
+    const neighbors = new Set<string>();
+    if (current != null) {
+      const scene = this.tour.scenes.find((s) => s.id === current);
+      for (const hs of scene?.hotspots ?? []) if (hs.type === "navigation") neighbors.add(hs.target);
     }
-    for (const conn of this.tour.connections ?? []) {
-      if (conn.from === sceneId) targets.add(conn.to);
-    }
-    let budget = 2;
-    for (const t of targets) {
-      if (budget <= 0) break;
-      if (!this.loaded.has(t) && this.tour.scenes.some((s) => s.id === t)) {
-        budget--;
-        void this.ensureLoaded(t).catch(() => {});
+    const candidates = [...this.loaded.keys()]
+      .filter((id) => id !== current && !neighbors.has(id))
+      .sort((a, b) => (this.sceneUse.get(a) ?? 0) - (this.sceneUse.get(b) ?? 0));
+    while (this.loaded.size > MAX_LOADED && candidates.length > 0) {
+      const id = candidates.shift()!;
+      const entry = this.loaded.get(id);
+      if (entry == null) continue;
+      try {
+        entry.markers.destroy();
+        this.viewer.destroyScene(entry.marzScene);
+      } catch {
+        // ya destruida
       }
+      this.loaded.delete(id);
+      this.basePreloaded.delete(id);
     }
+  }
+
+  /**
+   * Precarga de escenas vecinas segun el grafo (con presupuesto), diferida a
+   * un momento ocioso para no competir con las tiles de la escena actual.
+   */
+  private preloadNeighbors(sceneId: string): void {
+    const schedule: (fn: () => void) => void =
+      typeof requestIdleCallback === "function"
+        ? (fn) => requestIdleCallback(fn, { timeout: 4000 })
+        : (fn) => void setTimeout(fn, 1500);
+    schedule(() => {
+      if (this.destroyed || this.currentId !== sceneId) return;
+      const scene = this.tour.scenes.find((s) => s.id === sceneId);
+      if (scene == null) return;
+      const targets = new Set<string>();
+      for (const hs of scene.hotspots) {
+        if (hs.type === "navigation") targets.add(hs.target);
+      }
+      for (const conn of this.tour.connections ?? []) {
+        if (conn.from === sceneId) targets.add(conn.to);
+      }
+      let budget = 2;
+      for (const t of targets) {
+        if (budget <= 0) break;
+        if (!this.loaded.has(t) && this.tour.scenes.some((s) => s.id === t)) {
+          budget--;
+          void this.ensureLoaded(t)
+            .then((entry) => this.preloadBase(entry))
+            .catch(() => {});
+        }
+      }
+    });
   }
 
   async goTo(
@@ -366,6 +445,9 @@ export class TourViewer {
     const previousId = this.currentId;
     const previousView = this.view();
     const entry = await this.ensureLoaded(sceneId);
+    // La escena anterior sigue visible hasta que el nivel base este listo:
+    // el fundido nunca ocurre sobre tiles a medio cargar.
+    await this.preloadBase(entry);
 
     // Registrar tiempo en la escena anterior
     if (previousId != null && previousId !== sceneId) {
@@ -426,6 +508,9 @@ export class TourViewer {
 
     entry.markers.updateVisibility(this.currentVideoTime());
     entry.markers.updatePolygons();
+    this.sceneUse.set(sceneId, Date.now());
+    this.projectionPass?.invalidateEnvironment();
+    this.evictStaleScenes();
     this.preloadNeighbors(sceneId);
     this.applyIdleBehaviors();
     if (this.options.deepLinks !== false) replaceHash(sceneId, this.view());
@@ -582,10 +667,17 @@ export class TourViewer {
   // -----------------------------------------------------------------------
 
   private activateHotspot(hotspot: Hotspot, element: HTMLElement | null): void {
-    this.audio.unlock();
-    this.autopilotCtl.pauseForInteraction();
     const scene = this.currentScene();
     if (scene == null) return;
+    // Modo edicion: ningun hotspot ejecuta su efecto (navegar, abrir URL,
+    // mutar estado...). Siempre se emite la activacion para que el editor
+    // seleccione el hotspot y abra sus propiedades.
+    if (this.options.editMode === true) {
+      this.emit("hotspotActivate", { hotspot, scene, element });
+      return;
+    }
+    this.audio.unlock();
+    this.autopilotCtl.pauseForInteraction();
     this.analytics.track({ event: "hotspot", sceneId: scene.id, hotspotId: hotspot.id });
     this.markTreasure(scene.id, hotspot.id);
 
@@ -887,16 +979,12 @@ export class TourViewer {
     return typeof WebGLRenderingContext !== "undefined";
   }
 
-  private stageCanvas(): HTMLCanvasElement | null {
-    return this.container.querySelector("canvas");
-  }
-
   setProjection(projection: Projection): void {
     if (this.projectionPass == null || !this.projectionPass.supported) return;
     if (projection !== "rectilinear" && this.currentScene()?.source.kind === "flat") return;
-    if (projection !== "rectilinear") {
-      this.setView({ fov: this.projectionPass.baseFovFor(projection) });
-    }
+    // Los hotspots se ocultan mientras la proyeccion esta activa (sus
+    // posiciones de pantalla ya no corresponden a lo que se ve).
+    this.container.classList.toggle("ull360-projection-active", projection !== "rectilinear");
     this.projectionPass.setProjection(projection, !this.reducedMotion);
   }
 
@@ -989,7 +1077,6 @@ export class TourViewer {
       if (avg < 40 && !this.degraded) {
         this.degraded = true;
         this.container.classList.add("ull360-degraded");
-        this.projectionPass?.setProjection("rectilinear", false);
       } else if (avg > 55 && this.degraded) {
         this.degraded = false;
         this.container.classList.remove("ull360-degraded");

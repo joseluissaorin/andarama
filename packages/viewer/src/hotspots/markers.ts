@@ -2,22 +2,33 @@ import type { Hotspot, PolygonHotspot, Scene } from "@ull360/schema";
 import { resolveL10n } from "@ull360/schema";
 import { createIconSvg, DEFAULT_ICON_BY_TYPE, sanitizeSvg } from "./icons.js";
 import { evalConditions, type VariableStore } from "../engine/state.js";
+import { resolveUrl } from "../engine/sources.js";
 
 /**
- * Gestor de marcadores de hotspot de una escena: crea los elementos DOM
- * anclados a la esfera (via HotspotContainer de Marzipano), el overlay SVG
- * de poligonos proyectados, la visibilidad condicional (idioma, variables,
- * rango temporal de video) y el escalado por distancia/zoom.
+ * Gestor de marcadores de hotspot de una escena.
+ *
+ * Estructura DOM en dos niveles: Marzipano reescribe `display` y `transform`
+ * del elemento raíz en cada frame, así que el raíz es un ancla vacía y todo
+ * el estilo vive en un botón interior centrado con translate(-50%,-50%).
+ * La etiqueta se posiciona en absoluto bajo el chip: su anchura nunca puede
+ * desplazar el ancla ni desbordar el botón.
  */
 
 export interface MarkerCallbacks {
   onActivate: (hotspot: Hotspot, element: HTMLElement | null) => void;
   lang: () => string;
   defaultLang: string;
+  baseUrl: string;
+  /** Modo edición: permite arrastrar marcadores para reposicionarlos. */
+  editable?: boolean;
+  onDrag?: (hotspot: Hotspot, yaw: number, pitch: number, phase: "move" | "end") => void;
 }
 
 interface ManagedMarker {
   hotspot: Hotspot;
+  /** Ancla que posiciona Marzipano (no estilizar). */
+  anchor: HTMLElement;
+  /** Botón interior con todo el estilo y los listeners. */
   element: HTMLElement;
   marzipanoHotspot: any;
   visible: boolean;
@@ -30,6 +41,7 @@ export class SceneMarkers {
   private polygonSvg: SVGSVGElement | null = null;
   private polygons: { hotspot: PolygonHotspot; path: SVGPathElement; visible: boolean }[] = [];
   private videoTime: number | null = null;
+  private boundViewer: any = null;
 
   constructor(
     private scene: Scene,
@@ -58,7 +70,10 @@ export class SceneMarkers {
         this.buildPolygon(hotspot);
         continue;
       }
+      const anchor = document.createElement("div");
+      anchor.className = "ull360-hotspot-anchor";
       const el = this.buildMarkerElement(hotspot);
+      anchor.appendChild(el);
       let marz: any;
       if (hotspot.type === "videoFile" && hotspot.mode === "projected" && hotspot.corners?.length === 4) {
         // Pantalla proyectada: hotspot con perspectiva (plano en la esfera).
@@ -66,7 +81,7 @@ export class SceneMarkers {
         const radius = 1200;
         const widthPx = 2 * radius * Math.tan(((widthDeg / 2) * Math.PI) / 180);
         const video = document.createElement("video");
-        video.src = hotspot.url;
+        video.src = resolveUrl(this.callbacks.baseUrl, hotspot.url);
         video.crossOrigin = "anonymous";
         video.loop = hotspot.loop ?? true;
         video.muted = hotspot.muted ?? true;
@@ -76,15 +91,18 @@ export class SceneMarkers {
         video.setAttribute("aria-label", this.label(hotspot));
         el.replaceChildren(video);
         el.classList.add("ull360-hotspot--projected");
-        marz = hotspotContainer.createHotspot(el, { yaw: center.yaw, pitch: center.pitch }, { perspective: { radius } });
+        marz = hotspotContainer.createHotspot(anchor, { yaw: center.yaw, pitch: center.pitch }, { perspective: { radius } });
         void video.play().catch(() => {});
       } else {
-        marz = hotspotContainer.createHotspot(el, { yaw: hotspot.yaw, pitch: hotspot.pitch });
+        marz = hotspotContainer.createHotspot(anchor, { yaw: hotspot.yaw, pitch: hotspot.pitch });
       }
-      this.markers.push({ hotspot, element: el, marzipanoHotspot: marz, visible: true });
+      const managed: ManagedMarker = { hotspot, anchor, element: el, marzipanoHotspot: marz, visible: true };
+      if (this.callbacks.editable === true) this.attachDrag(managed);
+      this.markers.push(managed);
     }
     if (this.polygons.length > 0) {
-      this.marzScene.viewer().addEventListener?.("viewChange", this.updatePolygons);
+      this.boundViewer = this.marzScene.viewer();
+      this.boundViewer.addEventListener?.("viewChange", this.updatePolygons);
     }
     this.updateVisibility(null);
   }
@@ -104,11 +122,17 @@ export class SceneMarkers {
       el.classList.add("ull360-hotspot--floor-arrow");
     }
 
+    // Envoltorio de escala: recibe la propiedad CSS `scale` (no `transform`),
+    // de modo que compone con el hover del chip y con la flecha de suelo.
+    const scaleWrap = document.createElement("span");
+    scaleWrap.className = "ull360-hotspot__scale";
+
     const iconWrap = document.createElement("span");
     iconWrap.className = "ull360-hotspot__icon";
     if (style?.icon?.chip !== false) iconWrap.classList.add("ull360-hotspot__icon--chip");
     iconWrap.style.width = `${size}px`;
     iconWrap.style.height = `${size}px`;
+    if (style?.icon?.size != null) iconWrap.style.minWidth = iconWrap.style.minHeight = `${size}px`;
     if (style?.icon?.svg != null) {
       iconWrap.innerHTML = sanitizeSvg(style.icon.svg);
       const svg = iconWrap.querySelector("svg");
@@ -127,7 +151,8 @@ export class SceneMarkers {
         createIconSvg(style?.icon?.name ?? DEFAULT_ICON_BY_TYPE[hotspot.type], Math.round(size * 0.55), color),
       );
     }
-    el.appendChild(iconWrap);
+    scaleWrap.appendChild(iconWrap);
+    el.appendChild(scaleWrap);
 
     const labelText = resolveL10n(hotspot.label, this.callbacks.lang(), this.callbacks.defaultLang);
     if (labelText !== "" && hotspot.labelVisibility !== "never") {
@@ -142,9 +167,62 @@ export class SceneMarkers {
 
     el.addEventListener("click", (e) => {
       e.stopPropagation();
+      if (el.dataset.dragged === "1") {
+        delete el.dataset.dragged;
+        return;
+      }
       this.callbacks.onActivate(hotspot, el);
     });
     return el;
+  }
+
+  /** Arrastre de marcadores en modo edición (reposicionar yaw/pitch). */
+  private attachDrag(m: ManagedMarker): void {
+    const el = m.element;
+    el.style.touchAction = "none";
+    el.addEventListener("pointerdown", (down: PointerEvent) => {
+      if (down.button !== 0) return;
+      down.stopPropagation();
+      const startX = down.clientX;
+      const startY = down.clientY;
+      let moved = false;
+      const rect = (): DOMRect => this.container.getBoundingClientRect();
+      const toCoords = (e: PointerEvent): { yaw: number; pitch: number } | null => {
+        const r = rect();
+        try {
+          return this.view.screenToCoordinates({ x: e.clientX - r.left, y: e.clientY - r.top });
+        } catch {
+          return null;
+        }
+      };
+      const onMove = (e: PointerEvent): void => {
+        if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) < 4) return;
+        moved = true;
+        el.dataset.dragged = "1";
+        el.classList.add("ull360-hotspot--dragging");
+        const c = toCoords(e);
+        if (c == null) return;
+        m.hotspot.yaw = c.yaw;
+        m.hotspot.pitch = c.pitch;
+        try {
+          m.marzipanoHotspot.setPosition({ yaw: c.yaw, pitch: c.pitch });
+        } catch {
+          // la escena pudo destruirse durante el arrastre
+        }
+        this.callbacks.onDrag?.(m.hotspot, c.yaw, c.pitch, "move");
+      };
+      const onUp = (e: PointerEvent): void => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        el.classList.remove("ull360-hotspot--dragging");
+        if (moved) {
+          const c = toCoords(e);
+          if (c != null) this.callbacks.onDrag?.(m.hotspot, c.yaw, c.pitch, "end");
+        }
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    });
   }
 
   private buildPolygon(hotspot: PolygonHotspot): void {
@@ -180,15 +258,33 @@ export class SceneMarkers {
     this.polygons.push({ hotspot, path, visible: true });
   }
 
-  /** Reproyecta los poligonos a coordenadas de pantalla. Llamar en cada viewChange. */
+  /**
+   * Reproyecta los polígonos a coordenadas de pantalla. Cada arista se
+   * subdivide para que el contorno siga los grandes círculos y el polígono
+   * no se deforme cuando parte de sus vértices sale del encuadre.
+   */
   updatePolygons = (): void => {
     if (this.polygons.length === 0) return;
+    const SUBDIV = 6;
     for (const poly of this.polygons) {
       if (!poly.visible) {
         poly.path.setAttribute("d", "");
         continue;
       }
-      const pts: ({ x: number; y: number } | null)[] = poly.hotspot.points.map((p) => {
+      const src = poly.hotspot.points;
+      const sampled: { yaw: number; pitch: number }[] = [];
+      for (let i = 0; i < src.length; i++) {
+        const a = src[i]!;
+        const b = src[(i + 1) % src.length]!;
+        let dyaw = b.yaw - a.yaw;
+        if (dyaw > Math.PI) dyaw -= 2 * Math.PI;
+        if (dyaw < -Math.PI) dyaw += 2 * Math.PI;
+        for (let s = 0; s < SUBDIV; s++) {
+          const t = s / SUBDIV;
+          sampled.push({ yaw: a.yaw + dyaw * t, pitch: a.pitch + (b.pitch - a.pitch) * t });
+        }
+      }
+      const pts: ({ x: number; y: number } | null)[] = sampled.map((p) => {
         try {
           return this.view.coordinatesToScreen({ yaw: p.yaw, pitch: p.pitch });
         } catch {
@@ -196,7 +292,9 @@ export class SceneMarkers {
         }
       });
       const visible = pts.filter((p): p is { x: number; y: number } => p != null);
-      if (visible.length < 3) {
+      // Si más de la mitad del contorno queda fuera, mejor no dibujar nada
+      // que dibujar un parche deformado.
+      if (visible.length < 3 || visible.length < pts.length * 0.4) {
         poly.path.setAttribute("d", "");
         continue;
       }
@@ -205,17 +303,18 @@ export class SceneMarkers {
     }
   };
 
-  /** Escala por distancia/zoom: los marcadores crecen al hacer zoom. */
+  /** Escala por distancia/zoom via la propiedad CSS `scale` (compone con hover y flechas). */
   updateScale(fov: number): void {
     const scale = Math.min(2.2, Math.max(0.5, REFERENCE_FOV / Math.max(0.15, fov)));
+    const value = scale.toFixed(3);
     for (const m of this.markers) {
       if (m.hotspot.style?.distanceScale === false) continue;
-      const icon = m.element.querySelector<HTMLElement>(".ull360-hotspot__icon");
-      if (icon != null) icon.style.transform = `scale(${scale.toFixed(3)})`;
+      const wrap = m.element.querySelector<HTMLElement>(".ull360-hotspot__scale");
+      if (wrap != null) wrap.style.scale = value;
     }
   }
 
-  /** Reevalua condiciones de visibilidad. */
+  /** Reevalúa condiciones de visibilidad (sobre el botón interior, que Marzipano no toca). */
   updateVisibility(videoTime: number | null): void {
     this.videoTime = videoTime;
     const lang = this.callbacks.lang();
@@ -256,6 +355,8 @@ export class SceneMarkers {
       }
     }
     this.markers = [];
+    this.boundViewer?.removeEventListener?.("viewChange", this.updatePolygons);
+    this.boundViewer = null;
     this.polygonSvg?.remove();
     this.polygonSvg = null;
     this.polygons = [];

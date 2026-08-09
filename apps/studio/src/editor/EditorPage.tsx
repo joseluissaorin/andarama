@@ -59,7 +59,7 @@ export function EditorPage(): React.ReactNode {
   const wsRef = useRef<WebSocket | null>(null);
   const connIdRef = useRef<string | null>(null);
 
-  // Carga inicial
+  // Carga inicial (restaurando pestaña y escena desde la URL)
   useEffect(() => {
     void refresh();
     void loadSnapshot(projectId)
@@ -67,12 +67,32 @@ export function EditorPage(): React.ReactNode {
         syncedRef.current = structuredClone(snapshot);
         editor.load(projectId, snapshot);
         setProject(p as unknown as ProjectInfo);
+        const params = new URLSearchParams(location.search);
+        const urlTab = params.get("tab") as EditorTab | null;
+        if (urlTab != null && ["scenes", "graph", "floorplan", "translations", "settings", "analytics", "comments", "versions"].includes(urlTab)) {
+          setTab(urlTab);
+        }
+        const urlScene = params.get("scene");
+        if (urlScene != null && snapshot.scenes.some((s) => s.id === urlScene)) {
+          useEditor.getState().select(urlScene);
+        }
       })
       .catch((err) => {
         toast.push(String(err instanceof Error ? err.message : err), "error");
         void navigate({ to: "/" });
       });
   }, [projectId]);
+
+  // Pestaña y escena activas en la URL (recargar o compartir no pierde el sitio)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (tab === "scenes") params.delete("tab");
+    else params.set("tab", tab);
+    if (editor.selectedSceneId == null) params.delete("scene");
+    else params.set("scene", editor.selectedSceneId);
+    const qs = params.toString();
+    history.replaceState(null, "", `${location.pathname}${qs === "" ? "" : `?${qs}`}`);
+  }, [tab, editor.selectedSceneId]);
 
   // Autosave con indicador (§3.5)
   const doSync = useCallback(async (): Promise<void> => {
@@ -154,6 +174,15 @@ export function EditorPage(): React.ReactNode {
       } else if (meta && e.key.toLowerCase() === "s") {
         e.preventDefault();
         void doSync();
+      } else if (e.altKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+        // Alt+flechas: escena anterior/siguiente sin tocar el ratón
+        e.preventDefault();
+        const state = useEditor.getState();
+        const list = state.snapshot?.scenes ?? [];
+        if (list.length === 0) return;
+        const idx = list.findIndex((s) => s.id === state.selectedSceneId);
+        const next = list[(idx + (e.key === "ArrowDown" ? 1 : -1) + list.length) % list.length];
+        if (next != null) state.select(next.id);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -263,7 +292,15 @@ export function EditorPage(): React.ReactNode {
 
       <div className="min-h-0 flex-1">
         {tab === "scenes" && <ScenesView project={project} canEdit={canEdit} locks={presence.locks} myConnId={connIdRef.current} />}
-        {tab === "graph" && <GraphView canEdit={canEdit} />}
+        {tab === "graph" && (
+          <GraphView
+            canEdit={canEdit}
+            onOpenScene={(sceneId, hotspotId) => {
+              setTab("scenes");
+              editor.select(sceneId, hotspotId ?? null);
+            }}
+          />
+        )}
         {tab === "floorplan" && <FloorplanView project={project} canEdit={canEdit} />}
         {tab === "translations" && <TranslationsView project={project} canEdit={canEdit} />}
         {tab === "settings" && <TourSettingsView project={project} canEdit={canEdit} />}

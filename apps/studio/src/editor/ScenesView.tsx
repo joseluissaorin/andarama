@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Crosshair, Image as ImageIcon, Lock, Plus, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Copy,
+  Crosshair,
+  GripVertical,
+  Image as ImageIcon,
+  Lock,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Badge, Button, Dialog, Field, Input, Tooltip, useToast } from "@ull360/ui";
 import type { Tour } from "@ull360/schema";
 import { mountViewer, type MountedSkin } from "@ull360/viewer-ui";
@@ -12,7 +23,7 @@ import { PropertiesPanel } from "./PropertiesPanel";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
 
-/** Vista principal: lista de escenas + previsualizacion WYSIWYG + propiedades. */
+/** Vista principal: lista de escenas + previsualización WYSIWYG + propiedades. */
 export function ScenesView({ project, canEdit, locks, myConnId }: {
   project: ProjectInfo;
   canEdit: boolean;
@@ -25,10 +36,16 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newMedia, setNewMedia] = useState<MediaItem | null>(null);
+  const [filter, setFilter] = useState("");
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropAt, setDropAt] = useState<string | null>(null);
 
   const snapshot = editor.snapshot!;
   const scenes = snapshot.scenes;
   const selected = scenes.find((s) => s.id === editor.selectedSceneId) ?? scenes[0] ?? null;
+  const visible = filter.trim() === ""
+    ? scenes
+    : scenes.filter((s) => s.title.toLowerCase().includes(filter.trim().toLowerCase()));
 
   const addScene = (): void => {
     if (newTitle.trim() === "") return;
@@ -58,17 +75,35 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
     setNewMedia(null);
   };
 
-  const move = (sceneId: string, dir: -1 | 1): void => {
+  const reorder = (fromId: string, toId: string): void => {
+    if (fromId === toId) return;
     editor.apply((draft) => {
-      const idx = draft.scenes.findIndex((s) => s.id === sceneId);
-      const swap = idx + dir;
-      if (idx < 0 || swap < 0 || swap >= draft.scenes.length) return;
-      const [item] = draft.scenes.splice(idx, 1);
-      draft.scenes.splice(swap, 0, item!);
+      const fromIdx = draft.scenes.findIndex((s) => s.id === fromId);
+      const toIdx = draft.scenes.findIndex((s) => s.id === toId);
+      if (fromIdx < 0 || toIdx < 0) return;
+      const [item] = draft.scenes.splice(fromIdx, 1);
+      draft.scenes.splice(toIdx, 0, item!);
       draft.scenes.forEach((s, i) => {
         s.sort = i;
       });
     });
+  };
+
+  const duplicate = (sceneId: string): void => {
+    const newId = clientId();
+    editor.apply((draft) => {
+      const idx = draft.scenes.findIndex((s) => s.id === sceneId);
+      const src = draft.scenes[idx];
+      if (src == null) return;
+      draft.scenes.splice(idx + 1, 0, { ...structuredClone(src), id: newId, title: `${src.title} (copia)` });
+      draft.scenes.forEach((s, i) => {
+        s.sort = i;
+      });
+      for (const h of draft.hotspots.filter((h) => h.sceneId === sceneId)) {
+        draft.hotspots.push({ ...structuredClone(h), id: clientId(), sceneId: newId });
+      }
+    });
+    editor.select(newId);
   };
 
   const remove = (sceneId: string): void => {
@@ -79,12 +114,12 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
       draft.connections = draft.connections.filter((c) => c.fromScene !== sceneId && c.toScene !== sceneId);
       if (draft.settings.startScene === sceneId) draft.settings.startScene = draft.scenes[0]?.id;
     });
-    if (editor.selectedSceneId === sceneId) editor.select(scenes[0]?.id ?? null);
+    if (editor.selectedSceneId === sceneId) editor.select(scenes.find((s) => s.id !== sceneId)?.id ?? null);
   };
 
   return (
     <div className="flex h-full">
-      <aside className="flex w-60 flex-col border-r border-[var(--ull-border)] bg-[var(--ull-surface)]">
+      <aside className="flex w-64 flex-col border-r border-[var(--ull-border)] bg-[var(--ull-surface)]">
         <div className="flex items-center justify-between px-3 py-2.5">
           <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("scenes")}</h2>
           {canEdit && (
@@ -93,33 +128,69 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
             </Button>
           )}
         </div>
+        {scenes.length > 6 && (
+          <div className="relative mx-2 mb-2">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--ull-text-dim)]" />
+            <input
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder={t("search")}
+              aria-label={t("search")}
+              className="w-full rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface-2)] py-1.5 pl-8 pr-2 text-[13px] outline-none focus:border-[var(--ull-primary)]"
+            />
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto px-2 pb-2">
-          {scenes.map((scene, i) => {
+          {visible.map((scene) => {
             const lock = locks[scene.id];
             const lockedByOther = lock != null && lock.connectionId !== myConnId;
             const isStart = snapshot.settings.startScene === scene.id;
             return (
               <div
                 key={scene.id}
-                className={`group mb-1 rounded-lg border p-2 ${
+                draggable={canEdit && filter.trim() === ""}
+                onDragStart={(e) => {
+                  setDragId(scene.id);
+                  e.dataTransfer.effectAllowed = "move";
+                }}
+                onDragOver={(e) => {
+                  if (dragId == null || dragId === scene.id) return;
+                  e.preventDefault();
+                  setDropAt(scene.id);
+                }}
+                onDragLeave={() => setDropAt((d) => (d === scene.id ? null : d))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragId != null) reorder(dragId, scene.id);
+                  setDragId(null);
+                  setDropAt(null);
+                }}
+                onDragEnd={() => {
+                  setDragId(null);
+                  setDropAt(null);
+                }}
+                className={`group relative mb-1 rounded-lg border p-2 transition-shadow ${
                   selected?.id === scene.id
                     ? "border-[var(--ull-primary)] bg-[var(--ull-surface-2)]"
                     : "border-transparent hover:bg-[var(--ull-surface-2)]"
-                }`}
+                } ${dropAt === scene.id ? "shadow-[inset_0_2px_0_var(--ull-primary)]" : ""} ${dragId === scene.id ? "opacity-40" : ""}`}
               >
                 <button type="button" className="flex w-full items-center gap-2 text-left" onClick={() => editor.select(scene.id)}>
+                  {canEdit && (
+                    <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-[var(--ull-text-dim)] opacity-0 transition-opacity group-hover:opacity-60" />
+                  )}
                   {scene.mediaId != null ? (
                     <img src={`/api/v1/media/${scene.mediaId}/derived/thumb`} alt="" className="h-9 w-14 rounded object-cover" loading="lazy"
                       onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")} />
                   ) : (
-                    <span className="flex h-9 w-14 items-center justify-center rounded bg-[var(--ull-surface-2)] text-[var(--ull-text-dim)]">
+                    <span className="flex h-9 w-14 shrink-0 items-center justify-center rounded bg-[var(--ull-surface-2)] text-[var(--ull-text-dim)]">
                       <ImageIcon className="h-4 w-4" />
                     </span>
                   )}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-medium">{scene.title}</span>
                     <span className="flex items-center gap-1 text-[11px] text-[var(--ull-text-dim)]">
-                      {isStart && <Badge tone="ok">Inicio</Badge>}
+                      {isStart && <Badge tone="ok">{t("start_scene_badge")}</Badge>}
                       {scene.type !== "image" && <Badge>{scene.type}</Badge>}
                       {lockedByOther && (
                         <Tooltip content={t("scene_locked", { name: lock.name })}>
@@ -130,26 +201,30 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
                   </span>
                 </button>
                 {canEdit && (
-                  <div className="mt-1 hidden justify-end gap-0.5 group-hover:flex">
-                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label="Subir" disabled={i === 0} onClick={() => move(scene.id, -1)}>
-                      <ChevronUp className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label="Bajar" disabled={i === scenes.length - 1} onClick={() => move(scene.id, 1)}>
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("delete")} onClick={() => remove(scene.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                  <div className="absolute right-1.5 top-1.5 hidden gap-0.5 rounded-md bg-[var(--ull-surface)] p-0.5 shadow-sm group-focus-within:flex group-hover:flex">
+                    <Tooltip content={t("duplicate")}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("duplicate")} onClick={() => duplicate(scene.id)}>
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip content={t("delete")}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("delete")} onClick={() => remove(scene.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </Tooltip>
                   </div>
                 )}
               </div>
             );
           })}
           {scenes.length === 0 && <p className="p-3 text-[13px] text-[var(--ull-text-dim)]">{t("add_scene")}</p>}
+          {scenes.length > 0 && visible.length === 0 && (
+            <p className="p-3 text-[13px] text-[var(--ull-text-dim)]">{t("no_results")}</p>
+          )}
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col">
         {selected != null ? (
           <ViewerPane key={selected.id} project={project} sceneId={selected.id} canEdit={canEdit} />
         ) : (
@@ -197,13 +272,14 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
 }
 
 // ---------------------------------------------------------------------------
-// Previsualizacion WYSIWYG (el propio Viewer en modo edicion §3.4)
+// Previsualización WYSIWYG (el propio Viewer en modo edición §3.4)
 // ---------------------------------------------------------------------------
 
 export type PlacementMode =
   | { kind: "none" }
   | { kind: "hotspot"; type: string }
-  | { kind: "polygon"; points: { yaw: number; pitch: number }[] };
+  | { kind: "polygon"; points: { yaw: number; pitch: number }[]; replaceId?: string }
+  | { kind: "corners"; hotspotId: string; points: { yaw: number; pitch: number }[] };
 
 let placementListeners: ((mode: PlacementMode) => void)[] = [];
 let currentPlacement: PlacementMode = { kind: "none" };
@@ -241,6 +317,112 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   const placementRef = useRef(placement);
   placementRef.current = placement;
   const [compiling, setCompiling] = useState(false);
+  const firstMount = useRef(true);
+
+  // Los listeners de colocación viven en el contenedor UNA sola vez, con
+  // AbortController: los remontajes del visor no acumulan duplicados.
+  useEffect(() => {
+    const node = containerRef.current;
+    if (node == null || !canEdit) return;
+    const ac = new AbortController();
+    const coordsFor = (e: MouseEvent): { yaw: number; pitch: number } | null => {
+      const viewer = skinRef.current?.viewer;
+      if (viewer == null) return null;
+      const view = viewer.marzipanoViewer().view();
+      const rect = node.getBoundingClientRect();
+      return view?.screenToCoordinates?.({ x: e.clientX - rect.left, y: e.clientY - rect.top }) ?? null;
+    };
+    const isChrome = (e: MouseEvent): boolean => {
+      const el = e.target as HTMLElement;
+      return el.closest(".ull360-hotspot, .ull360-controls, .ull360-compass, .ull360-loading, button, a") != null;
+    };
+    node.addEventListener(
+      "click",
+      (e) => {
+        const mode = placementRef.current;
+        if (mode.kind === "none" || isChrome(e)) return;
+        const coords = coordsFor(e);
+        if (coords == null) return;
+        e.stopPropagation();
+        if (mode.kind === "hotspot") {
+          const type = mode.type;
+          const id = clientId();
+          editor.apply((draft) => {
+            draft.hotspots.push({
+              id,
+              sceneId,
+              type,
+              positionJson: JSON.stringify({ yaw: coords.yaw, pitch: coords.pitch }),
+              styleJson: null,
+              contentJson: JSON.stringify(defaultContent(type, draft.scenes.filter((s) => s.id !== sceneId)[0]?.id)),
+              conditionsJson: null,
+              sort: draft.hotspots.filter((h) => h.sceneId === sceneId).length,
+            });
+          });
+          editor.select(sceneId, id);
+          setPlacementMode({ kind: "none" });
+        } else if (mode.kind === "corners") {
+          const points = [...mode.points, coords];
+          if (points.length < 4) {
+            setPlacementMode({ kind: "corners", hotspotId: mode.hotspotId, points });
+          } else {
+            editor.apply((draft) => {
+              const h = draft.hotspots.find((x) => x.id === mode.hotspotId);
+              if (h == null) return;
+              const c = h.contentJson != null ? (JSON.parse(h.contentJson) as Record<string, unknown>) : {};
+              h.contentJson = JSON.stringify({ ...c, corners: points });
+            });
+            setPlacementMode({ kind: "none" });
+          }
+        } else {
+          setPlacementMode({ kind: "polygon", points: [...mode.points, coords], replaceId: mode.replaceId });
+        }
+      },
+      { signal: ac.signal },
+    );
+    node.addEventListener(
+      "dblclick",
+      () => {
+        const mode = placementRef.current;
+        if (mode.kind !== "polygon" || mode.points.length < 3) return;
+        if (mode.replaceId != null) {
+          // Redibujar el contorno de un polígono existente
+          editor.apply((draft) => {
+            const h = draft.hotspots.find((x) => x.id === mode.replaceId);
+            if (h == null) return;
+            h.positionJson = JSON.stringify({ yaw: mode.points[0]!.yaw, pitch: mode.points[0]!.pitch, points: mode.points });
+          });
+          editor.select(sceneId, mode.replaceId);
+          setPlacementMode({ kind: "none" });
+          return;
+        }
+        const id = clientId();
+        editor.apply((draft) => {
+          draft.hotspots.push({
+            id,
+            sceneId,
+            type: "polygon",
+            positionJson: JSON.stringify({ yaw: mode.points[0]!.yaw, pitch: mode.points[0]!.pitch, points: mode.points }),
+            styleJson: null,
+            contentJson: JSON.stringify({ altText: "Polígono" }),
+            conditionsJson: null,
+            sort: 0,
+          });
+        });
+        editor.select(sceneId, id);
+        setPlacementMode({ kind: "none" });
+      },
+      { signal: ac.signal },
+    );
+    window.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key === "Escape" && placementRef.current.kind !== "none") setPlacementMode({ kind: "none" });
+      },
+      { signal: ac.signal },
+    );
+    return () => ac.abort();
+  }, [sceneId, canEdit, editor]);
 
   const remount = useCallback(async (): Promise<void> => {
     if (containerRef.current == null) return;
@@ -252,12 +434,16 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
       );
       setIssues(compileIssues);
       skinRef.current?.destroy();
+      skinRef.current = null;
       if (tour.scenes.length === 0) return;
       if (!tour.scenes.some((s) => s.id === sceneId)) {
-        // Escena sin medios aun: nada que previsualizar
+        // Escena sin medios aún: nada que previsualizar
         return;
       }
-      tour.start = { scene: sceneId, intro: "none" };
+      // Tras un guardado, el encuadre se conserva: la vista previa no salta.
+      const view = firstMount.current ? undefined : { ...lastView };
+      firstMount.current = false;
+      tour.start = { scene: sceneId, intro: "none", view };
       const mounted = mountViewer({
         container: containerRef.current,
         tour,
@@ -270,62 +456,21 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
       mounted.viewer.on("viewChange", (v) => {
         lastView = v;
       });
-      // Colocacion de hotspots haciendo clic (§3.4)
-      containerRef.current.addEventListener("click", (e) => {
-        const mode = placementRef.current;
-        if (mode.kind === "none") return;
-        const view = mounted.viewer.marzipanoViewer().view();
-        const rect = containerRef.current!.getBoundingClientRect();
-        const coords = view?.screenToCoordinates?.({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-        if (coords == null) return;
-        e.stopPropagation();
-        if (mode.kind === "hotspot") {
-          const id = clientId();
-          editor.apply((draft) => {
-            draft.hotspots.push({
-              id,
-              sceneId,
-              type: mode.type,
-              positionJson: JSON.stringify({ yaw: coords.yaw, pitch: coords.pitch }),
-              styleJson: null,
-              contentJson: JSON.stringify(defaultContent(mode.type, draft.scenes.filter((s) => s.id !== sceneId)[0]?.id)),
-              conditionsJson: null,
-              sort: draft.hotspots.filter((h) => h.sceneId === sceneId).length,
-            });
-          });
-          editor.select(sceneId, id);
-          setPlacementMode({ kind: "none" });
-        } else if (mode.kind === "polygon") {
-          setPlacementMode({ kind: "polygon", points: [...mode.points, { yaw: coords.yaw, pitch: coords.pitch }] });
-        }
-      });
-      containerRef.current.addEventListener("dblclick", () => {
-        const mode = placementRef.current;
-        if (mode.kind === "polygon" && mode.points.length >= 3) {
-          const id = clientId();
-          editor.apply((draft) => {
-            draft.hotspots.push({
-              id,
-              sceneId,
-              type: "polygon",
-              positionJson: JSON.stringify({
-                yaw: mode.points[0]!.yaw,
-                pitch: mode.points[0]!.pitch,
-                points: mode.points,
-              }),
-              styleJson: null,
-              contentJson: JSON.stringify({ altText: "Poligono" }),
-              conditionsJson: null,
-              sort: 0,
-            });
-          });
-          editor.select(sceneId, id);
-          setPlacementMode({ kind: "none" });
-        }
-      });
-      // Seleccion de hotspot al hacer clic sobre el marcador en modo edicion
+      // Clic sobre un marcador = seleccionarlo (el motor no ejecuta efectos
+      // en editMode: ni navegar, ni abrir enlaces, ni mutar estado).
       mounted.viewer.on("hotspotActivate", (e) => {
         mounted.panelHost.close();
+        editor.select(sceneId, e.hotspot.id);
+      });
+      // Arrastre de marcadores: al soltar se persiste la nueva posición.
+      mounted.viewer.on("hotspotMove", (e) => {
+        if (e.phase !== "end") return;
+        editor.apply((draft) => {
+          const h = draft.hotspots.find((x) => x.id === e.hotspot.id);
+          if (h == null) return;
+          const pos = h.positionJson != null ? (JSON.parse(h.positionJson) as Record<string, unknown>) : {};
+          h.positionJson = JSON.stringify({ ...pos, yaw: e.yaw, pitch: e.pitch });
+        });
         editor.select(sceneId, e.hotspot.id);
       });
     } catch (err) {
@@ -349,49 +494,78 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
     if (saving === "saved" && !dirty) void remount();
   }, [saving, dirty]);
 
+  const scene = editor.snapshot?.scenes.find((s) => s.id === sceneId) ?? null;
+
   return (
-    <div className="relative h-full">
-      <div ref={containerRef} className="absolute inset-0 bg-[#0b1020]" />
-      {placement.kind !== "none" && (
-        <div className="absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-full bg-[var(--ull-primary)] px-4 py-1.5 text-[13px] text-white shadow-lg">
-          {placement.kind === "polygon" ? t("polygon_hint") : t("hotspot_place_hint")}
-          <button type="button" className="ml-3 underline" onClick={() => setPlacementMode({ kind: "none" })}>
-            {t("cancel")}
-          </button>
-        </div>
-      )}
-      {compiling && (
-        <div className="absolute right-3 top-3 z-40 rounded-full bg-black/60 px-3 py-1 text-xs text-white">{t("loading")}</div>
-      )}
-      {issues.length > 0 && (
-        <details className="absolute bottom-3 left-3 z-40 max-w-md rounded-lg bg-black/70 p-2 text-xs text-white">
-          <summary className="cursor-pointer">
-            {t("issues")} ({issues.length})
-          </summary>
-          <ul className="mt-1 max-h-40 space-y-1 overflow-y-auto">
+    <>
+      {/* Barra de herramientas del lienzo: nada flota sobre el visor */}
+      <div className="flex min-h-10 items-center gap-2 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5">
+        {placement.kind !== "none" ? (
+          <span className="flex items-center gap-2 rounded-full bg-[var(--ull-primary-soft)] px-3 py-1 text-[13px] font-medium text-[var(--ull-primary)]">
+            <Crosshair className="h-3.5 w-3.5" />
+            {placement.kind === "polygon"
+              ? `${t("polygon_hint")} (${placement.points.length})`
+              : placement.kind === "corners"
+                ? `${t("corners_click_hint")} (${placement.points.length}/4)`
+                : t("hotspot_place_hint")}
+            <button type="button" aria-label={t("cancel")} className="rounded-full p-0.5 hover:bg-[var(--ull-primary)]/10" onClick={() => setPlacementMode({ kind: "none" })}>
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        ) : (
+          <span className="truncate text-[13px] text-[var(--ull-text-dim)]">{scene?.title}</span>
+        )}
+        <div className="flex-1" />
+        {compiling && <span className="text-xs text-[var(--ull-text-dim)]">{t("loading")}</span>}
+        {issues.length > 0 && <IssuesButton issues={issues} />}
+        {canEdit && (
+          <Tooltip content={t("use_current_view_hint")}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                const v = getCurrentEditorView();
+                editor.apply((draft) => {
+                  const s = draft.scenes.find((x) => x.id === sceneId);
+                  if (s != null) s.initialViewJson = JSON.stringify(v);
+                });
+                toast.push(t("saved"), "ok");
+              }}
+            >
+              <Crosshair className="h-4 w-4" /> {t("use_current_view")}
+            </Button>
+          </Tooltip>
+        )}
+      </div>
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={containerRef}
+          className={`absolute inset-0 bg-[#0b1020] ${placement.kind !== "none" ? "cursor-crosshair" : ""}`}
+        />
+      </div>
+    </>
+  );
+}
+
+function IssuesButton({ issues }: { issues: { severity: string; message: string }[] }): React.ReactNode {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const errors = issues.filter((i) => i.severity === "error").length;
+  return (
+    <div className="relative">
+      <Button size="sm" variant="ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <AlertTriangle className={`h-4 w-4 ${errors > 0 ? "text-red-500" : "text-amber-500"}`} />
+        {t("issues")} ({issues.length})
+      </Button>
+      {open && (
+        <div className="absolute right-0 top-full z-30 mt-1 max-h-64 w-80 overflow-y-auto rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-2 shadow-[var(--ull-shadow-lg)]">
+          <ul className="space-y-1 text-xs">
             {issues.map((issue, i) => (
-              <li key={i} className={issue.severity === "error" ? "text-red-300" : "text-amber-200"}>
+              <li key={i} className={issue.severity === "error" ? "text-red-500" : "text-amber-600"}>
                 {issue.message}
               </li>
             ))}
           </ul>
-        </details>
-      )}
-      {canEdit && (
-        <div className="absolute bottom-3 right-3 z-40">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => {
-              const v = getCurrentEditorView();
-              editor.apply((draft) => {
-                const scene = draft.scenes.find((s) => s.id === sceneId);
-                if (scene != null) scene.initialViewJson = JSON.stringify(v);
-              });
-            }}
-          >
-            <Crosshair className="h-4 w-4" /> {t("use_current_view")}
-          </Button>
         </div>
       )}
     </div>
@@ -403,15 +577,15 @@ function defaultContent(type: string, otherSceneId?: string): Record<string, unk
     case "navigation":
       return { target: otherSceneId ?? "", altText: "Ir a otra escena" };
     case "text":
-      return { body: "Texto...", altText: "Informacion" };
+      return { body: "Texto...", altText: "Información" };
     case "image":
       return { url: "", altText: "Imagen" };
     case "gallery":
-      return { items: [], altText: "Galeria" };
+      return { items: [], altText: "Galería" };
     case "videoFile":
-      return { url: "", mode: "lightbox", altText: "Video" };
+      return { url: "", mode: "lightbox", altText: "Vídeo" };
     case "embedVideo":
-      return { provider: "youtube", videoId: "", nocookie: true, altText: "Video" };
+      return { provider: "youtube", videoId: "", nocookie: true, altText: "Vídeo" };
     case "audio":
       return { url: "", mode: "player", altText: "Audio" };
     case "pdf":
@@ -433,8 +607,8 @@ function defaultContent(type: string, otherSceneId?: string): Record<string, unk
         question: "Pregunta...",
         kind: "single",
         options: [
-          { id: "a", text: "Opcion A", correct: true },
-          { id: "b", text: "Opcion B" },
+          { id: "a", text: "Opción A", correct: true },
+          { id: "b", text: "Opción B" },
         ],
         points: 1,
         altText: "Pregunta",
@@ -444,7 +618,7 @@ function defaultContent(type: string, otherSceneId?: string): Record<string, unk
     case "link":
       return { url: "https://", altText: "Enlace" };
     case "state":
-      return { actions: [{ var: "visitado", op: "set", value: true }], altText: "Accion" };
+      return { actions: [{ var: "visitado", op: "set", value: true }], altText: "Acción" };
     default:
       return {};
   }
