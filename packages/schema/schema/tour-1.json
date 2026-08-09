@@ -1,0 +1,668 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ull360.dev/schema/tour-1.json",
+  "title": "ULL360 Tour",
+  "description": "Formato de tour virtual 360 de ULL360, version 1",
+  "type": "object",
+  "required": ["version", "meta", "start", "scenes"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "meta": {
+      "type": "object",
+      "required": ["title", "defaultLang", "langs"],
+      "properties": {
+        "title": { "$ref": "#/$defs/l10n" },
+        "description": { "$ref": "#/$defs/l10n" },
+        "author": { "type": "string" },
+        "defaultLang": { "type": "string", "minLength": 1 },
+        "langs": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "ogImage": { "type": "string" }
+      }
+    },
+    "start": {
+      "type": "object",
+      "required": ["scene"],
+      "properties": {
+        "scene": { "type": "string" },
+        "view": { "$ref": "#/$defs/view" },
+        "intro": { "enum": ["none", "littlePlanet", "fade"] }
+      }
+    },
+    "scenes": { "type": "array", "items": { "$ref": "#/$defs/scene" }, "minItems": 1 },
+    "connections": { "type": "array", "items": { "$ref": "#/$defs/connection" } },
+    "floorplans": { "type": "array", "items": { "$ref": "#/$defs/floorplan" } },
+    "geoMap": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "tileUrl": { "type": "string" },
+        "attribution": { "type": "string" },
+        "center": {
+          "type": "object",
+          "required": ["lat", "lng"],
+          "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
+        },
+        "zoom": { "type": "number" }
+      }
+    },
+    "ui": { "$ref": "#/$defs/ui" },
+    "controls": {
+      "type": "object",
+      "properties": {
+        "sensitivity": { "type": "number" },
+        "inertia": { "type": "number", "minimum": 0, "maximum": 1 },
+        "invertX": { "type": "boolean" },
+        "invertY": { "type": "boolean" },
+        "wheelZoom": { "type": "boolean" },
+        "gyroAvailable": { "type": "boolean" },
+        "keyboard": { "type": "boolean" },
+        "gamepad": { "type": "boolean" }
+      }
+    },
+    "transition": { "$ref": "#/$defs/transition" },
+    "autorotate": { "$ref": "#/$defs/autorotate" },
+    "autopilot": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "steps"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "$ref": "#/$defs/l10n" },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["scene"],
+              "properties": {
+                "scene": { "type": "string" },
+                "view": { "$ref": "#/$defs/view" },
+                "dwell": { "type": "number" },
+                "rotate": { "type": "number" },
+                "pauseOnHotspots": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          },
+          "resumeAfter": { "type": "number" },
+          "loop": { "type": "boolean" }
+        }
+      }
+    },
+    "variables": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean"] }
+    },
+    "quiz": {
+      "type": "object",
+      "properties": {
+        "passingScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "randomize": { "type": "boolean" },
+        "attempts": { "type": "integer", "minimum": 0 },
+        "finalReport": { "type": "boolean" },
+        "certificate": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "title": { "$ref": "#/$defs/l10n" },
+            "signature": { "type": "string" }
+          }
+        }
+      }
+    },
+    "treasureHunt": {
+      "type": "object",
+      "required": ["enabled", "targets"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "title": { "$ref": "#/$defs/l10n" },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["hotspotId", "sceneId"],
+            "properties": {
+              "hotspotId": { "type": "string" },
+              "sceneId": { "type": "string" },
+              "label": { "$ref": "#/$defs/l10n" }
+            }
+          }
+        },
+        "completionMessage": { "$ref": "#/$defs/l10n" }
+      }
+    },
+    "globalAudio": { "$ref": "#/$defs/audioTrack" },
+    "analytics": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "endpoint": { "type": "string" },
+        "ga4": { "type": "string" },
+        "matomo": {
+          "type": "object",
+          "required": ["url", "siteId"],
+          "properties": { "url": { "type": "string" }, "siteId": { "type": "string" } }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "l10n": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object", "additionalProperties": { "type": "string" } }
+      ]
+    },
+    "view": {
+      "type": "object",
+      "required": ["yaw", "pitch", "fov"],
+      "properties": {
+        "yaw": { "type": "number" },
+        "pitch": { "type": "number", "minimum": -1.5708, "maximum": 1.5708 },
+        "fov": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 3.1416 }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "yawMin": { "type": "number" },
+        "yawMax": { "type": "number" },
+        "pitchMin": { "type": "number" },
+        "pitchMax": { "type": "number" },
+        "fovMin": { "type": "number" },
+        "fovMax": { "type": "number" }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["fade", "zoom", "crossRotate", "cut"] },
+        "duration": { "type": "number", "minimum": 0 },
+        "easing": { "enum": ["linear", "easeIn", "easeOut", "easeInOut"] }
+      }
+    },
+    "autorotate": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "speed": { "type": "number" },
+        "delay": { "type": "number" },
+        "direction": { "enum": ["cw", "ccw"] }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["fixed", "relative", "lookBack"] },
+        "yaw": { "type": "number" },
+        "pitch": { "type": "number" },
+        "fov": { "type": "number" }
+      }
+    },
+    "audioTrack": {
+      "type": "object",
+      "required": ["url"],
+      "properties": {
+        "url": { "type": "string" },
+        "urlByLang": { "type": "object", "additionalProperties": { "type": "string" } },
+        "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "loop": { "type": "boolean" }
+      }
+    },
+    "subtitles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["lang", "url"],
+        "properties": {
+          "lang": { "type": "string" },
+          "label": { "$ref": "#/$defs/l10n" },
+          "url": { "type": "string" }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["kind"],
+      "oneOf": [
+        {
+          "properties": {
+            "kind": { "const": "multires" },
+            "levels": { "type": "integer", "minimum": 1 },
+            "tileSize": { "type": "integer", "minimum": 64 },
+            "faceSize": { "type": "integer", "minimum": 64, "maximum": 8192 },
+            "base": { "type": "string" },
+            "extension": { "type": "string" },
+            "formats": { "type": "array", "items": { "type": "string" } },
+            "preview": { "type": "string" }
+          },
+          "required": ["kind", "levels", "tileSize", "faceSize", "base"]
+        },
+        {
+          "properties": {
+            "kind": { "const": "equirect" },
+            "url": { "type": "string" },
+            "preview": { "type": "string" },
+            "partial": {
+              "type": "object",
+              "required": ["hfov", "vfov"],
+              "properties": {
+                "hfov": { "type": "number" },
+                "vfov": { "type": "number" },
+                "yawOffset": { "type": "number" },
+                "pitchOffset": { "type": "number" }
+              }
+            },
+            "stereo": { "enum": ["mono", "tb", "sbs"] },
+            "hdr": { "type": "boolean" }
+          },
+          "required": ["kind", "url"]
+        },
+        {
+          "properties": {
+            "kind": { "const": "cubemap" },
+            "faces": { "type": "object" },
+            "strip": {
+              "type": "object",
+              "required": ["url", "layout"],
+              "properties": {
+                "url": { "type": "string" },
+                "layout": { "enum": ["horizontal", "vertical"] },
+                "order": { "type": "string" }
+              }
+            },
+            "preview": { "type": "string" }
+          },
+          "required": ["kind"]
+        },
+        {
+          "properties": {
+            "kind": { "const": "flat" },
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 },
+            "tiles": {
+              "type": "object",
+              "required": ["levels", "tileSize", "base"],
+              "properties": {
+                "levels": { "type": "integer" },
+                "tileSize": { "type": "integer" },
+                "base": { "type": "string" },
+                "extension": { "type": "string" }
+              }
+            },
+            "url": { "type": "string" },
+            "preview": { "type": "string" }
+          },
+          "required": ["kind", "width", "height"]
+        },
+        {
+          "properties": {
+            "kind": { "const": "video" },
+            "renditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["url", "type"],
+                "properties": {
+                  "url": { "type": "string" },
+                  "type": { "type": "string" },
+                  "height": { "type": "integer" }
+                }
+              }
+            },
+            "hls": { "type": "string" },
+            "streamUid": { "type": "string" },
+            "stereo": { "enum": ["mono", "tb", "sbs"] },
+            "poster": { "type": "string" },
+            "preview": { "type": "string" },
+            "subtitles": { "$ref": "#/$defs/subtitles" },
+            "autoplay": { "type": "boolean" },
+            "muted": { "type": "boolean" },
+            "loop": { "type": "boolean" },
+            "onEnd": {
+              "type": "object",
+              "required": ["action"],
+              "properties": {
+                "action": { "enum": ["loop", "goto", "hold"] },
+                "target": { "type": "string" }
+              }
+            }
+          },
+          "required": ["kind", "renditions"]
+        }
+      ]
+    },
+    "scene": {
+      "type": "object",
+      "required": ["id", "type", "title", "source", "hotspots"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["image", "video", "flat"] },
+        "title": { "$ref": "#/$defs/l10n" },
+        "description": { "$ref": "#/$defs/l10n" },
+        "altText": { "$ref": "#/$defs/l10n" },
+        "category": { "$ref": "#/$defs/l10n" },
+        "source": { "$ref": "#/$defs/source" },
+        "thumbnail": { "type": "string" },
+        "initialView": { "$ref": "#/$defs/view" },
+        "limits": { "$ref": "#/$defs/limits" },
+        "audio": {
+          "type": "object",
+          "properties": {
+            "ambient": { "$ref": "#/$defs/audioTrack" },
+            "narration": {
+              "allOf": [{ "$ref": "#/$defs/audioTrack" }],
+              "properties": {
+                "blockNavigation": { "type": "boolean" },
+                "transcript": { "$ref": "#/$defs/l10n" },
+                "autoplay": { "type": "boolean" }
+              }
+            },
+            "spatial": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "url", "yaw", "pitch"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "url": { "type": "string" },
+                  "yaw": { "type": "number" },
+                  "pitch": { "type": "number" },
+                  "volume": { "type": "number" },
+                  "loop": { "type": "boolean" },
+                  "radius": { "type": "number" }
+                }
+              }
+            },
+            "crossfade": { "type": "number" }
+          }
+        },
+        "map": {
+          "type": "object",
+          "properties": {
+            "floorplan": { "type": "string" },
+            "x": { "type": "number", "minimum": 0, "maximum": 1 },
+            "y": { "type": "number", "minimum": 0, "maximum": 1 },
+            "north": { "type": "number" },
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "hotspots": { "type": "array", "items": { "$ref": "#/$defs/hotspot" } },
+        "hidden": { "type": "boolean" },
+        "autorotate": {
+          "oneOf": [{ "$ref": "#/$defs/autorotate" }, { "const": false }]
+        }
+      }
+    },
+    "connection": {
+      "type": "object",
+      "required": ["id", "from", "to"],
+      "properties": {
+        "id": { "type": "string" },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "entry": { "$ref": "#/$defs/entry" },
+        "transition": { "$ref": "#/$defs/transition" }
+      }
+    },
+    "floorplan": {
+      "type": "object",
+      "required": ["id", "title", "url"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "$ref": "#/$defs/l10n" },
+        "url": { "type": "string" },
+        "level": { "type": "number" },
+        "width": { "type": "number" },
+        "height": { "type": "number" }
+      }
+    },
+    "hotspotStyle": {
+      "type": "object",
+      "properties": {
+        "icon": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "svg": { "type": "string" },
+            "url": { "type": "string" },
+            "size": { "type": "number" },
+            "color": { "type": "string" },
+            "chip": { "type": "boolean" }
+          }
+        },
+        "distanceScale": { "type": "boolean" },
+        "pulse": { "type": "boolean" },
+        "className": { "type": "string" }
+      }
+    },
+    "conditions": {
+      "type": "object",
+      "properties": {
+        "langs": { "type": "array", "items": { "type": "string" } },
+        "vars": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["var", "op"],
+            "properties": {
+              "var": { "type": "string" },
+              "op": { "enum": ["eq", "ne", "gt", "gte", "lt", "lte", "truthy", "falsy"] },
+              "value": { "type": ["string", "number", "boolean"] }
+            }
+          }
+        },
+        "videoTime": {
+          "type": "object",
+          "required": ["from", "to"],
+          "properties": { "from": { "type": "number" }, "to": { "type": "number" } }
+        }
+      }
+    },
+    "stateAction": {
+      "type": "object",
+      "required": ["var", "op"],
+      "properties": {
+        "var": { "type": "string" },
+        "op": { "enum": ["set", "inc", "dec", "toggle"] },
+        "value": { "type": ["string", "number", "boolean"] }
+      }
+    },
+    "hotspot": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": [
+            "navigation",
+            "text",
+            "image",
+            "gallery",
+            "videoFile",
+            "embedVideo",
+            "audio",
+            "pdf",
+            "model3d",
+            "web",
+            "form",
+            "compare",
+            "quiz",
+            "polygon",
+            "tooltip",
+            "link",
+            "state"
+          ]
+        },
+        "yaw": { "type": "number" },
+        "pitch": { "type": "number" },
+        "label": { "$ref": "#/$defs/l10n" },
+        "labelVisibility": { "enum": ["always", "hover", "never"] },
+        "altText": { "$ref": "#/$defs/l10n" },
+        "style": { "$ref": "#/$defs/hotspotStyle" },
+        "conditions": { "$ref": "#/$defs/conditions" },
+        "tooltip": { "$ref": "#/$defs/l10n" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "navigation" } } },
+          "then": {
+            "required": ["target"],
+            "properties": {
+              "target": { "type": "string" },
+              "entry": { "$ref": "#/$defs/entry" },
+              "transition": { "$ref": "#/$defs/transition" },
+              "variant": { "enum": ["icon", "floorArrow"] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "text" } } },
+          "then": { "required": ["body"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "image" } } },
+          "then": { "required": ["url"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "gallery" } } },
+          "then": { "required": ["items"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "videoFile" } } },
+          "then": { "required": ["url", "mode"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "embedVideo" } } },
+          "then": { "required": ["provider", "videoId"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "audio" } } },
+          "then": { "required": ["url", "mode"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "pdf" } } },
+          "then": { "required": ["url"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "model3d" } } },
+          "then": { "required": ["url", "format"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "web" } } },
+          "then": { "required": ["url"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "form" } } },
+          "then": { "required": ["fields", "destination"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "compare" } } },
+          "then": { "required": ["mode", "before", "after"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "quiz" } } },
+          "then": { "required": ["question", "kind", "options"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "polygon" } } },
+          "then": { "required": ["points"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "tooltip" } } },
+          "then": { "required": ["text"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "link" } } },
+          "then": { "required": ["url"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "state" } } },
+          "then": {
+            "required": ["actions"],
+            "properties": {
+              "actions": { "type": "array", "items": { "$ref": "#/$defs/stateAction" } },
+              "thenGoto": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "titleBar": { "type": "boolean" },
+        "sceneMenu": { "type": "boolean" },
+        "thumbnails": { "type": "boolean" },
+        "compass": { "type": "boolean" },
+        "loadingIndicator": { "type": "boolean" },
+        "zoomControls": { "type": "boolean" },
+        "gyroToggle": { "type": "boolean" },
+        "vr": { "type": "boolean" },
+        "fullscreen": { "type": "boolean" },
+        "share": { "type": "boolean" },
+        "mute": { "type": "boolean" },
+        "help": { "type": "boolean" },
+        "langSelector": { "type": "boolean" },
+        "logo": {
+          "type": "object",
+          "required": ["image"],
+          "properties": { "image": { "type": "string" }, "link": { "type": "string" } }
+        },
+        "watermark": {
+          "type": "object",
+          "required": ["image"],
+          "properties": { "image": { "type": "string" }, "link": { "type": "string" } }
+        },
+        "nadirPatch": {
+          "type": "object",
+          "required": ["image"],
+          "properties": { "image": { "type": "string" }, "size": { "type": "number" } }
+        },
+        "welcome": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "title": { "$ref": "#/$defs/l10n" },
+            "body": { "$ref": "#/$defs/l10n" },
+            "image": { "type": "string" },
+            "startLabel": { "$ref": "#/$defs/l10n" },
+            "showControls": { "type": "boolean" }
+          }
+        },
+        "final": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "title": { "$ref": "#/$defs/l10n" },
+            "body": { "$ref": "#/$defs/l10n" },
+            "cta": {
+              "type": "object",
+              "required": ["label", "url"],
+              "properties": { "label": { "$ref": "#/$defs/l10n" }, "url": { "type": "string" } }
+            }
+          }
+        },
+        "theme": {
+          "type": "object",
+          "properties": {
+            "base": { "enum": ["light", "dark", "auto", "ull"] },
+            "primaryColor": { "type": "string" },
+            "fontFamily": { "type": "string" },
+            "borderRadius": { "type": "string" },
+            "customCss": { "type": "string" }
+          }
+        },
+        "accessibleMode": { "type": "boolean" }
+      }
+    }
+  }
+}
