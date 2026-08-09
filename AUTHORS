@@ -1,0 +1,12 @@
+ULL360 - Plataforma de Tours Virtuales 360
+Titularidad del codigo: Universidad de La Laguna
+
+Desarrollo inicial:
+  Jose Luis Saorin Ferrer
+
+El motor de renderizado multirresolucion integra Marzipano
+(Apache License 2.0, Copyright Google Inc.) como base, con capas
+propias para video 360, WebXR, poligonos, proyecciones adicionales,
+audio espacial y sistema de hotspots.
+
+Los medios de ejemplo incluidos se publican bajo CC BY 4.0.
