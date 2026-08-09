@@ -53,6 +53,11 @@ const REGISTRY: Record<string, IconNode> = {
   "volume-2": Volume2 as IconNode,
 };
 
+/** Permite a la skin (u otros consumidores) registrar iconos adicionales. */
+export function registerIcons(icons: Record<string, IconNode>): void {
+  Object.assign(REGISTRY, icons);
+}
+
 export const DEFAULT_ICON_BY_TYPE: Record<HotspotType, string> = {
   navigation: "arrow-up",
   text: "text",
