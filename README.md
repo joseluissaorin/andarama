@@ -8,6 +8,10 @@ ULL360 se compone de tres piezas:
 2. **ULL360 Viewer** - motor de visualizacion WebGL embebible y exportable como paquete HTML estatico autocontenido.
 3. **ULL360 API** - backend ligero (gestion de proyectos, usuarios, medios, procesado, analitica, colaboracion en tiempo real).
 
+**Demo de referencia**: https://ull360.jlsf2005.workers.dev (tour publico en [/t/campus-de-guajara](https://ull360.jlsf2005.workers.dev/t/campus-de-guajara), documentacion en [/docs](https://ull360.jlsf2005.workers.dev/docs/)).
+
+La trazabilidad completa de la especificacion a la implementacion esta en [REQUIREMENTS.md](REQUIREMENTS.md).
+
 ## Objetivos de despliegue
 
 - **Cloudflare "un comando"**: toda la plataforma (frontend, API, base de datos, almacenamiento, colas, tiempo real, analitica) corre sobre Workers, D1, R2, KV, Durable Objects, Queues y Workers Analytics Engine, dentro del free tier para usos pequenos y medios.
