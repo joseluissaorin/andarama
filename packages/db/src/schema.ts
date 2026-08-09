@@ -260,6 +260,8 @@ export const media = sqliteTable(
     filename: text("filename").notNull(),
     mime: text("mime").notNull(),
     folder: text("folder"),
+    /** Tour al que pertenece el medio (opcional; la biblioteca se organiza por tour). */
+    projectId: text("project_id"),
     sha256: text("sha256"),
     bytes: integer("bytes").notNull().default(0),
     width: integer("width"),
@@ -339,6 +341,8 @@ export const publications = sqliteTable(
     passwordHash: text("password_hash"),
     /** JSON: allowlist de dominios de embebido (frame-ancestors / Referer). */
     domainsJson: text("domains_json"),
+    /** Dominio propio (CNAME) bajo el que se sirve el tour en la raiz. */
+    customDomain: text("custom_domain"),
     publishAt: integer("publish_at"),
     expireAt: integer("expire_at"),
     ltiJson: text("lti_json"),

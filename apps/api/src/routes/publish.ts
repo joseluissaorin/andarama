@@ -39,6 +39,12 @@ const publishSchema = z.object({
   visibility: z.enum(["public", "unlisted", "password", "org", "domains"]).default("public"),
   password: z.string().min(4).max(100).optional(),
   domains: z.array(z.string().max(200)).optional(),
+  customDomain: z
+    .string()
+    .max(200)
+    .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i, "Dominio no válido")
+    .nullable()
+    .optional(),
   publishAt: z.number().optional(),
   expireAt: z.number().optional(),
   note: z.string().max(500).optional(),
@@ -107,6 +113,22 @@ export function publishRoutes(): Hono<AppEnv> {
     const passwordHash =
       body.password != null ? await runtime.passwords.hash(body.password) : (existingPub?.passwordHash ?? null);
 
+    // Dominio propio: unicidad + mapeo host->slug en KV para resolucion rapida
+    const customDomain =
+      body.customDomain === undefined ? (existingPub?.customDomain ?? null) : body.customDomain?.toLowerCase() ?? null;
+    if (customDomain != null) {
+      const domainOwner = (await db.select().from(publications).where(eq(publications.customDomain, customDomain)).limit(1))[0];
+      if (domainOwner != null && domainOwner.projectId !== access.project.id) {
+        throw conflict("Ese dominio ya está en uso por otra publicación");
+      }
+    }
+    if (existingPub?.customDomain != null && existingPub.customDomain !== customDomain) {
+      await runtime.kv.delete(`domain:${existingPub.customDomain}`);
+    }
+    if (customDomain != null) {
+      await runtime.kv.put(`domain:${customDomain}`, slug);
+    }
+
     const settings = parseJson<Record<string, unknown>>(access.project.settingsJson, {});
     const pointer: PublicationPointer = {
       version: number,
@@ -135,6 +157,7 @@ export function publishRoutes(): Hono<AppEnv> {
           visibility: body.visibility,
           passwordHash,
           domainsJson: body.domains != null ? JSON.stringify(body.domains) : existingPub.domainsJson,
+          customDomain,
           publishAt: body.publishAt ?? null,
           expireAt: body.expireAt ?? null,
           publishedAt: nowMs(),
@@ -149,6 +172,7 @@ export function publishRoutes(): Hono<AppEnv> {
         visibility: body.visibility,
         passwordHash,
         domainsJson: body.domains != null ? JSON.stringify(body.domains) : null,
+        customDomain,
         publishAt: body.publishAt ?? null,
         expireAt: body.expireAt ?? null,
         publishedAt: nowMs(),
@@ -178,6 +202,7 @@ export function publishRoutes(): Hono<AppEnv> {
     if (pub == null) throw notFound("El proyecto no esta publicado");
     await runtime.storage.delete(`pub/${pub.slug}/current.json`);
     await runtime.kv.delete(`pub:${pub.slug}`);
+    if (pub.customDomain != null) await runtime.kv.delete(`domain:${pub.customDomain}`);
     await db.delete(publications).where(eq(publications.projectId, access.project.id));
     await db.update(projects).set({ status: "draft", updatedAt: nowMs() }).where(eq(projects.id, access.project.id));
     await audit(c, "project.unpublish", "project", access.project.id, { slug: pub.slug }, access.project.orgId);

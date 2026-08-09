@@ -17,8 +17,43 @@ import type { PublicationPointer } from "./publish.js";
  * publico, no listado, contrasena, organizacion, dominios de embebido.
  */
 
+/** Web component embebible: <script src=".../embed.js"></script> + <ull360-tour slug="..."> */
+const EMBED_JS = `(() => {
+  const scriptOrigin = (() => { try { return new URL(document.currentScript.src).origin; } catch { return ""; } })();
+  class Ull360Tour extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot != null) return;
+      const slug = this.getAttribute("slug");
+      const src = this.getAttribute("src") ?? (slug != null ? scriptOrigin + "/t/" + encodeURIComponent(slug) : null);
+      if (src == null) return;
+      const rawAspect = this.getAttribute("aspect") ?? "16/9";
+      const aspect = /^\\d{1,3}\\s*\\/\\s*\\d{1,3}$/.test(rawAspect) ? rawAspect : "16/9";
+      const root = this.attachShadow({ mode: "open" });
+      const style = document.createElement("style");
+      style.textContent = ":host{display:block;width:100%}iframe{width:100%;aspect-ratio:" + aspect + ";border:0;border-radius:12px;display:block;background:#0b1020}";
+      const iframe = document.createElement("iframe");
+      iframe.src = src;
+      iframe.allow = "fullscreen; gyroscope; accelerometer; xr-spatial-tracking";
+      iframe.allowFullscreen = true;
+      iframe.loading = "lazy";
+      iframe.title = this.getAttribute("title") ?? "Tour virtual 360";
+      root.append(style, iframe);
+    }
+  }
+  if (customElements.get("ull360-tour") == null) customElements.define("ull360-tour", Ull360Tour);
+})();
+`;
+
 export function tourRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
+
+  r.get("/embed.js", (c) =>
+    c.body(EMBED_JS, 200, {
+      "content-type": "text/javascript; charset=utf-8",
+      "cache-control": "public, max-age=86400",
+      "access-control-allow-origin": "*",
+    }),
+  );
 
   const loadPointer = async (c: any, slug: string): Promise<PublicationPointer | null> => {
     const runtime = c.get("runtime");

@@ -123,10 +123,33 @@ async function main(): Promise<void> {
     {
       fetch: async (request: Request) => {
         const url = new URL(request.url);
-        if (url.pathname === "/") {
+        // Dominio propio (CNAME/proxy): host distinto del canonico -> tour en la raiz
+        let effectiveRequest = request;
+        const canonicalHost = (() => {
+          try {
+            return new URL(publicUrl).host;
+          } catch {
+            return url.host;
+          }
+        })();
+        if (url.host !== canonicalHost) {
+          const p = url.pathname;
+          const passthrough =
+            p.startsWith("/api/") || p.startsWith("/viewer/") || p.startsWith("/ingest/") || p.startsWith("/studio") ||
+            p.startsWith("/rt/") || p.startsWith("/docs") || p.startsWith("/t/") || p.startsWith("/embed.js");
+          if (!passthrough) {
+            const slug = await runtime.kv.get(`domain:${url.host}`);
+            if (slug != null) {
+              const rewritten = new URL(url.toString());
+              rewritten.pathname = `/t/${slug}${p === "/" ? "" : p}`;
+              effectiveRequest = new Request(rewritten.toString(), request);
+            }
+          }
+        }
+        if (new URL(effectiveRequest.url).pathname === "/") {
           return Response.redirect(`${publicUrl}/studio/`, 302);
         }
-        const response = await app.fetch(request);
+        const response = await app.fetch(effectiveRequest);
         if (response.status === 404 && request.method === "GET" && !url.pathname.startsWith("/api/")) {
           const asset = await serveStatic(assetRoots, url.pathname);
           if (asset != null) return asset;

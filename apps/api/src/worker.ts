@@ -158,11 +158,35 @@ export default {
       },
     });
 
-    if (url.pathname === "/") {
+    // Dominio propio (CNAME): un host distinto del canonico sirve su tour en la raiz
+    let effectiveRequest = request;
+    const canonicalHost = (() => {
+      try {
+        return new URL(publicUrl).host;
+      } catch {
+        return url.host;
+      }
+    })();
+    if (url.host !== canonicalHost) {
+      const p = url.pathname;
+      const passthrough =
+        p.startsWith("/api/") || p.startsWith("/viewer/") || p.startsWith("/ingest/") || p.startsWith("/studio") ||
+        p.startsWith("/rt/") || p.startsWith("/docs") || p.startsWith("/t/") || p.startsWith("/embed.js");
+      if (!passthrough) {
+        const slug = await env.KV.get(`domain:${url.host}`);
+        if (slug != null) {
+          const rewritten = new URL(url.toString());
+          rewritten.pathname = `/t/${slug}${p === "/" ? "" : p}`;
+          effectiveRequest = new Request(rewritten.toString(), request);
+        }
+      }
+    }
+
+    if (new URL(effectiveRequest.url).pathname === "/") {
       return Response.redirect(`${publicUrl}/studio/`, 302);
     }
 
-    const response = await app.fetch(request, env as never, ctx as never);
+    const response = await app.fetch(effectiveRequest, env as never, ctx as never);
     // Rutas no manejadas: assets estaticos (Studio + visor)
     if (response.status === 404 && env.ASSETS != null && request.method === "GET" && !url.pathname.startsWith("/api/")) {
       const assetRes = await env.ASSETS.fetch(request);

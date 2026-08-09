@@ -1,10 +1,11 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { desc, eq, isNull, sql } from "drizzle-orm";
-import { auditLog, jobs, media, orgs, projects, publications, users, webhooks } from "@ull360/db";
+import { auditLog, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@ull360/db";
 import type { AppEnv } from "../lib/context.js";
-import { badRequest, forbidden, notFound } from "../lib/errors.js";
-import { newId, nowMs, parseJson } from "../lib/util.js";
+import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
+import { hmacSign } from "@ull360/adapters";
+import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
 import { isInstanceAdmin } from "../lib/authz.js";
 import { audit, getSettings, saveSettings } from "../lib/helpers.js";
@@ -80,6 +81,40 @@ export function adminRoutes(): Hono<AppEnv> {
     );
   });
 
+  /** Alta de usuario desde el panel (con contraseña temporal). */
+  r.post("/users", async (c) => {
+    const db = c.get("db");
+    const runtime = c.get("runtime");
+    const body = z
+      .object({
+        email: z.string().email(),
+        name: z.string().min(1).max(120),
+        password: z.string().min(10).max(200),
+        roleGlobal: z.enum(["admin", "user"]).default("user"),
+        orgId: z.string().optional(),
+        orgRole: z.enum(["admin", "editor", "collaborator", "reader"]).default("editor"),
+      })
+      .parse(await c.req.json());
+    const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, body.email.toLowerCase())).limit(1);
+    if (existing[0] != null) throw conflict("Ya existe un usuario con ese email");
+    const id = newId();
+    await db.insert(users).values({
+      id,
+      email: body.email.toLowerCase(),
+      name: body.name,
+      passwordHash: await runtime.passwords.hash(body.password),
+      roleGlobal: body.roleGlobal,
+      emailVerified: true,
+      createdAt: nowMs(),
+      updatedAt: nowMs(),
+    });
+    if (body.orgId != null) {
+      await db.insert(orgMembers).values({ orgId: body.orgId, userId: id, role: body.orgRole, createdAt: nowMs() });
+    }
+    await audit(c, "admin.user_create", "user", id, { email: body.email, roleGlobal: body.roleGlobal });
+    return c.json({ id }, 201);
+  });
+
   r.patch("/users/:userId", async (c) => {
     const db = c.get("db");
     const userId = c.req.param("userId");
@@ -121,10 +156,45 @@ export function adminRoutes(): Hono<AppEnv> {
     return c.json(rows.map((o) => ({ ...o, usedBytes: usageMap.get(o.id) ?? 0 })));
   });
 
+  /** Alta de organización desde el panel. */
+  r.post("/orgs", async (c) => {
+    const db = c.get("db");
+    const body = z
+      .object({
+        name: z.string().min(1).max(120),
+        ownerUserId: z.string().optional(),
+        quotaBytes: z.number().int().positive().optional(),
+        quotaTours: z.number().int().positive().optional(),
+      })
+      .parse(await c.req.json());
+    const id = newId();
+    let slug = slugify(body.name);
+    const taken = await db.select({ id: orgs.id }).from(orgs).where(eq(orgs.slug, slug)).limit(1);
+    if (taken[0] != null) slug = `${slug}-${id.slice(0, 5)}`;
+    const settings = await getSettings(db);
+    await db.insert(orgs).values({
+      id,
+      name: body.name,
+      slug,
+      quotaBytes: body.quotaBytes ?? settings.defaultQuotaBytes ?? 5368709120,
+      quotaTours: body.quotaTours ?? settings.defaultQuotaTours ?? 100,
+      createdAt: nowMs(),
+    });
+    if (body.ownerUserId != null) {
+      await db.insert(orgMembers).values({ orgId: id, userId: body.ownerUserId, role: "admin", createdAt: nowMs() });
+    }
+    await audit(c, "admin.org_create", "org", id, { name: body.name });
+    return c.json({ id, slug }, 201);
+  });
+
   r.patch("/orgs/:orgId", async (c) => {
     const db = c.get("db");
     const body = z
-      .object({ quotaBytes: z.number().int().positive().optional(), quotaTours: z.number().int().positive().optional() })
+      .object({
+        name: z.string().min(1).max(120).optional(),
+        quotaBytes: z.number().int().positive().optional(),
+        quotaTours: z.number().int().positive().optional(),
+      })
       .parse(await c.req.json());
     await db.update(orgs).set(body).where(eq(orgs.id, c.req.param("orgId")));
     await audit(c, "admin.org_quota", "org", c.req.param("orgId"), body);
@@ -140,6 +210,21 @@ export function adminRoutes(): Hono<AppEnv> {
       .from(publications)
       .innerJoin(projects, eq(publications.projectId, projects.id));
     return c.json(rows.map(({ pub, title, orgId }) => ({ ...pub, title, orgId })));
+  });
+
+  /** Despublicar desde el panel (el admin de instancia no necesita ser miembro). */
+  r.post("/publications/:projectId/unpublish", async (c) => {
+    const db = c.get("db");
+    const runtime = c.get("runtime");
+    const projectId = c.req.param("projectId");
+    const pub = (await db.select().from(publications).where(eq(publications.projectId, projectId)).limit(1))[0];
+    if (pub == null) throw notFound("El proyecto no está publicado");
+    await runtime.storage.delete(`pub/${pub.slug}/current.json`);
+    await runtime.kv.delete(`pub:${pub.slug}`);
+    await db.delete(publications).where(eq(publications.projectId, projectId));
+    await db.update(projects).set({ status: "draft", updatedAt: nowMs() }).where(eq(projects.id, projectId));
+    await audit(c, "admin.unpublish", "project", projectId, { slug: pub.slug });
+    return c.json({ ok: true });
   });
 
   // ------- Cola de trabajos -------
@@ -196,6 +281,32 @@ export function adminRoutes(): Hono<AppEnv> {
       createdAt: nowMs(),
     });
     return c.json({ id }, 201);
+  });
+
+  /** Activar/desactivar un webhook sin borrarlo. */
+  r.patch("/webhooks/:id", async (c) => {
+    const body = z.object({ active: z.boolean() }).parse(await c.req.json());
+    await c.get("db").update(webhooks).set({ active: body.active }).where(eq(webhooks.id, c.req.param("id")));
+    return c.json({ ok: true });
+  });
+
+  /** Envío de prueba: verifica URL, conectividad y firma. */
+  r.post("/webhooks/:id/test", async (c) => {
+    const db = c.get("db");
+    const hook = (await db.select().from(webhooks).where(eq(webhooks.id, c.req.param("id"))).limit(1))[0];
+    if (hook == null) throw notFound();
+    const body = JSON.stringify({ event: "test", at: nowMs(), message: "Envío de prueba de ULL360" });
+    const signature = hook.secret != null ? await hmacSign(hook.secret, body) : undefined;
+    try {
+      const res = await fetch(hook.url, {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(signature != null ? { "x-ull360-signature": signature } : {}) },
+        body,
+      });
+      return c.json({ ok: res.ok, status: res.status });
+    } catch (err) {
+      return c.json({ ok: false, status: 0, error: String(err instanceof Error ? err.message : err) });
+    }
   });
 
   r.delete("/webhooks/:id", async (c) => {

@@ -1,11 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState } from "react";
-import { FileAudio, FileBox, FileImage, FileText, FileVideo, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
-import { Badge, Button, Dialog, EmptyState, Input, Select, Spinner, useToast } from "@ull360/ui";
-import { api } from "../api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Camera, FileAudio, FileBox, FileImage, FileText, FileVideo, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
+import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@ull360/ui";
+import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { uploadMedia, type MediaKind, type UploadProgress } from "../upload";
+import { ImportWizard } from "./ImportWizard";
 
 export interface MediaItem {
   id: string;
@@ -13,6 +14,7 @@ export interface MediaItem {
   filename: string;
   mime: string;
   folder: string | null;
+  projectId: string | null;
   bytes: number;
   width: number | null;
   height: number | null;
@@ -55,14 +57,59 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
   const queryClient = useQueryClient();
   const [kind, setKind] = useState(kindFilter ?? "");
   const [search, setSearch] = useState("");
+  const [searchQ, setSearchQ] = useState("");
+  const [project, setProject] = useState("");
+  const [order, setOrder] = useState("recent");
   const [uploads, setUploads] = useState<Record<string, UploadProgress & { name: string }>>({});
   const [detail, setDetail] = useState<MediaItem | null>(null);
+  const [renaming, setRenaming] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [wizardOpen, setWizardOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const fullPage = onSelect == null;
+
+  // Búsqueda con debounce: una petición por pausa, no por tecla
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQ(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const projects = useQuery({
+    queryKey: ["projects", orgId],
+    queryFn: () => api<{ id: string; title: string }[]>(`/projects?org=${orgId}`),
+    enabled: fullPage,
+  });
 
   const list = useQuery({
-    queryKey: ["media", orgId, kind, search],
-    queryFn: () => api<MediaItem[]>(`/media?org=${orgId}${kind !== "" ? `&kind=${kind}` : ""}${search !== "" ? `&q=${encodeURIComponent(search)}` : ""}`),
+    queryKey: ["media", orgId, kind, searchQ, project, order],
+    queryFn: () =>
+      api<MediaItem[]>(
+        `/media?org=${orgId}${kind !== "" ? `&kind=${kind}` : ""}${searchQ !== "" ? `&q=${encodeURIComponent(searchQ)}` : ""}${project !== "" ? `&project=${project}` : ""}&order=${order}`,
+      ),
   });
+
+  const removeMedia = async (ids: string[]): Promise<void> => {
+    if (!confirm(t("confirm_delete_media", { count: String(ids.length) }))) return;
+    for (const id of ids) {
+      try {
+        await api(`/media/${id}`, { method: "DELETE" });
+      } catch (err) {
+        toast.push(err instanceof ApiRequestError ? (err.detail ?? err.title) : String(err), "error");
+      }
+    }
+    setSelected(new Set());
+    setDetail(null);
+    void queryClient.invalidateQueries({ queryKey: ["media"] });
+  };
+
+  const assignProject = async (ids: string[], projectId: string | null): Promise<void> => {
+    for (const id of ids) {
+      await api(`/media/${id}`, { method: "PATCH", body: { projectId } });
+    }
+    setSelected(new Set());
+    void queryClient.invalidateQueries({ queryKey: ["media"] });
+    toast.push(t("saved"), "ok");
+  };
 
   const doUpload = useCallback(
     async (files: FileList | File[]): Promise<void> => {
@@ -97,7 +144,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
         <Input placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-52" aria-label={t("search")} />
         {kindFilter == null && (
           <Select value={kind} onChange={(e) => setKind(e.target.value)} className="max-w-44" aria-label={t("type")}>
-            <option value="">*</option>
+            <option value="">{t("all_kinds")}</option>
             {["panorama", "image", "video", "audio", "pdf", "model", "floorplan", "subtitle", "file"].map((k) => (
               <option key={k} value={k}>
                 {t(`media_kind_${k}`)}
@@ -105,7 +152,27 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             ))}
           </Select>
         )}
+        {fullPage && (
+          <Select value={project} onChange={(e) => setProject(e.target.value)} className="max-w-48" aria-label={t("filter_by_tour")}>
+            <option value="">{t("all_tours")}</option>
+            <option value="none">{t("without_tour")}</option>
+            {(projects.data ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </Select>
+        )}
+        <Select value={order} onChange={(e) => setOrder(e.target.value)} className="max-w-36" aria-label={t("sort_by")}>
+          <option value="recent">{t("sort_recent")}</option>
+          <option value="name">{t("sort_name")}</option>
+        </Select>
         <div className="flex-1" />
+        {fullPage && (
+          <Button variant="outline" onClick={() => setWizardOpen(true)}>
+            <Camera className="h-4 w-4" /> {t("import_wizard")}
+          </Button>
+        )}
         <Button onClick={() => fileInput.current?.click()}>
           <UploadCloud className="h-4 w-4" /> {t("upload")}
         </Button>
@@ -149,33 +216,97 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {(list.data ?? []).map((m) => (
-            <button
+            <div
               key={m.id}
-              type="button"
-              className="group overflow-hidden rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] text-left shadow-sm transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--ull-primary)]"
-              onClick={() => (onSelect != null ? onSelect(m) : setDetail(m))}
+              className={`group relative overflow-hidden rounded-xl border bg-[var(--ull-surface)] text-left shadow-sm transition-shadow hover:shadow-md ${
+                selected.has(m.id) ? "border-[var(--ull-primary)] ring-1 ring-[var(--ull-primary)]" : "border-[var(--ull-border)]"
+              }`}
             >
-              <div className="flex h-28 items-center justify-center bg-[var(--ull-surface-2)]">
-                {m.derivatives.some((d) => d.kind === "thumb") ? (
-                  <img src={`/api/v1/media/${m.id}/derived/thumb`} alt="" className="h-full w-full object-cover" loading="lazy" />
-                ) : m.kind === "image" || m.kind === "floorplan" ? (
-                  <img src={`/api/v1/media/${m.id}/file`} alt="" className="h-full w-full object-cover" loading="lazy" />
-                ) : (
-                  <span className="text-[var(--ull-text-dim)]">{KIND_ICONS[m.kind] ?? <FileText className="h-5 w-5" />}</span>
-                )}
-              </div>
-              <div className="p-2.5">
-                <p className="truncate text-[13px] font-medium">{m.filename}</p>
-                <div className="mt-1 flex items-center gap-1.5">
-                  <Badge>{t(`media_kind_${m.kind}`)}</Badge>
-                  {m.status === "processing" && <Badge tone="warn">{t("processing")}</Badge>}
-                  {m.status === "error" && <Badge tone="danger">{t("error")}</Badge>}
+              <button
+                type="button"
+                className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--ull-primary)]"
+                onClick={() => {
+                  if (onSelect != null) onSelect(m);
+                  else {
+                    setDetail(m);
+                    setRenaming(m.filename);
+                  }
+                }}
+              >
+                <div className="flex h-28 items-center justify-center bg-[var(--ull-surface-2)]">
+                  {m.derivatives.some((d) => d.kind === "thumb") ? (
+                    <img src={`/api/v1/media/${m.id}/derived/thumb`} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  ) : m.kind === "image" || m.kind === "floorplan" ? (
+                    <img src={`/api/v1/media/${m.id}/file`} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  ) : (
+                    <span className="text-[var(--ull-text-dim)]">{KIND_ICONS[m.kind] ?? <FileText className="h-5 w-5" />}</span>
+                  )}
                 </div>
-              </div>
-            </button>
+                <div className="p-2.5">
+                  <p className="truncate text-[13px] font-medium">{m.filename}</p>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <Badge>{t(`media_kind_${m.kind}`)}</Badge>
+                    {fullPage && m.projectId != null && (
+                      <Badge tone="ok">{projects.data?.find((p) => p.id === m.projectId)?.title ?? t("tour")}</Badge>
+                    )}
+                    {m.status === "processing" && <Badge tone="warn">{t("processing")}</Badge>}
+                    {m.status === "error" && <Badge tone="danger">{t("error")}</Badge>}
+                  </div>
+                </div>
+              </button>
+              {fullPage && (
+                <input
+                  type="checkbox"
+                  aria-label={t("select_item", { name: m.filename })}
+                  checked={selected.has(m.id)}
+                  onChange={(e) => {
+                    setSelected((prev) => {
+                      const next = new Set(prev);
+                      if (e.target.checked) next.add(m.id);
+                      else next.delete(m.id);
+                      return next;
+                    });
+                  }}
+                  className={`absolute left-2 top-2 h-4 w-4 accent-[var(--ull-primary)] ${selected.size > 0 ? "" : "opacity-0 transition-opacity focus:opacity-100 group-hover:opacity-100"}`}
+                />
+              )}
+            </div>
           ))}
         </div>
       )}
+
+      {/* Barra de acciones por lotes */}
+      {fullPage && selected.size > 0 && (
+        <div className="sticky bottom-4 mt-4 flex items-center gap-3 rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5 shadow-[var(--ull-shadow-lg)]">
+          <span className="text-sm font-medium">{t("n_selected", { count: String(selected.size) })}</span>
+          <Select
+            value=""
+            aria-label={t("assign_to_tour")}
+            className="max-w-52"
+            onChange={(e) => {
+              if (e.target.value === "") return;
+              void assignProject([...selected], e.target.value === "none" ? null : e.target.value);
+            }}
+          >
+            <option value="">{t("assign_to_tour")}</option>
+            <option value="none">{t("without_tour")}</option>
+            {(projects.data ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </Select>
+          <div className="flex-1" />
+          <Button variant="danger" size="sm" onClick={() => void removeMedia([...selected])}>
+            <Trash2 className="h-4 w-4" /> {t("delete")}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+            {t("cancel")}
+          </Button>
+        </div>
+      )}
+
+      {fullPage && <ImportWizard orgId={orgId} open={wizardOpen} onClose={() => setWizardOpen(false)} />}
 
       <Dialog
         open={detail != null}
@@ -185,15 +316,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
         title={detail?.filename ?? ""}
         footer={
           detail != null ? (
-            <Button
-              variant="danger"
-              onClick={() => {
-                void api(`/media/${detail.id}`, { method: "DELETE" }).then(() => {
-                  setDetail(null);
-                  void queryClient.invalidateQueries({ queryKey: ["media"] });
-                });
-              }}
-            >
+            <Button variant="danger" onClick={() => void removeMedia([detail.id])}>
               <Trash2 className="h-4 w-4" /> {t("delete")}
             </Button>
           ) : undefined
@@ -204,6 +327,45 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             {detail.derivatives.some((d) => d.kind === "thumb") && (
               <img src={`/api/v1/media/${detail.id}/derived/thumb`} alt="" className="w-full rounded-lg" />
             )}
+            <Field label={t("name")} htmlFor="md-name">
+              <div className="flex gap-1.5">
+                <Input id="md-name" value={renaming} onChange={(e) => setRenaming(e.target.value)} />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={renaming.trim() === "" || renaming === detail.filename}
+                  onClick={() => {
+                    void api(`/media/${detail.id}`, { method: "PATCH", body: { filename: renaming.trim() } }).then(() => {
+                      setDetail({ ...detail, filename: renaming.trim() });
+                      void queryClient.invalidateQueries({ queryKey: ["media"] });
+                      toast.push(t("saved"), "ok");
+                    });
+                  }}
+                >
+                  {t("rename")}
+                </Button>
+              </div>
+            </Field>
+            <Field label={t("tour")} htmlFor="md-project">
+              <Select
+                id="md-project"
+                value={detail.projectId ?? ""}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? null : e.target.value;
+                  void api(`/media/${detail.id}`, { method: "PATCH", body: { projectId: value } }).then(() => {
+                    setDetail({ ...detail, projectId: value });
+                    void queryClient.invalidateQueries({ queryKey: ["media"] });
+                  });
+                }}
+              >
+                <option value="">{t("without_tour")}</option>
+                {(projects.data ?? []).map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </Select>
+            </Field>
             <p>
               <span className="text-[var(--ull-text-dim)]">{t("type")}:</span> {t(`media_kind_${detail.kind}`)} ({detail.mime})
             </p>
@@ -217,7 +379,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             </p>
             {detail.duration != null && (
               <p>
-                <span className="text-[var(--ull-text-dim)]">Duracion:</span> {Math.round(detail.duration)} s
+                <span className="text-[var(--ull-text-dim)]">{t("duration")}:</span> {Math.round(detail.duration)} s
               </p>
             )}
             {detail.exif?.gps != null && (

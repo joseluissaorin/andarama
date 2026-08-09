@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { jobs, media, mediaDerivatives, orgs } from "@ull360/db";
+import { hotspots, jobs, media, mediaDerivatives, orgs, scenes } from "@ull360/db";
 import { verifyUploadUrl } from "@ull360/adapters";
 import type { AppEnv } from "../lib/context.js";
-import { badRequest, forbidden, notFound, payloadTooLarge } from "../lib/errors.js";
+import { badRequest, conflict, forbidden, notFound, payloadTooLarge } from "../lib/errors.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
@@ -19,8 +19,15 @@ const createSchema = z.object({
   mime: z.string().max(100),
   bytes: z.number().int().positive(),
   folder: z.string().max(120).optional(),
+  projectId: z.string().optional(),
   sha256: z.string().length(64).optional(),
   multipart: z.boolean().optional(),
+});
+
+const patchSchema = z.object({
+  filename: z.string().min(1).max(200).optional(),
+  folder: z.string().max(120).nullable().optional(),
+  projectId: z.string().nullable().optional(),
 });
 
 export function mediaRoutes(): Hono<AppEnv> {
@@ -35,6 +42,8 @@ export function mediaRoutes(): Hono<AppEnv> {
     await requireOrgRole(db, orgId, auth.user, "reader");
     const kind = c.req.query("kind");
     const folder = c.req.query("folder");
+    const projectId = c.req.query("project");
+    const order = c.req.query("order") ?? "recent";
     const search = c.req.query("q")?.toLowerCase();
     let rows = await db
       .select()
@@ -42,7 +51,11 @@ export function mediaRoutes(): Hono<AppEnv> {
       .where(and(eq(media.orgId, orgId), isNull(media.deletedAt)));
     if (kind != null && kind !== "") rows = rows.filter((m) => m.kind === kind);
     if (folder != null) rows = rows.filter((m) => (m.folder ?? "") === folder);
+    if (projectId != null && projectId !== "") {
+      rows = projectId === "none" ? rows.filter((m) => m.projectId == null) : rows.filter((m) => m.projectId === projectId);
+    }
     if (search != null && search !== "") rows = rows.filter((m) => m.filename.toLowerCase().includes(search));
+    rows.sort(order === "name" ? (a, b) => a.filename.localeCompare(b.filename, "es") : (a, b) => b.createdAt - a.createdAt);
     const ids = rows.map((m) => m.id);
     const ders = ids.length > 0
       ? await db.select().from(mediaDerivatives).where(sql`${mediaDerivatives.mediaId} IN ${ids}`)
@@ -101,6 +114,7 @@ export function mediaRoutes(): Hono<AppEnv> {
       filename: body.filename,
       mime: body.mime,
       folder: body.folder ?? null,
+      projectId: body.projectId ?? null,
       sha256: body.sha256 ?? null,
       bytes: body.bytes,
       r2Key: key,
@@ -322,11 +336,49 @@ export function mediaRoutes(): Hono<AppEnv> {
     });
   });
 
+  /** Renombrar, mover de carpeta o asignar a un tour. */
+  r.patch("/:mediaId", async (c) => {
+    const auth = requireAuth(c);
+    requireScope(auth, "media:write");
+    const db = c.get("db");
+    const row = await ownedMedia(c, auth, c.req.param("mediaId"));
+    const body = patchSchema.parse(await c.req.json());
+    const patch: Record<string, unknown> = {};
+    if (body.filename != null) patch.filename = body.filename;
+    if (body.folder !== undefined) patch.folder = body.folder;
+    if (body.projectId !== undefined) patch.projectId = body.projectId;
+    if (Object.keys(patch).length > 0) await db.update(media).set(patch).where(eq(media.id, row.id));
+    await audit(c, "media.update", "media", row.id, patch, row.orgId);
+    return c.json({ ok: true });
+  });
+
   r.delete("/:mediaId", async (c) => {
     const auth = requireAuth(c);
     const db = c.get("db");
     const runtime = c.get("runtime");
     const row = await ownedMedia(c, auth, c.req.param("mediaId"));
+
+    // Borrado seguro: un medio referenciado por escenas u hotspots no se
+    // destruye (romperia tours de forma irreversible).
+    const refScenes = await db
+      .select({ id: scenes.id, title: scenes.title, projectId: scenes.projectId })
+      .from(scenes)
+      .where(
+        sql`${scenes.mediaId} = ${row.id}
+          OR ${scenes.metaJson} LIKE ${`%${row.id}%`}
+          OR coalesce(${scenes.audioJson}, '') LIKE ${`%${row.id}%`}
+          OR coalesce(${scenes.sourceJson}, '') LIKE ${`%${row.id}%`}`,
+      );
+    const refHotspots = await db
+      .select({ id: hotspots.id, sceneId: hotspots.sceneId })
+      .from(hotspots)
+      .where(sql`coalesce(${hotspots.contentJson}, '') LIKE ${`%${row.id}%`}`);
+    if (refScenes.length > 0 || refHotspots.length > 0) {
+      throw conflict(
+        `El medio esta en uso y no se puede eliminar. Escenas: ${refScenes.map((s) => s.title).join(", ") || "-"}; hotspots: ${refHotspots.length}. Quita esas referencias primero.`,
+      );
+    }
+
     await db.update(media).set({ deletedAt: nowMs() }).where(eq(media.id, row.id));
     runtime.deferred(runtime.storage.deletePrefix(`tiles/${row.id}/`));
     runtime.deferred(runtime.storage.deletePrefix(`derived/${row.id}/`));

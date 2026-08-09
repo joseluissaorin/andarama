@@ -24,6 +24,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [visibility, setVisibility] = useState(project.publication?.visibility ?? "public");
   const [password, setPassword] = useState("");
   const [domains, setDomains] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
   const [publishAt, setPublishAt] = useState("");
   const [expireAt, setExpireAt] = useState("");
   const [note, setNote] = useState("");
@@ -40,6 +41,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           visibility,
           password: password !== "" ? password : undefined,
           domains: visibility === "domains" ? domains.split("\n").map((d) => d.trim()).filter((d) => d !== "") : undefined,
+          customDomain: customDomain.trim() !== "" ? customDomain.trim().toLowerCase() : undefined,
           publishAt: publishAt !== "" ? new Date(publishAt).getTime() : undefined,
           expireAt: expireAt !== "" ? new Date(expireAt).getTime() : undefined,
           note: note !== "" ? note : undefined,
@@ -107,6 +109,9 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               <Textarea id="pb-domains" rows={3} value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="campus.ull.es" />
             </Field>
           )}
+          <Field label={t("custom_domain")} htmlFor="pb-cdom" hint={t("custom_domain_hint")}>
+            <Input id="pb-cdom" value={customDomain} onChange={(e) => setCustomDomain(e.target.value)} placeholder="tour.midominio.es" />
+          </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("publish_at")} htmlFor="pb-at">
               <Input id="pb-at" type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} />
@@ -153,6 +158,10 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
   const [qr, setQr] = useState<string | null>(null);
   const url = project.publication != null ? `${location.origin}/t/${project.publication.slug}` : "";
   const embed = `<iframe src="${url}" style="width:100%;aspect-ratio:16/9;border:0;" allow="fullscreen; gyroscope; accelerometer; xr-spatial-tracking" allowfullscreen title="${project.title}"></iframe>`;
+  const webComponent =
+    project.publication != null
+      ? `<script src="${location.origin}/embed.js"></script>\n<ull360-tour slug="${project.publication.slug}" title="${project.title}"></ull360-tour>`
+      : "";
 
   useEffect(() => {
     if (open && url !== "") {
@@ -179,6 +188,14 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
           <div className="flex gap-2">
             <Textarea readOnly value={embed} rows={3} className="font-mono text-xs" aria-label={t("embed_code")} />
             <Button variant="secondary" onClick={() => copy(embed)}>
+              {t("copy")}
+            </Button>
+          </div>
+        </Field>
+        <Field label={t("web_component")} hint={t("web_component_hint")}>
+          <div className="flex gap-2">
+            <Textarea readOnly value={webComponent} rows={3} className="font-mono text-xs" aria-label={t("web_component")} />
+            <Button variant="secondary" onClick={() => copy(webComponent)}>
               {t("copy")}
             </Button>
           </div>
