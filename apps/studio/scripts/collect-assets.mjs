@@ -16,4 +16,10 @@ await rm(out, { recursive: true, force: true });
 await mkdir(join(out, "studio"), { recursive: true });
 await cp(join(root, "dist"), join(out, "studio"), { recursive: true });
 await cp(resolve(root, "../../packages/viewer-ui/dist/bundle"), join(out, "viewer"), { recursive: true });
+// Documentacion (si esta construida)
+try {
+  await cp(resolve(root, "../docs/dist"), join(out, "docs"), { recursive: true });
+} catch {
+  console.warn("apps/docs sin construir; se omite /docs");
+}
 console.log(`Assets listos en ${out}`);

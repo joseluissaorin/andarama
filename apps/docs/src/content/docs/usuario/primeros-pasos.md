@@ -1,0 +1,34 @@
+---
+title: Primeros pasos
+---
+
+## Crear una cuenta
+
+Abre `/studio/` en tu instancia y pulsa **Crear cuenta**. El primer usuario registrado se convierte automaticamente en administrador de la instancia. Segun la politica configurada, el registro puede ser abierto, por invitacion o limitado a dominios institucionales; si la instancia tiene SSO institucional (OIDC), usa **Entrar con SSO**.
+
+Cada cuenta pertenece a una o varias **organizaciones**. Los roles por organizacion son:
+
+| Rol | Puede |
+|---|---|
+| Administrador | Todo: miembros, cuotas, todos los proyectos |
+| Editor | Crear, editar y publicar sus proyectos y los compartidos |
+| Colaborador | Editar proyectos compartidos (sin publicar) |
+| Lector | Ver borradores |
+
+## Crear el primer tour
+
+1. En **Proyectos**, pulsa **Nuevo tour** y ponle titulo (opcionalmente carpeta o plantilla).
+2. Sube panoramas equirectangulares (2:1) en **Biblioteca de medios** o directamente desde el editor.
+3. Anade escenas eligiendo cada panorama.
+4. Coloca hotspots haciendo clic sobre el panorama.
+5. Pulsa **Publicar**: obtendras una URL publica `/t/tu-slug`, codigo QR y codigo de embebido.
+
+## Atajos de teclado del Studio
+
+- `Ctrl/Cmd + K`: paleta de comandos
+- `Ctrl/Cmd + Z` / `Ctrl/Cmd + Shift + Z`: deshacer / rehacer
+- `Ctrl/Cmd + S`: forzar guardado (el guardado automatico actua igualmente)
+
+## Controles del visor
+
+Raton (arrastrar, rueda, doble clic), tactil (1 dedo, pellizco), teclado (flechas, `+`/`-`, `Tab` por hotspots, `Enter`, `Esc`), giroscopio en moviles y modo VR.
