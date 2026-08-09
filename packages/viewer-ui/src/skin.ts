@@ -524,6 +524,24 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     viewer.on("quizChange", (state) => window.parent.postMessage({ ull360: "quizChange", state }, "*"));
   }
 
+  // ------- Estado global para integraciones (adaptador SCORM, kiosko) -------
+  const visited = new Set<string>();
+  const publishState = (): void => {
+    if (viewer.currentSceneId() != null) visited.add(viewer.currentSceneId()!);
+    const state = {
+      scene: viewer.currentSceneId(),
+      scenesVisited: visited.size,
+      scenesTotal: tour.scenes.filter((s) => s.hidden !== true).length,
+      quiz: viewer.quizState(),
+      treasure: viewer.treasureState(),
+    };
+    (window as unknown as Record<string, unknown>).__ULL360_STATE__ = state;
+    window.dispatchEvent(new CustomEvent("ull360:state", { detail: state }));
+  };
+  viewer.on("sceneChange", publishState);
+  viewer.on("quizChange", publishState);
+  viewer.on("ready", publishState);
+
   return {
     viewer,
     panelHost,
