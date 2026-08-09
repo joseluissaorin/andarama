@@ -37,6 +37,8 @@ async function main(): Promise<void> {
     console.error("ATENCION: define APP_SECRET en produccion");
   }
 
+  const { mkdir } = await import("node:fs/promises");
+  await mkdir(dataDir, { recursive: true });
   const { db, sqlite } = await createSqliteDb(join(dataDir, "ull360.db"));
   const migrationsDir = findMigrationsDir();
   const applied = await migrateSqlite(sqlite, migrationsDir, {

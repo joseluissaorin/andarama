@@ -1,0 +1,51 @@
+# Self-hosting de ULL360 (§5.7): docker compose up -d
+# Requisitos minimos: 1 vCPU / 1 GB RAM.
+services:
+  ull360:
+    image: ghcr.io/ull/ull360:latest
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8788:8788"
+    volumes:
+      - ull360-data:/data
+    environment:
+      # URL publica de la instancia (obligatoria detras de proxy/TLS)
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8788}
+      # Secreto de instancia: genera uno con `openssl rand -hex 32`
+      APP_SECRET: ${APP_SECRET:?Define APP_SECRET en .env}
+      # SMTP opcional (verificacion de email, invitaciones)
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-ull360@localhost}
+      # SSO OIDC opcional
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_ALLOWED_DOMAINS: ${OIDC_ALLOWED_DOMAINS:-}
+      # Almacenamiento S3/MinIO opcional (por defecto: FS local en /data)
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      # Turnstile opcional
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
+
+  # TLS automatico opcional con Caddy (descomenta y apunta tu dominio):
+  # caddy:
+  #   image: caddy:2
+  #   restart: unless-stopped
+  #   ports: ["80:80", "443:443"]
+  #   volumes:
+  #     - ./Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy-data:/data
+  #   depends_on: [ull360]
+
+volumes:
+  ull360-data:
+  # caddy-data:

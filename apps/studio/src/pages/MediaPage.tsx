@@ -5,7 +5,7 @@ import { Badge, Button, Dialog, EmptyState, Input, Select, Spinner, useToast } f
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
-import { detectKind, uploadMedia, type MediaKind, type UploadProgress } from "../upload";
+import { uploadMedia, type MediaKind, type UploadProgress } from "../upload";
 
 export interface MediaItem {
   id: string;
@@ -71,7 +71,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
         const kindGuess: MediaKind | null = kindFilter != null ? (kindFilter as MediaKind) : null;
         setUploads((u) => ({ ...u, [key]: { phase: "hashing", percent: 0, name: file.name } }));
         try {
-          const result = await uploadMedia(orgId, file, kindGuess ?? (detectKind(file) as MediaKind), (p) =>
+          const result = await uploadMedia(orgId, file, kindGuess, (p) =>
             setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })),
           );
           if (result.deduplicated) toast.push(t("deduplicated"));

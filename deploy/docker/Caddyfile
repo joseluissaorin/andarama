@@ -1,0 +1,6 @@
+# TLS automatico para ULL360 self-host. Sustituye tours.ejemplo.es por tu dominio
+# y define PUBLIC_URL=https://tours.ejemplo.es en el .env del compose.
+tours.ejemplo.es {
+	reverse_proxy ull360:8788
+	encode gzip zstd
+}

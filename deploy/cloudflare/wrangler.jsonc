@@ -1,0 +1,89 @@
+// Infraestructura como codigo del despliegue Cloudflare de ULL360 (§5.7).
+// El script bootstrap (pnpm deploy:cloudflare) crea los recursos y rellena
+// los IDs marcados; actualizar la instancia = volver a ejecutarlo.
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "ull360",
+  "main": "../../apps/api/src/worker.ts",
+  "compatibility_date": "2025-01-15",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "assets": {
+    "directory": "../../apps/studio/dist-root",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/t/*", "/ingest/*", "/rt/*", "/sitemap.xml", "/robots.txt", "/"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ull360",
+      "database_id": "REPLACE_D1_ID",
+      "migrations_dir": "../../packages/db/migrations"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "ull360"
+    }
+  ],
+
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "REPLACE_KV_ID"
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      { "name": "LIVE_DO", "class_name": "LiveTourRoomDO" },
+      { "name": "PRESENCE_DO", "class_name": "ProjectPresenceDO" }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["LiveTourRoomDO", "ProjectPresenceDO"]
+    }
+  ],
+
+  // Workers Analytics Engine (§2.14). Con ANALYTICS_BACKEND=d1 se usa la
+  // tabla D1 en su lugar (consultable sin token de API).
+  "analytics_engine_datasets": [
+    { "binding": "ANALYTICS", "dataset": "ull360_events" }
+  ],
+
+  // Cloudflare Queues requiere plan Workers Paid. El bootstrap descomenta
+  // este bloque si detecta que la cuenta lo soporta; sin Queues, los
+  // trabajos quedan en la tabla `jobs` para el contenedor de procesado.
+  // "queues": {
+  //   "producers": [{ "binding": "QUEUE", "queue": "ull360-jobs" }],
+  //   "consumers": [{ "queue": "ull360-jobs", "max_batch_size": 5 }]
+  // },
+
+  "triggers": {
+    "crons": ["17 3 * * *"]
+  },
+
+  "vars": {
+    "ANALYTICS_BACKEND": "d1",
+    "ANALYTICS_DATASET": "ull360_events"
+    // PUBLIC_URL se fija tras el primer deploy (workers.dev o dominio propio)
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // Secretos (wrangler secret put, los solicita el bootstrap):
+  //   APP_SECRET            (obligatorio; HMAC de subidas y sesiones)
+  //   EMAIL_WEBHOOK_URL/KEY (opcional; envio de email transaccional)
+  //   TURNSTILE_SITE_KEY/SECRET (opcional; anti-spam en formularios)
+  //   OIDC_ISSUER/CLIENT_ID/CLIENT_SECRET/ALLOWED_DOMAINS (opcional; SSO)
+  //   CF_ACCOUNT_ID + CF_ANALYTICS_TOKEN (opcional; consultas AE)
+  //   R2_ACCESS_KEY_ID/SECRET + R2_BUCKET_NAME (opcional; presign S3 directo)
+  //   STREAM_ACCOUNT_ID/API_TOKEN (opcional; Cloudflare Stream)
+}
