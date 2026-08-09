@@ -1,20 +1,24 @@
 # ULL360
 
-Plataforma web de codigo abierto para crear, publicar y distribuir tours virtuales 360 interactivos, desarrollada para la Universidad de La Laguna y utilizable por cualquier organizacion.
+Plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360 interactivos, desarrollada para la Universidad de La Laguna y utilizable por cualquier organización.
 
 ULL360 se compone de tres piezas:
 
-1. **ULL360 Studio** - editor visual en el navegador (SPA) para construir tours sin conocimientos tecnicos.
-2. **ULL360 Viewer** - motor de visualizacion WebGL embebible y exportable como paquete HTML estatico autocontenido.
-3. **ULL360 API** - backend ligero (gestion de proyectos, usuarios, medios, procesado, analitica, colaboracion en tiempo real).
+1. **ULL360 Studio** - editor visual en el navegador (SPA) para construir tours sin conocimientos técnicos.
+2. **ULL360 Viewer** - motor de visualización WebGL embebible y exportable como paquete HTML estático autocontenido.
+3. **ULL360 API** - backend ligero (gestión de proyectos, usuarios, medios, procesado, analítica, colaboración en tiempo real).
 
-**Demo de referencia**: https://ull360.jlsf2005.workers.dev (tour publico en [/t/campus-de-guajara](https://ull360.jlsf2005.workers.dev/t/campus-de-guajara), documentacion en [/docs](https://ull360.jlsf2005.workers.dev/docs/)).
+**Demo de referencia**: https://ull360.jlsf2005.workers.dev
 
-La trazabilidad completa de la especificacion a la implementacion esta en [REQUIREMENTS.md](REQUIREMENTS.md).
+- Tour con fotografías esféricas reales: [/t/recorrido-real](https://ull360.jlsf2005.workers.dev/t/recorrido-real) (imágenes de Wikimedia Commons bajo CC BY-SA; atribuciones dentro del propio tour).
+- Tour sintético de demostración: [/t/campus-de-guajara](https://ull360.jlsf2005.workers.dev/t/campus-de-guajara).
+- Documentación: [/docs](https://ull360.jlsf2005.workers.dev/docs/).
+
+La trazabilidad completa de la especificación a la implementación está en [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## Objetivos de despliegue
 
-- **Cloudflare "un comando"**: toda la plataforma (frontend, API, base de datos, almacenamiento, colas, tiempo real, analitica) corre sobre Workers, D1, R2, KV, Durable Objects, Queues y Workers Analytics Engine, dentro del free tier para usos pequenos y medios.
+- **Cloudflare "un comando"**: toda la plataforma (frontend, API, base de datos, almacenamiento, colas, tiempo real, analítica) corre sobre Workers, D1, R2, KV, Durable Objects, Queues y Workers Analytics Engine, dentro del free tier para usos pequeños y medios.
 
   ```bash
   git clone https://github.com/ull/ull360 && cd ull360
@@ -22,7 +26,7 @@ La trazabilidad completa de la especificacion a la implementacion esta en [REQUI
   pnpm deploy:cloudflare
   ```
 
-- **Self-hosting trivial**: una unica imagen Docker (Node.js + SQLite + sistema de ficheros) que replica el comportamiento de Cloudflare mediante una capa de adaptadores.
+- **Self-hosting trivial**: una única imagen Docker (Node.js + SQLite + sistema de ficheros) que replica el comportamiento de Cloudflare mediante una capa de adaptadores.
 
   ```bash
   curl -O https://raw.githubusercontent.com/ull/ull360/main/deploy/docker/docker-compose.yml
@@ -37,19 +41,19 @@ ull360/
 │  ├─ studio/            # Editor SPA (React 18 + Vite + TanStack Query/Router + Zustand)
 │  ├─ api/               # Worker Hono: API + auth + servido de tours + assets
 │  ├─ realtime/          # Durable Objects (LiveTourRoom, ProjectPresence)
-│  └─ docs/              # Documentacion (Astro Starlight)
+│  └─ docs/              # Documentación (Astro Starlight)
 ├─ packages/
-│  ├─ schema/            # tour.json: tipos TS + JSON Schema + migradores de version
+│  ├─ schema/            # tour.json: tipos TS + JSON Schema + migradores de versión
 │  ├─ viewer/            # Motor 360 (TS + WebGL, base Marzipano con capas propias)
 │  ├─ viewer-ui/         # Skin del visor (Web Components, framework-agnostic)
 │  ├─ tiler/             # Tiling en navegador (WebWorkers) y en Node (sharp)
-│  ├─ exporter/          # Generador de paquetes estaticos/SCORM (browser + Node)
+│  ├─ exporter/          # Generador de paquetes estáticos/SCORM (browser + Node)
 │  ├─ adapters/          # Interfaces + impl. cloudflare/ y node/
 │  ├─ db/                # Esquema Drizzle ORM + migraciones (D1 y SQLite)
 │  └─ ui/                # Design system del Studio (Radix + Tailwind, tema ULL)
 ├─ deploy/
 │  ├─ cloudflare/        # wrangler.jsonc, script bootstrap
-│  └─ docker/            # Dockerfile unico, docker-compose.yml, Caddyfile
+│  └─ docker/            # Dockerfile único, docker-compose.yml, Caddyfile
 └─ tooling/              # eslint, tsconfig, playwright
 ```
 
@@ -65,14 +69,16 @@ pnpm test                # tests unitarios (Vitest)
 pnpm test:e2e            # tests E2E (Playwright)
 ```
 
-## Documentacion
+El script `scripts/seed-demo.mjs` construye y publica el tour de demostración con fotografías reales contra cualquier instancia: `node scripts/seed-demo.mjs <url-base> <email> <password> <dir-panoramas>` (el directorio debe contener panoramas equirectangulares y un `atribuciones.json`).
 
-La documentacion completa (manual de usuario, guia de administracion, guias de despliegue, referencia OpenAPI, formato tour.json y tutoriales) vive en `apps/docs` y se publica junto con la instancia en `/docs`.
+## Documentación
+
+La documentación completa (manual de usuario, guía de administración, guías de despliegue, referencia OpenAPI, formato tour.json y tutoriales) vive en `apps/docs` y se publica junto con la instancia en `/docs`.
 
 ## Licencia
 
-[EUPL-1.2](LICENSE). Titularidad del codigo: Universidad de La Laguna. Los medios de ejemplo se publican bajo CC BY 4.0. Vease [AUTHORS](AUTHORS).
+[EUPL-1.2](LICENSE). Titularidad del código: Universidad de La Laguna. Los medios de ejemplo se publican bajo CC BY 4.0; las fotografías del tour de demostración proceden de Wikimedia Commons (CC BY-SA, atribuciones en el propio tour). Véase [AUTHORS](AUTHORS).
 
 ## Seguridad
 
-Divulgacion responsable de vulnerabilidades: vease [SECURITY.md](SECURITY.md).
+Divulgación responsable de vulnerabilidades: véase [SECURITY.md](SECURITY.md).

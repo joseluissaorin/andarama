@@ -1,4 +1,4 @@
-import { computePyramid, totalTileCount, type Face, type TileManifest } from "./math.js";
+import { computePyramid, snapFaceSize, totalTileCount, type Face, type TileManifest } from "./math.js";
 
 /**
  * Tiler de navegador: genera la piramide de tiles en un WebWorker con
@@ -291,11 +291,13 @@ export async function tilePanorama(
   const quality = options.quality ?? 0.82;
 
   const { bitmap, limited, width, height } = await decodeSource(source);
-  const faceSize = Math.floor(bitmap.width / 4);
-  if (faceSize < 64) {
+  if (bitmap.width < 256) {
     bitmap.close();
     throw new Error("La imagen es demasiado pequena para trocear (min 256 px de ancho)");
   }
+  // Cara en el esquema tileSize * 2^k (requisito de la geometria multires)
+  const maxRenderFace = Math.min(8192, maxTextureSize());
+  const faceSize = snapFaceSize(Math.floor(bitmap.width / 4), tileSize, maxRenderFace);
 
   // Derivados en paralelo con el troceado
   const previewPromise = renderDerivative(source, 512, 256, "image/jpeg", 0.6).then(blobToDataUrl);

@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Download, Plus, RefreshCcw, Trash2, Upload } from "lucide-react";
-import { Badge, Button, Field, Input, Select, Switch, Tabs, TabList, TabTrigger, Textarea, useToast } from "@ull360/ui";
+import { Badge, Button, Field, Input, Select, Tabs, TabList, TabTrigger, Textarea, useToast } from "@ull360/ui";
 import { api } from "../api";
 import { useT } from "../i18n";
 

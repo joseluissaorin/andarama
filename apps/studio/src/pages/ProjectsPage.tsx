@@ -262,8 +262,35 @@ function ProjectCard({ project, inTrash, onChanged }: {
     }
   };
 
+  // Portada con matiz derivado del id (estable por proyecto)
+  const hue = [...project.id].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 360;
+
   return (
-    <div className="group rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4 shadow-sm transition-shadow hover:shadow-md">
+    <div className="group overflow-hidden rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] shadow-[var(--ull-shadow)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--ull-shadow-lg)]">
+      <button
+        type="button"
+        className="relative block h-24 w-full overflow-hidden text-left"
+        aria-label={project.title}
+        onClick={() => {
+          if (!inTrash) void navigate({ to: "/p/$projectId", params: { projectId: project.id } });
+        }}
+      >
+        <span
+          className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
+          style={{
+            background: `linear-gradient(130deg, hsl(${hue}, 42%, 38%), hsl(${(hue + 45) % 360}, 48%, 55%))`,
+          }}
+        />
+        <svg className="absolute -right-7 -top-9 h-36 w-36 opacity-25" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="white" strokeWidth="1.5" />
+          <ellipse cx="50" cy="50" rx="42" ry="16" fill="none" stroke="white" strokeWidth="1" />
+          <ellipse cx="50" cy="50" rx="16" ry="42" fill="none" stroke="white" strokeWidth="1" />
+        </svg>
+        <span className="absolute bottom-3 left-4 text-[19px] font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+          {project.title.slice(0, 1).toUpperCase()}
+        </span>
+      </button>
+      <div className="p-4 pt-3">
       <div className="flex items-start justify-between gap-2">
         <button
           type="button"
@@ -272,7 +299,7 @@ function ProjectCard({ project, inTrash, onChanged }: {
             if (!inTrash) void navigate({ to: "/p/$projectId", params: { projectId: project.id } });
           }}
         >
-          <h2 className="truncate text-[15px] font-semibold">{project.title}</h2>
+          <h2 className="truncate text-[15px] font-semibold tracking-tight">{project.title}</h2>
           <p className="mt-0.5 text-xs text-[var(--ull-text-dim)]">
             {project.folder != null && project.folder !== "" ? `${project.folder} - ` : ""}
             {new Date(project.updatedAt).toLocaleDateString()}
@@ -340,6 +367,7 @@ function ProjectCard({ project, inTrash, onChanged }: {
             {tag}
           </Badge>
         ))}
+      </div>
       </div>
     </div>
   );

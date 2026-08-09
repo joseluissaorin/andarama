@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Crosshair, Image as ImageIcon, Lock, Plus, Trash2 } from "lucide-react";
-import { Badge, Button, Dialog, Field, Input, Select, Tooltip, useToast } from "@ull360/ui";
+import { Badge, Button, Dialog, Field, Input, Tooltip, useToast } from "@ull360/ui";
 import type { Tour } from "@ull360/schema";
 import { mountViewer, type MountedSkin } from "@ull360/viewer-ui";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
-import { clientId, readJson, sceneMeta } from "./editorApi";
+import { clientId } from "./editorApi";
 import { MediaPicker } from "./MediaPicker";
 import { PropertiesPanel } from "./PropertiesPanel";
 import type { ProjectInfo } from "./EditorPage";
@@ -271,7 +271,6 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         lastView = v;
       });
       // Colocacion de hotspots haciendo clic (§3.4)
-      const stage = containerRef.current.querySelector<HTMLElement>("div");
       containerRef.current.addEventListener("click", (e) => {
         const mode = placementRef.current;
         if (mode.kind === "none") return;
@@ -334,7 +333,6 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
     } finally {
       setCompiling(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id, sceneId]);
 
   // Remontar al cambiar de escena o tras guardado
@@ -349,7 +347,6 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   }, [remount]);
   useEffect(() => {
     if (saving === "saved" && !dirty) void remount();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saving, dirty]);
 
   return (

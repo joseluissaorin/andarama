@@ -18,6 +18,19 @@ export interface PyramidLevel {
   tiles: number;
 }
 
+/**
+ * Ajusta el tamano de cara al esquema tileSize * 2^k (512, 1024, 2048...).
+ * Marzipano exige que cada nivel sea multiplo exacto del tileSize, y con
+ * halving eso solo se cumple con caras potencia-de-dos del tile. Se
+ * redondea hacia ARRIBA (el reproyector muestrea el original a resolucion
+ * completa, asi que no se pierde detalle) con tope en maxFace.
+ */
+export function snapFaceSize(rawFace: number, tileSize = 512, maxFace = 8192): number {
+  let size = tileSize;
+  while (size < rawFace && size < maxFace) size *= 2;
+  return Math.min(size, maxFace);
+}
+
 /** Calcula la piramide de niveles para un tamano de cara dado. */
 export function computePyramid(faceSize: number, tileSize = 512): PyramidLevel[] {
   const sizes: number[] = [];

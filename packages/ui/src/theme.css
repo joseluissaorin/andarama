@@ -1,28 +1,35 @@
-/* Tokens del tema institucional ULL (azul indigo #5C68A5 como primario). */
+/* Tokens del tema institucional ULL (indigo #5C68A5 + dorado). */
 :root {
   --ull-primary: #5c68a5;
   --ull-primary-dark: #47517f;
   --ull-primary-light: #7c88c5;
+  --ull-primary-soft: #eceef9;
   --ull-accent: #d9a521;
-  --ull-bg: #f6f7fb;
+  --ull-grad: linear-gradient(135deg, #5c68a5 0%, #7c88c5 55%, #9aa6df 100%);
+  --ull-grad-deep: linear-gradient(160deg, #232b52 0%, #47517f 50%, #5c68a5 100%);
+  --ull-bg: #f4f5fa;
   --ull-surface: #ffffff;
-  --ull-surface-2: #eef0f7;
-  --ull-border: #d8dcea;
-  --ull-text: #1c2340;
-  --ull-text-dim: #5a627e;
+  --ull-surface-2: #edeff7;
+  --ull-border: #dfe2ef;
+  --ull-text: #1a2140;
+  --ull-text-dim: #626a8c;
   --ull-danger: #c2453a;
   --ull-ok: #2e8b57;
   --ull-radius: 10px;
-  --ull-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --ull-shadow: 0 1px 3px rgba(28, 35, 64, 0.08), 0 4px 16px rgba(28, 35, 64, 0.06);
+  --ull-font: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ull-shadow: 0 1px 2px rgba(26, 33, 64, 0.06), 0 4px 14px rgba(26, 33, 64, 0.06);
+  --ull-shadow-lg: 0 2px 6px rgba(26, 33, 64, 0.07), 0 18px 44px rgba(26, 33, 64, 0.12);
+  --ull-ring: 0 0 0 3px rgba(92, 104, 165, 0.22);
 }
 
 .dark {
-  --ull-bg: #12162a;
-  --ull-surface: #1a2038;
-  --ull-surface-2: #232a48;
-  --ull-border: #323a5e;
-  --ull-text: #e8eaf4;
-  --ull-text-dim: #9aa2c2;
+  --ull-primary-soft: #262e54;
+  --ull-bg: #10142a;
+  --ull-surface: #181e38;
+  --ull-surface-2: #222948;
+  --ull-border: #313a61;
+  --ull-text: #e9ebf6;
+  --ull-text-dim: #99a1c4;
   --ull-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  --ull-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.4);
 }

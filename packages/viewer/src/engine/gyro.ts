@@ -113,7 +113,7 @@ export function orientationToYawPitch(
   // Vector "hacia atras de la pantalla" (0,0,-1) rotado al marco del mundo.
   let vx = -(sA * sB * cG + cA * sG) * -1;
   let vy = -(cA * sB * cG - sA * sG) * -1;
-  let vz = -(cB * cG) * -1;
+  const vz = -(cB * cG) * -1;
 
   // Compensar orientacion de pantalla (rotacion en el plano XY del dispositivo).
   if (screenAngle !== 0) {

@@ -82,14 +82,55 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
 
   return (
     <div className="flex min-h-full items-center justify-center bg-[var(--ull-bg)] p-6">
-      <div className="w-full max-w-sm rounded-2xl bg-[var(--ull-surface)] p-8 shadow-[var(--ull-shadow)]">
-        <div className="mb-6 flex items-center gap-3">
+      <div className="flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--ull-border)] bg-[var(--ull-surface)] shadow-[var(--ull-shadow-lg)]">
+        {/* Panel de marca */}
+        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[image:var(--ull-grad-deep)] p-10 text-white md:flex">
+          <svg
+            className="pointer-events-none absolute -right-28 -top-24 opacity-25"
+            width="420"
+            height="420"
+            viewBox="0 0 200 200"
+            aria-hidden="true"
+          >
+            <circle cx="100" cy="100" r="88" fill="none" stroke="white" strokeWidth="1.5" />
+            <ellipse cx="100" cy="100" rx="88" ry="34" fill="none" stroke="white" strokeWidth="1" />
+            <ellipse cx="100" cy="100" rx="88" ry="62" fill="none" stroke="white" strokeWidth="0.7" opacity="0.7" />
+            <ellipse cx="100" cy="100" rx="34" ry="88" fill="none" stroke="white" strokeWidth="1" />
+            <ellipse cx="100" cy="100" rx="62" ry="88" fill="none" stroke="white" strokeWidth="0.7" opacity="0.7" />
+            <circle cx="100" cy="100" r="5" fill="white" />
+          </svg>
+          <div className="flex items-center gap-3">
+            <UllLogo size={30} light />
+            <span className="text-lg font-bold tracking-tight">ULL360</span>
+          </div>
+          <div className="relative">
+            <h2 className="text-[26px] font-bold leading-snug tracking-tight">
+              Tours virtuales 360
+              <br />
+              para enseñar, difundir
+              <br />y conservar.
+            </h2>
+            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-white/70">
+              Editor visual, publicación en un clic, LTI para el Aula Virtual y exportación abierta. Código abierto de la
+              Universidad de La Laguna.
+            </p>
+          </div>
+          <p className="relative text-[11.5px] font-medium text-white/50">Universidad de La Laguna - EUPL-1.2</p>
+        </div>
+
+        {/* Formulario */}
+        <div className="w-full p-8 sm:p-10 md:w-[54%]">
+        <div className="mb-6 flex items-center gap-3 md:hidden">
           <UllLogo size={34} />
           <div>
             <h1 className="text-lg font-bold leading-tight">{t("app_name")}</h1>
             <p className="text-xs text-[var(--ull-text-dim)]">Universidad de La Laguna</p>
           </div>
         </div>
+        <h1 className="mb-1 hidden text-[22px] font-bold tracking-tight md:block">
+          {forgotMode ? t("forgot") : mode === "register" ? t("register") : mode === "reset" ? t("password") : t("welcome_back")}
+        </h1>
+        <p className="mb-6 hidden text-[13.5px] text-[var(--ull-text-dim)] md:block">{t("app_name")}</p>
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -108,7 +149,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
             </Field>
           )}
           {!forgotMode && (
-            <Field label={t("password")} htmlFor="password" hint={mode === "register" ? "Minimo 10 caracteres" : undefined}>
+            <Field label={t("password")} htmlFor="password" hint={mode === "register" ? "Mínimo 10 caracteres" : undefined}>
               <Input
                 id="password"
                 type="password"
@@ -149,15 +190,16 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
               <button type="button" className="hover:underline" onClick={() => setForgotMode(!forgotMode)}>
                 {t("forgot")}
               </button>
-              <button type="button" className="hover:underline" onClick={() => void navigate({ to: "/register" })}>
+              <button type="button" className="font-semibold text-[var(--ull-primary)] hover:underline" onClick={() => void navigate({ to: "/register" })}>
                 {t("register")}
               </button>
             </>
           ) : (
-            <button type="button" className="hover:underline" onClick={() => void navigate({ to: "/login" })}>
+            <button type="button" className="font-semibold text-[var(--ull-primary)] hover:underline" onClick={() => void navigate({ to: "/login" })}>
               {t("login")}
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>

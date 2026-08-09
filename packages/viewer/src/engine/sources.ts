@@ -1,5 +1,5 @@
 import Marzipano from "marzipano";
-import type { CubemapSource, EquirectSource, FlatSource, MultiresSource, Scene, ViewLimits } from "@ull360/schema";
+import type { EquirectSource, MultiresSource, Scene, ViewLimits } from "@ull360/schema";
 
 /**
  * Construccion de geometry/source/view de Marzipano a partir de la fuente

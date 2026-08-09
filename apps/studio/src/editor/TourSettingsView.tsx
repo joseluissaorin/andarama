@@ -4,7 +4,7 @@ import { useT } from "../i18n";
 import type { ProjectInfo } from "./EditorPage";
 
 /** Ajustes del tour: UI, tema, autorotate, pantallas, quiz, tesoro, autopilot, variables. */
-export function TourSettingsView({ project, canEdit }: { project: ProjectInfo; canEdit: boolean }): React.ReactNode {
+export function TourSettingsView({ project: _project, canEdit }: { project: ProjectInfo; canEdit: boolean }): React.ReactNode {
   const t = useT();
   const editor = useEditor();
   const snapshot = editor.snapshot!;

@@ -82,10 +82,10 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await page.getByRole("button", { name: "Crear", exact: true }).click();
   await page.waitForURL("**/studio/p/**");
 
-  // Anadir escena con el panorama subido
-  await page.locator('button[aria-label="Anadir escena"]').click();
+  // Añadir escena con el panorama subido
+  await page.locator('button[aria-label="Añadir escena"]').click();
   await page.fill("#ns-title", "Escena E2E");
-  const sceneDialog = page.locator('[role="dialog"]', { hasText: "Anadir escena" });
+  const sceneDialog = page.locator('[role="dialog"]', { hasText: "Añadir escena" });
   await sceneDialog.getByRole("button", { name: "Elegir de la biblioteca" }).click();
   const picker = page.locator('[role="dialog"]', { hasText: "Elegir de la biblioteca" }).last();
   await picker.getByRole("button", { name: /pano-e2e\.jpg/ }).click();
@@ -99,7 +99,7 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
 
   // Colocar un hotspot de texto haciendo clic sobre el panorama
   await page.getByRole("button", { name: "Texto", exact: true }).click();
-  await page.locator(".ull360-viewer").click({ position: { x: 500, y: 350 } });
+  await page.locator(".ull360-viewer").first().click({ position: { x: 500, y: 350 } });
   await page.fill("#hs-label", "Panel E2E");
   await page.fill("#hs-body", "Contenido **markdown** de prueba");
   await page.fill("#hs-alt", "Panel de prueba");
@@ -124,7 +124,7 @@ test("visor publico: navegacion, panel y deep link", async ({ page }) => {
   // Deep link presente en la URL
   await expect.poll(() => page.url()).toContain("#s=");
   // Modo accesible
-  await page.locator('button[aria-label="Version accesible"]').click();
+  await page.locator('button[aria-label="Versión accesible"]').click();
   await expect(page.locator(".ull360-accessible")).toContainText("Escena E2E");
 });
 

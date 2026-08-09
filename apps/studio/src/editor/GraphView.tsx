@@ -37,7 +37,6 @@ export function GraphView({ canEdit }: { canEdit: boolean }): React.ReactNode {
       next[scene.id] = saved[scene.id] ?? { x: (i % 5) * 190, y: Math.floor(i / 5) * 120 };
     });
     setPositions(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snapshot.scenes.length]);
 
   // Aristas: conexiones explicitas + derivadas de hotspots de navegacion

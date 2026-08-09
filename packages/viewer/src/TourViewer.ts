@@ -12,7 +12,6 @@ import type {
 } from "@ull360/schema";
 import { DEFAULT_TRANSITION, DEFAULT_VIEW, migrateTour, resolveL10n } from "@ull360/schema";
 import type {
-  HotspotActivateEvent,
   QuizStateEvent,
   TourViewerOptions,
   Unsubscribe,

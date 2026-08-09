@@ -1,0 +1,14 @@
+/viewer/viewer.js
+  Cache-Control: no-cache
+/viewer/files.json
+  Cache-Control: no-cache
+/viewer/leaflet.css
+  Cache-Control: no-cache
+/viewer/chunks/*
+  Cache-Control: public, max-age=31536000, immutable
+/studio/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/studio/index.html
+  Cache-Control: no-cache
+/docs/_astro/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   BarChart3,
   GitBranch,
-  Globe,
   History,
   Languages as LanguagesIcon,
   Map as MapIcon,
@@ -73,7 +72,6 @@ export function EditorPage(): React.ReactNode {
         toast.push(String(err instanceof Error ? err.message : err), "error");
         void navigate({ to: "/" });
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   // Autosave con indicador (§3.5)
@@ -126,7 +124,6 @@ export function EditorPage(): React.ReactNode {
       }
     });
     return () => ws.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, me?.user?.id]);
 
   // Notificar escena seleccionada a la sala de presencia
@@ -161,7 +158,6 @@ export function EditorPage(): React.ReactNode {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doSync]);
 
   if (editor.snapshot == null || project == null) {
@@ -247,16 +243,16 @@ export function EditorPage(): React.ReactNode {
         )}
       </header>
 
-      <nav className="flex gap-0.5 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3" aria-label="Vistas del editor">
+      <nav className="flex gap-1 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5" aria-label="Vistas del editor">
         {TABS.map(({ id, icon, label }) => (
           <button
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 text-[13px] ${
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] transition-colors ${
               tab === id
-                ? "border-[var(--ull-primary)] font-medium text-[var(--ull-text)]"
-                : "border-transparent text-[var(--ull-text-dim)] hover:text-[var(--ull-text)]"
+                ? "bg-[var(--ull-primary-soft)] font-semibold text-[var(--ull-primary)]"
+                : "text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)] hover:text-[var(--ull-text)]"
             }`}
           >
             {icon}

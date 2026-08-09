@@ -54,6 +54,10 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   injectStyles(theme?.customCss);
 
   const container = options.container;
+  // Las variables CSS del tema viven en .ull360-viewer: debe estar tambien
+  // en el contenedor exterior, donde cuelga el cromo de la skin.
+  container.classList.add("ull360-viewer");
+  if (getComputedStyle(container).position === "static") container.style.position = "relative";
   container.dataset.theme = theme?.base ?? "ull";
   if (theme?.primaryColor != null) container.style.setProperty("--u3-primary", theme.primaryColor);
   if (theme?.fontFamily != null) container.style.setProperty("--u3-font", theme.fontFamily);
@@ -92,19 +96,18 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   const skip = el("a", { className: "ull360-skiplink", href: "#", text: t("accessible_mode") });
   container.appendChild(skip);
 
-  // ------- Barra superior -------
+  // ------- Barra superior flotante -------
   const topbar = el("div", { className: "ull360-topbar" });
+  const topPill = el("div", { className: "ull360-topbar__pill" });
   if (ui.sceneMenu !== false) {
     const menu = buildSceneMenu(viewer, t, baseUrl);
     container.appendChild(menu.root);
-    const menuBtn = iconButton("menu", t("menu"), menu.toggle);
-    topbar.appendChild(menuBtn);
+    topPill.appendChild(iconButton("menu", t("menu"), menu.toggle));
   }
   if (ui.titleBar !== false) {
-    topbar.appendChild(el("h1", { className: "ull360-title", text: viewer.text(tour.meta.title) }));
-  } else {
-    topbar.appendChild(el("div", { style: "flex:1;" }));
+    topPill.appendChild(el("h1", { className: "ull360-title", text: viewer.text(tour.meta.title) }));
   }
+  if (topPill.childElementCount > 0) topbar.appendChild(topPill);
   if (ui.logo != null) {
     const img = el("img", { src: resolveUrl(baseUrl, ui.logo.image), alt: "" });
     const logo =
@@ -113,7 +116,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         : el("div", { className: "ull360-logo" }, img);
     topbar.appendChild(logo);
   }
-  container.appendChild(topbar);
+  if (topbar.childElementCount > 0) container.appendChild(topbar);
 
   if (ui.watermark != null) {
     const img = el("img", { src: resolveUrl(baseUrl, ui.watermark.image), alt: "" });
@@ -370,8 +373,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // ------- Busqueda del tesoro -------
   if (tour.treasureHunt?.enabled === true) {
     const hud = el("div", {
-      className: "ull360-toast",
-      style: "bottom:auto;top:64px;left:50%;",
+      className: "ull360-toast ull360-toast--hud",
       role: "status",
     });
     const refresh = (found: number, total: number): void => {

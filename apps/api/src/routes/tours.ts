@@ -88,7 +88,7 @@ export function tourRoutes(): Hono<AppEnv> {
     return null; // public y unlisted
   };
 
-  const frameAncestors = (pointer: PublicationPointer, publicUrl: string): string => {
+  const frameAncestors = (pointer: PublicationPointer, _publicUrl: string): string => {
     if (pointer.visibility === "domains" && pointer.domains != null && pointer.domains.length > 0) {
       return `frame-ancestors 'self' ${pointer.domains.map((d) => `https://${d}`).join(" ")}`;
     }

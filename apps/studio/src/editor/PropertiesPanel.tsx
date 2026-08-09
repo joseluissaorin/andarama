@@ -19,7 +19,6 @@ export function PropertiesPanel({ project, scene, canEdit }: {
   scene: SceneRow;
   canEdit: boolean;
 }): React.ReactNode {
-  const t = useT();
   const editor = useEditor();
   const snapshot = editor.snapshot!;
   const hotspots = snapshot.hotspots.filter((h) => h.sceneId === scene.id);
@@ -35,7 +34,7 @@ export function PropertiesPanel({ project, scene, canEdit }: {
 // Propiedades de escena
 // ---------------------------------------------------------------------------
 
-function SceneProperties({ project, scene, hotspots, canEdit }: {
+function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   project: ProjectInfo;
   scene: SceneRow;
   hotspots: HotspotRow[];
@@ -256,7 +255,7 @@ function SceneProperties({ project, scene, hotspots, canEdit }: {
 }
 
 /** Timeline de hotspots para escenas de video (§3.4). */
-function TimelinePanel({ scene, hotspots, canEdit }: { scene: SceneRow; hotspots: HotspotRow[]; canEdit: boolean }): React.ReactNode {
+function TimelinePanel({ scene: _scene, hotspots, canEdit }: { scene: SceneRow; hotspots: HotspotRow[]; canEdit: boolean }): React.ReactNode {
   const t = useT();
   const editor = useEditor();
   return (
@@ -314,7 +313,7 @@ function TimelinePanel({ scene, hotspots, canEdit }: { scene: SceneRow; hotspots
 // Propiedades de hotspot (17 tipos §2.8)
 // ---------------------------------------------------------------------------
 
-function HotspotProperties({ project, scene, hotspot, canEdit }: {
+function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   project: ProjectInfo;
   scene: SceneRow;
   hotspot: HotspotRow;
@@ -728,9 +727,14 @@ function AiAltButton({ mediaId, onSuggestion }: { mediaId: string; onSuggestion:
 
 function Section({ title, children }: { title: string; children: React.ReactNode }): React.ReactNode {
   return (
-    <details open className="rounded-lg border border-[var(--ull-border)] p-3">
-      <summary className="cursor-pointer text-[13px] font-semibold">{title}</summary>
-      <div className="mt-3 space-y-3">{children}</div>
+    <details open className="group rounded-xl border border-[var(--ull-border)] bg-[var(--ull-bg)] shadow-sm">
+      <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--ull-text-dim)] transition-colors hover:text-[var(--ull-text)]">
+        {title}
+        <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </summary>
+      <div className="space-y-3 px-3.5 pb-4 pt-1">{children}</div>
     </details>
   );
 }

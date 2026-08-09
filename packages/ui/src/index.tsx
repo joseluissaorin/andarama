@@ -34,12 +34,13 @@ export function cx(...parts: (string | false | null | undefined)[]): string {
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "outline";
 
 const BUTTON_STYLES: Record<ButtonVariant, string> = {
-  primary: "bg-[var(--ull-primary)] text-white hover:bg-[var(--ull-primary-dark)] disabled:opacity-50",
+  primary:
+    "bg-gradient-to-b from-[var(--ull-primary-light)] to-[var(--ull-primary)] text-white shadow-[0_1px_2px_rgba(26,33,64,0.25),inset_0_1px_0_rgba(255,255,255,0.22)] hover:brightness-110 hover:-translate-y-px active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0",
   secondary: "bg-[var(--ull-surface-2)] text-[var(--ull-text)] hover:bg-[var(--ull-border)] disabled:opacity-50",
   ghost: "bg-transparent text-[var(--ull-text)] hover:bg-[var(--ull-surface-2)] disabled:opacity-40",
   outline:
-    "bg-transparent border border-[var(--ull-border)] text-[var(--ull-text)] hover:bg-[var(--ull-surface-2)] disabled:opacity-50",
-  danger: "bg-[var(--ull-danger)] text-white hover:brightness-90 disabled:opacity-50",
+    "bg-[var(--ull-surface)] border border-[var(--ull-border)] text-[var(--ull-text)] shadow-sm hover:border-[var(--ull-primary-light)] hover:bg-[var(--ull-primary-soft)] disabled:opacity-50",
+  danger: "bg-[var(--ull-danger)] text-white shadow-sm hover:brightness-90 disabled:opacity-50",
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -85,7 +86,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 // ---------------------------------------------------------------------------
 
 const FIELD_CLS =
-  "w-full rounded-[var(--ull-radius)] border border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-2 text-sm text-[var(--ull-text)] placeholder:text-[var(--ull-text-dim)] focus:outline focus:outline-2 focus:outline-[var(--ull-primary)] disabled:opacity-50";
+  "w-full rounded-[var(--ull-radius)] border border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-2 text-sm text-[var(--ull-text)] placeholder:text-[var(--ull-text-dim)] transition-shadow duration-150 focus:outline-none focus:border-[var(--ull-primary)] focus:shadow-[var(--ull-ring)] disabled:opacity-50";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...rest },
@@ -173,10 +174,10 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Portal>
-        <RadixDialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-[2px]" />
+        <RadixDialog.Overlay className="fixed inset-0 z-50 bg-[#0a0e20]/55 backdrop-blur-[6px] data-[state=open]:animate-in data-[state=open]:fade-in" />
         <RadixDialog.Content
           className={cx(
-            "fixed left-1/2 top-1/2 z-50 max-h-[86vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl bg-[var(--ull-surface)] p-5 shadow-xl",
+            "fixed left-1/2 top-1/2 z-50 max-h-[86vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-6 shadow-[var(--ull-shadow-lg)]",
             wide === true ? "max-w-3xl" : "max-w-lg",
           )}
         >
@@ -216,7 +217,7 @@ export function DropdownContent({ children, ...rest }: RadixDropdown.DropdownMen
     <RadixDropdown.Portal>
       <RadixDropdown.Content
         sideOffset={6}
-        className="z-50 min-w-[180px] rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] p-1 shadow-lg"
+        className="z-50 min-w-[190px] rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-1.5 shadow-[var(--ull-shadow-lg)]"
         {...rest}
       >
         {children}

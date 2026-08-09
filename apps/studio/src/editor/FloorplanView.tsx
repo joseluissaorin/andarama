@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { Button, Field, Input, Select } from "@ull360/ui";
+import { Button, Field, Input } from "@ull360/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
@@ -11,7 +11,7 @@ import type { ProjectInfo } from "./EditorPage";
  * Editor de plano de planta (§3.4): subir plano, arrastrar escenas al plano,
  * orientar el radar (norte del panorama) y soporte multi-planta.
  */
-export function FloorplanView({ project, canEdit }: { project: ProjectInfo; canEdit: boolean }): React.ReactNode {
+export function FloorplanView({ project: _project, canEdit }: { project: ProjectInfo; canEdit: boolean }): React.ReactNode {
   const t = useT();
   const editor = useEditor();
   const snapshot = editor.snapshot!;

@@ -1,6 +1,6 @@
-import type { Floorplan, Scene, Tour } from "@ull360/schema";
+import type { Floorplan, Scene } from "@ull360/schema";
 import { createIconSvg, resolveUrl, type TourViewer } from "@ull360/viewer";
-import { el, iconButton, toast } from "./dom.js";
+import { el, toast } from "./dom.js";
 import type { Translator } from "./i18n.js";
 
 /**

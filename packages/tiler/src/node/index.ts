@@ -1,4 +1,4 @@
-import { applyMatrix, computePyramid, directionToEquirect, faceDirection, FACES, rotationMatrix, totalTileCount, type Face, type TileManifest } from "../math.js";
+import { applyMatrix, computePyramid, directionToEquirect, faceDirection, FACES, rotationMatrix, snapFaceSize, totalTileCount, type Face, type TileManifest } from "../math.js";
 
 /**
  * Tiler de Node (sharp/libvips): misma logica que el de navegador, para el
@@ -57,7 +57,7 @@ export async function tilePanoramaNode(
   const srcW = info.width;
   const srcH = info.height;
 
-  const faceSize = Math.min(Math.floor(srcW / 4), options.maxFaceSize ?? 8192);
+  const faceSize = snapFaceSize(Math.floor(srcW / 4), tileSize, options.maxFaceSize ?? 8192);
   const rot = rotationMatrix(options.yawOffset ?? 0, options.pitchOffset ?? 0, options.rollOffset ?? 0);
   const identity = (options.yawOffset ?? 0) === 0 && (options.pitchOffset ?? 0) === 0 && (options.rollOffset ?? 0) === 0;
 

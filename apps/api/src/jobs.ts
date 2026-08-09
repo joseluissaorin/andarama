@@ -20,7 +20,7 @@ export interface JobContext {
 }
 
 export async function processJob(ctx: JobContext, jobId: string): Promise<void> {
-  const { db, runtime } = ctx;
+  const { db } = ctx;
   const job = (await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1))[0];
   if (job == null || job.status === "done") return;
   if (!ctx.heavyCapable) {

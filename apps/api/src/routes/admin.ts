@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { desc, eq, isNull, sql, and } from "drizzle-orm";
+import { desc, eq, isNull, sql } from "drizzle-orm";
 import { auditLog, jobs, media, orgs, projects, publications, users, webhooks } from "@ull360/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, forbidden, notFound } from "../lib/errors.js";

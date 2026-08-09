@@ -1,3 +1,4 @@
+@import "@fontsource-variable/inter";
 @import "@ull360/ui/theme.css";
 @tailwind base;
 @tailwind components;
@@ -13,8 +14,39 @@ body {
   color: var(--ull-text);
   font-family: var(--ull-font);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(92, 104, 165, 0.25);
 }
 
 * {
   scrollbar-width: thin;
+  scrollbar-color: var(--ull-border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--ull-border);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Entradas suaves para vistas del Studio */
+@keyframes ull-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.ull-enter {
+  animation: ull-fade-up 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ull-enter { animation: none; }
 }
