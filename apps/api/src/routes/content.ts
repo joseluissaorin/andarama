@@ -14,7 +14,10 @@ const HOTSPOT_TYPES = [
   "model3d", "web", "form", "compare", "quiz", "polygon", "tooltip", "link", "state",
 ] as const;
 
+const clientId = z.string().regex(/^[A-Za-z0-9_-]{8,40}$/);
+
 const sceneCreateSchema = z.object({
+  id: clientId.optional(),
   title: z.string().min(1).max(200),
   type: z.enum(["image", "video", "flat"]).default("image"),
   mediaId: z.string().nullable().optional(),
@@ -35,6 +38,7 @@ const scenePatchSchema = z.object({
 });
 
 const hotspotSchema = z.object({
+  id: clientId.optional(),
   type: z.enum(HOTSPOT_TYPES),
   position: z.record(z.unknown()),
   style: z.record(z.unknown()).nullable().optional(),
@@ -44,6 +48,7 @@ const hotspotSchema = z.object({
 });
 
 const connectionSchema = z.object({
+  id: clientId.optional(),
   fromScene: z.string(),
   toScene: z.string(),
   entryMode: z.enum(["fixed", "relative", "lookBack"]).default("relative"),
@@ -90,7 +95,7 @@ export function contentRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const body = sceneCreateSchema.parse(await c.req.json());
     const existing = await db.select({ sort: scenesTable.sort }).from(scenesTable).where(eq(scenesTable.projectId, project.id));
-    const id = newId();
+    const id = body.id ?? newId();
     await db.insert(scenesTable).values({
       id,
       projectId: project.id,
@@ -168,7 +173,7 @@ export function contentRoutes(): Hono<AppEnv> {
     const scene = (await db.select().from(scenesTable).where(and(eq(scenesTable.id, sceneId), eq(scenesTable.projectId, project.id))).limit(1))[0];
     if (scene == null) throw notFound("Escena no encontrada");
     const body = hotspotSchema.parse(await c.req.json());
-    const id = newId();
+    const id = body.id ?? newId();
     await db.insert(hotspotsTable).values({
       id,
       sceneId,
@@ -237,7 +242,7 @@ export function contentRoutes(): Hono<AppEnv> {
     if (!validIds.has(body.fromScene) || !validIds.has(body.toScene)) {
       throw badRequest("Las escenas de la conexion no pertenecen al proyecto");
     }
-    const id = newId();
+    const id = body.id ?? newId();
     await db.insert(connectionsTable).values({
       id,
       projectId: project.id,

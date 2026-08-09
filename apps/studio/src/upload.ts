@@ -1,0 +1,287 @@
+import { detectPanorama, tilePanorama } from "@ull360/tiler";
+import { api, sha256Hex } from "./api";
+
+/**
+ * Pipeline de subida del Studio (§5.5):
+ * 1. sha256 del fichero -> POST /media (dedup + URLs prefirmadas)
+ * 2. subida directa (simple o multiparte reanudable)
+ * 3. para panoramas: tiling en el navegador (WebWorker) y subida de tiles
+ *    por lotes con URLs prefirmadas
+ * 4. registro del manifiesto de derivados + confirmacion
+ */
+
+export type MediaKind = "panorama" | "image" | "video" | "audio" | "pdf" | "model" | "floorplan" | "subtitle" | "file";
+
+export interface UploadProgress {
+  phase: "hashing" | "uploading" | "tiling" | "finalizing" | "done" | "error";
+  percent: number;
+  detail?: string;
+}
+
+export interface UploadedMedia {
+  id: string;
+  deduplicated: boolean;
+  clientLimited?: boolean;
+}
+
+export function detectKind(file: File): MediaKind {
+  const name = file.name.toLowerCase();
+  if (file.type.startsWith("video/")) return "video";
+  if (file.type.startsWith("audio/")) return "audio";
+  if (file.type === "application/pdf") return "pdf";
+  if (name.endsWith(".glb") || name.endsWith(".gltf") || name.endsWith(".obj") || name.endsWith(".stl")) return "model";
+  if (name.endsWith(".vtt") || name.endsWith(".srt")) return "subtitle";
+  if (file.type.startsWith("image/")) return "image";
+  return "file";
+}
+
+/** Extraccion minima de EXIF (orientacion + GPS) de un JPEG. */
+export async function extractExif(file: File): Promise<Record<string, unknown> | null> {
+  try {
+    const head = new DataView(await file.slice(0, 256 * 1024).arrayBuffer());
+    if (head.getUint16(0) !== 0xffd8) return null;
+    let offset = 2;
+    while (offset + 4 < head.byteLength) {
+      const marker = head.getUint16(offset);
+      const size = head.getUint16(offset + 2);
+      if (marker === 0xffe1) {
+        // APP1 EXIF
+        const tiffStart = offset + 10;
+        if (head.getUint32(offset + 4) !== 0x45786966) return null; // "Exif"
+        const little = head.getUint16(tiffStart) === 0x4949;
+        const get16 = (o: number): number => head.getUint16(o, little);
+        const get32 = (o: number): number => head.getUint32(o, little);
+        const ifd0 = tiffStart + get32(tiffStart + 4);
+        const out: Record<string, unknown> = {};
+        let gpsIfd = 0;
+        const entries = get16(ifd0);
+        for (let i = 0; i < entries; i++) {
+          const entry = ifd0 + 2 + i * 12;
+          const tag = get16(entry);
+          if (tag === 0x8825) gpsIfd = tiffStart + get32(entry + 8);
+          if (tag === 0x0112) out.orientation = get16(entry + 8);
+        }
+        if (gpsIfd > 0 && gpsIfd + 2 < head.byteLength) {
+          const gpsEntries = get16(gpsIfd);
+          let latRef = "N";
+          let lngRef = "E";
+          let lat: number | null = null;
+          let lng: number | null = null;
+          const rational = (o: number): number => {
+            const valOff = tiffStart + get32(o);
+            if (valOff + 24 > head.byteLength) return 0;
+            const d = (idx: number): number => get32(valOff + idx * 8) / Math.max(1, get32(valOff + idx * 8 + 4));
+            return d(0) + d(1) / 60 + d(2) / 3600;
+          };
+          for (let i = 0; i < gpsEntries; i++) {
+            const entry = gpsIfd + 2 + i * 12;
+            const tag = get16(entry);
+            if (tag === 1) latRef = String.fromCharCode(head.getUint8(entry + 8));
+            if (tag === 3) lngRef = String.fromCharCode(head.getUint8(entry + 8));
+            if (tag === 2) lat = rational(entry + 8);
+            if (tag === 4) lng = rational(entry + 8);
+          }
+          if (lat != null && lng != null && (lat !== 0 || lng !== 0)) {
+            out.gps = { lat: latRef === "S" ? -lat : lat, lng: lngRef === "W" ? -lng : lng };
+          }
+        }
+        return Object.keys(out).length > 0 ? out : null;
+      }
+      if ((marker & 0xff00) !== 0xff00) break;
+      offset += 2 + size;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function putWithRetry(url: string, body: Blob, contentType?: string, tries = 3): Promise<string | null> {
+  for (let attempt = 0; attempt < tries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: "PUT",
+        body,
+        headers: contentType != null ? { "content-type": contentType } : undefined,
+      });
+      if (res.ok) return res.headers.get("etag");
+    } catch {
+      // reintento
+    }
+    await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+  }
+  throw new Error(`Subida fallida: ${url.slice(0, 80)}`);
+}
+
+export async function uploadMedia(
+  orgId: string,
+  file: File,
+  kindOverride: MediaKind | null,
+  onProgress: (p: UploadProgress) => void,
+): Promise<UploadedMedia> {
+  onProgress({ phase: "hashing", percent: 2 });
+  const hash = await sha256Hex(file);
+  let kind = kindOverride ?? detectKind(file);
+  let panoInfo: { isPanorama: boolean; width: number; height: number } | null = null;
+  if (kind === "image" || kind === "panorama") {
+    try {
+      panoInfo = await detectPanorama(file);
+      if (kindOverride == null && panoInfo.isPanorama) kind = "panorama";
+    } catch {
+      // no decodificable como imagen: se tratara como fichero
+    }
+  }
+  const exif = file.type === "image/jpeg" ? await extractExif(file) : null;
+
+  const created = await api<{
+    deduplicated?: boolean;
+    media: { id: string; key: string };
+    upload?: { kind: "simple" | "multipart"; url?: string; uploadId?: string; partSize?: number; headers?: Record<string, string> };
+  }>("/media", {
+    method: "POST",
+    body: {
+      orgId,
+      kind,
+      filename: file.name,
+      mime: file.type || "application/octet-stream",
+      bytes: file.size,
+      sha256: hash,
+      multipart: file.size > 100 * 1024 * 1024,
+    },
+  });
+  if (created.deduplicated === true) {
+    onProgress({ phase: "done", percent: 100 });
+    return { id: (created as unknown as { media: { id: string } }).media.id, deduplicated: true };
+  }
+  const mediaId = created.media.id;
+  const upload = created.upload!;
+
+  onProgress({ phase: "uploading", percent: 8 });
+  if (upload.kind === "simple") {
+    await putWithRetry(upload.url!, file, file.type);
+  } else {
+    // Multiparte reanudable
+    const partSize = upload.partSize ?? 10 * 1024 * 1024;
+    const totalParts = Math.ceil(file.size / partSize);
+    const parts: { partNumber: number; etag: string }[] = [];
+    for (let batchStart = 1; batchStart <= totalParts; batchStart += 20) {
+      const nums = Array.from({ length: Math.min(20, totalParts - batchStart + 1) }, (_, i) => batchStart + i);
+      const { urls } = await api<{ urls: Record<number, string> }>(`/media/${mediaId}/parts`, {
+        method: "POST",
+        body: { uploadId: upload.uploadId, partNumbers: nums },
+      });
+      for (const n of nums) {
+        const blob = file.slice((n - 1) * partSize, Math.min(n * partSize, file.size));
+        const etag = await putWithRetry(urls[n]!, blob);
+        parts.push({ partNumber: n, etag: etag?.replaceAll('"', "") ?? `part-${n}` });
+        onProgress({ phase: "uploading", percent: 8 + (parts.length / totalParts) * 40 });
+      }
+    }
+    await api(`/media/${mediaId}/complete-multipart`, { method: "POST", body: { uploadId: upload.uploadId, parts } });
+  }
+
+  // Tiling en navegador para panoramas (§3.3)
+  let clientLimited = false;
+  if (kind === "panorama") {
+    onProgress({ phase: "tiling", percent: 50 });
+    const pendingUploads: Promise<unknown>[] = [];
+    let urlBatch: { key: string; blob: Blob }[] = [];
+    const flushBatch = async (): Promise<void> => {
+      if (urlBatch.length === 0) return;
+      const batch = urlBatch;
+      urlBatch = [];
+      const { urls } = await api<{ urls: Record<string, string> }>(`/media/${mediaId}/derivative-uploads`, {
+        method: "POST",
+        body: { keys: batch.map((b) => b.key) },
+      });
+      await Promise.all(
+        batch.map(async ({ key, blob }) => {
+          const url = urls[key];
+          if (url != null && url !== "") await putWithRetry(url, blob);
+        }),
+      );
+    };
+    const result = await tilePanorama(
+      file,
+      {},
+      {
+        onTile: (tile) => {
+          const key = `tiles/${mediaId}/${tile.level}/${tile.face}/${tile.y}/${tile.x}.${tile.blob.type === "image/jpeg" ? "jpg" : tile.blob.type.split("/")[1]}`;
+          urlBatch.push({ key, blob: tile.blob });
+          if (urlBatch.length >= 100) {
+            const p = flushBatch();
+            pendingUploads.push(p);
+            return p;
+          }
+          return undefined;
+        },
+        onProgress: (done, total) => {
+          onProgress({ phase: "tiling", percent: 50 + (done / total) * 40, detail: `${done}/${total}` });
+        },
+      },
+    );
+    clientLimited = result.clientLimited;
+    await flushBatch();
+    await Promise.all(pendingUploads);
+    // Miniatura + OG
+    const { urls } = await api<{ urls: Record<string, string> }>(`/media/${mediaId}/derivative-uploads`, {
+      method: "POST",
+      body: { keys: [`derived/${mediaId}/thumb.jpg`, `derived/${mediaId}/og.jpg`] },
+    });
+    await putWithRetry(urls[`derived/${mediaId}/thumb.jpg`]!, result.thumbnail, "image/jpeg");
+    await putWithRetry(urls[`derived/${mediaId}/og.jpg`]!, result.ogImage, "image/jpeg");
+    onProgress({ phase: "finalizing", percent: 92 });
+    await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "tiles", manifest: result.manifest } });
+    await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "thumb", manifest: {} } });
+    await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "og", manifest: {} } });
+    await api(`/media/${mediaId}/complete`, {
+      method: "POST",
+      body: {
+        width: result.sourceWidth,
+        height: result.sourceHeight,
+        exif: exif ?? undefined,
+      },
+    });
+    if (clientLimited) {
+      // Resolucion completa via contenedor de procesado
+      await api(`/media/${mediaId}/process`, { method: "POST" }).catch(() => {});
+    }
+  } else {
+    onProgress({ phase: "finalizing", percent: 92 });
+    let width: number | undefined;
+    let height: number | undefined;
+    let duration: number | undefined;
+    if (kind === "image" || kind === "floorplan") {
+      try {
+        const bmp = await createImageBitmap(file);
+        width = bmp.width;
+        height = bmp.height;
+        bmp.close();
+      } catch {
+        // no decodificable
+      }
+    }
+    if (kind === "video" || kind === "audio") {
+      duration = await mediaDuration(file).catch(() => undefined);
+    }
+    await api(`/media/${mediaId}/complete`, {
+      method: "POST",
+      body: { width, height, duration, exif: exif ?? undefined },
+    });
+  }
+  onProgress({ phase: "done", percent: 100 });
+  return { id: mediaId, deduplicated: false, clientLimited };
+}
+
+function mediaDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const el = document.createElement(file.type.startsWith("audio/") ? "audio" : "video");
+    el.preload = "metadata";
+    el.onloadedmetadata = () => {
+      URL.revokeObjectURL(el.src);
+      resolve(el.duration);
+    };
+    el.onerror = () => reject(new Error("No se pudo leer la duracion"));
+    el.src = URL.createObjectURL(file);
+  });
+}

@@ -23,7 +23,8 @@
   "dependencies": {
     "@ull360/schema": "workspace:*",
     "lucide": "^1.31.0",
-    "marzipano": "0.10.2"
+    "marzipano": "0.10.2",
+    "hls.js": "^1.6.17"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

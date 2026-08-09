@@ -47,6 +47,19 @@ try {
 
 await writeFile(join(outdir, "meta.json"), JSON.stringify(result.metafile));
 
+// Listado de ficheros del bundle (lo usa el exportador para copiar el visor)
+const { readdir } = await import("node:fs/promises");
+const listFiles = async (dir, prefix = "") => {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    if (entry.name === "files.json" || entry.name === "meta.json") continue;
+    if (entry.isDirectory()) out.push(...(await listFiles(join(dir, entry.name), `${prefix}${entry.name}/`)));
+    else out.push(`${prefix}${entry.name}`);
+  }
+  return out;
+};
+await writeFile(join(outdir, "files.json"), JSON.stringify(await listFiles(outdir)));
+
 // Presupuesto de rendimiento (§4.1): runtime base < 250 KB gzip.
 const mainJs = await readFile(join(outdir, "viewer.js"));
 const gzipKb = gzipSync(mainJs).length / 1024;

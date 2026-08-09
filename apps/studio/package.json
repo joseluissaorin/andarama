@@ -1,0 +1,41 @@
+{
+  "name": "@ull360/studio",
+  "version": "0.1.0",
+  "description": "ULL360 Studio: editor visual de tours en el navegador",
+  "license": "EUPL-1.2",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/collect-assets.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.66.0",
+    "@tanstack/react-router": "^1.97.3",
+    "@ull360/exporter": "workspace:*",
+    "@ull360/schema": "workspace:*",
+    "@ull360/tiler": "workspace:*",
+    "@ull360/ui": "workspace:*",
+    "@ull360/viewer": "workspace:*",
+    "@ull360/viewer-ui": "workspace:*",
+    "lucide-react": "^0.475.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.5"
+  }
+}
