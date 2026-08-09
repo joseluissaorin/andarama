@@ -1,0 +1,28 @@
+/* Tokens del tema institucional ULL (azul indigo #5C68A5 como primario). */
+:root {
+  --ull-primary: #5c68a5;
+  --ull-primary-dark: #47517f;
+  --ull-primary-light: #7c88c5;
+  --ull-accent: #d9a521;
+  --ull-bg: #f6f7fb;
+  --ull-surface: #ffffff;
+  --ull-surface-2: #eef0f7;
+  --ull-border: #d8dcea;
+  --ull-text: #1c2340;
+  --ull-text-dim: #5a627e;
+  --ull-danger: #c2453a;
+  --ull-ok: #2e8b57;
+  --ull-radius: 10px;
+  --ull-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ull-shadow: 0 1px 3px rgba(28, 35, 64, 0.08), 0 4px 16px rgba(28, 35, 64, 0.06);
+}
+
+.dark {
+  --ull-bg: #12162a;
+  --ull-surface: #1a2038;
+  --ull-surface-2: #232a48;
+  --ull-border: #323a5e;
+  --ull-text: #e8eaf4;
+  --ull-text-dim: #9aa2c2;
+  --ull-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
