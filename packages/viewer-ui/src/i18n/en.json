@@ -80,5 +80,7 @@
   "floor": "Floor {level}",
   "pdf_page": "Page {page} of {total}",
   "model_ar": "View in your space (AR)",
-  "error_load": "Could not load content"
+  "error_load": "Could not load content",
+  "transcript": "Transcript",
+  "invalid_email": "Enter a valid email"
 }

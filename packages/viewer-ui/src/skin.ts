@@ -554,6 +554,14 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         window.parent.postMessage({ ull360: "sceneChange", scene: e.scene.id }, "*"),
       );
       viewer.on("quizChange", (state) => window.parent.postMessage({ ull360: "quizChange", state }, "*"));
+      // Vista actual (limitada): permite sincronizar visores (comparador dividido)
+      let lastViewEmit = 0;
+      viewer.on("viewChange", (v) => {
+        const now = Date.now();
+        if (now - lastViewEmit < 80) return;
+        lastViewEmit = now;
+        window.parent.postMessage({ ull360: "viewChange", view: { yaw: v.yaw, pitch: v.pitch, fov: v.fov } }, "*");
+      });
     }
 
     // ------- Estado global para integraciones (adaptador SCORM, kiosko) -------

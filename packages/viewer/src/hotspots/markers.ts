@@ -34,12 +34,21 @@ interface ManagedMarker {
   visible: boolean;
 }
 
+interface ProjectedVideo {
+  hotspot: Hotspot & { corners: { yaw: number; pitch: number }[] };
+  video: HTMLVideoElement;
+}
+
+/** Lado del rectangulo fuente del video proyectado (la homografia lo deforma). */
+const PROJECTED_BASE = 640;
+
 const REFERENCE_FOV = 1.2;
 
 export class SceneMarkers {
   private markers: ManagedMarker[] = [];
   private polygonSvg: SVGSVGElement | null = null;
   private polygons: { hotspot: PolygonHotspot; path: SVGPathElement; visible: boolean }[] = [];
+  private projected: ProjectedVideo[] = [];
   private videoTime: number | null = null;
   private boundViewer: any = null;
 
@@ -70,41 +79,73 @@ export class SceneMarkers {
         this.buildPolygon(hotspot);
         continue;
       }
+      if (hotspot.type === "videoFile" && hotspot.mode === "projected" && hotspot.corners?.length === 4) {
+        // Pantalla proyectada: el video se mapea a las 4 esquinas reales con
+        // una homografia CSS (matrix3d) recalculada en cada viewChange.
+        this.buildProjectedVideo(hotspot);
+        continue;
+      }
       const anchor = document.createElement("div");
       anchor.className = "ull360-hotspot-anchor";
       const el = this.buildMarkerElement(hotspot);
       anchor.appendChild(el);
-      let marz: any;
-      if (hotspot.type === "videoFile" && hotspot.mode === "projected" && hotspot.corners?.length === 4) {
-        // Pantalla proyectada: hotspot con perspectiva (plano en la esfera).
-        const { center, widthDeg } = projectedRect(hotspot.corners);
-        const radius = 1200;
-        const widthPx = 2 * radius * Math.tan(((widthDeg / 2) * Math.PI) / 180);
-        const video = document.createElement("video");
-        video.src = resolveUrl(this.callbacks.baseUrl, hotspot.url);
-        video.crossOrigin = "anonymous";
-        video.loop = hotspot.loop ?? true;
-        video.muted = hotspot.muted ?? true;
-        video.autoplay = hotspot.autoplay ?? true;
-        video.playsInline = true;
-        video.style.width = `${widthPx}px`;
-        video.setAttribute("aria-label", this.label(hotspot));
-        el.replaceChildren(video);
-        el.classList.add("ull360-hotspot--projected");
-        marz = hotspotContainer.createHotspot(anchor, { yaw: center.yaw, pitch: center.pitch }, { perspective: { radius } });
-        void video.play().catch(() => {});
-      } else {
-        marz = hotspotContainer.createHotspot(anchor, { yaw: hotspot.yaw, pitch: hotspot.pitch });
-      }
+      const marz = hotspotContainer.createHotspot(anchor, { yaw: hotspot.yaw, pitch: hotspot.pitch });
       const managed: ManagedMarker = { hotspot, anchor, element: el, marzipanoHotspot: marz, visible: true };
       if (this.callbacks.editable === true) this.attachDrag(managed);
       this.markers.push(managed);
     }
-    if (this.polygons.length > 0) {
+    if (this.polygons.length > 0 || this.projected.length > 0) {
       this.boundViewer = this.marzScene.viewer();
       this.boundViewer.addEventListener?.("viewChange", this.updatePolygons);
     }
     this.updateVisibility(null);
+  }
+
+  /** Video proyectado: overlay propio deformado con matrix3d a las 4 esquinas. */
+  private buildProjectedVideo(hotspot: Hotspot & { corners?: { yaw: number; pitch: number }[] }): void {
+    const hs = hotspot as ProjectedVideo["hotspot"] & { url: string; loop?: boolean; muted?: boolean; autoplay?: boolean };
+    const video = document.createElement("video");
+    video.src = resolveUrl(this.callbacks.baseUrl, hs.url);
+    video.crossOrigin = "anonymous";
+    video.loop = hs.loop ?? true;
+    video.muted = hs.muted ?? true;
+    video.autoplay = hs.autoplay ?? true;
+    video.playsInline = true;
+    video.setAttribute("aria-label", this.label(hotspot));
+    video.className = "ull360-projected-video";
+    video.style.cssText = `position:absolute;left:0;top:0;width:${PROJECTED_BASE}px;height:${Math.round(PROJECTED_BASE * 9 / 16)}px;transform-origin:0 0;pointer-events:auto;cursor:pointer;z-index:2;`;
+    video.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (video.paused) void video.play();
+      else video.pause();
+    });
+    this.container.appendChild(video);
+    this.projected.push({ hotspot: hs, video });
+    void video.play().catch(() => {});
+    this.updateProjected();
+  }
+
+  private updateProjected(): void {
+    for (const p of this.projected) {
+      const pts = p.hotspot.corners.map((c) => {
+        try {
+          return this.view.coordinatesToScreen({ yaw: c.yaw, pitch: c.pitch }) as { x: number; y: number } | null;
+        } catch {
+          return null;
+        }
+      });
+      if (pts.some((pt) => pt == null)) {
+        p.video.style.visibility = "hidden";
+        continue;
+      }
+      const matrix = homographyMatrix3d(PROJECTED_BASE, Math.round((PROJECTED_BASE * 9) / 16), pts as { x: number; y: number }[]);
+      if (matrix == null) {
+        p.video.style.visibility = "hidden";
+        continue;
+      }
+      p.video.style.visibility = "";
+      p.video.style.transform = matrix;
+    }
   }
 
   private buildMarkerElement(hotspot: Hotspot): HTMLElement {
@@ -264,6 +305,7 @@ export class SceneMarkers {
    * no se deforme cuando parte de sus vértices sale del encuadre.
    */
   updatePolygons = (): void => {
+    this.updateProjected();
     if (this.polygons.length === 0) return;
     const SUBDIV = 6;
     for (const poly of this.polygons) {
@@ -360,21 +402,61 @@ export class SceneMarkers {
     this.polygonSvg?.remove();
     this.polygonSvg = null;
     this.polygons = [];
+    for (const p of this.projected) {
+      p.video.pause();
+      p.video.remove();
+    }
+    this.projected = [];
   }
 }
 
-function projectedRect(corners: { yaw: number; pitch: number }[]): {
-  center: { yaw: number; pitch: number };
-  widthDeg: number;
-  heightDeg: number;
-} {
-  const yaws = corners.map((c) => c.yaw);
-  const pitches = corners.map((c) => c.pitch);
-  const center = {
-    yaw: yaws.reduce((a, b) => a + b, 0) / yaws.length,
-    pitch: pitches.reduce((a, b) => a + b, 0) / pitches.length,
-  };
-  const widthDeg = ((Math.max(...yaws) - Math.min(...yaws)) * 180) / Math.PI;
-  const heightDeg = ((Math.max(...pitches) - Math.min(...pitches)) * 180) / Math.PI;
-  return { center, widthDeg, heightDeg };
+/**
+ * Homografia del rectangulo (0,0)-(w,h) a 4 puntos de pantalla (orden:
+ * arriba-izquierda, arriba-derecha, abajo-derecha, abajo-izquierda),
+ * expresada como transform matrix3d de CSS.
+ */
+function homographyMatrix3d(w: number, h: number, to: { x: number; y: number }[]): string | null {
+  const from = [
+    { x: 0, y: 0 },
+    { x: w, y: 0 },
+    { x: w, y: h },
+    { x: 0, y: h },
+  ];
+  // Sistema 8x8 para los coeficientes de la homografia (DLT)
+  const A: number[][] = [];
+  const b: number[] = [];
+  for (let i = 0; i < 4; i++) {
+    const s = from[i]!;
+    const d = to[i]!;
+    A.push([s.x, s.y, 1, 0, 0, 0, -s.x * d.x, -s.y * d.x]);
+    b.push(d.x);
+    A.push([0, 0, 0, s.x, s.y, 1, -s.x * d.y, -s.y * d.y]);
+    b.push(d.y);
+  }
+  const coeffs = solveLinear(A, b);
+  if (coeffs == null) return null;
+  const [a, bb, c, d, e, f, g, hh] = coeffs as [number, number, number, number, number, number, number, number];
+  // matrix3d por columnas
+  return `matrix3d(${a},${d},0,${g},${bb},${e},0,${hh},0,0,1,0,${c},${f},0,1)`;
 }
+
+/** Eliminacion gaussiana con pivoteo parcial. */
+function solveLinear(A: number[][], b: number[]): number[] | null {
+  const n = b.length;
+  const M = A.map((row, i) => [...row, b[i]!]);
+  for (let col = 0; col < n; col++) {
+    let pivot = col;
+    for (let row = col + 1; row < n; row++) {
+      if (Math.abs(M[row]![col]!) > Math.abs(M[pivot]![col]!)) pivot = row;
+    }
+    if (Math.abs(M[pivot]![col]!) < 1e-10) return null;
+    [M[col], M[pivot]] = [M[pivot]!, M[col]!];
+    for (let row = 0; row < n; row++) {
+      if (row === col) continue;
+      const factor = M[row]![col]! / M[col]![col]!;
+      for (let k = col; k <= n; k++) M[row]![k]! -= factor * M[col]![k]!;
+    }
+  }
+  return M.map((row, i) => row[n]! / M[i]![i]!);
+}
+

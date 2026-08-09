@@ -1,35 +1,42 @@
-/* Tokens del tema institucional ULL (indigo #5C68A5 + dorado). */
+/*
+ * Tokens del tema con la identidad corporativa oficial de la Universidad de
+ * La Laguna: Violeta ULL (Pantone 2597 C, #5c068c) + blanco, tipografia
+ * Argentum Sans (OFL; Montserrat como equivalente autorizado por el manual).
+ */
 :root {
-  --ull-primary: #5c68a5;
-  --ull-primary-dark: #47517f;
-  --ull-primary-light: #7c88c5;
-  --ull-primary-soft: #eceef9;
+  --ull-primary: #5c068c;
+  --ull-primary-dark: #43045f;
+  --ull-primary-light: #7d2fa8;
+  --ull-primary-soft: #f3e9fa;
   --ull-accent: #d9a521;
-  --ull-grad: linear-gradient(135deg, #5c68a5 0%, #7c88c5 55%, #9aa6df 100%);
-  --ull-grad-deep: linear-gradient(160deg, #232b52 0%, #47517f 50%, #5c68a5 100%);
-  --ull-bg: #f4f5fa;
+  --ull-grad: linear-gradient(135deg, #5c068c 0%, #7d2fa8 55%, #9a55c2 100%);
+  --ull-grad-deep: linear-gradient(160deg, #2e0347 0%, #4a0572 50%, #5c068c 100%);
+  --ull-bg: #f7f4fa;
   --ull-surface: #ffffff;
-  --ull-surface-2: #edeff7;
-  --ull-border: #dfe2ef;
-  --ull-text: #1a2140;
-  --ull-text-dim: #626a8c;
+  --ull-surface-2: #f1eaf7;
+  --ull-border: #e4dbee;
+  --ull-text: #251632;
+  --ull-text-dim: #6f6182;
   --ull-danger: #c2453a;
   --ull-ok: #2e8b57;
   --ull-radius: 10px;
-  --ull-font: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --ull-shadow: 0 1px 2px rgba(26, 33, 64, 0.06), 0 4px 14px rgba(26, 33, 64, 0.06);
-  --ull-shadow-lg: 0 2px 6px rgba(26, 33, 64, 0.07), 0 18px 44px rgba(26, 33, 64, 0.12);
-  --ull-ring: 0 0 0 3px rgba(92, 104, 165, 0.22);
+  --ull-font: "Argentum Sans", "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ull-shadow: 0 1px 2px rgba(37, 22, 50, 0.06), 0 4px 14px rgba(37, 22, 50, 0.06);
+  --ull-shadow-lg: 0 2px 6px rgba(37, 22, 50, 0.07), 0 18px 44px rgba(37, 22, 50, 0.12);
+  --ull-ring: 0 0 0 3px rgba(92, 6, 140, 0.18);
 }
 
 .dark {
-  --ull-primary-soft: #262e54;
-  --ull-bg: #10142a;
-  --ull-surface: #181e38;
-  --ull-surface-2: #222948;
-  --ull-border: #313a61;
-  --ull-text: #e9ebf6;
-  --ull-text-dim: #99a1c4;
+  --ull-primary: #a35fd1;
+  --ull-primary-dark: #7d2fa8;
+  --ull-primary-light: #bd85e3;
+  --ull-primary-soft: #3a1552;
+  --ull-bg: #150a1e;
+  --ull-surface: #1f1229;
+  --ull-surface-2: #2b1a3a;
+  --ull-border: #3d2951;
+  --ull-text: #f0e9f6;
+  --ull-text-dim: #a894bc;
   --ull-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
   --ull-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.4);
 }

@@ -1,8 +1,39 @@
-@import "@fontsource-variable/inter";
 @import "@ull360/ui/theme.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Argentum Sans: tipografia corporativa oficial de la ULL (Open Font License) */
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 300;
+  font-display: swap;
+  src: url("/studio/fonts/ArgentumSans-Light.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/studio/fonts/ArgentumSans-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 500;
+  font-display: swap;
+  src: url("/studio/fonts/ArgentumSans-Medium.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 600;
+  font-display: swap;
+  src: url("/studio/fonts/ArgentumSans-SemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 700;
+  font-display: swap;
+  src: url("/studio/fonts/ArgentumSans-Bold.woff2") format("woff2");
+}
 
 html, body, #root {
   height: 100%;
@@ -18,7 +49,7 @@ body {
 }
 
 ::selection {
-  background: rgba(92, 104, 165, 0.25);
+  background: rgba(92, 6, 140, 0.22);
 }
 
 * {

@@ -5,6 +5,7 @@ import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { UllLogo } from "../components/Shell";
+import marcaNegativo from "../brand/marca-ull-negativo.svg";
 
 export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "invite" }): React.ReactNode {
   const t = useT();
@@ -100,8 +101,8 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
             <circle cx="100" cy="100" r="5" fill="white" />
           </svg>
           <div className="flex items-center gap-3">
-            <UllLogo size={30} light />
-            <span className="text-lg font-bold tracking-tight">ULL360</span>
+            {/* Marca oficial en negativo (ficheros del manual de identidad) */}
+            <img src={marcaNegativo} alt="Universidad de La Laguna" className="h-11 w-auto" />
           </div>
           <div className="relative">
             <h2 className="text-[26px] font-bold leading-snug tracking-tight">
@@ -115,7 +116,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
               Universidad de La Laguna.
             </p>
           </div>
-          <p className="relative text-[11.5px] font-medium text-white/50">Universidad de La Laguna - EUPL-1.2</p>
+          <p className="relative text-[11.5px] font-medium text-white/50">ULL360 — código abierto (EUPL-1.2)</p>
         </div>
 
         {/* Formulario */}

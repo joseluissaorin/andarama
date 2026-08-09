@@ -60,7 +60,7 @@ export const VIEWER_CSS = `
     --u3-fg-dim: #5b6284;
   }
 }
-.ull360-viewer[data-theme="ull"] { --u3-primary: #5c68a5; --u3-primary-strong: #98a5e6; }
+.ull360-viewer[data-theme="ull"] { --u3-primary: #7d2fa8; --u3-primary-strong: #b07ad6; }
 
 .ull360-viewer *, .ull360-viewer *::before, .ull360-viewer *::after { box-sizing: border-box; }
 .ull360-viewer button { font-family: inherit; }
@@ -188,6 +188,20 @@ export const VIEWER_CSS = `
   color: var(--u3-glass-fg); box-shadow: var(--u3-shadow); cursor: pointer; }
 .ull360-compass__needle { transform-box: view-box; transform-origin: 50% 50%; transition: transform .12s linear; }
 @media (prefers-reduced-motion: reduce) { .ull360-compass__needle { transition: none; } }
+
+/* ============ Tooltip anclado ============ */
+.ull360-tooltip-bubble { position: absolute; transform: translate(-50%, -100%); z-index: 33; max-width: min(300px, 60vw);
+  background: var(--u3-bg-solid); color: var(--u3-fg); border: 1px solid var(--u3-border); border-radius: 12px;
+  padding: 9px 13px; font-size: 13px; line-height: 1.45; box-shadow: 0 8px 28px rgba(0,0,0,.4); pointer-events: none;
+  animation: u3fadein .15s ease; }
+.ull360-tooltip-bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%) rotate(45deg);
+  width: 10px; height: 10px; background: var(--u3-bg-solid); border-right: 1px solid var(--u3-border); border-bottom: 1px solid var(--u3-border); }
+
+/* ============ Comparador dividido (dos visores sincronizados) ============ */
+.ull360-split { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; height: min(70vh, 640px); background: var(--u3-border); }
+.ull360-split__pane { position: relative; overflow: hidden; }
+.ull360-split__pane iframe { width: 100%; height: 100%; border: 0; display: block; background: #0b1020; }
+@media (max-width: 720px) { .ull360-split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
 
 /* ============ Paneles / lightbox ============ */
 .ull360-panel-backdrop { position: absolute; inset: 0; background: rgba(4, 7, 18, .62);

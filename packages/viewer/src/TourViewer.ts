@@ -731,8 +731,19 @@ export class TourViewer {
       }
       case "audio": {
         if (hotspot.mode === "spatial") {
-          // fuente espacial puntual: reproducir anclada una vez
+          // Fuente posicional real: suena anclada al punto y sigue la vista
+          // (panner HRTF). Clic alterna reproducir/parar; no abre panel.
+          const playing = this.audio.toggleSpatialHotspot(hotspot.id, {
+            id: hotspot.id,
+            url: hotspot.url,
+            yaw: hotspot.yaw,
+            pitch: hotspot.pitch,
+            volume: hotspot.volume,
+            loop: hotspot.loop ?? true,
+          });
+          element?.setAttribute("aria-pressed", String(playing));
           this.audio.updateListener(this.view().yaw, this.view().pitch);
+          return;
         }
         this.emit("hotspotActivate", { hotspot, scene, element });
         return;

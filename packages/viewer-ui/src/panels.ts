@@ -56,6 +56,11 @@ export class PanelHost {
 
   open(hotspot: Hotspot, anchor: HTMLElement | null): void {
     this.close();
+    // Un tooltip es una burbuja anclada al marcador, no un modal.
+    if (hotspot.type === "tooltip" && anchor != null) {
+      this.openTooltip(hotspot, anchor);
+      return;
+    }
     this.lastFocus = (anchor ?? document.activeElement) as HTMLElement | null;
     const ctx: PanelContext = { ...this.ctx, onClose: () => this.close() };
     const content = buildPanelContent(hotspot, ctx);
@@ -89,6 +94,37 @@ export class PanelHost {
     this.releaseFocus = trapFocus(this.backdrop, () => this.close());
     closeBtn.focus();
     content.onMounted?.();
+  }
+
+  /** Burbuja de tooltip pegada al marcador; se cierra sola al mover la vista. */
+  private openTooltip(hotspot: Hotspot, anchor: HTMLElement): void {
+    const text = this.ctx.viewer.text((hotspot as { text?: unknown }).text as never) || this.ctx.viewer.text(hotspot.label);
+    if (text === "") return;
+    const existing = this.ctx.container.querySelector(`.ull360-tooltip-bubble[data-for="${hotspot.id}"]`);
+    if (existing != null) {
+      existing.remove();
+      return;
+    }
+    this.ctx.container.querySelectorAll(".ull360-tooltip-bubble").forEach((b) => b.remove());
+    const bubble = el("div", { className: "ull360-tooltip-bubble", role: "status", "data-for": hotspot.id, text });
+    this.ctx.container.appendChild(bubble);
+    const place = (): void => {
+      const cRect = this.ctx.container.getBoundingClientRect();
+      const aRect = anchor.getBoundingClientRect();
+      bubble.style.left = `${aRect.left - cRect.left + aRect.width / 2}px`;
+      bubble.style.top = `${aRect.top - cRect.top - 10}px`;
+    };
+    place();
+    const offView = this.ctx.viewer.on("viewChange", place);
+    const offScene = this.ctx.viewer.on("sceneChange", () => cleanup());
+    const cleanup = (): void => {
+      offView();
+      offScene();
+      bubble.remove();
+    };
+    if ((hotspot as { permanent?: boolean }).permanent !== true) {
+      setTimeout(cleanup, 6000);
+    }
   }
 }
 
@@ -358,7 +394,7 @@ function audioPanel(hs: AudioHotspot, ctx: PanelContext): PanelContent {
   const transcript = ctx.viewer.text(hs.transcript);
   if (transcript !== "") {
     const details = el("details", { style: "margin-top:12px;" });
-    details.appendChild(el("summary", { text: "Transcripcion" }));
+    details.appendChild(el("summary", { text: ctx.t("transcript") }));
     const prose = el("div", { className: "ull360-prose" });
     prose.innerHTML = renderMarkdown(transcript);
     details.appendChild(prose);
@@ -457,6 +493,17 @@ function modelPanel(hs: Model3dHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
   const holder = el("div", { style: "height:60vh;background:#1a1a2a;" });
   body.appendChild(holder);
+  if (hs.format === "obj" || hs.format === "stl") {
+    return {
+      body,
+      wide: true,
+      onMounted: () => {
+        void renderThreeModel(holder, resolveUrl(ctx.baseUrl, hs.url), hs.format as "obj" | "stl", ctx).catch(() => {
+          holder.textContent = ctx.t("error_load");
+        });
+      },
+    };
+  }
   return {
     body,
     wide: true,
@@ -487,9 +534,80 @@ function modelPanel(hs: Model3dHotspot, ctx: PanelContext): PanelContent {
   };
 }
 
+/** Modelos OBJ/STL con three.js (carga perezosa; glTF/GLB usan model-viewer). */
+async function renderThreeModel(holder: HTMLElement, url: string, format: "obj" | "stl", ctx: PanelContext): Promise<void> {
+  const [three, controlsMod, loaderMod] = await Promise.all([
+    import(/* @vite-ignore */ "three" as string),
+    import(/* @vite-ignore */ "three/examples/jsm/controls/OrbitControls.js" as string),
+    format === "obj"
+      ? import(/* @vite-ignore */ "three/examples/jsm/loaders/OBJLoader.js" as string)
+      : import(/* @vite-ignore */ "three/examples/jsm/loaders/STLLoader.js" as string),
+  ]);
+  const THREE: any = three;
+  const width = holder.clientWidth || 800;
+  const height = holder.clientHeight || 480;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a1a2a);
+  const camera = new THREE.PerspectiveCamera(50, width / height, 0.01, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  holder.replaceChildren(renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dir = new THREE.DirectionalLight(0xffffff, 1.4);
+  dir.position.set(3, 5, 4);
+  scene.add(dir);
+
+  const material = new THREE.MeshStandardMaterial({ color: 0xb8bdd0, metalness: 0.1, roughness: 0.7 });
+  let object: any;
+  if (format === "obj") {
+    const loader = new (loaderMod as any).OBJLoader();
+    object = await loader.loadAsync(url);
+    object.traverse((child: any) => {
+      if (child.isMesh && child.material?.map == null) child.material = material;
+    });
+  } else {
+    const loader = new (loaderMod as any).STLLoader();
+    const geometry = await loader.loadAsync(url);
+    geometry.computeVertexNormals();
+    object = new THREE.Mesh(geometry, material);
+  }
+  // Centrar y encuadrar
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3()).length() || 1;
+  const center = box.getCenter(new THREE.Vector3());
+  object.position.sub(center);
+  scene.add(object);
+  camera.position.set(size * 0.7, size * 0.5, size * 0.9);
+  const controls = new (controlsMod as any).OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 1.2;
+  let alive = true;
+  const tick = (): void => {
+    if (!alive) return;
+    if (!document.contains(holder)) {
+      alive = false;
+      renderer.dispose();
+      return;
+    }
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  };
+  tick();
+  void ctx;
+}
+
 function webPanel(hs: WebHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
-  const sandbox = (hs.sandbox ?? ["allow-scripts", "allow-same-origin", "allow-forms"]).join(" ");
+  // Sandbox estricto por defecto: allow-scripts + allow-same-origin juntos
+  // anulan el aislamiento, asi que same-origin es opt-in explicito.
+  const sandbox = Array.isArray(hs.sandbox)
+    ? hs.sandbox.join(" ")
+    : (hs.sandbox as unknown) === "permissive"
+      ? "allow-scripts allow-same-origin allow-forms allow-popups"
+      : "allow-scripts allow-forms allow-popups";
   const iframe = el("iframe", {
     src: hs.url,
     sandbox,
@@ -570,7 +688,7 @@ function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
         return;
       }
       if (f.input instanceof HTMLInputElement && f.input.type === "email" && f.input.value !== "" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.input.value)) {
-        f.input.insertAdjacentElement("afterend", el("p", { className: "ull360-form__error", text: ctx.t("required_field") }));
+        f.input.insertAdjacentElement("afterend", el("p", { className: "ull360-form__error", text: ctx.t("invalid_email") }));
         return;
       }
     }
@@ -656,28 +774,55 @@ function comparePanel(hs: CompareHotspot, ctx: PanelContext): PanelContent {
   return { body, wide: true };
 }
 
-/** Comparador de dos panoramas completos de la misma escena. */
+/**
+ * Comparador de dos panoramas: vista dividida con dos visores sincronizados
+ * (dos iframes del propio tour, acoplados por la API postMessage). Arrastrar
+ * en uno mueve el otro: la comparación es real, no dos botones.
+ */
 function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body" });
-  const info = el("p", { className: "ull360-prose" });
+  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
   const beforeLabel = ctx.viewer.text(hs.before.label) || ctx.t("before");
   const afterLabel = ctx.viewer.text(hs.after.label) || ctx.t("after");
-  info.textContent = `${beforeLabel} / ${afterLabel}`;
-  const buttons = el("div", { style: "display:flex;gap:10px;margin-top:12px;" });
-  const mk = (label: string, sceneId: string | undefined): HTMLButtonElement => {
-    const b = el("button", { className: "ull360-primary-btn", type: "button", text: label, style: "margin-top:0;flex:1;" });
-    b.addEventListener("click", () => {
-      if (sceneId != null) {
-        const v = ctx.viewer.view();
-        ctx.onClose();
-        void ctx.viewer.goTo(sceneId, { view: v, transition: { kind: "fade", duration: 400 } });
-      }
+  const split = el("div", { className: "ull360-split" });
+  const v = ctx.viewer.view();
+  const frames: HTMLIFrameElement[] = [];
+  const mkPane = (sceneId: string | undefined, label: string): HTMLElement => {
+    const pane = el("div", { className: "ull360-split__pane" });
+    if (sceneId == null) return pane;
+    const iframe = el("iframe", {
+      src: `${location.pathname}${location.search}#s=${encodeURIComponent(sceneId)}&y=${v.yaw.toFixed(3)}&p=${v.pitch.toFixed(3)}&f=${v.fov.toFixed(3)}`,
+      title: label,
+      allow: "fullscreen; gyroscope",
     });
-    return b;
+    frames.push(iframe);
+    pane.append(iframe, el("span", { className: "ull360-compare__tag", text: label, style: "left:10px;top:10px;bottom:auto;" }));
+    return pane;
   };
-  buttons.append(mk(beforeLabel, hs.before.sceneId), mk(afterLabel, hs.after.sceneId));
-  body.append(info, buttons);
-  return { body };
+  split.append(mkPane(hs.before.sceneId, beforeLabel), mkPane(hs.after.sceneId, afterLabel));
+  body.appendChild(split);
+
+  // Sincronía bidireccional con supresión de eco
+  let lastPush = 0;
+  const onMessage = (e: MessageEvent): void => {
+    const data = e.data as { ull360?: string; view?: { yaw: number; pitch: number; fov: number } };
+    if (data?.ull360 !== "viewChange" || data.view == null) return;
+    const from = frames.find((f) => f.contentWindow === e.source);
+    if (from == null) return;
+    if (Date.now() - lastPush < 120) return;
+    lastPush = Date.now();
+    for (const f of frames) {
+      if (f !== from) f.contentWindow?.postMessage({ ull360: "setView", view: data.view }, "*");
+    }
+  };
+  window.addEventListener("message", onMessage);
+  const observer = new MutationObserver(() => {
+    if (!document.contains(split)) {
+      window.removeEventListener("message", onMessage);
+      observer.disconnect();
+    }
+  });
+  observer.observe(ctx.container, { childList: true, subtree: true });
+  return { body, wide: true };
 }
 
 function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {

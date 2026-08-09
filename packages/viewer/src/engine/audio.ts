@@ -189,34 +189,65 @@ export class AudioEngine {
     }
   }
 
-  private startSpatial(sources: SpatialAudioSource[]): void {
+  private buildSpatial(src: SpatialAudioSource): { src: SpatialAudioSource; el: HTMLAudioElement; panner: PannerNode; gain: GainNode } | null {
     const ctx = this.ensureCtx();
-    for (const src of sources) {
-      const el = new Audio(this.resolveUrl(this.baseUrl, src.url));
-      el.loop = src.loop ?? true;
-      el.crossOrigin = "anonymous";
-      el.muted = this.mutedFlag;
-      if (ctx != null && this.master != null) {
-        const node = ctx.createMediaElementSource(el);
-        const panner = ctx.createPanner();
-        panner.panningModel = "HRTF";
-        panner.distanceModel = "inverse";
-        panner.refDistance = 1;
-        const gain = ctx.createGain();
-        gain.gain.value = src.volume ?? 0.8;
-        node.connect(gain);
-        gain.connect(panner);
-        panner.connect(this.master);
-        // Posicion fija en la esfera unitaria; el listener rota con la vista.
-        const r = 3;
-        panner.positionX.value = r * Math.cos(src.pitch) * Math.sin(src.yaw);
-        panner.positionY.value = r * Math.sin(src.pitch);
-        panner.positionZ.value = -r * Math.cos(src.pitch) * Math.cos(src.yaw);
-        this.spatial.push({ src, el, panner, gain });
-      }
+    const el = new Audio(this.resolveUrl(this.baseUrl, src.url));
+    el.loop = src.loop ?? true;
+    el.crossOrigin = "anonymous";
+    el.muted = this.mutedFlag;
+    if (ctx == null || this.master == null) {
       void el.play().catch(() => {});
+      return null;
     }
+    const node = ctx.createMediaElementSource(el);
+    const panner = ctx.createPanner();
+    panner.panningModel = "HRTF";
+    panner.distanceModel = "inverse";
+    panner.refDistance = 1;
+    const gain = ctx.createGain();
+    gain.gain.value = src.volume ?? 0.8;
+    node.connect(gain);
+    gain.connect(panner);
+    panner.connect(this.master);
+    // Posicion fija en la esfera; el listener rota con la vista.
+    const r = 3;
+    panner.positionX.value = r * Math.cos(src.pitch) * Math.sin(src.yaw);
+    panner.positionY.value = r * Math.sin(src.pitch);
+    panner.positionZ.value = -r * Math.cos(src.pitch) * Math.cos(src.yaw);
+    const entry = { src, el, panner, gain };
+    this.spatial.push(entry);
+    void el.play().catch(() => {});
+    return entry;
   }
+
+  private startSpatial(sources: SpatialAudioSource[]): void {
+    for (const src of sources) this.buildSpatial(src);
+  }
+
+  /**
+   * Fuente espacial de un hotspot de audio: clic alterna reproducir/parar.
+   * Devuelve true si ha quedado sonando.
+   */
+  toggleSpatialHotspot(id: string, src: SpatialAudioSource): boolean {
+    this.unlock();
+    const existing = this.hotspotSpatial.get(id);
+    if (existing != null) {
+      existing.el.pause();
+      try {
+        existing.panner.disconnect();
+      } catch {
+        // ya desconectado
+      }
+      this.spatial = this.spatial.filter((s) => s !== existing);
+      this.hotspotSpatial.delete(id);
+      return false;
+    }
+    const entry = this.buildSpatial(src);
+    if (entry != null) this.hotspotSpatial.set(id, entry);
+    return true;
+  }
+
+  private hotspotSpatial = new Map<string, { src: SpatialAudioSource; el: HTMLAudioElement; panner: PannerNode; gain: GainNode }>();
 
   private stopSpatial(): void {
     for (const s of this.spatial) {
@@ -228,6 +259,7 @@ export class AudioEngine {
       }
     }
     this.spatial = [];
+    this.hotspotSpatial.clear();
   }
 
   /** Actualiza la orientacion del listener con la vista actual. */

@@ -4,6 +4,8 @@ import { FolderKanban, Image, Languages, LogOut, ShieldCheck, UserCircle } from 
 import { Button, Select, Spinner, Tooltip } from "@ull360/ui";
 import { useAuth } from "../stores";
 import { useI18nStore, useT } from "../i18n";
+import iconoUll from "../brand/icono-ull.svg";
+import iconoUllBlanco from "../brand/icono-ull-blanco.svg";
 
 /** Marco de navegacion del Studio. */
 export function Shell(): React.ReactNode {
@@ -34,12 +36,13 @@ export function Shell(): React.ReactNode {
     <div className="flex h-full">
       <aside className="flex w-60 flex-col border-r border-[var(--ull-border)] bg-[var(--ull-surface)]">
         <div className="flex items-center gap-3 px-4 pb-4 pt-5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[image:var(--ull-grad-deep)] shadow-[var(--ull-shadow)]">
-            <UllLogo size={24} light />
+          {/* Simbolo oficial ULL sobre violeta corporativo (version icono del manual) */}
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#5c068c] shadow-[var(--ull-shadow)]">
+            <UllLogo size={22} light />
           </span>
           <div className="leading-tight">
             <span className="block text-[15px] font-bold tracking-tight">ULL360</span>
-            <span className="block text-[11px] font-medium text-[var(--ull-text-dim)]">Studio</span>
+            <span className="block text-[11px] font-medium text-[var(--ull-text-dim)]">Universidad de La Laguna</span>
           </div>
         </div>
         {me.orgs.length > 0 && (
@@ -113,13 +116,7 @@ function NavItem({ to, icon, label }: { to: string; icon: React.ReactNode; label
   );
 }
 
+/** Símbolo oficial de la Universidad de La Laguna (ficheros del manual, sin alteración). */
 export function UllLogo({ size = 26, light = false }: { size?: number; light?: boolean }): React.ReactNode {
-  const stroke = light ? "#ffffff" : "var(--ull-primary)";
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <circle cx="16" cy="16" r="14" fill="none" stroke={stroke} strokeWidth="3" />
-      <ellipse cx="16" cy="16" rx="14" ry="6" fill="none" stroke={stroke} strokeWidth="2" opacity="0.6" />
-      <circle cx="16" cy="16" r="3.5" fill={stroke} />
-    </svg>
-  );
+  return <img src={light ? iconoUllBlanco : iconoUll} alt="" width={size} height={size} aria-hidden="true" style={{ display: "block" }} />;
 }
