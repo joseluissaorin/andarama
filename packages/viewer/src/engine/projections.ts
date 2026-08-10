@@ -29,9 +29,6 @@ uniform float uMix;       // mezcla rectilinea->proyeccion [0,1]
 
 // Rota una direccion de camara (x dcha, y arriba, z delante) al mundo segun la vista.
 vec3 camToWorld(vec3 d, float yaw, float pitch) {
-  // Ajuste de balanceo: el par (muestreo equirect, subida de textura) del
-  // pipeline gira la base 180 grados; se compensa negando x e y de camara.
-  d = vec3(-d.x, -d.y, d.z);
   float cp = cos(pitch); float sp = sin(pitch);
   vec3 p = vec3(d.x, d.y * cp + d.z * sp, -d.y * sp + d.z * cp);
   float cy = cos(yaw); float sy = sin(yaw);
@@ -39,10 +36,9 @@ vec3 camToWorld(vec3 d, float yaw, float pitch) {
 }
 
 vec2 dirToEquirect(vec3 d) {
-  float u = 0.5 - atan(d.x, d.z) / 6.28318530718;
-  // La fila superior de la textura (cenit) queda en v=1 al subir un canvas
-  // sin UNPACK_FLIP_Y: el eje vertical va invertido respecto a la intuicion.
-  float v = 0.5 + asin(clamp(d.y, -1.0, 1.0)) / 3.14159265359;
+  // Equirect estandar: u=0.5 en yaw 0, fila superior (v=0) = cenit.
+  float u = 0.5 + atan(d.x, d.z) / 6.28318530718;
+  float v = 0.5 - asin(clamp(d.y, -1.0, 1.0)) / 3.14159265359;
   return vec2(u, v);
 }
 
@@ -50,37 +46,42 @@ void main() {
   vec2 ndc = vUv * 2.0 - 1.0;
   float x = ndc.x * uAspect;
   float y = ndc.y;
+  // Eje vertical de pantalla para los modos de camara (calibrado
+  // empiricamente contra el render rectilineo de Marzipano).
+  float ys = -y;
   float S = tan(uFov * 0.5);
 
   // Direccion rectilinea (para la mezcla de entrada/salida)
-  vec3 straight = camToWorld(normalize(vec3(x * S, y * S, 1.0)), uYaw, uPitch);
+  vec3 straight = camToWorld(normalize(vec3(x * S, ys * S, 1.0)), uYaw, uPitch);
 
   vec3 world;
   if (uMode == 1) {
     // Little planet: estereografica desde el nadir; el arrastre gira y ladea el planeta.
     float r = length(vec2(x, y));
     float theta = 2.0 * atan(r * S * 0.9);
-    float phi = atan(y, x);
+    // phi invertida: al mirar el suelo desde arriba la quiralidad se voltea
+    // y sin esta inversion el texto del panorama se lee en espejo.
+    float phi = atan(y, -x);
     vec3 cam = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
     world = camToWorld(cam, uYaw, -1.57079632679 + uPitch * 0.5);
   } else if (uMode == 2) {
     // Ojo de pez equidistante: theta proporcional al radio.
     float r = length(vec2(x, y));
     float theta = r * uFov * 0.75;
-    float phi = atan(y, x);
+    float phi = atan(ys, x);
     vec3 cam = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
     world = camToWorld(cam, uYaw, uPitch);
   } else if (uMode == 3) {
     // Panini (d=1): compresion cilindrica horizontal, correcta para interiores anchos.
     float hx = x * S;
-    float hy = y * S;
+    float hy = ys * S;
     float phi = 2.0 * atan(hx * 0.5);
     float tv = hy * (1.0 + cos(phi)) * 0.5;
     world = camToWorld(normalize(vec3(sin(phi), tv, cos(phi))), uYaw, uPitch);
   } else if (uMode == 4) {
     // Arquitectonica: cilindrica vertical, mantiene las verticales rectas.
     float hx = x * S;
-    float vphi = clamp(y * uFov * 0.5, -1.45, 1.45);
+    float vphi = clamp(ys * uFov * 0.5, -1.45, 1.45);
     world = camToWorld(normalize(vec3(hx, tan(vphi), 1.0)), uYaw, uPitch);
   } else {
     world = straight;

@@ -1202,7 +1202,8 @@ async function assembleEquirectFromCube(
     }
     const o = outData.data;
     for (let py = 0; py < outH; py++) {
-      const phi = ((py + 0.5) / outH - 0.5) * Math.PI;
+      // Fila 0 = cenit (equirect estandar, como los previews y las fotos)
+      const phi = (0.5 - (py + 0.5) / outH) * Math.PI;
       const cosPhi = Math.cos(phi);
       const sinPhi = Math.sin(phi);
       for (let px = 0; px < outW; px++) {
