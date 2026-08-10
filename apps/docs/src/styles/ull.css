@@ -1,0 +1,117 @@
+/*
+ * Identidad corporativa de la Universidad de La Laguna aplicada a la
+ * documentación: Violeta ULL (Pantone 2597 C, #5c068c) y tipografía oficial
+ * Argentum Sans (SIL Open Font License 1.1).
+ */
+
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 300;
+  font-display: swap;
+  src: url("/docs/fonts/ArgentumSans-Light.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/docs/fonts/ArgentumSans-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 500;
+  font-display: swap;
+  src: url("/docs/fonts/ArgentumSans-Medium.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 600;
+  font-display: swap;
+  src: url("/docs/fonts/ArgentumSans-SemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Argentum Sans";
+  font-weight: 700;
+  font-display: swap;
+  src: url("/docs/fonts/ArgentumSans-Bold.woff2") format("woff2");
+}
+
+:root {
+  --sl-font: "Argentum Sans", "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Tema claro: violeta corporativo sobre blanco (1.ª preferencia del manual) */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #f3e9fa;
+  --sl-color-accent: #5c068c;
+  --sl-color-accent-high: #43045f;
+  --sl-color-white: #251632;
+  --sl-color-gray-1: #2f1f3d;
+  --sl-color-gray-2: #4a3a58;
+  --sl-color-gray-3: #6f6182;
+  --sl-color-gray-4: #a294b3;
+  --sl-color-gray-5: #e4dbee;
+  --sl-color-gray-6: #f1eaf7;
+  --sl-color-gray-7: #f7f4fa;
+  --sl-color-black: #ffffff;
+}
+
+/* Tema oscuro: violeta aclarado para mantener el contraste AA */
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #3a1552;
+  --sl-color-accent: #a35fd1;
+  --sl-color-accent-high: #d9bcee;
+  --sl-color-white: #f0e9f6;
+  --sl-color-gray-1: #e6dcef;
+  --sl-color-gray-2: #c9b9d8;
+  --sl-color-gray-3: #a894bc;
+  --sl-color-gray-4: #6b5680;
+  --sl-color-gray-5: #3d2951;
+  --sl-color-gray-6: #2b1a3a;
+  --sl-color-black: #150a1e;
+}
+
+/* Cabecera con el violeta institucional y la marca en negativo */
+.header {
+  background: #5c068c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+:root[data-theme="dark"] .header {
+  background: #2e0347;
+}
+.header a,
+.header button,
+.header .site-title {
+  color: #ffffff;
+}
+/* Marca completa horizontal: altura suficiente para que el logotipo se lea
+   (el manual fija 5,5 mm de mínimo para la marca con texto). */
+.site-title img {
+  height: 2.9rem;
+  width: auto;
+  max-width: min(60vw, 260px);
+  object-fit: contain;
+}
+@media (max-width: 50rem) {
+  .site-title img {
+    height: 2.3rem;
+  }
+}
+/* El buscador sobre el violeta necesita su propio contraste */
+.header site-search button {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+}
+.header site-search button kbd {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+/* Detalles editoriales */
+.sl-markdown-content h1,
+.sl-markdown-content h2 {
+  letter-spacing: -0.015em;
+}
+.sl-markdown-content a:not(:where(.not-content *)) {
+  text-underline-offset: 0.2em;
+}

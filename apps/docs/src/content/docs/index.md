@@ -17,9 +17,9 @@ ULL360 es una plataforma web de código abierto para crear, publicar y distribui
 ## Capacidades principales
 
 - Panoramas multirresolución (tiles) hasta 32K, panoramas parciales, cubemaps y gigapixel 2D.
-- Video 360 (MP4/WebM/HLS, mono y estéreo) con hotspots sincronizados por línea de tiempo.
+- Vídeo 360 (MP4/WebM/HLS, mono y estéreo) con hotspots sincronizados por línea de tiempo.
 - Audio ambiente, narración (con bloqueo de navegación), audio espacial HRTF y música global con ducking.
-- 17 tipos de hotspot: navegación, texto Markdown, imagen con zoom profundo, galería, video, YouTube/Vimeo/PeerTube, audio, PDF, modelo 3D (con AR), web, formulario con Turnstile, comparador (imágenes o panoramas), quiz, polígono, etiqueta, enlace y contador/estado.
+- 17 tipos de hotspot: navegación, texto Markdown, imagen con zoom profundo, galería, vídeo, YouTube/Vimeo/PeerTube, audio, PDF, modelo 3D (con AR), web, formulario con Turnstile, comparador (imágenes o panoramas), quiz, polígono, etiqueta, enlace y contador/estado.
 - Planos de planta con radar de orientación multi-planta y mapa geográfico OSM/Leaflet.
 - Modo VR (WebXR + cardboard), giroscopio, deep links, proyecciones little planet/fisheye/panini/arquitectónica.
 - Multiidioma de contenido con export/import XLIFF y CSV.

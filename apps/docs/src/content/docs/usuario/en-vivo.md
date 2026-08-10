@@ -10,6 +10,6 @@ Un **guía** puede controlar la escena y la orientación de la vista de N asiste
 4. Todo lo que hagas (cambiar de escena, girar la vista, hacer zoom) se replica en los asistentes. Con `Alt + clic` marcas un **puntero** visible para todos. Hay **chat de texto** integrado.
 5. Los asistentes pueden **soltarse** para explorar libremente y volver a sincronizar cuando quieran.
 
-**Audio**: la plataforma no transmite audio propio. El patrón recomendado es abrir en paralelo una videollamada (Google Meet o Teams) para la voz, y compartir allí el enlace de asistentes. Así cada participante mueve su propia vista sincronizada en lugar de ver un video del escritorio del guía (mucho menos ancho de banda y calidad perfecta).
+**Audio**: la plataforma no transmite audio propio. El patrón recomendado es abrir en paralelo una videollamada (Google Meet o Teams) para la voz, y compartir allí el enlace de asistentes. Así cada participante mueve su propia vista sincronizada en lugar de ver un vídeo del escritorio del guía (mucho menos ancho de banda y calidad perfecta).
 
 Implementación: WebSockets sobre Durable Objects en Cloudflare o el servidor ws integrado en self-host. Las salas son efímeras: desaparecen cuando el guía se va.

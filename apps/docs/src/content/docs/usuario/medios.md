@@ -8,11 +8,11 @@ title: Medios y tiles
 |---|---|---|
 | Panorama 360 | JPEG, PNG, WebP, AVIF | Equirectangular 2:1; detección automática por metadatos XMP (GPano) o relación de aspecto |
 | Imagen / plano | JPEG, PNG, WebP, GIF, AVIF, SVG | Los SVG se sanean en el servidor |
-| Video | MP4 (H.264/H.265), WebM (VP9/AV1) | Ver preajustes recomendados más abajo |
+| Vídeo | MP4 (H.264/H.265), WebM (VP9/AV1) | Ver preajustes recomendados más abajo |
 | Audio | MP3, AAC/M4A, OGG, WAV | WAV se transcodifica en self-host si hay ffmpeg |
 | PDF | | Visor integrado con paginación y zoom |
 | Modelo 3D | glTF/GLB (preferente), OBJ, STL | AR opcional en móviles |
-| Subtítulos | WebVTT | Para video 360 y hotspots de video |
+| Subtítulos | WebVTT | Para vídeo 360 y hotspots de vídeo |
 
 La validación comprueba el **tipo real** del fichero (magic bytes), no solo la extensión. Existe deduplicación automática por hash de contenido: subir dos veces el mismo fichero no consume cuota extra.
 
@@ -26,14 +26,14 @@ Si la imagen supera la capacidad del dispositivo (más de 16K de ancho en la may
 
 En las propiedades del medio puedes aplicar ediciones **no destructivas** que se hornean al regenerar los tiles: nivelado de horizonte (roll/pitch), rotación del punto cero (yaw), parche de nadir con logo y ajustes básicos de exposición y saturación.
 
-## Video: preajustes recomendados de ffmpeg
+## Vídeo: preajustes recomendados de ffmpeg
 
 ```bash
 # 4K H.264 progresivo compatible universal
 ffmpeg -i entrada.mp4 -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p \
   -movflags +faststart -c:a aac -b:a 160k salida-4k.mp4
 
-# Renditions para seleccion automatica
+# Renditions para selección automática
 ffmpeg -i entrada.mp4 -vf scale=3840:1920 ... salida-4k.mp4
 ffmpeg -i entrada.mp4 -vf scale=1920:960  ... salida-2k.mp4
 ```

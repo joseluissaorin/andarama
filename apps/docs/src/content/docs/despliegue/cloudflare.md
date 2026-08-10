@@ -47,6 +47,6 @@ Tras el primer despliegue: abre la URL `*.workers.dev` mostrada, registra el pri
 - **Dominio propio**: añade `routes` en `wrangler.jsonc` y actualiza `PUBLIC_URL`.
 - **Subidas prefirmadas S3**: crea un token R2 (Panel R2, Manage API Tokens) y define los secretos `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` y `CF_ACCOUNT_ID`. Sin ellos, las subidas pasan por el Worker en streaming (funciona igualmente).
 - **Analytics Engine con consultas**: define `ANALYTICS_BACKEND=ae` y los secretos `CF_ACCOUNT_ID` + `CF_ANALYTICS_TOKEN` (token con permiso Account Analytics Read).
-- **Cloudflare Stream** para video: `STREAM_ACCOUNT_ID` + `STREAM_API_TOKEN`.
+- **Cloudflare Stream** para vídeo: `STREAM_ACCOUNT_ID` + `STREAM_API_TOKEN`.
 - **Contenedor de procesado** (imágenes más allá de la capacidad del navegador): ejecuta el runner en cualquier máquina con acceso a la API usando la CLI `ull360-tile`, o despliega la imagen Docker como Cloudflare Container asociado a la cola.
 - **Email transaccional**: `EMAIL_WEBHOOK_URL`/`EMAIL_WEBHOOK_KEY` compatibles con la API de Resend.

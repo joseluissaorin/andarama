@@ -21,7 +21,7 @@ Tras publicar obtienes: URL pública con **deep links** (`#s=escena&y=120&p=-5&f
 ### API postMessage del visor embebido
 
 ```js
-// controlar el visor desde la pagina que lo embebe
+// controlar el visor desde la página que lo embebe
 iframe.contentWindow.postMessage({ ull360: "goTo", scene: "aula" }, "*");
 iframe.contentWindow.postMessage({ ull360: "setView", view: { yaw: 1.2 } }, "*");
 iframe.contentWindow.postMessage({ ull360: "setLang", lang: "en" }, "*");

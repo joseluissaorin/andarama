@@ -11,6 +11,13 @@ export default defineConfig({
       locales: {
         root: { label: "Español", lang: "es" },
       },
+      // Identidad corporativa de la Universidad de La Laguna
+      customCss: ["./src/styles/ull.css"],
+      logo: {
+        src: "./public/marca-ull-negativo.svg",
+        alt: "Universidad de La Laguna",
+        replacesTitle: true,
+      },
       social: {
         github: "https://github.com/joseluissaorin/ull360",
       },

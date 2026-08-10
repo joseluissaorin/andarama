@@ -6,7 +6,7 @@ title: Escenas y hotspots
 
 Cada escena tiene: título, **texto alternativo obligatorio** (accesibilidad), descripción, categoría (para agrupar en el menú), vista inicial ("usar vista actual"), límites de vista opcionales (esencial en panoramas parciales), audio (ambiente, narración con bloqueo opcional, fuentes espaciales) y posición en plano o coordenadas GPS.
 
-Tipos de escena: **Panorama 360** (imagen), **Video 360** y **Gigapixel 2D** (obras, documentos, fachadas con pan/zoom tipo mapa).
+Tipos de escena: **Panorama 360** (imagen), **Vídeo 360** y **Gigapixel 2D** (obras, documentos, fachadas con pan/zoom tipo mapa).
 
 ## El grafo
 
@@ -20,13 +20,13 @@ Cada conexión define su **orientación de entrada**:
 
 ## Los 17 tipos de hotspot
 
-Todos comparten posición, etiqueta, texto alternativo, icono (biblioteca SVG o propio), estilo (tamaño, color, pulso, escala con zoom) y **condiciones de visibilidad** (por idioma, por variables de estado, por rango temporal en escenas de video).
+Todos comparten posición, etiqueta, texto alternativo, icono (biblioteca SVG o propio), estilo (tamaño, color, pulso, escala con zoom) y **condiciones de visibilidad** (por idioma, por variables de estado, por rango temporal en escenas de vídeo).
 
 1. **Navegación**: salto a otra escena; variante flecha de suelo.
 2. **Texto**: panel Markdown (títulos, listas, enlaces, tablas).
 3. **Imagen**: lightbox con zoom profundo y descarga opcional.
 4. **Galería**: carrusel con títulos y descripciones.
-5. **Video (fichero)**: lightbox o pantalla proyectada sobre la escena.
+5. **Vídeo (fichero)**: lightbox o pantalla proyectada sobre la escena.
 6. **YouTube/Vimeo/PeerTube**: embed sin cookies por defecto.
 7. **Audio**: reproductor o fuente espacial anclada.
 8. **PDF**: visor integrado con paginación y zoom.

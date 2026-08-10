@@ -27,7 +27,7 @@ PROJECT="id-del-proyecto"
 curl -s -X POST "$BASE/api/v1/projects/$PROJECT/publish" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"note": "publicacion desde CI"}'
+  -d '{"note": "publicación desde CI"}'
 ```
 
 ## Grupos de rutas

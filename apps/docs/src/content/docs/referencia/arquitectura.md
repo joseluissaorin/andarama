@@ -18,7 +18,7 @@ packages/  schema - viewer - viewer-ui - tiler - exporter - adapters - db - ui
 deploy/    cloudflare (wrangler + bootstrap) - docker (imagen unica)
 ```
 
-Elecciones clave: **Hono** corre idéntico en Workers y Node; **Drizzle** comparte el dialecto SQLite entre D1 y better-sqlite3; el render multirresolución usa **Marzipano** (Apache-2.0) como base probada con capas propias para video 360, WebXR, polígonos, audio espacial y proyecciones adicionales (decisión de fase 0: el fork compensaba frente a reimplementar el sistema de tiles).
+Elecciones clave: **Hono** corre idéntico en Workers y Node; **Drizzle** comparte el dialecto SQLite entre D1 y better-sqlite3; el render multirresolución usa **Marzipano** (Apache-2.0) como base probada con capas propias para vídeo 360, WebXR, polígonos, audio espacial y proyecciones adicionales (decisión de fase 0: el fork compensaba frente a reimplementar el sistema de tiles).
 
 ## Pipeline de medios
 
@@ -26,7 +26,7 @@ Elecciones clave: **Hono** corre idéntico en Workers y Node; **Drizzle** compar
 2. El navegador sube el original (reanudable) y confirma; la API verifica tamaño y **magic bytes**.
 3. El **tiler del navegador** (WebWorker + WebGL) genera caras de cubo, pirámide, tiles WebP, preview y miniatura, y los sube por lotes; la API valida el manifiesto (recuento y muestreo).
 4. Imágenes que exceden el cliente o subidas por API encolan un trabajo para el runner Node (`ull360-tile`).
-5. Video: Cloudflare Stream opcional; sin él, MP4/WebM validados con recomendaciones de ffmpeg (transcodificación local opcional en self-host).
+5. Vídeo: Cloudflare Stream opcional; sin él, MP4/WebM validados con recomendaciones de ffmpeg (transcodificación local opcional en self-host).
 
 ## Presupuestos de rendimiento
 
