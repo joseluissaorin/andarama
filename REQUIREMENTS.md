@@ -37,7 +37,7 @@ Ambiente por escena con crossfade, narración con bloqueo de navegación y trans
 
 ## §2.5 Grafo y navegación
 
-Grafo dirigido N:M con conexiones explícitas + derivadas, orientación de entrada fija/relativa/mirar-atrás (`computeEntryView`), transiciones fundido/zoom/crossRotate/corte con duración y easing por tour y por conexión, vista inicial y límites por escena, autopilot con rutas/pausas/reanudación (`engine/autopilot.ts`), autorrotación configurable, historial con volver (`back()`), deep links `#s=&y=&p=&f=` + `?lang=` (`engine/deeplink.ts`). **C**
+Grafo dirigido N:M derivado por completo de los hotspots de navegación —una arista **es** un hotspot; la tabla de conexiones paralela se eliminó porque no generaba marcador ni la leía el visor—, creación con vuelta automática y posición provisional marcada, modo Escenas/Autopilot en el lienzo, avisos de pasos sin destino, sin vuelta, sin colocar y escenas inalcanzables, orientación de entrada fija/relativa/mirar-atrás (`computeEntryView`), transiciones fundido/zoom/crossRotate/corte con duración y easing por tour y por conexión, vista inicial y límites por escena, autopilot con rutas/pausas/reanudación (`engine/autopilot.ts`), autorrotación configurable, historial con volver (`back()`), deep links `#s=&y=&p=&f=` + `?lang=` (`engine/deeplink.ts`). **C**
 
 ## §2.6 Controles
 

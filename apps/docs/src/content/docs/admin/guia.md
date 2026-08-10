@@ -34,6 +34,27 @@ Registro de auditoría de acciones sensibles: quién publicó, despublicó, borr
 
 Suscripción de sistemas externos a eventos `publish`, `unpublish` y `form_submission`, con firma HMAC opcional (`X-ULL360-Signature`).
 
+## Valores por defecto de la organización
+
+Los ajustes se resuelven en cascada:
+
+`instancia → organización → usuario → plantilla → tour`
+
+Cada nivel solo fija lo que le importa y lo demás lo hereda del anterior. En
+**Ajustes de la organización** un administrador de la facultad define de una vez
+el tema y el color, la tipografía, los idiomas, la autoría, la transición por
+defecto y el comportamiento en gafas. Todo tour nuevo nace con eso puesto.
+
+Al guardar, los cambios **se propagan a los borradores** que no habían
+personalizado esa clave —eso es lo que significa heredar— y se indica a cuántos
+ha llegado. Los tours **ya publicados no cambian**: son instantáneas compiladas
+y siguen viéndose igual hasta que alguien los vuelva a publicar. Un tour que
+personaliza un valor deja de seguir a la organización en esa clave concreta.
+
+Cada persona tiene además sus propias preferencias (idioma del editor, idioma
+por defecto de los tours que crea), que se aplican después de las de la
+organización.
+
 ## Realidad virtual en la instancia
 
 No hay nada que activar: la realidad virtual es parte del visor y funciona en
@@ -51,6 +72,8 @@ todos los tours. Lo único que la condiciona es el alojamiento.
   ya iniciada. El modo VR no requiere cuenta ni permisos adicionales.
 - **Analítica.** Entrar en modo inmersivo se registra como evento `vr`, de modo
   que el panel de analítica distingue las visitas con gafas.
+- **Qué se acciona en gafas** se decide por tour (o por organización, como valor
+  por defecto): todos los hotspots, solo la navegación o una selección.
 - Los tours exportados conservan la realidad virtual, pero solo entran en modo
   inmersivo si se suben a un alojamiento con HTTPS.
 

@@ -44,6 +44,14 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 
 Los tours exportados como paquete estático conservan todos los widgets; los que necesitan backend (formularios hacia la API) usan el webhook configurado o quedan deshabilitados con aviso.
 
+## Añadir un hotspot
+
+En el panel de propiedades de la escena, **Añadir hotspot** abre una paleta
+buscable: se escribe lo que se quiere y aparece el tipo con una línea que
+explica qué hace. Busca también por sinónimos y sin tildes, de modo que
+«puerta» encuentra Navegación y «examen» encuentra Pregunta. Elegido el tipo,
+se pulsa sobre el panorama para colocarlo.
+
 ## Comportamiento en realidad virtual
 
 Dentro de una sesión WebXR **todos** los hotspots están presentes y son
@@ -65,4 +73,9 @@ contenido se abren en un panel inmersivo dibujado por el propio motor:
 
 Los paneles se dibujan con Canvas 2D y se suben como textura, sin DOM ni
 dependencias externas: se comportan igual en un tour publicado y en un paquete
-exportado. Véase la [guía de realidad virtual](/docs/usuario/realidad-virtual/).
+exportado.
+
+Qué tipos están disponibles allí dentro se decide por tour en **Ajustes del
+tour › Gafas y modo cartón**: todos, solo la navegación, o una selección por
+familias o tipo a tipo. Véase la
+[guía de realidad virtual](/docs/usuario/realidad-virtual/).

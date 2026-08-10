@@ -99,6 +99,33 @@ El fichero `LEEME.md` que acompaña a cada paquete lo recuerda, y el `.htaccess`
 incluido añade los tipos MIME y las cabeceras de caché que necesita un
 alojamiento compartido corriente.
 
+## Qué se puede accionar dentro: se decide por tour
+
+En **Ajustes del tour › Gafas y modo cartón**:
+
+- **Hotspots disponibles en VR**: todos, solo la navegación, o elegirlos uno a
+  uno. En el modo detallado se activan y desactivan por familias (Contenido,
+  Audiovisual, Didácticos) o tipo a tipo. La navegación nunca se puede apagar:
+  sin ella el tour sería una fotografía fija.
+- **Permanencia de la mirada**: los segundos que hay que sostener la vista sobre
+  un marcador para que se accione solo. Por defecto 2,5 s.
+
+Un recorrido de puertas abiertas puede querer que en gafas solo se camine y que
+el contenido se lea después en pantalla; una práctica de laboratorio querrá justo
+lo contrario. Es la misma escena, distinta configuración.
+
+## Sin mando: el retículo de mirada
+
+Con el giroscopio del móvil o en modo cartón no se puede pulsar nada: la
+pantalla se mira, no se toca. En cuanto se activa cualquiera de los dos aparece
+un **punto en el centro** con un **anillo que se va dibujando** mientras se
+sostiene la mirada sobre un marcador; al completarse, el marcador se acciona.
+
+- El anillo se reinicia si se cambia de objetivo o si la cabeza se mueve más de
+  unos seis grados, así que un pulso de la mano no lo estropea.
+- Funciona con los diecisiete tipos de hotspot, no solo con la navegación.
+- La duración es la misma «permanencia de la mirada» de los ajustes del tour.
+
 ## Al embeber un tour
 
 El código que genera el Studio ya incluye los permisos necesarios:
@@ -139,8 +166,8 @@ Recomendaciones para un tour cómodo en gafas:
   es la forma de navegación que menos mareo provoca.
 - La selección por pinza no exige mantener la postura: se acciona al cerrar, no
   al sostener.
-- El modo cardboard usa selección por mirada con 1,5 s de permanencia, sin
-  necesidad de mando ni botones.
+- La selección por mirada no exige pulsar nada: ni mando, ni botones, ni tocar
+  la pantalla. La permanencia es configurable por tour.
 
 ## Problemas frecuentes
 

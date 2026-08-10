@@ -50,3 +50,23 @@ El esquema está **versionado**: `@ull360/schema` incluye migradores automático
 - Las fuentes de escena soportan `multires`, `equirect` (completa o **parcial**), `cubemap` (caras o tira), `flat` (gigapixel 2D) y `video` (renditions + HLS + estéreo TB/SBS).
 - Las rutas relativas `a/...` se resuelven contra el mapa de assets congelado de la publicación; en paquetes exportados apuntan a ficheros locales.
 - El validador semántico (`validateTour`) comprueba unicidad de IDs, existencia de destinos, alcanzabilidad de escenas y textos alternativos, además de la validación estructural del JSON Schema.
+
+
+## Cambios recientes del formato
+
+- **`connections` ya no existe.** El grafo se deriva íntegramente de los
+  hotspots de navegación. Los `tour.json` antiguos que la traigan se siguen
+  cargando: el visor simplemente la ignora.
+- **`vr`** (nuevo): comportamiento en gafas y modo cartón.
+  ```json
+  {
+    "vr": {
+      "hotspots": "custom",
+      "types": { "pdf": false, "form": false },
+      "dwellSeconds": 2.5
+    }
+  }
+  ```
+  `hotspots` admite `all`, `navigationOnly` o `custom`; con `custom`, `types`
+  lista las excepciones. La navegación está siempre disponible.
+  `dwellSeconds` es la permanencia del retículo de mirada.

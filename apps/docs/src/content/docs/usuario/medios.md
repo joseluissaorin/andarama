@@ -22,6 +22,33 @@ Al subir un panorama, **tu propio navegador** genera la pirámide de tiles (equi
 
 Si la imagen supera la capacidad del dispositivo (más de 16K de ancho en la mayoría), se genera una versión al límite del dispositivo y se encola un trabajo para que el **contenedor de procesado** genere la resolución completa (hasta 32K).
 
+## Comprobar un panorama antes de usarlo
+
+En la biblioteca, **pasar el ratón** sobre la miniatura de un panorama lo
+muestra como *little planet*: en un vistazo se reconoce la sala, cosa que un
+recorte rectangular no permite. Aparece sin espera porque se dibuja a partir
+del preview equirect que el teselado ya guarda, sin pedir nada a la red.
+
+**Doble clic** abre el panorama en un visor 360 completo, con arrastre, zoom y
+proyecciones, para asegurarse de que es el correcto antes de convertirlo en
+escena. No crea nada: es solo una comprobación.
+
+## Llevar medios al tour
+
+Los panoramas se pueden **arrastrar** desde la biblioteca hasta el editor:
+
+- Sobre la **lista de escenas**, cada uno se convierte en una escena nueva.
+- Sobre el **grafo**, además, el nodo nace donde lo has soltado.
+- Se puede arrastrar uno, una **selección múltiple** o una **carpeta entera**.
+
+El nombre del fichero se convierte en el título de la escena, sin extensión ni
+guiones bajos.
+
+## Carpetas
+
+La biblioteca se filtra por carpeta. Con varias carpetas aparece el selector, y
+la carpeta activa se puede arrastrar entera al editor.
+
 ## Utilidades de imagen
 
 En las propiedades del medio puedes aplicar ediciones **no destructivas** que se hornean al regenerar los tiles: nivelado de horizonte (roll/pitch), rotación del punto cero (yaw), parche de nadir con logo y ajustes básicos de exposición y saturación.

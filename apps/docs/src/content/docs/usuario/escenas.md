@@ -8,11 +8,29 @@ Cada escena tiene: título, **texto alternativo obligatorio** (accesibilidad), d
 
 Tipos de escena: **Panorama 360** (imagen), **Vídeo 360** y **Gigapixel 2D** (obras, documentos, fachadas con pan/zoom tipo mapa).
 
+## El panel de propiedades
+
+A la derecha. Cuando hay una escena seleccionada muestra sus datos y la lista de
+sus hotspots; al pulsar uno, cambia al marcador con una cabecera fija —de qué
+escena viene, qué tipo es, borrar— y tres pestañas: **Contenido**, **Aspecto** y
+**Condiciones**. Lo que se busca casi siempre está en la primera, sin
+desplazarse. El panel se puede **ensanchar** arrastrando su borde izquierdo.
+
+**Añadir hotspot** abre una paleta buscable: se escribe lo que se quiere
+(«texto», «puerta», «examen», «3D») y aparece el tipo con una línea explicando
+qué hace. Después se pulsa en el panorama para colocarlo.
+
+Un atajo que ahorra mucho: **arrastrar una escena de la lista sobre el
+panorama** crea directamente el paso de navegación hacia ella, en el punto donde
+se suelta.
+
 ## El grafo
 
-La pestaña **Grafo** muestra las escenas como nodos y las conexiones como aristas (las derivadas de hotspots de navegación aparecen discontinuas). Puedes arrastrar nodos, crear conexiones arrastrando desde el asa de un nodo a otro, y ver de un vistazo las **escenas huérfanas** (no alcanzables desde la escena inicial). El minimapa ayuda con tours grandes.
+La pestaña **Grafo** muestra las escenas como nodos y los pasos de navegación
+como flechas: cada flecha *es* un hotspot. Se detalla en
+[El grafo de escenas](/docs/usuario/grafo/).
 
-Cada conexión define su **orientación de entrada**:
+Cada paso define su **orientación de entrada**:
 
 - **Fija**: yaw/pitch/FOV concretos.
 - **Relativa**: mantiene el rumbo que llevaba el usuario.

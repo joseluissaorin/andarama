@@ -97,8 +97,10 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   // Texto alternativo de la escena (accesibilidad)
   await page.fill("#sc-alt", "Escena de prueba E2E");
 
-  // Colocar un hotspot de texto haciendo clic sobre el panorama
-  await page.getByRole("button", { name: "Texto", exact: true }).click();
+  // Colocar un hotspot de texto: paleta buscable y clic sobre el panorama
+  await page.getByRole("button", { name: /añadir hotspot/i }).click();
+  await page.locator('[role="dialog"] input').first().fill("texto");
+  await page.getByRole("button", { name: /^Texto/ }).first().click();
   await page.locator(".ull360-viewer").first().click({ position: { x: 500, y: 350 } });
   await page.fill("#hs-label", "Panel E2E");
   await page.fill("#hs-body", "Contenido **markdown** de prueba");
