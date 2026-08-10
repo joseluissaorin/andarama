@@ -114,3 +114,62 @@ describe("permanencia de la mirada", () => {
     expect(Math.abs(angleDiff(1.0, 1.4))).toBeGreaterThan(TOLERANCE);
   });
 });
+
+describe("cerrar el panel mirándolo", () => {
+  // El panel se ancla a PANEL_DISTANCE de la cabeza, mirando a la vista.
+  const DISTANCE = 1.6;
+  const WIDTH = 1.6;
+  const HEIGHT = (WIDTH * 800) / 1280;
+
+  /** Igual que openPanel: centro delante, «derecha» perpendicular al forward. */
+  function anchorFor(forward: [number, number, number]): {
+    center: [number, number, number];
+    right: [number, number, number];
+    up: [number, number, number];
+  } {
+    const center: [number, number, number] = [forward[0] * DISTANCE, forward[1] * DISTANCE, forward[2] * DISTANCE];
+    // Igual que el motor: cross(arriba, -forward)
+    const right = vecNormalize([
+      1 * -forward[2] - 0 * 0,
+      0 * -forward[0] - 0 * -forward[2],
+      0 * 0 - 1 * -forward[0],
+    ]);
+    return { center, right, up: [0, 1, 0] };
+  }
+
+  it("el aspa de cerrar cae donde la mirada puede alcanzarla", () => {
+    const forward: [number, number, number] = [0, 0, -1];
+    const anchor = anchorFor(forward);
+    // Zona «close» del panel: esquina superior derecha
+    const uClose = (1280 - 132 + 96 / 2) / 1280;
+    const vClose = (20 + 56 / 2) / 800;
+    // Ángulos para apuntar ahí. Ojo: al girar en horizontal el rayo llega al
+    // plano más lejos, así que la altura se amplía por 1/cos(yaw); ignorarlo
+    // hace que el rayo pase por encima del aspa.
+    const yaw = Math.atan(((uClose - 0.5) * WIDTH) / DISTANCE);
+    const pitch = Math.atan((((0.5 - vClose) * HEIGHT) / DISTANCE) * Math.cos(yaw));
+    const dir = dirFromYawPitch(yaw, pitch);
+    const hit = rayRect({ origin: [0, 0, 0], direction: dir }, anchor.center, anchor.right, anchor.up, WIDTH / 2, HEIGHT / 2);
+    expect(hit).not.toBeNull();
+    // Dentro de la zona «close», no meramente cerca
+    expect(hit!.u).toBeGreaterThan((1280 - 132) / 1280);
+    expect(hit!.u).toBeLessThan((1280 - 132 + 96) / 1280);
+    expect(hit!.v).toBeGreaterThan(20 / 800);
+    expect(hit!.v).toBeLessThan((20 + 56) / 800);
+  });
+
+  it("girar hacia el aspa es un gesto cómodo, no un contorsionismo", () => {
+    const uClose = (1280 - 132 + 48) / 1280;
+    const yawDeg = (Math.atan(((uClose - 0.5) * WIDTH) / DISTANCE) * 180) / Math.PI;
+    expect(yawDeg).toBeGreaterThan(10);
+    expect(yawDeg).toBeLessThan(35);
+  });
+
+  it("mirar al centro del panel no cierra nada", () => {
+    const anchor = anchorFor([0, 0, -1]);
+    const hit = rayRect({ origin: [0, 0, 0], direction: [0, 0, -1] }, anchor.center, anchor.right, anchor.up, WIDTH / 2, HEIGHT / 2);
+    expect(hit).not.toBeNull();
+    expect(hit!.u).toBeCloseTo(0.5, 2);
+    expect(hit!.v).toBeCloseTo(0.5, 2);
+  });
+});

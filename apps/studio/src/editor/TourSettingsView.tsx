@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BookOpen, Sparkles } from "lucide-react";
 import { Button, Field, Input, Select, Switch, Textarea, useToast } from "@ull360/ui";
 import { CssGuideDialog, cssPrompt } from "./CssGuide";
+import { MediaPicker } from "./MediaPicker";
 import { FAMILY_ORDER, HOTSPOT_CATALOG } from "./hotspotCatalog";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -23,13 +24,21 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
   const geoMap = (settings.geoMap as Record<string, any>) ?? {};
   const hunt = (settings.treasureHunt as Record<string, any>) ?? {};
   const vr = (settings.vr as Record<string, any>) ?? {};
+  const social = (settings.social as Record<string, any>) ?? {};
 
   const [cssHelp, setCssHelp] = useState(false);
+  const [socialPicker, setSocialPicker] = useState(false);
 
   const patch = (fn: (s: Record<string, any>) => void): void => {
     if (!canEdit) return;
     editor.apply((draft) => fn(draft.settings));
   };
+  const patchSocial = (patchObj: Record<string, unknown>): void =>
+    patch((s) => {
+      const next = { ...(s.social as object), ...patchObj };
+      for (const [k, v] of Object.entries(next)) if (v === undefined) delete (next as Record<string, unknown>)[k];
+      s.social = next;
+    });
   const patchVr = (patchObj: Record<string, unknown>): void =>
     patch((s) => {
       s.vr = { ...(s.vr as object), ...patchObj };
@@ -109,6 +118,29 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             </div>
           ))}
         </div>
+        <div className="mt-4">
+          <Field label={t("hotspot_size_default")} htmlFor="ui-hssize" hint={t("hotspot_size_default_hint")}>
+            <div className="flex items-center gap-3">
+              <input
+                id="ui-hssize"
+                type="range"
+                min={24}
+                max={96}
+                step={2}
+                value={Number(ui.hotspotSize ?? 44)}
+                disabled={!canEdit}
+                className="h-1.5 max-w-64 flex-1 accent-[var(--ull-primary)]"
+                onChange={(e) => patchUi({ hotspotSize: Number(e.target.value) })}
+              />
+              <span className="w-10 text-right text-sm tabular-nums">{Number(ui.hotspotSize ?? 44)}</span>
+              <span
+                aria-hidden
+                className="shrink-0 rounded-full bg-[var(--ull-primary)]"
+                style={{ width: Number(ui.hotspotSize ?? 44) / 2, height: Number(ui.hotspotSize ?? 44) / 2 }}
+              />
+            </div>
+          </Field>
+        </div>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label={t("theme")} htmlFor="th-base">
             <Select id="th-base" value={String(theme.base ?? "ull")} disabled={!canEdit} onChange={(e) => patchTheme({ base: e.target.value })}>
@@ -148,6 +180,93 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       </section>
 
       <CssGuideDialog open={cssHelp} onClose={() => setCssHelp(false)} />
+
+      {/* Cómo se ve el enlace del tour al pegarlo en un chat o una red */}
+      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+        <h2 className="mb-1 text-[15px] font-semibold">{t("social_settings")}</h2>
+        <p className="mb-4 text-xs text-[var(--ull-text-dim)]">{t("social_intro")}</p>
+
+        {/* Vista previa de la tarjeta, que es lo que de verdad se juzga */}
+        <div className="mb-4 max-w-md overflow-hidden rounded-xl border border-[var(--ull-border)]">
+          <div className="flex aspect-[1200/630] items-center justify-center bg-[var(--ull-surface-2)]">
+            {social.image != null && social.image !== "" ? (
+              <img src={String(social.image)} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-xs text-[var(--ull-text-dim)]">{t("social_no_image")}</span>
+            )}
+          </div>
+          <div className="space-y-0.5 bg-[var(--ull-surface)] p-3">
+            <p className="text-[11px] uppercase tracking-wide text-[var(--ull-text-dim)]">
+              {String(social.siteName ?? "") || new URL(location.origin).host}
+            </p>
+            <p className="truncate text-[13px] font-semibold">
+              {String(social.title ?? "") || String(settings.title ?? t("tour"))}
+            </p>
+            <p className="line-clamp-2 text-xs text-[var(--ull-text-dim)]">
+              {String(social.description ?? "") || String(settings.description ?? "")}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label={t("social_title")} htmlFor="so-title" hint={t("social_title_hint")}>
+            <Input id="so-title" value={String(social.title ?? "")} disabled={!canEdit} onChange={(e) => patchSocial({ title: e.target.value || undefined })} />
+          </Field>
+          <Field label={t("social_site")} htmlFor="so-site">
+            <Input id="so-site" value={String(social.siteName ?? "")} placeholder="Universidad de La Laguna" disabled={!canEdit} onChange={(e) => patchSocial({ siteName: e.target.value || undefined })} />
+          </Field>
+        </div>
+        <div className="mt-4">
+          <Field label={t("social_description")} htmlFor="so-desc" hint={t("social_description_hint")}>
+            <Textarea id="so-desc" rows={2} value={String(social.description ?? "")} disabled={!canEdit} onChange={(e) => patchSocial({ description: e.target.value || undefined })} />
+          </Field>
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label={t("social_image")} hint={t("social_image_hint")}>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setSocialPicker(true)}>
+                {social.image != null && social.image !== "" ? t("change") : t("select_media")}
+              </Button>
+              {social.image != null && social.image !== "" && (
+                <Button size="sm" variant="ghost" disabled={!canEdit} onClick={() => patchSocial({ image: undefined })}>
+                  {t("delete")}
+                </Button>
+              )}
+            </div>
+          </Field>
+          <Field label={t("social_image_alt")} htmlFor="so-alt">
+            <Input id="so-alt" value={String(social.imageAlt ?? "")} disabled={!canEdit} onChange={(e) => patchSocial({ imageAlt: e.target.value || undefined })} />
+          </Field>
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Field label={t("social_card")} htmlFor="so-card">
+            <Select id="so-card" value={String(social.twitterCard ?? "summary_large_image")} disabled={!canEdit} onChange={(e) => patchSocial({ twitterCard: e.target.value })}>
+              <option value="summary_large_image">{t("social_card_large")}</option>
+              <option value="summary">{t("social_card_small")}</option>
+            </Select>
+          </Field>
+          <Field label={t("social_twitter_site")} htmlFor="so-tsite" hint="@ull">
+            <Input id="so-tsite" value={String(social.twitterSite ?? "")} disabled={!canEdit} onChange={(e) => patchSocial({ twitterSite: e.target.value || undefined })} />
+          </Field>
+          <Field label={t("social_locale")} htmlFor="so-locale" hint="es_ES">
+            <Input id="so-locale" value={String(social.locale ?? "")} disabled={!canEdit} onChange={(e) => patchSocial({ locale: e.target.value || undefined })} />
+          </Field>
+        </div>
+        <div className="mt-4">
+          <Switch id="so-noindex" checked={social.noindex === true} disabled={!canEdit} onCheckedChange={(v) => patchSocial({ noindex: v || undefined })} label={t("social_noindex")} />
+          <p className="ml-11 mt-0.5 text-xs text-[var(--ull-text-dim)]">{t("social_noindex_desc")}</p>
+        </div>
+
+        <MediaPicker
+          open={socialPicker}
+          onClose={() => setSocialPicker(false)}
+          kind="image"
+          onSelect={(item) => {
+            patchSocial({ image: `media:${item.id}` });
+            setSocialPicker(false);
+          }}
+        />
+      </section>
 
       {/* Gafas y cardboard: qué se puede accionar sin ratón ni teclado */}
       <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">

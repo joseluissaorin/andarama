@@ -52,6 +52,14 @@ explica qué hace. Busca también por sinónimos y sin tildes, de modo que
 «puerta» encuentra Navegación y «examen» encuentra Pregunta. Elegido el tipo,
 se pulsa sobre el panorama para colocarlo.
 
+## Tamaño del marcador
+
+El botón de cada hotspot se ajusta con un deslizador en la pestaña **Aspecto**,
+con muestra a escala y atajos S, M, L y XL. Sin tocarlo, cada marcador hereda el
+**tamaño por defecto del tour** (Ajustes del tour), que es la forma cómoda de
+subir o bajar todos a la vez. El tamaño elegido también se respeta dentro de las
+gafas, acotado para que un marcador enorme no invada la escena.
+
 ## Comportamiento en realidad virtual
 
 Dentro de una sesión WebXR **todos** los hotspots están presentes y son

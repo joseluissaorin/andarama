@@ -32,6 +32,29 @@ addEventListener("message", (e) => {
 });
 ```
 
+## Cómo se ve el enlace al compartirlo
+
+En **Ajustes del tour › Compartir el enlace** se controla la tarjeta que
+aparece al pegar la dirección en WhatsApp, X, Teams, Slack o el aula virtual,
+con una vista previa de cómo quedará:
+
+| Campo | Para qué |
+| --- | --- |
+| Título de la tarjeta | Si se deja vacío, el título del tour |
+| Texto de la tarjeta | Dos líneas: las redes recortan |
+| Nombre del sitio | La institución («Universidad de La Laguna») |
+| Imagen | 1200 × 630 px. Sin ella, casi ninguna red muestra tarjeta grande |
+| Texto alternativo | Accesibilidad de esa imagen |
+| Tipo de tarjeta | Imagen grande o pequeña (X/Twitter) |
+| Cuenta de X del sitio | `@ull` |
+| Idioma declarado | `es_ES` |
+| No indexar | Añade `robots noindex`, útil en tours internos |
+
+Se traducen como cualquier otro texto del tour, así que la tarjeta sale en el
+idioma con el que se abra el enlace. Los mismos metadatos viajan dentro del
+paquete exportado, de modo que un tour subido a otro alojamiento se comparte
+igual de bien.
+
 ## Exportar paquete estático
 
 **Exportar** genera en tu navegador un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python3 -m http.server`, en GitHub Pages o Cloudflare Pages sin configuración. No lleva backend, ni CDN, ni llamadas a la plataforma: una vez subido, el tour vive por su cuenta.

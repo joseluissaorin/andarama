@@ -247,6 +247,32 @@ test("VR: la pinza sobre un hotspot abre su panel inmersivo", async ({ page }) =
   await expect
     .poll(async () => page.evaluate(() => window.ULL360!.instance!.viewer.vrState().openHotspotId), { timeout: 5_000 })
     .toBe(hs.id);
+
+  // Y apuntando al aspa se cierra: sin esto el panel sería una trampa.
+  const cierre = await page.evaluate(() => {
+    // Ángulos hacia la esquina superior derecha del panel, donde vive el
+    // botón de cerrar (mismas medidas que el motor).
+    const DISTANCE = 1.6;
+    const WIDTH = 1.6;
+    const HEIGHT = (WIDTH * 800) / 1280;
+    const u = (1280 - 132 + 48) / 1280;
+    const v = (20 + 28) / 800;
+    const yaw = Math.atan(((u - 0.5) * WIDTH) / DISTANCE);
+    // Al girar, el rayo llega al plano más lejos: la altura se amplía por
+    // 1/cos(yaw) y sin corregirlo se pasa por encima del botón.
+    return { yaw, pitch: Math.atan((((0.5 - v) * HEIGHT) / DISTANCE) * Math.cos(yaw)) };
+  });
+  await page.evaluate((aim) => {
+    window.__xr.aim = aim;
+  }, cierre);
+  const antes = await page.evaluate(() => window.__xr.frames);
+  await expect.poll(async () => page.evaluate(() => window.__xr.frames), { timeout: 10_000 }).toBeGreaterThan(antes + 8);
+  await page.evaluate(() => {
+    window.__xr.pinch = 0.01;
+  });
+  await expect
+    .poll(async () => page.evaluate(() => window.ULL360!.instance!.viewer.vrState().openHotspotId), { timeout: 10_000 })
+    .toBeNull();
 });
 
 test("VR: salir de la sesión devuelve el visor plano", async ({ page }) => {

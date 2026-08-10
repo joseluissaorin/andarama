@@ -619,6 +619,8 @@ export interface ThemeConfig {
 }
 
 export interface UIConfig {
+  /** Tamaño en px del botón de los hotspots (por defecto 44). */
+  hotspotSize?: number;
   titleBar?: boolean;
   sceneMenu?: boolean;
   thumbnails?: boolean;
@@ -649,6 +651,35 @@ export interface UIConfig {
  * quiere caminar y que el contenido se lea fuera, y otros donde todo debe
  * estar disponible: se decide por familias o tipo a tipo.
  */
+/**
+ * Lo que se ve cuando alguien pega el enlace del tour en WhatsApp, en Twitter,
+ * en Teams o en el aula virtual. Sin esto, cada red inventa lo que le parece a
+ * partir del título de la página.
+ */
+export interface SocialConfig {
+  /** Título de la tarjeta (por defecto, el del tour). */
+  title?: L10n;
+  /** Texto de la tarjeta (por defecto, la descripción del tour). */
+  description?: L10n;
+  /** Imagen de la tarjeta: 1200x630 px es lo que esperan casi todas. */
+  image?: string;
+  /** Texto alternativo de esa imagen. */
+  imageAlt?: L10n;
+  /** og:type — "website" salvo casos raros. */
+  type?: string;
+  /** og:site_name: el nombre de la institución. */
+  siteName?: string;
+  /** Tarjeta de X/Twitter. */
+  twitterCard?: "summary" | "summary_large_image" | "player";
+  /** @usuario del sitio y del autor, con arroba. */
+  twitterSite?: string;
+  twitterCreator?: string;
+  /** Idioma declarado (og:locale), p. ej. es_ES. */
+  locale?: string;
+  /** Pedir a los buscadores que no lo indexen. */
+  noindex?: boolean;
+}
+
 export interface VrConfig {
   /** Modo inmersivo disponible (por defecto sí). */
   enabled?: boolean;
@@ -716,6 +747,8 @@ export interface Tour {
   controls?: ControlsConfig;
   /** Comportamiento en gafas y cardboard. */
   vr?: VrConfig;
+  /** Metadatos de compartición (Open Graph y tarjetas de X/Twitter). */
+  social?: SocialConfig;
   /** Transicion por defecto entre escenas. */
   transition?: TransitionSpec;
   autorotate?: AutorotateConfig;

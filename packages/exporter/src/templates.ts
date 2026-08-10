@@ -25,12 +25,54 @@ export interface IndexHtmlOptions {
   inlineConfig?: string;
   /** Script del visor inline (single-file). */
   inlineViewerJs?: string;
+  /** Metadatos de compartición ya resueltos al idioma que toca. */
+  social?: {
+    title?: string;
+    description?: string;
+    image?: string;
+    imageAlt?: string;
+    type?: string;
+    siteName?: string;
+    twitterCard?: string;
+    twitterSite?: string;
+    twitterCreator?: string;
+    locale?: string;
+    noindex?: boolean;
+  };
   /** Adaptador SCORM. */
   scorm?: boolean;
 }
 
 function esc(s: string): string {
   return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+/**
+ * Etiquetas de compartición. Se generan aquí y no en cada llamador para que el
+ * tour publicado y el paquete exportado se vean igual al pegarlos en un chat.
+ */
+export function renderSocialTags(opts: IndexHtmlOptions): string {
+  const social = opts.social ?? {};
+  const title = social.title ?? opts.title;
+  const description = social.description ?? opts.description;
+  const image = social.image ?? opts.ogImage;
+  const card = social.twitterCard ?? (image != null ? "summary_large_image" : "summary");
+  const lines = [
+    `<meta property="og:title" content="${esc(title)}">`,
+    `<meta property="og:type" content="${esc(social.type ?? "website")}">`,
+    description != null && description !== "" ? `<meta property="og:description" content="${esc(description)}">` : "",
+    image != null ? `<meta property="og:image" content="${esc(image)}">` : "",
+    image != null && social.imageAlt != null ? `<meta property="og:image:alt" content="${esc(social.imageAlt)}">` : "",
+    social.siteName != null ? `<meta property="og:site_name" content="${esc(social.siteName)}">` : "",
+    social.locale != null ? `<meta property="og:locale" content="${esc(social.locale)}">` : "",
+    opts.canonicalUrl != null ? `<meta property="og:url" content="${esc(opts.canonicalUrl)}">` : "",
+    opts.canonicalUrl != null ? `<link rel="canonical" href="${esc(opts.canonicalUrl)}">` : "",
+    `<meta name="twitter:card" content="${esc(card)}">`,
+    social.twitterSite != null ? `<meta name="twitter:site" content="${esc(social.twitterSite)}">` : "",
+    social.twitterCreator != null ? `<meta name="twitter:creator" content="${esc(social.twitterCreator)}">` : "",
+    social.noindex === true ? `<meta name="robots" content="noindex, nofollow">` : "",
+  ];
+  return lines.filter((l) => l !== "").join("\n");
 }
 
 export function renderIndexHtml(opts: IndexHtmlOptions): string {
@@ -54,12 +96,7 @@ export function renderIndexHtml(opts: IndexHtmlOptions): string {
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(opts.title)}</title>
 ${opts.description != null ? `<meta name="description" content="${esc(opts.description)}">` : ""}
-<meta property="og:title" content="${esc(opts.title)}">
-<meta property="og:type" content="website">
-${opts.description != null ? `<meta property="og:description" content="${esc(opts.description)}">` : ""}
-${opts.ogImage != null ? `<meta property="og:image" content="${esc(opts.ogImage)}">` : ""}
-${opts.canonicalUrl != null ? `<link rel="canonical" href="${esc(opts.canonicalUrl)}">` : ""}
-<meta name="twitter:card" content="summary_large_image">
+${renderSocialTags(opts)}
 <style${nonceAttr}>html,body{margin:0;height:100%;background:#0b1020;}#ull360{position:fixed;inset:0;}</style>
 ${opts.serviceWorker === true ? `<link rel="manifest" href="manifest.webmanifest">` : ""}
 </head>

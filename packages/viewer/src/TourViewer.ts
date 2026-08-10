@@ -364,6 +364,7 @@ export class TourViewer {
       lang: () => this.lang,
       defaultLang: this.tour.meta.defaultLang,
       baseUrl: this.baseUrl,
+      defaultSize: this.tour.ui?.hotspotSize,
       editable: this.options.editMode === true,
       onDrag: (hotspot, yaw, pitch, phase) => this.emit("hotspotMove", { hotspot, yaw, pitch, phase }),
       onActivate: (hotspot, element) => this.activateHotspot(hotspot, element),
@@ -1086,6 +1087,8 @@ export class TourViewer {
           id: h.id,
           yaw: anchor.yaw,
           pitch: anchor.pitch,
+          // El tamaño elegido en el editor también vale dentro de las gafas
+          scale: (h.style?.icon?.size ?? this.tour.ui?.hotspotSize ?? 44) / 44,
           label: this.text(h.label) || this.text(h.altText),
           type: h.type,
           target: h.type === "navigation" ? (h as NavigationHotspot).target : undefined,

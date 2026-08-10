@@ -14,6 +14,7 @@ import {
 import {
   angleDiff,
   dirFromYawPitch,
+  matForward,
   matPosition,
   matTranslateScale,
   perspective,
@@ -45,6 +46,8 @@ import {
 
 export interface VrHotspot {
   id: string;
+  /** Factor de tamaño respecto al botón estándar de 44 px. */
+  scale?: number;
   yaw: number;
   pitch: number;
   label: string;
@@ -91,6 +94,11 @@ const TOUCH_DISTANCE = 0.045;
 const GAZE_TOLERANCE = 0.1;
 const DEFAULT_DWELL_MS = 2500;
 
+/** El tamaño del marcador se respeta, pero acotado: en gafas un cartel enorme molesta. */
+function clampScale(scale: number | undefined): number {
+  return Math.max(0.6, Math.min(1.8, scale ?? 1));
+}
+
 type PointerTarget =
   | { kind: "hotspot"; hotspot: VrHotspot; distance: number }
   | { kind: "panel"; zone: PanelZone; u: number; v: number; distance: number }
@@ -128,6 +136,7 @@ export class VRManager {
   private images = new Map<string, HTMLImageElement>();
   private headPosition: Vec3 = [0, 0, 0];
   private gazeProgress = 0;
+  private xrForward: Vec3 | null = null;
   private reticleTex = new Map<string, WebGLTexture>();
   /** Permanencia configurable por tour (`vr.dwellSeconds`). */
   dwellMs = DEFAULT_DWELL_MS;
@@ -239,6 +248,7 @@ export class VRManager {
       const pose = frame.getViewerPose(this.refSpace);
       if (pose == null) return;
       this.headPosition = matPosition(pose.transform.matrix);
+      this.xrForward = matForward(pose.transform.matrix);
 
       const pointers = this.input.read(frame, this.refSpace, session);
       this.updateInteraction(pointers);
@@ -341,7 +351,10 @@ export class VRManager {
       const { yaw, pitch } = this.cardboardYawPitch;
       const forward = dirFromYawPitch(yaw, pitch);
       const gaze: Ray = { origin: [0, 0, 0], direction: forward };
-      const target = this.pickPanelAt(vecAdd(this.headPosition, vecScale(forward, PANEL_DISTANCE))) ?? this.pickHotspot(gaze);
+      // El panel se elige con el rayo de la mirada: con un punto fijo delante
+      // de la cabeza no se alcanzaba, y sin poder mirar el aspa el panel no
+      // había forma de cerrarlo en cardboard.
+      const target = this.pickPanel(gaze) ?? this.pickHotspot(gaze);
       const id =
         target == null ? null : target.kind === "hotspot" ? target.hotspot.id : `zone:${target.zone.id}`;
       const drift = Math.hypot(angleDiff(yaw, gazeAnchor.yaw), pitch - gazeAnchor.pitch);
@@ -401,7 +414,7 @@ export class VRManager {
     let best: PointerTarget = null;
     for (const hs of this.callbacks.getHotspots()) {
       const center = this.hotspotCenter(hs);
-      const distance = raySphere(ray, center, HOTSPOT_HIT_RADIUS);
+      const distance = raySphere(ray, center, HOTSPOT_HIT_RADIUS * clampScale(hs.scale));
       if (distance == null) continue;
       if (best == null || distance < best.distance) best = { kind: "hotspot", hotspot: hs, distance };
     }
@@ -544,9 +557,11 @@ export class VRManager {
     this.openHotspot = hs;
     this.panelState = newPanelState();
     this.panelDirty = true;
-    // Anclar el panel delante del usuario, a la altura de los ojos.
-    const view = this.callbacks.getViewYawPitch();
-    const forward = this.mode === "xr" ? this.headForward() : dirFromYawPitch(view.yaw, view.pitch);
+    // Anclar el panel delante del usuario, a la altura de los ojos. En
+    // cardboard esto usaba la orientación del visor plano, no la del
+    // giroscopio: el panel podía abrirse fuera de la vista y no había forma
+    // de alcanzar el aspa de cerrar.
+    const forward = this.headForward();
     const flat = vecNormalize([forward[0], 0, forward[2]]);
     const center = vecAdd(this.headPosition, vecScale(flat, PANEL_DISTANCE));
     const right = vecNormalize(crossVec([0, 1, 0], vecScale(flat, -1)));
@@ -660,7 +675,7 @@ export class VRManager {
     for (const hs of this.callbacks.getHotspots()) {
       const center = this.hotspotCenter(hs);
       const active = hovered.has(hs.id);
-      const size = HOTSPOT_SIZE * (active ? 1.18 : 1);
+      const size = HOTSPOT_SIZE * clampScale(hs.scale) * (active ? 1.18 : 1);
       r.draw(r.quad, r.billboardMatrix(center, this.headPosition, size), {
         texture: this.iconTexture(hs, active),
         flipY: true,
@@ -766,9 +781,17 @@ export class VRManager {
     return tex;
   }
 
+  /**
+   * Hacia dónde mira de verdad la cabeza. El panel se ancla aquí, así que
+   * equivocarse significa abrirlo fuera de la vista: en cardboard manda la
+   * orientación del giroscopio y en XR la de la pose del visor, no la del
+   * visor plano, que es lo que se usaba antes.
+   */
   private headForward(): Vec3 {
-    // En XR el panel se ancla usando la última orientación conocida del visor;
-    // como respaldo se usa la del visor 2D.
+    if (this.mode === "cardboard") {
+      return dirFromYawPitch(this.cardboardYawPitch.yaw, this.cardboardYawPitch.pitch);
+    }
+    if (this.xrForward != null) return this.xrForward;
     const view = this.callbacks.getViewYawPitch();
     return dirFromYawPitch(view.yaw, view.pitch);
   }

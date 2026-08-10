@@ -44,6 +44,31 @@ const EMBED_JS = `(() => {
 })();
 `;
 
+/** Metadatos de compartición del tour, ya resueltos al idioma servido. */
+function resolveSocial(tour: Tour, lang: string, base: string): Record<string, unknown> | undefined {
+  const social = tour.social;
+  if (social == null) return undefined;
+  const text = (value: unknown): string | undefined => {
+    if (value == null) return undefined;
+    const resolved = resolveL10n(value as never, lang, tour.meta.defaultLang);
+    return resolved !== "" ? resolved : undefined;
+  };
+  const image = social.image != null ? (/^https?:/.test(social.image) ? social.image : `${base}/${social.image.replace(/^\//, "")}`) : undefined;
+  return {
+    title: text(social.title),
+    description: text(social.description),
+    image,
+    imageAlt: text(social.imageAlt),
+    type: social.type,
+    siteName: social.siteName,
+    twitterCard: social.twitterCard,
+    twitterSite: social.twitterSite,
+    twitterCreator: social.twitterCreator,
+    locale: social.locale,
+    noindex: social.noindex,
+  };
+}
+
 export function tourRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
 
@@ -151,6 +176,7 @@ export function tourRoutes(): Hono<AppEnv> {
       viewerPath: `/viewer/viewer.js`,
       tourJsonPath: `/t/${slug}/tour.json`,
       ogImage: tour.meta.ogImage != null ? `${c.get("config").publicUrl}/t/${slug}/${tour.meta.ogImage}` : undefined,
+      social: resolveSocial(tour, lang, `${c.get("config").publicUrl}/t/${slug}`),
       canonicalUrl: `${c.get("config").publicUrl}/t/${slug}`,
       analyticsEndpoint: pointer.analytics ? "/ingest/e" : null,
       formEndpoint: `/api/v1/public/forms/${slug}`,

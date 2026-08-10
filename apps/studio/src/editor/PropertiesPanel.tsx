@@ -388,6 +388,8 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   const [pickerField, setPickerField] = useState<string | null>(null);
   const [expand, setExpand] = useState<{ key: string; label: string } | null>(null);
   const [activeTab, setTab] = useState<"content" | "style" | "conditions">("content");
+  const tourHotspotSize = Number((snapshot.settings.ui as { hotspotSize?: number } | undefined)?.hotspotSize ?? 44);
+  const hotspotSize = Number(style.icon?.size ?? tourHotspotSize);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // Al cambiar de marcador se vuelve arriba y a la primera pestaña. Sin esto,
@@ -914,16 +916,60 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             ))}
           </div>
         </Field>
-        <div className="grid grid-cols-2 gap-2">
-          <Field label={t("icon_size")} htmlFor="hs-size">
-            <Input id="hs-size" type="number" min="24" max="96" value={String(style.icon?.size ?? 44)} disabled={!canEdit}
-              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), size: num(e.target.value, 44) } })} />
-          </Field>
-          <Field label={t("icon_color")} htmlFor="hs-color">
-            <Input id="hs-color" type="color" value={String(style.icon?.color ?? "#ffffff")} disabled={!canEdit}
-              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), color: e.target.value } })} />
-          </Field>
-        </div>
+        {/* Tamaño del botón: deslizador con muestra a escala real, porque el
+            número solo no dice nada hasta que se ve sobre el panorama. */}
+        <Field label={t("icon_size")} htmlFor="hs-size" hint={t("icon_size_hint")}>
+          <div className="flex items-center gap-3">
+            <input
+              id="hs-size"
+              type="range"
+              min={24}
+              max={96}
+              step={2}
+              value={hotspotSize}
+              disabled={!canEdit}
+              className="h-1.5 flex-1 accent-[var(--ull-primary)]"
+              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), size: num(e.target.value, 44) } })}
+            />
+            <Input
+              type="number"
+              min="24"
+              max="96"
+              className="max-w-20"
+              aria-label={t("icon_size")}
+              value={String(hotspotSize)}
+              disabled={!canEdit}
+              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), size: num(e.target.value, 44) } })}
+            />
+            <span
+              aria-hidden
+              className="shrink-0 rounded-full border border-[var(--ull-border)] bg-[var(--ull-primary)]"
+              style={{ width: hotspotSize / 2, height: hotspotSize / 2 }}
+            />
+          </div>
+          <div className="mt-1.5 flex gap-1.5">
+            {([["S", 32], ["M", 44], ["L", 64], ["XL", 84]] as const).map(([label, value]) => (
+              <Button
+                key={label}
+                size="sm"
+                variant={hotspotSize === value ? "secondary" : "ghost"}
+                disabled={!canEdit}
+                onClick={() => setStyle({ icon: { ...(style.icon ?? {}), size: value } })}
+              >
+                {label}
+              </Button>
+            ))}
+            {style.icon?.size != null && (
+              <Button size="sm" variant="ghost" disabled={!canEdit} onClick={() => setStyle({ icon: { ...(style.icon ?? {}), size: undefined } })}>
+                {t("inherit")}
+              </Button>
+            )}
+          </div>
+        </Field>
+        <Field label={t("icon_color")} htmlFor="hs-color">
+          <Input id="hs-color" type="color" value={String(style.icon?.color ?? "#ffffff")} disabled={!canEdit}
+            onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), color: e.target.value } })} />
+        </Field>
         <Switch id="hs-chip" checked={style.icon?.chip !== false} disabled={!canEdit}
           onCheckedChange={(v) => setStyle({ icon: { ...(style.icon ?? {}), chip: v } })} label={t("icon_chip")} />
         <Switch id="hs-pulse" checked={style.pulse === true} disabled={!canEdit} onCheckedChange={(v) => setStyle({ pulse: v })} label={t("pulse")} />

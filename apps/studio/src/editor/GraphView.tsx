@@ -51,7 +51,14 @@ export function GraphView({ canEdit, onOpenScene }: {
   const [selectedNodes, setSelectedNodes] = useState<Set<string>>(new Set());
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
-  const [ghost, setGhost] = useState<{ from: string; x: number; y: number } | null>(null);
+  // El fantasma de la conexión se mueve en cada fotograma: se dibuja tocando
+  // el DOM directamente en vez de repintar todo el SVG con React, que con
+  // treinta nodos se notaba pastoso.
+  const ghostPathRef = useRef<SVGPathElement>(null);
+  const [connecting, setConnecting] = useState<string | null>(null);
+  const [hoverNode, setHoverNode] = useState<string | null>(null);
+  const hoverNodeRef = useRef<string | null>(null);
+  hoverNodeRef.current = hoverNode;
   const [menu, setMenu] = useState<{ x: number; y: number; sceneId: string } | null>(null);
   const dragRef = useRef<
     | { kind: "pan"; startX: number; startY: number; ox: number; oy: number }
@@ -139,6 +146,26 @@ export function GraphView({ canEdit, onOpenScene }: {
     return { x: (clientX - rect.left - v.ox) / v.scale, y: (clientY - rect.top - v.oy) / v.scale };
   }, []);
 
+  /** Dibuja el hilo de conexión directamente en el SVG, sin repintar el árbol. */
+  const drawGhost = useCallback((from: string, x: number, y: number, target?: string | null): void => {
+    const path = ghostPathRef.current;
+    const start = positionsRef.current[from];
+    if (path == null || start == null) return;
+    // Si hay un destino bajo el cursor, el hilo se pega a su puerto de entrada
+    const end = target != null ? positionsRef.current[target] : null;
+    const ex = end != null ? end.x : x;
+    const ey = end != null ? end.y + NODE_H / 2 : y;
+    const sx = start.x + NODE_W;
+    const sy = start.y + NODE_H / 2;
+    path.setAttribute("d", `M ${sx} ${sy} C ${sx + 60} ${sy}, ${ex - 60} ${ey}, ${ex} ${ey}`);
+    path.style.display = "";
+    path.setAttribute("stroke-dasharray", end != null ? "0" : "5 4");
+  }, []);
+
+  const hideGhost = useCallback((): void => {
+    if (ghostPathRef.current != null) ghostPathRef.current.style.display = "none";
+  }, []);
+
   const hitNode = useCallback((x: number, y: number): string | null => {
     for (const scene of [...snapshot.scenes].reverse()) {
       const p = positionsRef.current[scene.id];
@@ -209,6 +236,13 @@ export function GraphView({ canEdit, onOpenScene }: {
       if (e.key === "f" || e.key === "F") {
         fitView();
       } else if (e.key === "Escape") {
+        if (dragRef.current?.kind === "connect") {
+          dragRef.current = null;
+          setConnecting(null);
+          setHoverNode(null);
+          hideGhost();
+          return;
+        }
         setSelectedNodes(new Set());
         setSelectedEdge(null);
         setMenu(null);
@@ -220,7 +254,7 @@ export function GraphView({ canEdit, onOpenScene }: {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [fitView, canEdit, selectedEdge, editor]);
+  }, [fitView, canEdit, selectedEdge, editor, hideGhost]);
 
   // Rueda: zoom anclado al cursor
   const onWheel = (e: React.WheelEvent): void => {
@@ -248,9 +282,14 @@ export function GraphView({ canEdit, onOpenScene }: {
     if (nodeId != null) {
       const p = positionsRef.current[nodeId]!;
       // ¿Puerto de salida? (círculo derecho)
-      if (canEdit && Math.hypot(x - (p.x + NODE_W), y - (p.y + NODE_H / 2)) < PORT_R * 2.2) {
+      // Zona de conexión generosa: el puerto y todo el borde derecho. Apuntar
+      // a un círculo de trece píxeles era pelearse con la interfaz.
+      const onPort = Math.hypot(x - (p.x + NODE_W), y - (p.y + NODE_H / 2)) < PORT_R * 3.2;
+      const onRightEdge = x > p.x + NODE_W - 14 && y > p.y + 8 && y < p.y + NODE_H - 8;
+      if (canEdit && (onPort || onRightEdge)) {
         dragRef.current = { kind: "connect", from: nodeId };
-        setGhost({ from: nodeId, x, y });
+        setConnecting(nodeId);
+        drawGhost(nodeId, x, y);
         return;
       }
       const next = new Set(e.shiftKey ? selectedNodes : selectedNodes.has(nodeId) ? selectedNodes : []);
@@ -312,7 +351,10 @@ export function GraphView({ canEdit, onOpenScene }: {
         return next;
       });
     } else if (st.kind === "connect") {
-      setGhost({ from: st.from, x, y });
+      const over = hitNode(x, y);
+      const target = over != null && over !== st.from ? over : null;
+      if (target !== hoverNodeRef.current) setHoverNode(target);
+      drawGhost(st.from, x, y, target);
     } else if (st.kind === "marquee") {
       setMarquee({ x0: st.x0, y0: st.y0, x1: x, y1: y });
     }
@@ -325,7 +367,9 @@ export function GraphView({ canEdit, onOpenScene }: {
     if (st.kind === "connect") {
       const { x, y } = toWorld(e.clientX, e.clientY);
       const target = hitNode(x, y);
-      setGhost(null);
+      setConnecting(null);
+      setHoverNode(null);
+      hideGhost();
       if (target != null && target !== st.from && canEdit) {
         let created: string | null = null;
         editor.apply((draft) => {
@@ -452,9 +496,17 @@ export function GraphView({ canEdit, onOpenScene }: {
             </Button>
           </Tooltip>
           <span className="w-12 text-right text-xs tabular-nums text-[var(--ull-text-dim)]">{Math.round(view.scale * 100)}%</span>
+
         </div>
 
         <div className="relative min-h-0 flex-1 overflow-hidden">
+          {connecting != null && (
+            <div className="pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-[var(--ull-primary)] px-3 py-1.5 text-xs font-medium text-white shadow-lg">
+              {hoverNode != null
+                ? t("connect_release_on", { name: snapshot.scenes.find((sc) => sc.id === hoverNode)?.title ?? "" })
+                : t("connect_drag_hint")}
+            </div>
+          )}
           <svg
             ref={svgRef}
             className={`h-full w-full touch-none select-none bg-[var(--ull-bg)] ${mediaOver ? "outline outline-2 -outline-offset-2 outline-[var(--ull-primary)]" : ""}`}
@@ -534,33 +586,53 @@ export function GraphView({ canEdit, onOpenScene }: {
                 );
               })}
 
-              {/* Bezier fantasma al conectar */}
-              {ghost != null && positions[ghost.from] != null && (
-                <path
-                  d={`M ${positions[ghost.from]!.x + NODE_W} ${positions[ghost.from]!.y + NODE_H / 2} C ${positions[ghost.from]!.x + NODE_W + 60} ${positions[ghost.from]!.y + NODE_H / 2}, ${ghost.x - 60} ${ghost.y}, ${ghost.x} ${ghost.y}`}
-                  fill="none"
-                  stroke="var(--ull-primary)"
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                />
-              )}
+              {/* Bezier fantasma al conectar: se dibuja sin pasar por React */}
+              <path
+                ref={ghostPathRef}
+                fill="none"
+                stroke="var(--ull-primary)"
+                strokeWidth={2.5}
+                strokeDasharray="5 4"
+                strokeLinecap="round"
+                style={{ display: "none", pointerEvents: "none" }}
+              />
 
               {/* Nodos */}
               {snapshot.scenes.map((scene) => {
+                const isDropTarget = hoverNode === scene.id;
                 const p = positions[scene.id];
                 if (p == null) return null;
                 const selected = selectedNodes.has(scene.id);
                 const isStart = startScene === scene.id;
                 const orphan = orphans.has(scene.id);
                 return (
-                  <g key={scene.id} transform={`translate(${p.x} ${p.y})`} style={{ cursor: "grab" }}>
+                  <g
+                    key={scene.id}
+                    transform={`translate(${p.x} ${p.y})`}
+                    style={{ cursor: connecting != null ? "crosshair" : "grab" }}
+                  >
+                    {/* Halo del destino candidato mientras se arrastra el hilo */}
+                    {isDropTarget && (
+                      <rect
+                        x={-5}
+                        y={-5}
+                        width={NODE_W + 10}
+                        height={NODE_H + 10}
+                        rx={16}
+                        fill="var(--ull-primary)"
+                        fillOpacity={0.14}
+                        stroke="var(--ull-primary)"
+                        strokeWidth={2}
+                        style={{ pointerEvents: "none" }}
+                      />
+                    )}
                     <rect
                       width={NODE_W}
                       height={NODE_H}
                       rx={12}
                       fill="var(--ull-surface)"
-                      stroke={selected ? "var(--ull-primary)" : orphan ? "#d97706" : "var(--ull-border)"}
-                      strokeWidth={selected ? 2.5 : 1.5}
+                      stroke={isDropTarget || selected ? "var(--ull-primary)" : orphan ? "#d97706" : "var(--ull-border)"}
+                      strokeWidth={isDropTarget || selected ? 2.5 : 1.5}
                     />
                     {scene.mediaId != null && (
                       <image
@@ -582,14 +654,25 @@ export function GraphView({ canEdit, onOpenScene }: {
                     </text>
                     {/* Puertos */}
                     <circle cx={0} cy={NODE_H / 2} r={PORT_R} fill="var(--ull-surface)" stroke="var(--ull-text-dim)" strokeWidth={1.5} />
+                    {/* Zona de agarre generosa e invisible sobre el puerto */}
+                    {canEdit && (
+                      <rect
+                        x={NODE_W - 14}
+                        y={8}
+                        width={26}
+                        height={NODE_H - 16}
+                        fill="transparent"
+                        style={{ cursor: "crosshair" }}
+                      />
+                    )}
                     <circle
                       cx={NODE_W}
                       cy={NODE_H / 2}
-                      r={PORT_R}
+                      r={connecting === scene.id ? PORT_R + 3 : PORT_R}
                       fill={canEdit ? "var(--ull-primary)" : "var(--ull-surface)"}
                       stroke="var(--ull-primary)"
-                      strokeWidth={1.5}
-                      style={{ cursor: canEdit ? "crosshair" : "default" }}
+                      strokeWidth={connecting === scene.id ? 3 : 1.5}
+                      style={{ cursor: canEdit ? "crosshair" : "default", pointerEvents: "none" }}
                     />
                   </g>
                 );

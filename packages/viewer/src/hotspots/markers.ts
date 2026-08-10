@@ -19,6 +19,8 @@ export interface MarkerCallbacks {
   lang: () => string;
   defaultLang: string;
   baseUrl: string;
+  /** Tamaño por defecto del botón, heredado de los ajustes del tour. */
+  defaultSize?: number;
   /** Modo edición: permite arrastrar marcadores para reposicionarlos. */
   editable?: boolean;
   onDrag?: (hotspot: Hotspot, yaw: number, pitch: number, phase: "move" | "end") => void;
@@ -155,7 +157,7 @@ export class SceneMarkers {
     el.setAttribute("aria-label", this.label(hotspot));
     el.dataset.hotspotId = hotspot.id;
     const style = hotspot.style;
-    const size = style?.icon?.size ?? 44;
+    const size = style?.icon?.size ?? this.callbacks.defaultSize ?? 44;
     const color = style?.icon?.color ?? "#ffffff";
     if (style?.className != null) el.classList.add(...style.className.split(/\s+/));
     if (style?.pulse === true) el.classList.add("ull360-hotspot--pulse");

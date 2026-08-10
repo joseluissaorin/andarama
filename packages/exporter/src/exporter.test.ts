@@ -162,3 +162,48 @@ describe("plantillas", () => {
     expect(m2004).toContain('adlcp:scormType="sco"');
   });
 });
+
+describe("metadatos de compartición", () => {
+  it("usa el título y la descripción del tour cuando no hay bloque social", () => {
+    const html = renderIndexHtml({ title: "Campus", description: "Visita", lang: "es" });
+    expect(html).toContain('<meta property="og:title" content="Campus">');
+    expect(html).toContain('<meta property="og:description" content="Visita">');
+    expect(html).toContain('content="summary"');
+  });
+
+  it("el bloque social manda sobre el título del tour", () => {
+    const html = renderIndexHtml({
+      title: "Campus",
+      lang: "es",
+      social: { title: "Visita virtual a Guajara", description: "Recorre el campus", image: "https://x/og.jpg", siteName: "ULL" },
+    });
+    expect(html).toContain('content="Visita virtual a Guajara"');
+    expect(html).toContain('<meta property="og:site_name" content="ULL">');
+    expect(html).toContain('content="summary_large_image"');
+  });
+
+  it("emite todas las etiquetas pedidas y escapa el contenido", () => {
+    const html = renderIndexHtml({
+      title: "T",
+      lang: "es",
+      canonicalUrl: "https://ull.es/t/x",
+      social: {
+        image: "https://x/og.jpg",
+        imageAlt: 'Aula "magna" & patio',
+        type: "article",
+        locale: "es_ES",
+        twitterCard: "summary",
+        twitterSite: "@ull",
+        twitterCreator: "@saorin",
+        noindex: true,
+      },
+    });
+    expect(html).toContain('<meta property="og:image:alt" content="Aula &quot;magna&quot; &amp; patio">');
+    expect(html).toContain('<meta property="og:type" content="article">');
+    expect(html).toContain('<meta property="og:locale" content="es_ES">');
+    expect(html).toContain('<meta property="og:url" content="https://ull.es/t/x">');
+    expect(html).toContain('<meta name="twitter:site" content="@ull">');
+    expect(html).toContain('<meta name="twitter:creator" content="@saorin">');
+    expect(html).toContain('<meta name="robots" content="noindex, nofollow">');
+  });
+});

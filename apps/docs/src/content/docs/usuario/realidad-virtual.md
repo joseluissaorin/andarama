@@ -99,6 +99,21 @@ El fichero `LEEME.md` que acompaña a cada paquete lo recuerda, y el `.htaccess`
 incluido añade los tipos MIME y las cabeceras de caché que necesita un
 alojamiento compartido corriente.
 
+## Cerrar un panel
+
+Todo panel abierto lleva su aspa arriba a la derecha, y se alcanza con
+cualquiera de las tres formas de apuntar:
+
+- **Manos**: apuntar con el rayo y hacer la pinza, o tocar el aspa con la yema
+  del índice.
+- **Mandos**: apuntar y apretar el gatillo.
+- **Sin mando ni manos** (cardboard o giroscopio): mirar el aspa y sostener la
+  vista hasta que el anillo se complete.
+
+El panel se ancla siempre delante de donde mira la cabeza al abrirlo, de modo
+que el aspa queda a unos veinte grados a la derecha: un giro corto, no un
+contorsionismo.
+
 ## Qué se puede accionar dentro: se decide por tour
 
 En **Ajustes del tour › Gafas y modo cartón**:

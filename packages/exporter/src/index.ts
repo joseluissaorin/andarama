@@ -179,6 +179,30 @@ function toBase64(data: Uint8Array): string {
 // Export principal
 // ---------------------------------------------------------------------------
 
+/** Metadatos de compartición del paquete exportado, resueltos al idioma. */
+function socialFor(tour: Tour, lang: string): Record<string, unknown> | undefined {
+  const social = tour.social;
+  if (social == null) return undefined;
+  const text = (value: unknown): string | undefined => {
+    if (value == null) return undefined;
+    const resolved = resolveL10n(value as never, lang, tour.meta.defaultLang);
+    return resolved !== "" ? resolved : undefined;
+  };
+  return {
+    title: text(social.title),
+    description: text(social.description),
+    image: social.image,
+    imageAlt: text(social.imageAlt),
+    type: social.type,
+    siteName: social.siteName,
+    twitterCard: social.twitterCard,
+    twitterSite: social.twitterSite,
+    twitterCreator: social.twitterCreator,
+    locale: social.locale,
+    noindex: social.noindex,
+  };
+}
+
 export async function runExport(
   tourInput: Tour,
   viewerFiles: AssetFile[],
@@ -241,6 +265,7 @@ export async function runExport(
       title,
       description,
       lang,
+      social: socialFor(tour, lang),
       inlineConfig: `{"tour": ${rewritten}, "analyticsEndpoint": ${JSON.stringify(options.analyticsEndpoint ?? null)}, "kiosk": ${options.kiosk === true}}`,
       inlineViewerJs: new TextDecoder().decode(viewerJs.data),
       kiosk: options.kiosk,
@@ -277,6 +302,7 @@ export async function runExport(
       title,
       description,
       lang,
+      social: socialFor(tour, lang),
       viewerPath: "viewer/viewer.js",
       tourJsonPath: "tour.json",
       analyticsEndpoint: options.analyticsEndpoint,
