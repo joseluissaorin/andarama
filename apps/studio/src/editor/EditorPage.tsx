@@ -21,9 +21,8 @@ import { useAuth, useEditor, type EditorSnapshot } from "../stores";
 import { useT } from "../i18n";
 import { loadSnapshot, syncSnapshot } from "./editorApi";
 import { ScenesView } from "./ScenesView";
-import { GraphView } from "./GraphView";
+import { GRAPH_MODES, GraphView, type GraphMode } from "./GraphView";
 import { MediaDock } from "./MediaDock";
-import { FloorplanView } from "./FloorplanView";
 import { TranslationsView } from "./TranslationsView";
 import { TourSettingsView } from "./TourSettingsView";
 import { AnalyticsView } from "./AnalyticsView";
@@ -41,7 +40,9 @@ export interface ProjectInfo {
   publication: { slug: string; visibility: string; hasPassword: boolean } | null;
 }
 
-type EditorTab = "scenes" | "graph" | "floorplan" | "translations" | "settings" | "analytics" | "comments" | "versions";
+type EditorTab = "scenes" | "graph" | "translations" | "settings" | "analytics" | "comments" | "versions";
+
+const TAB_IDS: EditorTab[] = ["scenes", "graph", "translations", "settings", "analytics", "comments", "versions"];
 
 export function EditorPage(): React.ReactNode {
   const t = useT();
@@ -51,7 +52,22 @@ export function EditorPage(): React.ReactNode {
   const editor = useEditor();
   const { me, refresh } = useAuth();
   const [project, setProject] = useState<ProjectInfo | null>(null);
-  const [tab, setTab] = useState<EditorTab>("scenes");
+  // La URL se lee **al montar**, antes de que el efecto que la mantiene al día
+  // la reescriba. Leyéndola después de cargar el tour ya no quedaba nada: el
+  // enlace a una pestaña concreta siempre acababa en Escenas.
+  const entryParams = useRef(new URLSearchParams(location.search));
+  const [tab, setTab] = useState<EditorTab>(() => {
+    const raw = entryParams.current.get("tab");
+    if (raw === "floorplan") return "graph";
+    return raw != null && TAB_IDS.includes(raw as EditorTab) ? (raw as EditorTab) : "scenes";
+  });
+  const [graphMode, setGraphMode] = useState<GraphMode>(() => {
+    // El plano dejó de ser una pestaña: ahora es un modo del grafo, y los
+    // enlaces antiguos tienen que seguir llevando a donde llevaban.
+    if (entryParams.current.get("tab") === "floorplan") return "plan";
+    const raw = entryParams.current.get("mode");
+    return raw != null && GRAPH_MODES.includes(raw as GraphMode) ? (raw as GraphMode) : "scenes";
+  });
   const [dialog, setDialog] = useState<"publish" | "export" | "share" | "live" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [presence, setPresence] = useState<{ users: { connectionId: string; name: string; sceneId: string | null }[]; locks: Record<string, { connectionId: string; name: string }> }>({ users: [], locks: {} });
@@ -68,12 +84,8 @@ export function EditorPage(): React.ReactNode {
         syncedRef.current = structuredClone(snapshot);
         editor.load(projectId, snapshot);
         setProject(p as unknown as ProjectInfo);
-        const params = new URLSearchParams(location.search);
-        const urlTab = params.get("tab") as EditorTab | null;
-        if (urlTab != null && ["scenes", "graph", "floorplan", "translations", "settings", "analytics", "comments", "versions"].includes(urlTab)) {
-          setTab(urlTab);
-        }
-        const urlScene = params.get("scene");
+        // La escena sí necesita el tour cargado para saber si existe
+        const urlScene = entryParams.current.get("scene");
         if (urlScene != null && snapshot.scenes.some((s) => s.id === urlScene)) {
           useEditor.getState().select(urlScene);
         }
@@ -89,11 +101,13 @@ export function EditorPage(): React.ReactNode {
     const params = new URLSearchParams(location.search);
     if (tab === "scenes") params.delete("tab");
     else params.set("tab", tab);
+    if (tab !== "graph" || graphMode === "scenes") params.delete("mode");
+    else params.set("mode", graphMode);
     if (editor.selectedSceneId == null) params.delete("scene");
     else params.set("scene", editor.selectedSceneId);
     const qs = params.toString();
     history.replaceState(null, "", `${location.pathname}${qs === "" ? "" : `?${qs}`}`);
-  }, [tab, editor.selectedSceneId]);
+  }, [tab, graphMode, editor.selectedSceneId]);
 
   // Autosave con indicador (§3.5)
   const doSync = useCallback(async (): Promise<void> => {
@@ -204,7 +218,6 @@ export function EditorPage(): React.ReactNode {
   const TABS: { id: EditorTab; icon: React.ReactNode; label: string }[] = [
     { id: "scenes", icon: <MapIcon className="h-4 w-4" />, label: t("scenes") },
     { id: "graph", icon: <GitBranch className="h-4 w-4" />, label: t("graph") },
-    { id: "floorplan", icon: <MapIcon className="h-4 w-4" />, label: t("floorplan") },
     { id: "translations", icon: <LanguagesIcon className="h-4 w-4" />, label: t("translations") },
     { id: "settings", icon: <Settings2 className="h-4 w-4" />, label: t("settings") },
     { id: "analytics", icon: <BarChart3 className="h-4 w-4" />, label: t("analytics") },
@@ -299,13 +312,14 @@ export function EditorPage(): React.ReactNode {
         {tab === "graph" && (
           <GraphView
             canEdit={canEdit}
+            mode={graphMode}
+            onModeChange={setGraphMode}
             onOpenScene={(sceneId, hotspotId) => {
               setTab("scenes");
               editor.select(sceneId, hotspotId ?? null);
             }}
           />
         )}
-        {tab === "floorplan" && <FloorplanView project={project} canEdit={canEdit} />}
         {tab === "translations" && <TranslationsView project={project} canEdit={canEdit} />}
         {tab === "settings" && <TourSettingsView project={project} canEdit={canEdit} />}
         {tab === "analytics" && <AnalyticsView project={project} />}
@@ -326,7 +340,10 @@ export function EditorPage(): React.ReactNode {
         onClose={() => setPaletteOpen(false)}
         onAction={(action) => {
           setPaletteOpen(false);
-          if (action.kind === "tab") setTab(action.tab as EditorTab);
+          if (action.kind === "tab") {
+            setTab(action.tab as EditorTab);
+            if (action.mode != null && GRAPH_MODES.includes(action.mode as GraphMode)) setGraphMode(action.mode as GraphMode);
+          }
           else if (action.kind === "scene") {
             setTab("scenes");
             editor.select(action.sceneId!);

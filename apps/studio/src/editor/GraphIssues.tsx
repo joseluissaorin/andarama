@@ -47,7 +47,7 @@ export function GraphIssues({
         className="flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-600 hover:bg-amber-500/25"
       >
         <AlertTriangle className="h-3.5 w-3.5" />
-        {t("graph_issues", { count: String(issues.length) })}
+        {issues.length === 1 ? t("graph_issue_one") : t("graph_issues", { count: String(issues.length) })}
       </button>
       {open && (
         <>

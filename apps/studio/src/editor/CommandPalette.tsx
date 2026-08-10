@@ -6,6 +6,8 @@ import { useT } from "../i18n";
 export interface PaletteAction {
   kind: "tab" | "scene" | "dialog" | "undo" | "redo";
   tab?: string;
+  /** Modo del lienzo cuando la pestaña es el grafo. */
+  mode?: string;
   sceneId?: string;
   dialog?: string;
 }
@@ -26,7 +28,10 @@ export function CommandPalette({ open, onClose, onAction }: {
     const base: { label: string; action: PaletteAction }[] = [
       { label: `${t("scenes")}`, action: { kind: "tab", tab: "scenes" } },
       { label: t("graph"), action: { kind: "tab", tab: "graph" } },
-      { label: t("floorplan"), action: { kind: "tab", tab: "floorplan" } },
+      { label: `${t("graph")}: ${t("graph_mode_plan")}`, action: { kind: "tab", tab: "graph", mode: "plan" } },
+      { label: `${t("graph")}: ${t("graph_mode_geo")}`, action: { kind: "tab", tab: "graph", mode: "geo" } },
+      { label: `${t("graph")}: ${t("graph_mode_autopilot")}`, action: { kind: "tab", tab: "graph", mode: "autopilot" } },
+      { label: `${t("graph")}: ${t("areas")}`, action: { kind: "tab", tab: "graph", mode: "scenes" } },
       { label: t("translations"), action: { kind: "tab", tab: "translations" } },
       { label: t("settings"), action: { kind: "tab", tab: "settings" } },
       { label: t("analytics"), action: { kind: "tab", tab: "analytics" } },

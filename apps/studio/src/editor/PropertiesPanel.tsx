@@ -31,6 +31,7 @@ import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@ull360/
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
+import { areaOfScene, areasOf, assignScene, createArea } from "./areas";
 import { getCurrentEditorView, highlightHotspot, setPlacementMode } from "./ScenesView";
 import { HotspotPalette } from "./HotspotPalette";
 import { MediaPicker } from "./MediaPicker";
@@ -100,14 +101,10 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const [pickerFor, setPickerFor] = useState<"panorama" | "ambient" | "narration" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [newCategory, setNewCategory] = useState<string | null>(null);
-  // Categorías ya usadas en el tour, sin repetir y ordenadas
-  const categories = [
-    ...new Set(
-      editor.snapshot!.scenes
-        .map((sc) => String(readJson<Record<string, unknown>>(sc.metaJson, {}).category ?? "").trim())
-        .filter((c) => c !== ""),
-    ),
-  ].sort((a, b) => a.localeCompare(b, "es"));
+  // Áreas del tour: la misma cosa que agrupa el grafo, da la categoría del
+  // menú de escenas y, si tiene plano, es la planta del minimapa.
+  const areas = areasOf(editor.snapshot!);
+  const currentArea = areaOfScene(scene);
   const meta = readJson<Record<string, unknown>>(scene.metaJson, {});
   const audio = readJson<Record<string, any>>(scene.audioJson, {});
   const map = readJson<Record<string, any>>(scene.mapJson, {});
@@ -156,43 +153,45 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
           <Field label={t("description")} htmlFor="sc-desc">
             <Textarea id="sc-desc" rows={2} value={String(meta.description ?? "")} disabled={!canEdit} onChange={(e) => patchMeta({ description: e.target.value })} />
           </Field>
-          {/* Las categorías agrupan el menú de escenas: escribirlas a mano
-              acababa en «Interiores», «interiores» e «Interior» como tres
-              grupos distintos. Se eligen de las que ya existen en el tour. */}
-          <Field label={t("category")} htmlFor="sc-cat" hint={t("category_hint")}>
+          {/* El área es la categoría: escribirla a mano acababa en
+              «Interiores», «interiores» e «Interior» como tres grupos
+              distintos, y además no se veía en el grafo. Se elige de las que
+              ya existen en el tour. */}
+          <Field label={t("area")} htmlFor="sc-area" hint={t("area_hint")}>
             <div className="flex items-center gap-2">
               <Select
-                id="sc-cat"
+                id="sc-area"
                 className="flex-1"
-                value={String(meta.category ?? "")}
+                value={currentArea ?? ""}
                 disabled={!canEdit}
                 onChange={(e) => {
                   if (e.target.value === "__new__") {
                     setNewCategory("");
                     return;
                   }
-                  patchMeta({ category: e.target.value === "" ? undefined : e.target.value });
+                  editor.apply((draft) => assignScene(draft, scene.id, e.target.value === "" ? null : e.target.value));
                 }}
               >
-                <option value="">{t("category_none")}</option>
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                <option value="">{t("area_none")}</option>
+                {areas.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.title}
+                    {a.plan != null ? ` · ${t("floorplan")}` : ""}
                   </option>
                 ))}
-                <option value="__new__">{t("category_new")}…</option>
+                <option value="__new__">{t("new_area")}…</option>
               </Select>
             </div>
             {newCategory != null && (
               <div className="mt-1.5 flex items-center gap-2">
                 <Input
                   autoFocus
-                  aria-label={t("category_new")}
+                  aria-label={t("new_area")}
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && newCategory.trim() !== "") {
-                      patchMeta({ category: newCategory.trim() });
+                      editor.apply((draft) => assignScene(draft, scene.id, createArea(draft, newCategory.trim())));
                       setNewCategory(null);
                     } else if (e.key === "Escape") setNewCategory(null);
                   }}
@@ -201,7 +200,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
                   size="sm"
                   disabled={newCategory.trim() === ""}
                   onClick={() => {
-                    patchMeta({ category: newCategory.trim() });
+                    editor.apply((draft) => assignScene(draft, scene.id, createArea(draft, newCategory.trim())));
                     setNewCategory(null);
                   }}
                 >

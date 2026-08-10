@@ -19,7 +19,7 @@ Se abre desde **Biblioteca de medios → Importar de cámara 360**.
 
 Si el tour tiene un plano de planta, el importador te lo enseña y va pidiendo **un clic por foto, en orden**: cada clic coloca la siguiente foto sobre el plano con su número. Un clic sobre un número ya colocado lo quita para recolocarlo.
 
-Este paso deja el plano del tour terminado antes incluso de crear las escenas. Si el tour no tiene plano, el paso se salta (puedes añadir uno después en la pestaña **Plano** del editor).
+Este paso deja el plano del tour terminado antes incluso de crear las escenas. Si el tour no tiene plano, el paso se salta (puedes añadir uno después desde las **áreas** del lienzo, en el modo **Plano**).
 
 ## Paso 3 — Escenas
 

@@ -57,6 +57,12 @@ El esquema está **versionado**: `@ull360/schema` incluye migradores automático
 - **`connections` ya no existe.** El grafo se deriva íntegramente de los
   hotspots de navegación. Los `tour.json` antiguos que la traigan se siguen
   cargando: el visor simplemente la ignora.
+- **`floorplans` se compila desde las áreas del borrador.** En el editor, la
+  planta, la zona y la categoría son una sola cosa —un **área**—; al publicar,
+  las áreas con plano se escriben como `floorplans` (mismo `id`, así que
+  `scene.map.floorplan` sigue apuntando a su sitio) y el título del área se
+  escribe como `scene.category`. El formato publicado no cambia; lo que cambia
+  es de dónde sale. Los borradores anteriores se convierten solos al abrirlos.
 - **`vr`** (nuevo): comportamiento en gafas y modo cartón.
   ```json
   {

@@ -116,6 +116,59 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await expect(link).toBeVisible({ timeout: 30_000 });
 });
 
+test("el grafo tiene los cuatro modos y el plano ya no es una pestaña", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  const projectUrl = page.url().split("?")[0]!;
+
+  await page.goto(`${projectUrl}?tab=graph`);
+  const modos = page.getByRole("group", { name: "Modo del lienzo" });
+  for (const modo of ["Escenas", "Plano", "Mapa", "Autopilot"]) {
+    await expect(modos.getByRole("button", { name: modo, exact: true })).toBeVisible({ timeout: 20_000 });
+  }
+  // El plano dejó de ser una pestaña del editor
+  await expect(page.locator('nav[aria-label="Vistas del editor"] button', { hasText: "Plano" })).toHaveCount(0);
+
+  // Los enlaces antiguos siguen llevando donde llevaban
+  await page.goto(`${projectUrl}?tab=floorplan`);
+  await expect(page.getByRole("group", { name: "Modo del lienzo" }).getByRole("button", { name: "Plano", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+    { timeout: 20_000 },
+  );
+  await expect.poll(() => page.url()).toContain("mode=plan");
+});
+
+test("un área es la categoría del menú de escenas", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+
+  // El área se crea desde el panel del grafo...
+  await page.goto(`${page.url().split("?")[0]!}?tab=graph`);
+  await page.getByRole("button", { name: "Áreas", exact: true }).click();
+  await page.getByRole("button", { name: "Nueva área" }).click();
+  const nombre = page.getByLabel("Nombre del área").first();
+  await expect(nombre).toBeVisible({ timeout: 10_000 });
+  await nombre.fill("Planta baja");
+
+  // ...y se asigna desde las propiedades de la escena
+  await page.locator('nav[aria-label="Vistas del editor"]').getByRole("button", { name: "Escenas" }).click();
+  await page.locator("#sc-area").selectOption({ label: "Planta baja" });
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+
+  // Y llega al tour publicado como categoría del menú de escenas
+  await page.locator("header").getByRole("button", { name: "Republicar" }).click();
+  const dialog = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
+  await dialog.getByRole("button", { name: "Publicar", exact: true }).click();
+  await expect(dialog.locator('a[href*="/t/"]')).toBeVisible({ timeout: 30_000 });
+  const tour = (await (await page.request.get("/t/tour-e2e/tour.json")).json()) as { scenes: { category?: string }[] };
+  expect(tour.scenes[0]!.category).toBe("Planta baja");
+});
+
 test("visor publico: navegacion, panel y deep link", async ({ page }) => {
   await page.goto("/t/tour-e2e");
   await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 30_000 });

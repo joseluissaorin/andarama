@@ -194,6 +194,43 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
   };
 
   // Escenas
+  /**
+   * Áreas del tour: planta, zona y categoría son la misma cosa. Las que
+   * tienen plano se publican como `floorplans`, que es lo que ya lee el visor.
+   * Los tours anteriores a las áreas conservan su lista de planos suelta.
+   */
+  interface AreaRow {
+    id: string;
+    title: string;
+    level?: number;
+    plan?: { url?: string };
+  }
+  const areaList: AreaRow[] = Array.isArray(settings.areas)
+    ? (settings.areas as Record<string, unknown>[])
+        .filter((a) => a != null && typeof a.id === "string")
+        .map((a) => ({
+          id: a.id as string,
+          title: typeof a.title === "string" ? a.title : "",
+          level: typeof a.level === "number" && Number.isFinite(a.level) ? a.level : undefined,
+          plan: a.plan != null && typeof a.plan === "object" ? (a.plan as { url?: string }) : undefined,
+        }))
+    : [];
+
+  const compileFloorplans = (): Tour["floorplans"] => {
+    if (areaList.length > 0) {
+      const list = areaList
+        .filter((a) => typeof a.plan?.url === "string" && a.plan.url !== "")
+        .map((a) => ({
+          id: a.id,
+          title: l10n(a.title, "area", a.id, "title") as never,
+          url: resolveRef(a.plan!.url!),
+          ...(a.level != null ? { level: a.level } : {}),
+        }));
+      return list.length > 0 ? list : undefined;
+    }
+    return deepResolve(settings.floorplans as Tour["floorplans"]) ?? undefined;
+  };
+
   const compiledScenes: Scene[] = [];
   for (const row of sceneRows) {
     const meta = parseJson<Record<string, unknown>>(row.metaJson, {});
@@ -233,6 +270,15 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
       } as unknown as Hotspot;
     });
 
+    // El área da la categoría del menú de escenas; si la escena no tiene
+    // área, se conserva la categoría suelta de los tours antiguos.
+    const areaId = typeof meta.area === "string" ? meta.area : null;
+    const area = areaId != null ? areaList.find((a) => a.id === areaId) : undefined;
+    const category =
+      area != null
+        ? l10n(area.title, "area", area.id, "title")
+        : l10n(meta.category as string | undefined, "scene", row.id, "category");
+
     const thumbnailRef = meta.thumbnail as string | undefined;
     const scene: Scene = {
       id: row.id,
@@ -240,7 +286,7 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
       title: l10n(row.title, "scene", row.id, "title") as Scene["title"],
       description: l10n(meta.description as string | undefined, "scene", row.id, "description") as Scene["description"],
       altText: l10n(meta.altText as string | undefined, "scene", row.id, "altText") as Scene["altText"],
-      category: l10n(meta.category as string | undefined, "scene", row.id, "category") as Scene["category"],
+      category: category as Scene["category"],
       source,
       thumbnail: thumbnailRef != null ? resolveRef(thumbnailRef) : undefined,
       initialView: parseJson(row.initialViewJson, undefined as never) ?? undefined,
@@ -274,7 +320,7 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
       intro: (settings.intro as Tour["start"]["intro"]) ?? "none",
     },
     scenes: compiledScenes,
-    floorplans: deepResolve(settings.floorplans as Tour["floorplans"]) ?? undefined,
+    floorplans: compileFloorplans(),
     geoMap: (settings.geoMap as Tour["geoMap"]) ?? undefined,
     ui: deepResolve(settings.ui as Tour["ui"]) ?? undefined,
     controls: (settings.controls as Tour["controls"]) ?? undefined,

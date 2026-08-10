@@ -20,6 +20,8 @@ export interface GraphEdge {
   /** Colocado a ojo por el editor y aún sin ubicar en el panorama. */
   unplaced: boolean;
   entryMode: string;
+  /** Paso de sentido único a propósito: no se avisa de que le falta la vuelta. */
+  oneWay: boolean;
 }
 
 /** Yaw y pitch de un hotspot recién creado desde el grafo. */
@@ -66,7 +68,7 @@ export function graphEdges(snapshot: EditorSnapshot): GraphEdge[] {
   const edges: GraphEdge[] = [];
   for (const h of snapshot.hotspots) {
     if (h.type !== "navigation") continue;
-    const content = readJson<{ target?: string; label?: string; unplaced?: boolean; entry?: { mode?: string } }>(h.contentJson, {});
+    const content = readJson<{ target?: string; label?: string; unplaced?: boolean; oneWay?: boolean; entry?: { mode?: string } }>(h.contentJson, {});
     if (content.target == null || content.target === "") continue;
     edges.push({
       id: h.id,
@@ -75,9 +77,26 @@ export function graphEdges(snapshot: EditorSnapshot): GraphEdge[] {
       label: typeof content.label === "string" ? content.label : "",
       unplaced: content.unplaced === true,
       entryMode: content.entry?.mode ?? "relative",
+      oneWay: content.oneWay === true,
     });
   }
   return edges;
+}
+
+/**
+ * Marca el paso como de sentido único a propósito.
+ *
+ * El aviso «paso sin vuelta» daba la lata en recorridos que son de ida sola —una
+ * salida de emergencia, un tobogán, un mirador al que se baja por otro sitio—.
+ * Ahora se puede decir que es adrede y el aviso calla.
+ */
+export function setOneWay(draft: EditorSnapshot, hotspotId: string, oneWay: boolean): void {
+  const hotspot = draft.hotspots.find((h) => h.id === hotspotId);
+  if (hotspot == null) return;
+  const content = readJson<Record<string, unknown>>(hotspot.contentJson, {});
+  if (oneWay) content.oneWay = true;
+  else delete content.oneWay;
+  hotspot.contentJson = JSON.stringify(content);
 }
 
 /**
@@ -147,12 +166,94 @@ export function graphIssues(snapshot: EditorSnapshot, edges: GraphEdge[], orphan
   }
   for (const e of edges) {
     if (e.unplaced) issues.push({ kind: "unplaced", hotspotId: e.id, sceneId: e.from, label: `${title(e.from)} → ${title(e.to)}` });
-    if (!edges.some((other) => other.from === e.to && other.to === e.from)) {
+    // Un paso declarado de sentido único no es un descuido: no se avisa
+    if (!e.oneWay && !edges.some((other) => other.from === e.to && other.to === e.from)) {
       issues.push({ kind: "no-return", hotspotId: e.id, sceneId: e.from, label: `${title(e.from)} → ${title(e.to)}` });
     }
   }
   for (const id of orphans) issues.push({ kind: "orphan", sceneId: id, label: title(id) });
   return issues;
+}
+
+/** Lo que conviene ver de un nodo sin abrirlo. */
+export interface NodeStatus {
+  /** Salidas de navegación. */
+  exits: number;
+  /** Hotspots que no son de navegación. */
+  extras: number;
+  /** Marcadores del panorama todavía sin colocar. */
+  unplaced: number;
+  hidden: boolean;
+  noMedia: boolean;
+  /** Sin texto alternativo, que el validador reclama al publicar. */
+  noAlt: boolean;
+  audio: boolean;
+}
+
+export function nodeStatus(snapshot: EditorSnapshot, scene: SceneRow, edges: GraphEdge[]): NodeStatus {
+  const meta = readJson<Record<string, unknown>>(scene.metaJson, {});
+  const audio = readJson<Record<string, unknown>>(scene.audioJson, {});
+  const own = snapshot.hotspots.filter((h) => h.sceneId === scene.id);
+  return {
+    exits: edges.filter((e) => e.from === scene.id).length,
+    extras: own.filter((h) => h.type !== "navigation").length,
+    unplaced: edges.filter((e) => e.from === scene.id && e.unplaced).length,
+    hidden: meta.hidden === true,
+    noMedia: scene.mediaId == null && (scene.sourceJson == null || scene.sourceJson === ""),
+    noAlt: typeof meta.altText !== "string" || meta.altText.trim() === "",
+    audio: Object.keys(audio).length > 0,
+  };
+}
+
+/**
+ * Borra la escena y todo lo que colgaba de ella: sus hotspots, los pasos de
+ * otras escenas que llevaban aquí, su sitio en los recorridos del autopilot y
+ * su posición guardada en el lienzo. Dejar cualquiera de esos rastros produce
+ * destinos rotos que luego hay que cazar en los avisos.
+ */
+export function deleteScene(draft: EditorSnapshot, sceneId: string): void {
+  draft.scenes = draft.scenes.filter((s) => s.id !== sceneId);
+  draft.hotspots = draft.hotspots.filter((h) => {
+    if (h.sceneId === sceneId) return false;
+    if (h.type !== "navigation") return true;
+    return readJson<{ target?: string }>(h.contentJson, {}).target !== sceneId;
+  });
+  const layout = draft.settings.graphLayout;
+  if (layout != null && typeof layout === "object") delete (layout as Record<string, unknown>)[sceneId];
+  const routes = readAutopilot(draft.settings)
+    .map((r) => ({ ...r, steps: r.steps.filter((s) => s.scene !== sceneId) }))
+    .filter((r) => r.steps.length > 0);
+  writeAutopilot(draft.settings, routes);
+  if (draft.settings.startScene === sceneId) {
+    const next = draft.scenes[0]?.id;
+    if (next == null) delete draft.settings.startScene;
+    else draft.settings.startScene = next;
+  }
+}
+
+/**
+ * Duplica la escena con sus hotspots. La copia hereda el área, pero no su
+ * sitio en el plano: dos marcadores en el mismo punto no dicen nada.
+ */
+export function duplicateScene(draft: EditorSnapshot, sceneId: string, copySuffix = "copia"): string | null {
+  const scene = draft.scenes.find((s) => s.id === sceneId);
+  if (scene == null) return null;
+  const id = clientId();
+  const map = readJson<Record<string, unknown>>(scene.mapJson, {});
+  delete map.floorplan;
+  delete map.x;
+  delete map.y;
+  draft.scenes.push({
+    ...scene,
+    id,
+    title: `${scene.title} (${copySuffix})`,
+    sort: draft.scenes.length,
+    mapJson: Object.keys(map).length > 0 ? JSON.stringify(map) : null,
+  });
+  for (const h of draft.hotspots.filter((x) => x.sceneId === sceneId)) {
+    draft.hotspots.push({ ...h, id: clientId(), sceneId: id });
+  }
+  return id;
 }
 
 /** Recorrido del autopilot guardado en los ajustes del tour. */

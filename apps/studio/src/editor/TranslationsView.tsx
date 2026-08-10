@@ -5,6 +5,7 @@ import { Button, Input, Select, useToast } from "@ull360/ui";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
+import { readAreas } from "./areas";
 import type { ProjectInfo } from "./EditorPage";
 
 interface TranslationEntry {
@@ -30,13 +31,20 @@ export function TranslationsView({ project, canEdit }: { project: ProjectInfo; c
   const importFormat = useRef<"xliff" | "csv">("xliff");
 
   const sources = useQuery({
-    queryKey: ["tr-sources", project.id, snapshot.scenes.length],
+    queryKey: ["tr-sources", project.id, snapshot.scenes.length, readAreas(snapshot.settings).map((a) => `${a.id}:${a.title}`).join("|")],
     queryFn: async () => {
       // Las cadenas de origen se derivan del snapshot local (ya cargado)
       const out: { entity: string; entityId: string; field: string; value: string; label: string }[] = [];
       out.push({ entity: "tour", entityId: "meta", field: "title", value: String(project.title), label: "Título del tour" });
       const desc = snapshot.settings.description;
       if (typeof desc === "string" && desc !== "") out.push({ entity: "tour", entityId: "meta", field: "description", value: desc, label: "Descripción" });
+      // Las áreas dan nombre a los grupos del menú de escenas y a las plantas
+      // del minimapa: si no se traducen, un tour bilingüe enseña «Planta baja»
+      // a todo el mundo.
+      for (const area of readAreas(snapshot.settings)) {
+        if (area.title.trim() === "") continue;
+        out.push({ entity: "area", entityId: area.id, field: "title", value: area.title, label: `Área: ${area.title}` });
+      }
       for (const scene of snapshot.scenes) {
         out.push({ entity: "scene", entityId: scene.id, field: "title", value: scene.title, label: `${scene.title}: título` });
         const meta = JSON.parse(scene.metaJson || "{}") as Record<string, unknown>;

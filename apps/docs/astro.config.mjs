@@ -30,7 +30,7 @@ export default defineConfig({
             { label: "Importar de una cámara 360", slug: "usuario/importador" },
             { label: "Medios y tiles", slug: "usuario/medios" },
             { label: "Escenas y hotspots", slug: "usuario/escenas" },
-            { label: "El grafo de escenas", slug: "usuario/grafo" },
+            { label: "El lienzo del tour", slug: "usuario/grafo" },
             { label: "Publicar y exportar", slug: "usuario/publicar" },
             { label: "Realidad virtual (WebXR)", slug: "usuario/realidad-virtual" },
             { label: "Embeber un tour", slug: "usuario/embeber" },

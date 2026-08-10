@@ -9,7 +9,7 @@ title: Arquitectura
 3. **Publicación = artefacto estático.** Publicar materializa un `tour.json` inmutable + mapa de assets en el almacenamiento. Servir un tour es servir ficheros: la ruta `/t/{slug}` **no consulta la base de datos**.
 4. **El visor es una librería.** El mismo paquete `@ull360/viewer` alimenta la vista previa del Studio, los tours publicados y los ZIP exportados. Cero divergencia.
 5. **Un esquema, una fuente de verdad.** `tour.json` (JSON Schema versionado en `@ull360/schema`) es el contrato entre todas las piezas.
-6. **Una cosa, un dato.** Nada de estructuras paralelas que digan lo mismo: una arista del grafo *es* un hotspot de navegación, y los valores por defecto se resuelven en cascada en vez de copiarse. Un dato que nadie lee acaba mintiendo.
+6. **Una cosa, un dato.** Nada de estructuras paralelas que digan lo mismo: una arista del grafo *es* un hotspot de navegación; el área *es* a la vez la planta del plano, la zona del lienzo y la categoría del menú de escenas; y los valores por defecto se resuelven en cascada en vez de copiarse. Un dato que nadie lee acaba mintiendo.
 
 ## Monorepo
 

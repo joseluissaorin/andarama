@@ -40,7 +40,7 @@ export function translationRoutes(): Hono<AppEnv> {
     const entries = z
       .array(
         z.object({
-          entity: z.enum(["tour", "scene", "hotspot"]),
+          entity: z.enum(["tour", "scene", "hotspot", "area"]),
           entityId: z.string(),
           field: z.string().max(200),
           value: z.string().max(20000),
@@ -145,7 +145,7 @@ ${units}
       const value = unescapeXml(m[2]!).trim();
       const [entity, entityId, ...fieldParts] = id.split(":");
       if (entity == null || entityId == null || fieldParts.length === 0 || value === "") continue;
-      if (!["tour", "scene", "hotspot"].includes(entity)) continue;
+      if (!["tour", "scene", "hotspot", "area"].includes(entity)) continue;
       entries.push({ entity, entityId, field: fieldParts.join(":"), value });
     }
     if (entries.length === 0) throw badRequest("El XLIFF no contiene traducciones");
@@ -194,7 +194,7 @@ ${units}
       if (id == null || value == null || value.trim() === "") continue;
       const [entity, entityId, ...fieldParts] = id.split(":");
       if (entity == null || entityId == null || fieldParts.length === 0) continue;
-      if (!["tour", "scene", "hotspot"].includes(entity)) continue;
+      if (!["tour", "scene", "hotspot", "area"].includes(entity)) continue;
       entries.push({ entity, entityId, field: fieldParts.join(":"), value: value.trim() });
     }
     if (entries.length === 0) throw badRequest("El CSV no contiene traducciones");
@@ -219,6 +219,15 @@ export async function collectSourceStrings(
   const settings = parseJson<Record<string, unknown>>(project.settingsJson, {});
   if (typeof settings.description === "string" && settings.description !== "") {
     out.push({ entity: "tour", entityId: "meta", field: "description", value: settings.description });
+  }
+  // Los nombres de las áreas titulan las plantas del minimapa y los grupos del
+  // menú de escenas: sin traducirlos, un tour bilingüe enseña «Planta baja» a
+  // todo el mundo.
+  if (Array.isArray(settings.areas)) {
+    for (const area of settings.areas as Record<string, unknown>[]) {
+      if (typeof area?.id !== "string" || typeof area.title !== "string" || area.title.trim() === "") continue;
+      out.push({ entity: "area", entityId: area.id, field: "title", value: area.title });
+    }
   }
   const sceneRows = await db.select().from(scenesTable).where(eq(scenesTable.projectId, projectId)).orderBy(asc(scenesTable.sort));
   for (const s of sceneRows) {

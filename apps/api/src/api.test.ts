@@ -170,6 +170,48 @@ describe("flujo critico", () => {
     expect(issues.filter((i) => i.severity === "error")).toEqual([]);
   });
 
+  it("las áreas dan los planos y la categoría del menú de escenas", async () => {
+    // Un área con plano es una planta; la misma área es la categoría con la
+    // que el visor agrupa el menú de escenas. Una sola cosa, dos salidas.
+    await call(`/api/v1/projects/${projectId}`, {
+      method: "PATCH",
+      body: {
+        settings: {
+          areas: [
+            { id: "planta0", title: "Planta baja", color: "#7c3aed", level: 0, plan: { url: "media:falso", widthMeters: 42 } },
+            { id: "sinplano", title: "Jardín" },
+          ],
+        },
+      },
+    });
+    await call(`/api/v1/projects/${projectId}/scenes/${sceneA}`, {
+      method: "PATCH",
+      body: { meta: { altText: "Entrada del edificio", area: "planta0", category: "Planta baja" } },
+    });
+
+    const res = await call(`/api/v1/projects/${projectId}/compile`, { method: "POST", body: {} });
+    const { tour } = (await res.json()) as {
+      tour: { floorplans?: { id: string; title: unknown; url: string; level?: number }[]; scenes: { id: string; category?: unknown }[] };
+    };
+    // Solo las áreas con plano se publican como plantas
+    expect(tour.floorplans?.map((f) => f.id)).toEqual(["planta0"]);
+    expect(tour.floorplans?.[0]!.level).toBe(0);
+    expect(tour.scenes.find((s) => s.id === sceneA)?.category).toBe("Planta baja");
+  });
+
+  it("el título del área se traduce y arrastra la categoría", async () => {
+    await call(`/api/v1/projects/${projectId}/translations/en`, {
+      method: "PUT",
+      body: [{ entity: "area", entityId: "planta0", field: "title", value: "Ground floor" }],
+    });
+    const res = await call(`/api/v1/projects/${projectId}/compile`, { method: "POST", body: {} });
+    const { tour } = (await res.json()) as {
+      tour: { floorplans?: { title: Record<string, string> }[]; scenes: { id: string; category?: Record<string, string> }[] };
+    };
+    expect(tour.floorplans?.[0]!.title).toMatchObject({ es: "Planta baja", en: "Ground floor" });
+    expect(tour.scenes.find((s) => s.id === sceneA)?.category).toMatchObject({ es: "Planta baja", en: "Ground floor" });
+  });
+
   it("gestiona traducciones con export XLIFF", async () => {
     const put = await call(`/api/v1/projects/${projectId}/translations/en`, {
       method: "PUT",

@@ -4,7 +4,7 @@ title: Escenas y hotspots
 
 ## Escenas
 
-Cada escena tiene: título, **texto alternativo obligatorio** (accesibilidad), descripción, categoría (para agrupar en el menú), vista inicial ("usar vista actual"), límites de vista opcionales (esencial en panoramas parciales), audio (ambiente, narración con bloqueo opcional, fuentes espaciales) y posición en plano o coordenadas GPS.
+Cada escena tiene: título, **texto alternativo obligatorio** (accesibilidad), descripción, **área** —que agrupa las escenas en el lienzo, da la categoría del menú y, si tiene plano, es la planta—, vista inicial ("usar vista actual"), límites de vista opcionales (esencial en panoramas parciales), audio (ambiente, narración con bloqueo opcional, fuentes espaciales) y su sitio en el plano o en el mapa, que se colocan desde el lienzo.
 
 Tipos de escena: **Panorama 360** (imagen), **Vídeo 360** y **Gigapixel 2D** (obras, documentos, fachadas con pan/zoom tipo mapa).
 

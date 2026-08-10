@@ -27,10 +27,23 @@ interface WizardItem {
   plan?: { x: number; y: number };
 }
 
+/** Área con plano: es lo que aquí se usa como planta donde colocar las fotos. */
 interface Floorplan {
   id: string;
   title: string;
   url: string;
+}
+
+/**
+ * Plantas del tour. Salen de las áreas con plano; los tours que todavía no se
+ * han abierto en el editor nuevo conservan su lista de planos suelta.
+ */
+function floorplansOf(settings: { areas?: { id: string; title?: string; plan?: { url?: string } }[]; floorplans?: Floorplan[] } | undefined): Floorplan[] {
+  const areas = settings?.areas ?? [];
+  const fromAreas = areas
+    .filter((a) => typeof a.plan?.url === "string" && a.plan.url !== "")
+    .map((a) => ({ id: a.id, title: a.title ?? a.id, url: a.plan!.url! }));
+  return fromAreas.length > 0 ? fromAreas : (settings?.floorplans ?? []);
 }
 
 export function ImportWizard({ orgId, open, onClose }: {
@@ -59,10 +72,11 @@ export function ImportWizard({ orgId, open, onClose }: {
 
   const projectDetail = useQuery({
     queryKey: ["project-detail", projectId],
-    queryFn: () => api<{ settings?: { floorplans?: Floorplan[] } }>(`/projects/${projectId}`),
+    queryFn: () =>
+      api<{ settings?: { areas?: { id: string; title?: string; plan?: { url?: string } }[]; floorplans?: Floorplan[] } }>(`/projects/${projectId}`),
     enabled: open && projectId !== "",
   });
-  const floorplans = projectDetail.data?.settings?.floorplans ?? [];
+  const floorplans = floorplansOf(projectDetail.data?.settings);
   const [floorplanId, setFloorplanId] = useState<string | null>(null);
   const floorplan = floorplans.find((f) => f.id === floorplanId) ?? floorplans[0] ?? null;
 

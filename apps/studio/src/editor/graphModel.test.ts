@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { createNavHotspot, deleteEdge, graphEdges, graphIssues, readAutopilot, reconnectEdge, temporaryPlacement, writeAutopilot } from "./graphModel";
+import {
+  createNavHotspot,
+  deleteEdge,
+  deleteScene,
+  duplicateScene,
+  graphEdges,
+  graphIssues,
+  nodeStatus,
+  readAutopilot,
+  reconnectEdge,
+  setOneWay,
+  temporaryPlacement,
+  writeAutopilot,
+} from "./graphModel";
 import type { EditorSnapshot, SceneRow } from "../stores";
 
 /**
@@ -189,5 +202,108 @@ describe("reconectar aristas", () => {
     const { draft, id } = conPaso();
     expect(reconnectEdge(draft, id, { to: "zzz" })).toBe("missing");
     expect((JSON.parse(draft.hotspots[0]!.contentJson) as { target: string }).target).toBe("b");
+  });
+});
+
+describe("sentido único a propósito", () => {
+  it("marcarlo calla el aviso de paso sin vuelta", () => {
+    const draft = snapshot([scene("a"), scene("b")]);
+    const id = createNavHotspot(draft, "a", "b")!;
+    expect(graphIssues(draft, graphEdges(draft), new Set()).some((i) => i.kind === "no-return")).toBe(true);
+    setOneWay(draft, id, true);
+    expect(graphIssues(draft, graphEdges(draft), new Set()).some((i) => i.kind === "no-return")).toBe(false);
+  });
+
+  it("desmarcarlo lo devuelve a los avisos y no deja basura", () => {
+    const draft = snapshot([scene("a"), scene("b")]);
+    const id = createNavHotspot(draft, "a", "b")!;
+    setOneWay(draft, id, true);
+    setOneWay(draft, id, false);
+    expect(JSON.parse(draft.hotspots[0]!.contentJson).oneWay).toBeUndefined();
+    expect(graphIssues(draft, graphEdges(draft), new Set()).some((i) => i.kind === "no-return")).toBe(true);
+  });
+});
+
+describe("borrar y duplicar escenas desde el lienzo", () => {
+  function tour(): EditorSnapshot {
+    const draft = snapshot([scene("a", "Entrada"), scene("b", "Sala B"), scene("c", "Sala C")]);
+    createNavHotspot(draft, "a", "b");
+    createNavHotspot(draft, "b", "a");
+    createNavHotspot(draft, "b", "c");
+    draft.settings.startScene = "a";
+    draft.settings.graphLayout = { a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, c: { x: 20, y: 0 } };
+    writeAutopilot(draft.settings, [{ id: "r1", title: "Visita", steps: [{ scene: "a" }, { scene: "b" }] }]);
+    return draft;
+  }
+
+  it("borrar una escena se lleva los pasos que llevaban a ella", () => {
+    const draft = tour();
+    deleteScene(draft, "b");
+    expect(draft.scenes.map((s) => s.id)).toEqual(["a", "c"]);
+    // Ni el paso a→b, ni los que salían de b
+    expect(graphEdges(draft)).toHaveLength(0);
+    expect(graphIssues(draft, graphEdges(draft), new Set()).some((i) => i.kind === "broken-target")).toBe(false);
+  });
+
+  it("borrar limpia el recorrido, la disposición y la escena inicial", () => {
+    const draft = tour();
+    deleteScene(draft, "a");
+    expect(readAutopilot(draft.settings)[0]!.steps.map((s) => s.scene)).toEqual(["b"]);
+    expect((draft.settings.graphLayout as Record<string, unknown>).a).toBeUndefined();
+    expect(draft.settings.startScene).toBe("b");
+  });
+
+  it("borrar la última escena de un recorrido lo elimina entero", () => {
+    const draft = snapshot([scene("a")]);
+    writeAutopilot(draft.settings, [{ id: "r1", title: "Visita", steps: [{ scene: "a" }] }]);
+    deleteScene(draft, "a");
+    expect(readAutopilot(draft.settings)).toEqual([]);
+    expect(draft.settings.startScene).toBeUndefined();
+  });
+
+  it("duplicar copia los hotspots con identificadores nuevos", () => {
+    const draft = tour();
+    const id = duplicateScene(draft, "b")!;
+    expect(draft.scenes.find((s) => s.id === id)!.title).toBe("Sala B (copia)");
+    const copies = draft.hotspots.filter((h) => h.sceneId === id);
+    expect(copies).toHaveLength(2);
+    expect(new Set(draft.hotspots.map((h) => h.id)).size).toBe(draft.hotspots.length);
+  });
+
+  it("la copia no hereda el sitio en el plano", () => {
+    const draft = tour();
+    draft.scenes[1]!.mapJson = JSON.stringify({ floorplan: "p0", x: 0.4, y: 0.6, north: 1 });
+    const id = duplicateScene(draft, "b")!;
+    const map = JSON.parse(draft.scenes.find((s) => s.id === id)!.mapJson!);
+    expect(map.floorplan).toBeUndefined();
+    expect(map.north).toBe(1);
+  });
+});
+
+describe("estado del nodo", () => {
+  it("resume lo que hay que arreglar sin abrir la escena", () => {
+    const draft = snapshot([scene("a"), scene("b")]);
+    createNavHotspot(draft, "a", "b");
+    draft.hotspots.push({
+      id: "info",
+      sceneId: "a",
+      type: "info",
+      positionJson: "{}",
+      styleJson: null,
+      contentJson: "{}",
+      conditionsJson: null,
+      sort: 1,
+    });
+    const status = nodeStatus(draft, draft.scenes[0]!, graphEdges(draft));
+    expect(status).toMatchObject({ exits: 1, extras: 1, unplaced: 1, hidden: false, noMedia: true, noAlt: true, audio: false });
+  });
+
+  it("una escena completa no enciende ninguna alarma", () => {
+    const s = scene("a");
+    s.mediaId = "m1";
+    s.metaJson = JSON.stringify({ altText: "Vista del claustro" });
+    s.audioJson = JSON.stringify({ ambient: { src: "media:x" } });
+    const draft = snapshot([s]);
+    expect(nodeStatus(draft, s, [])).toMatchObject({ noMedia: false, noAlt: false, audio: true });
   });
 });
