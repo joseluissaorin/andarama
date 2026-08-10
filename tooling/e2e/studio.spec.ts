@@ -253,6 +253,22 @@ test("visor publico: navegacion, panel y deep link", async ({ page }) => {
   await expect(page.locator(".anda-accessible")).toContainText("Escena E2E");
 });
 
+test("el tour compartido lleva tarjeta con imagen propia", async ({ request }) => {
+  // Pegar un tour en un chat tiene que enseñar el panorama, no un enlace pelado
+  const html = await (await request.get("/t/tour-e2e")).text();
+  expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+  expect(html).toContain('property="og:site_name" content="andarama"');
+  const og = /<meta property="og:image" content="([^"]+)">/.exec(html);
+  expect(og).not.toBeNull();
+  expect(og![1]).toContain("/t/tour-e2e/share.jpg");
+
+  const img = await request.get("/t/tour-e2e/share.jpg");
+  expect(img.ok()).toBeTruthy();
+  expect(img.headers()["content-type"]).toContain("image/");
+  // Que sea una imagen de verdad y no un placeholder de cuatro bytes
+  expect((await img.body()).length).toBeGreaterThan(2000);
+});
+
 test("tour.json publicado es valido y estatico", async ({ request }) => {
   const res = await request.get("/t/tour-e2e/tour.json");
   expect(res.ok()).toBeTruthy();

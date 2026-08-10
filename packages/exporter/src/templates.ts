@@ -54,16 +54,20 @@ function esc(s: string): string {
 export function renderSocialTags(opts: IndexHtmlOptions): string {
   const social = opts.social ?? {};
   const title = social.title ?? opts.title;
-  const description = social.description ?? opts.description;
+  // Un tour sin descripción propia pegado en un chat salía como un enlace
+  // pelado; esta frase al menos dice qué es y se puede sustituir en Ajustes.
+  const description =
+    social.description ?? (opts.description != null && opts.description !== "" ? opts.description : `Un recorrido 360 por «${title}». Arrastra para mirar y anda de una escena a otra.`);
   const image = social.image ?? opts.ogImage;
   const card = social.twitterCard ?? (image != null ? "summary_large_image" : "summary");
   const lines = [
     `<meta property="og:title" content="${esc(title)}">`,
     `<meta property="og:type" content="${esc(social.type ?? "website")}">`,
-    description != null && description !== "" ? `<meta property="og:description" content="${esc(description)}">` : "",
+    description !== "" ? `<meta property="og:description" content="${esc(description)}">` : "",
+    `<meta name="description" content="${esc(description)}">`,
     image != null ? `<meta property="og:image" content="${esc(image)}">` : "",
-    image != null && social.imageAlt != null ? `<meta property="og:image:alt" content="${esc(social.imageAlt)}">` : "",
-    social.siteName != null ? `<meta property="og:site_name" content="${esc(social.siteName)}">` : "",
+    image != null ? `<meta property="og:image:alt" content="${esc(social.imageAlt ?? title)}">` : "",
+    `<meta property="og:site_name" content="${esc(social.siteName ?? "andarama")}">`,
     social.locale != null ? `<meta property="og:locale" content="${esc(social.locale)}">` : "",
     opts.canonicalUrl != null ? `<meta property="og:url" content="${esc(opts.canonicalUrl)}">` : "",
     opts.canonicalUrl != null ? `<link rel="canonical" href="${esc(opts.canonicalUrl)}">` : "",
@@ -95,7 +99,6 @@ export function renderIndexHtml(opts: IndexHtmlOptions): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${esc(opts.title)}</title>
-${opts.description != null ? `<meta name="description" content="${esc(opts.description)}">` : ""}
 ${renderSocialTags(opts)}
 <style${nonceAttr}>html,body{margin:0;height:100%;background:#0b1020;}#andarama{position:fixed;inset:0;}</style>
 ${opts.serviceWorker === true ? `<link rel="manifest" href="manifest.webmanifest">` : ""}

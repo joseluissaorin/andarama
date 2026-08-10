@@ -1,5 +1,5 @@
 ---
-title: Andarama
+title: Introducción
 description: Recorridos virtuales 360 de código abierto. ¡anda! andarama me deja andar por panoramas
 ---
 

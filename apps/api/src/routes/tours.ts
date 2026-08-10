@@ -155,6 +155,40 @@ export function tourRoutes(): Hono<AppEnv> {
     return "frame-ancestors *"; // embebible en cualquier sitio (por defecto para LMS/webs)
   };
 
+  /**
+   * Tarjeta al compartir el enlace del tour.
+   *
+   * Sin esto, pegar un tour en un chat daba un enlace pelado. Se devuelve la
+   * previsualizacion equirectangular de la escena inicial, que ya viaja dentro
+   * de tour.json: es 2:1, casi exactamente la proporcion que piden las
+   * tarjetas sociales, y se reconoce a la legua que aquello es un panorama.
+   * Quien quiera otra imagen la pone en Ajustes y manda `meta.ogImage`.
+   */
+  r.get("/t/:slug/share.jpg", async (c) => {
+    const slug = c.req.param("slug");
+    const pointer = await loadPointer(c, slug);
+    if (pointer == null) return c.notFound();
+    const runtime = c.get("runtime");
+    const tourBytes = await runtime.storage.getBytes(`pub/${slug}/${pointer.version}/tour.json`);
+    if (tourBytes == null) return c.notFound();
+    const tour = JSON.parse(new TextDecoder().decode(tourBytes)) as Tour;
+    const inicial = tour.scenes.find((s) => s.id === tour.start.scene) ?? tour.scenes[0];
+    const preview = (inicial?.source as { preview?: string } | undefined)?.preview;
+    const coincide = preview != null ? /^data:(image\/[a-z+]+);base64,(.+)$/s.exec(preview) : null;
+    if (coincide == null) return c.notFound();
+    const binario = atob(coincide[2]!);
+    const bytes = new Uint8Array(binario.length);
+    for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+    return new Response(bytes, {
+      headers: {
+        "content-type": coincide[1]!,
+        // La publicacion es inmutable por version; el enlace no cambia, pero
+        // el contenido tampoco hasta que se vuelve a publicar.
+        "cache-control": "public, max-age=3600",
+      },
+    });
+  });
+
   // Pagina del visor
   r.on(["GET", "POST"], "/t/:slug", async (c) => {
     const slug = c.req.param("slug");
@@ -175,7 +209,10 @@ export function tourRoutes(): Hono<AppEnv> {
       lang,
       viewerPath: `/viewer/viewer.js`,
       tourJsonPath: `/t/${slug}/tour.json`,
-      ogImage: tour.meta.ogImage != null ? `${c.get("config").publicUrl}/t/${slug}/${tour.meta.ogImage}` : undefined,
+      ogImage:
+        tour.meta.ogImage != null
+          ? `${c.get("config").publicUrl}/t/${slug}/${tour.meta.ogImage}`
+          : `${c.get("config").publicUrl}/t/${slug}/share.jpg`,
       social: resolveSocial(tour, lang, `${c.get("config").publicUrl}/t/${slug}`),
       canonicalUrl: `${c.get("config").publicUrl}/t/${slug}`,
       analyticsEndpoint: pointer.analytics ? "/ingest/e" : null,

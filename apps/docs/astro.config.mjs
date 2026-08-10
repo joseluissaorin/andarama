@@ -16,6 +16,16 @@ export default defineConfig({
         src: "./public/anda-criatura.svg",
         alt: "Andarama",
       },
+      favicon: "/favicon.svg",
+      // Tarjeta al pegar un enlace de la documentación en un chat
+      head: [
+        { tag: "meta", attrs: { property: "og:image", content: "https://andarama.com/landing/og.png" } },
+        { tag: "meta", attrs: { property: "og:image:alt", content: "¡anda!, el lema de Andarama, con las criaturas amarillas andando" } },
+        { tag: "meta", attrs: { property: "og:site_name", content: "andarama" } },
+        { tag: "meta", attrs: { property: "og:locale", content: "es_ES" } },
+        { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
+        { tag: "meta", attrs: { name: "theme-color", content: "#ff8a00" } },
+      ],
       social: {
         github: "https://github.com/joseluissaorin/andarama",
       },
