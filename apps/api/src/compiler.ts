@@ -333,13 +333,29 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
     autopilot: filtrarAutopilot(settings.autopilot as Tour["autopilot"]),
     variables: (settings.variables as Tour["variables"]) ?? undefined,
     quiz: (settings.quiz as Tour["quiz"]) ?? undefined,
-    treasureHunt: (settings.treasureHunt as Tour["treasureHunt"]) ?? undefined,
+    treasureHunt: derivarTesoro(compiledScenes, settings.treasureHunt as Tour["treasureHunt"]),
     globalAudio: deepResolve(settings.globalAudio as Tour["globalAudio"]) ?? undefined,
     analytics: (settings.analytics as Tour["analytics"]) ?? undefined,
   };
 
   const validation = validateTour(tour);
   return { tour, assets, prefixes, issues: validation.issues };
+}
+
+/**
+ * Búsqueda del tesoro derivada de las escenas.
+ *
+ * Colocar un hotspot de tipo «treasure» **es** poner un tesoro: los objetivos
+ * salen de ahí y no de una lista aparte que había que mantener a mano. Lo
+ * escrito en los ajustes (título y mensaje final) se conserva, y los tours
+ * antiguos sin hotspots de tesoro siguen con su configuración de siempre.
+ */
+function derivarTesoro(scenes: Tour["scenes"], configurada: Tour["treasureHunt"]): Tour["treasureHunt"] {
+  const targets = scenes.flatMap((s) =>
+    s.hotspots.filter((h) => h.type === "treasure").map((h) => ({ hotspotId: h.id, sceneId: s.id, label: h.label })),
+  );
+  if (targets.length === 0) return configurada;
+  return { ...configurada, enabled: true, targets };
 }
 
 /** Deja fuera del tour publicado las rutas de autopilot sin paradas. */

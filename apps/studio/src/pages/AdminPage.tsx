@@ -4,6 +4,7 @@ import { Activity, Download, ExternalLink, Globe, Plus, RefreshCcw, Send, Trash2
 import { Badge, Button, Dialog, Field, Input, Select, Spinner, Switch, Tabs, TabList, TabTrigger, Textarea, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useT } from "../i18n";
+import { Cabecera } from "../components/Cabecera";
 
 /** Panel de administración global de la instancia (§3.7). */
 export function AdminPage(): React.ReactNode {
@@ -11,7 +12,7 @@ export function AdminPage(): React.ReactNode {
   const [tab, setTab] = useState("overview");
   return (
     <div className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-5 text-xl font-bold">{t("admin")}</h1>
+      <Cabecera title={t("admin")} hint={t("admin_intro")} />
       <Tabs.Root value={tab} onValueChange={setTab}>
         <TabList>
           <TabTrigger value="overview">{t("instance_overview")}</TabTrigger>

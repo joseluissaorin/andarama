@@ -190,7 +190,8 @@ export type HotspotType =
   | "polygon"
   | "tooltip"
   | "link"
-  | "state";
+  | "state"
+  | "treasure";
 
 /** Condicion sobre una variable de estado del tour. */
 export interface VarCondition {
@@ -459,6 +460,21 @@ export interface StateHotspot extends HotspotBase {
   thenEntry?: ConnectionEntry;
 }
 
+/**
+ * Tesoro escondido: colocar uno en una escena **es** poner en marcha la
+ * búsqueda del tesoro. No hay que activar nada aparte; el visor cuenta los
+ * que hay y lleva la cuenta de los encontrados.
+ */
+export interface TreasureHotspot extends HotspotBase {
+  type: "treasure";
+  /** Qué se lee al encontrarlo (Markdown corto). */
+  reward?: L10n;
+  /** Pista que se puede enseñar antes de encontrarlo. */
+  hint?: L10n;
+  /** Cuenta para el marcador pero no se puede volver a encontrar. */
+  once?: boolean;
+}
+
 export type Hotspot =
   | NavigationHotspot
   | TextHotspot
@@ -476,7 +492,8 @@ export type Hotspot =
   | PolygonHotspot
   | TooltipHotspot
   | LinkHotspot
-  | StateHotspot;
+  | StateHotspot
+  | TreasureHotspot;
 
 // ---------------------------------------------------------------------------
 // Escenas, conexiones, mapas
@@ -586,6 +603,11 @@ export interface QuizConfig {
 }
 
 export interface TreasureHuntConfig {
+  /**
+   * Se deriva de los hotspots de tipo «treasure» colocados en las escenas:
+   * el compilador la escribe sola. Los tours antiguos que la traigan escrita
+   * a mano se siguen respetando.
+   */
   enabled: boolean;
   title?: L10n;
   /** IDs de hotspots objetivo a encontrar. */

@@ -56,6 +56,43 @@ export function orgRoutes(): Hono<AppEnv> {
   });
 
   /**
+   * Carpetas de la organización.
+   *
+   * La pertenencia vive en cada proyecto (`project.folder`), pero una carpeta
+   * recién creada todavía no tiene ninguno dentro: si no se guardara la lista,
+   * desaparecería al recargar. Se guarda en los ajustes de la organización y
+   * la puede tocar cualquiera que edite, no solo quien administra: ordenar el
+   * trabajo propio no es una tarea de administración.
+   */
+  r.get("/:orgId/folders", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const orgId = c.req.param("orgId");
+    await requireOrgRole(db, orgId, auth.user, "reader");
+    const org = (await db.select().from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
+    if (org == null) throw notFound();
+    const settings = JSON.parse(org.settingsJson || "{}") as { folders?: unknown };
+    const folders = Array.isArray(settings.folders) ? settings.folders.filter((f): f is string => typeof f === "string") : [];
+    return c.json({ folders });
+  });
+
+  r.put("/:orgId/folders", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const orgId = c.req.param("orgId");
+    await requireOrgRole(db, orgId, auth.user, "editor");
+    const body = z.object({ folders: z.array(z.string().min(1).max(120)).max(200) }).parse(await c.req.json());
+    const org = (await db.select().from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
+    if (org == null) throw notFound();
+    const settings = JSON.parse(org.settingsJson || "{}") as Record<string, unknown>;
+    // Sin repetidas y en orden alfabético: la lista es para leerla
+    settings.folders = [...new Set(body.folders)].sort((a, b) => a.localeCompare(b, "es"));
+    await db.update(orgs).set({ settingsJson: JSON.stringify(settings) }).where(eq(orgs.id, orgId));
+    await audit(c, "org.folders", "org", orgId, { count: body.folders.length }, orgId);
+    return c.json({ folders: settings.folders });
+  });
+
+  /**
    * Valores por defecto de la organización. Al cambiarlos se propagan a los
    * borradores que no habían personalizado esa clave: eso es lo que significa
    * heredar. Los tours publicados no se tocan —son instantáneas compiladas—

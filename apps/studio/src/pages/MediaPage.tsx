@@ -5,6 +5,7 @@ import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useTo
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
+import { Cabecera } from "../components/Cabecera";
 import { Criatura } from "../components/Criatura";
 import { PlanetThumb, Pano360Dialog, isPano, previewEquirect } from "../media/PanoPreview";
 import { prefetchLittlePlanets } from "../media/littlePlanet";
@@ -45,7 +46,7 @@ export function MediaPage(): React.ReactNode {
   const orgId = useAuth((s) => s.currentOrgId);
   return (
     <div className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-6 text-xl font-bold">{t("media_library")}</h1>
+      <Cabecera title={t("media_library")} hint={t("media_intro")} />
       {orgId != null && <MediaLibrary orgId={orgId} onSelect={null} />}
     </div>
   );

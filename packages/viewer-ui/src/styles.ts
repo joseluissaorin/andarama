@@ -226,6 +226,33 @@ export const VIEWER_CSS = `
 .anda-panel__body { overflow-y: auto; padding: 20px; flex: 1; -webkit-overflow-scrolling: touch; }
 .anda-panel__body--flush { padding: 0; }
 .anda-panel__body img { max-width: 100%; height: auto; }
+/* ============ Modo quiosco ============
+   Una franja abajo que dice qué está pasando y deja elegir recorrido. Tipos
+   grandes: se lee de pie y a dos metros. */
+.anda-kiosk { position: absolute; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; flex-direction: column;
+  align-items: center; gap: 10px; padding: 18px 16px max(18px, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(8, 11, 22, 0.85), rgba(8, 11, 22, 0)); pointer-events: none; }
+.anda-kiosk > * { pointer-events: auto; }
+.anda-kiosk__state { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.anda-kiosk__playing, .anda-kiosk__free { color: #fff; font-size: 20px; font-weight: 650; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+.anda-kiosk__free { color: var(--u3-primary-strong); }
+.anda-kiosk__hint { color: rgba(255,255,255,.75); font-size: 14px; }
+.anda-kiosk__resume { background: var(--u3-primary); color: #221803; border: none; border-radius: 999px;
+  padding: 11px 22px; font-size: 16px; font-weight: 700; cursor: pointer; min-height: 44px; }
+.anda-kiosk__resume:hover { filter: brightness(1.08); }
+.anda-kiosk__routes { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.anda-kiosk__routes-label { color: rgba(255,255,255,.7); font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+.anda-kiosk__route { background: var(--u3-glass); backdrop-filter: var(--u3-blur); -webkit-backdrop-filter: var(--u3-blur);
+  border: 1px solid var(--u3-glass-border); color: var(--u3-glass-fg); border-radius: 999px; padding: 10px 18px;
+  font-size: 15px; font-weight: 600; cursor: pointer; min-height: 44px; }
+.anda-kiosk__route:hover { background: var(--u3-glass-strong); }
+.anda-kiosk__route--on { background: var(--u3-primary); color: #221803; border-color: transparent; }
+
+.anda-treasure-found { text-align: center; padding: 26px 22px 24px; }
+.anda-treasure-found__icon { display: block; margin: 0 auto 10px; color: var(--u3-primary); }
+.anda-treasure-found__title { margin: 0 0 6px; font-size: 19px; font-weight: 700; color: var(--u3-fg); }
+.anda-treasure-found__count { margin: 12px 0 0; font-size: 13px; color: var(--u3-fg-dim); }
+
 .anda-prose { line-height: 1.65; font-size: 15px; }
 .anda-prose h1, .anda-prose h2, .anda-prose h3 { line-height: 1.25; letter-spacing: -0.015em; }
 .anda-prose h2 { font-size: 21px; margin: .2em 0 .6em; }

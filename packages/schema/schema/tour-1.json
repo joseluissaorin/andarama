@@ -485,7 +485,8 @@
             "polygon",
             "tooltip",
             "link",
-            "state"
+            "state",
+            "treasure"
           ]
         },
         "yaw": { "type": "number" },
@@ -569,6 +570,16 @@
         {
           "if": { "properties": { "type": { "const": "link" } } },
           "then": { "required": ["url"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "treasure" } } },
+          "then": {
+            "properties": {
+              "reward": { "$ref": "#/$defs/l10n" },
+              "hint": { "$ref": "#/$defs/l10n" },
+              "once": { "type": "boolean" }
+            }
+          }
         },
         {
           "if": { "properties": { "type": { "const": "state" } } },

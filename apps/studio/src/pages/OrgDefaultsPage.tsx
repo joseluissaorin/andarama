@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Building2, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { Button, Field, Input, Select, Spinner, Switch, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
+import { Cabecera } from "../components/Cabecera";
 import { MediaPicker } from "../editor/MediaPicker";
 
 /**
@@ -94,15 +95,7 @@ export function OrgDefaultsPage(): React.ReactNode {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]">
-          <Building2 className="h-5 w-5" />
-        </span>
-        <div>
-          <h1 className="text-xl font-bold">{t("org_defaults")}</h1>
-          <p className="text-[13px] text-[var(--anda-text-dim)]">{t("org_defaults_intro")}</p>
-        </div>
-      </div>
+      <Cabecera title={t("org_defaults")} hint={t("org_defaults_intro")} />
 
       <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="text-[15px] font-semibold">{t("languages")}</h2>

@@ -113,5 +113,12 @@
   "hotspot_state": "Acción",
   "vr_needs_motion": "Para mirar alrededor moviendo el móvil hace falta tu permiso para leer el movimiento y la orientación.",
   "vr_allow_motion": "Permitir el movimiento",
-  "vr_motion_settings": "Si no aparece la pregunta, actívalo en Ajustes › Safari › Movimiento y orientación, y vuelve a entrar."
+  "vr_motion_settings": "Si no aparece la pregunta, actívalo en Ajustes › Safari › Movimiento y orientación, y vuelve a entrar.",
+  "treasure_found": "¡Lo encontraste!",
+  "treasure_hint": "Pista",
+  "kiosk_routes": "Recorridos",
+  "kiosk_exploring": "Estás explorando por tu cuenta",
+  "kiosk_resume": "Volver al recorrido",
+  "kiosk_playing": "Reproduciendo «{name}»",
+  "kiosk_touch_hint": "Toca la pantalla para explorar tú"
 }

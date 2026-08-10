@@ -486,7 +486,46 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-1 text-[15px] font-semibold">{t("treasure_hunt")}</h2>
         <p className="mb-4 text-[13px] leading-relaxed text-[var(--anda-text-dim)]">{t("treasure_explain")}</p>
-        <TreasureHuntEditor snapshot={snapshot} hunt={hunt} canEdit={canEdit} patch={patch} />
+        {(() => {
+          const tesoros = snapshot.hotspots.filter((h) => h.type === "treasure");
+          if (tesoros.length === 0) {
+            return <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] text-[var(--anda-text-dim)]">{t("treasure_none_yet")}</p>;
+          }
+          return (
+            <div className="space-y-4">
+              <p className="rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[12.5px]">
+                {t("treasure_count_hint", { n: String(tesoros.length) })}
+              </p>
+              <ul className="space-y-1">
+                {tesoros.map((h, i) => {
+                  const escena = snapshot.scenes.find((sc) => sc.id === h.sceneId);
+                  const etiqueta = (JSON.parse(h.contentJson || "{}") as { label?: string }).label;
+                  return (
+                    <li key={h.id} className="flex items-center gap-2 rounded-lg bg-[var(--anda-surface-2)] px-2.5 py-1.5 text-[13px]">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--anda-primary)] text-[11px] font-semibold text-[#33260f]">{i + 1}</span>
+                      <span className="flex-1 truncate">
+                        {etiqueta != null && etiqueta !== "" ? etiqueta : t("hotspot_treasure")}
+                        <span className="text-[var(--anda-text-dim)]"> · {escena?.title ?? h.sceneId}</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label={t("treasure_title_label")} htmlFor="th-title">
+                  <Input id="th-title" value={String(hunt.title ?? "")} disabled={!canEdit}
+                    placeholder={t("treasure_title_placeholder")}
+                    onChange={(e) => patch((s2) => { s2.treasureHunt = { ...(s2.treasureHunt as object), title: e.target.value || undefined }; })} />
+                </Field>
+                <Field label={t("treasure_completion")} htmlFor="th-done">
+                  <Input id="th-done" value={String(hunt.completionMessage ?? "")} disabled={!canEdit}
+                    placeholder={t("treasure_completion_placeholder")}
+                    onChange={(e) => patch((s2) => { s2.treasureHunt = { ...(s2.treasureHunt as object), completionMessage: e.target.value || undefined }; })} />
+                </Field>
+              </div>
+            </div>
+          );
+        })()}
       </section>
 
       <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
@@ -536,105 +575,3 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
   );
 }
 
-/**
- * Editor de la búsqueda del tesoro.
- *
- * Antes era un interruptor que elegía cinco hotspots al azar y un cartel que
- * mandaba al «JSON avanzado»: nadie podía saber qué se estaba jugando ni
- * cómo cambiarlo. Ahora los objetivos se eligen uno a uno, con su escena y su
- * nombre delante, y el título y el mensaje final se escriben aquí mismo.
- */
-function TreasureHuntEditor({ snapshot, hunt, canEdit, patch }: {
-  snapshot: ReturnType<typeof useEditor.getState>["snapshot"] & object;
-  hunt: Record<string, any>;
-  canEdit: boolean;
-  patch: (fn: (s: Record<string, any>) => void) => void;
-}): React.ReactNode {
-  const t = useT();
-  const [adding, setAdding] = useState(false);
-  const targets: { hotspotId: string; sceneId: string }[] = Array.isArray(hunt.targets) ? hunt.targets : [];
-  const sceneTitle = (id: string): string => snapshot.scenes.find((s: { id: string }) => s.id === id)?.title ?? id;
-  const hotspotName = (id: string): string => {
-    const h = snapshot.hotspots.find((x: { id: string }) => x.id === id);
-    if (h == null) return t("treasure_target_missing");
-    const content = JSON.parse(h.contentJson || "{}") as { label?: unknown; title?: unknown };
-    const raw = content.label ?? content.title;
-    const texto = typeof raw === "string" ? raw : "";
-    return texto !== "" ? texto : t(`hotspot_${h.type}` as never);
-  };
-  // Candidatos: hotspots de contenido (pulsar una flecha de paso no es
-  // encontrar nada) que aún no son objetivo
-  const candidatos = snapshot.hotspots.filter(
-    (h: { id: string; type: string }) => h.type !== "navigation" && !targets.some((x) => x.hotspotId === h.id),
-  );
-  const setHunt = (patchObj: Record<string, unknown>): void =>
-    patch((s) => {
-      s.treasureHunt = { ...(s.treasureHunt as object), ...patchObj };
-    });
-
-  return (
-    <div className="space-y-4">
-      <Switch id="th-en" checked={hunt.enabled === true} disabled={!canEdit}
-        onCheckedChange={(v) => setHunt({ enabled: v, targets })} label={t("enabled")} />
-      {hunt.enabled === true && targets.length === 0 && (
-        <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-[12.5px] text-amber-700">{t("treasure_no_targets")}</p>
-      )}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label={t("treasure_title_label")} htmlFor="th-title">
-          <Input id="th-title" value={String(hunt.title ?? "")} disabled={!canEdit}
-            placeholder={t("treasure_title_placeholder")}
-            onChange={(e) => setHunt({ title: e.target.value || undefined })} />
-        </Field>
-        <Field label={t("treasure_completion")} htmlFor="th-done">
-          <Input id="th-done" value={String(hunt.completionMessage ?? "")} disabled={!canEdit}
-            placeholder={t("treasure_completion_placeholder")}
-            onChange={(e) => setHunt({ completionMessage: e.target.value || undefined })} />
-        </Field>
-      </div>
-
-      <div>
-        <p className="mb-2 text-[13px] font-medium">{t("treasure_targets", { n: String(targets.length) })}</p>
-        {targets.length > 0 && (
-          <ul className="space-y-1">
-            {targets.map((target, i) => (
-              <li key={target.hotspotId} className="flex items-center gap-2 rounded-lg bg-[var(--anda-surface-2)] px-2.5 py-1.5 text-[13px]">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--anda-primary)] text-[11px] font-semibold text-[#33260f]">{i + 1}</span>
-                <span className="flex-1 truncate">
-                  {hotspotName(target.hotspotId)}
-                  <span className="text-[var(--anda-text-dim)]"> · {sceneTitle(target.sceneId)}</span>
-                </span>
-                <Button size="sm" variant="ghost" disabled={!canEdit} aria-label={t("delete")}
-                  onClick={() => setHunt({ targets: targets.filter((x) => x.hotspotId !== target.hotspotId) })}>
-                  {t("delete")}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {adding ? (
-          <div className="mt-2 max-h-56 space-y-1 overflow-y-auto rounded-xl border border-[var(--anda-border)] p-2">
-            {candidatos.length === 0 && <p className="p-2 text-[12.5px] text-[var(--anda-text-dim)]">{t("treasure_no_candidates")}</p>}
-            {candidatos.map((h: { id: string; sceneId: string }) => (
-              <button key={h.id} type="button"
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] hover:bg-[var(--anda-primary-soft)]"
-                onClick={() => {
-                  setHunt({ targets: [...targets, { hotspotId: h.id, sceneId: h.sceneId }] });
-                }}>
-                <span className="flex-1 truncate">
-                  {hotspotName(h.id)}
-                  <span className="text-[var(--anda-text-dim)]"> · {sceneTitle(h.sceneId)}</span>
-                </span>
-                <span className="text-[12px] font-medium text-[var(--anda-primary)]">{t("add")}</span>
-              </button>
-            ))}
-            <Button size="sm" variant="ghost" className="mt-1 w-full" onClick={() => setAdding(false)}>{t("close")}</Button>
-          </div>
-        ) : (
-          <Button size="sm" variant="outline" className="mt-2" disabled={!canEdit} onClick={() => setAdding(true)}>
-            {t("treasure_add_target")}
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}

@@ -584,22 +584,107 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   if (welcome != null && options.editMode !== true) container.appendChild(welcome);
 
   // ------- Modo kiosko -------
+  //
+  // Un quiosco no es «un tour con autopilot»: es una pantalla que se explica
+  // sola. Encadena TODOS los recorridos sin fin, deja que cualquiera coja el
+  // control tocando, se lo dice con todas las letras, y vuelve al bucle si se
+  // queda solo. La lista de recorridos está siempre a mano para elegir uno.
   let kioskTimer: ReturnType<typeof setTimeout> | null = null;
   if (options.kiosk != null && options.kiosk !== false && options.editMode !== true) {
-    const inactivity = typeof options.kiosk === "object" ? (options.kiosk.inactivitySeconds ?? 120) : 120;
-    const reset = (): void => {
+    const inactivity = typeof options.kiosk === "object" ? (options.kiosk.inactivitySeconds ?? 60) : 60;
+    const rutas = viewer.autopilotRoutes();
+
+    const barra = el("div", { className: "anda-kiosk" });
+    const estado = el("div", { className: "anda-kiosk__state", role: "status" });
+    barra.appendChild(estado);
+    const lista = el("div", { className: "anda-kiosk__routes" });
+    barra.appendChild(lista);
+    container.appendChild(barra);
+
+    let explorando = false;
+    let rutaActual: string | null = null;
+
+    const pintarLista = (): void => {
+      lista.textContent = "";
+      if (rutas.length <= 1) return;
+      const titulo = el("span", { className: "anda-kiosk__routes-label" });
+      titulo.textContent = t("kiosk_routes");
+      lista.appendChild(titulo);
+      for (const ruta of rutas) {
+        const b = el("button", { className: "anda-kiosk__route", type: "button" });
+        b.textContent = viewer.text(ruta.title as never) || ruta.id;
+        if (ruta.id === rutaActual) b.classList.add("anda-kiosk__route--on");
+        b.addEventListener("click", () => {
+          explorando = false;
+          panelHost.close();
+          viewer.startAutopilot(ruta.id);
+          pintar();
+        });
+        lista.appendChild(b);
+      }
+    };
+
+    const pintar = (): void => {
+      estado.textContent = "";
+      if (explorando) {
+        const txt = el("span", { className: "anda-kiosk__free" });
+        txt.textContent = t("kiosk_exploring");
+        estado.appendChild(txt);
+        const volver = el("button", { className: "anda-kiosk__resume", type: "button" });
+        volver.textContent = t("kiosk_resume");
+        volver.addEventListener("click", () => {
+          explorando = false;
+          panelHost.close();
+          viewer.startAutopilotChain();
+          pintar();
+        });
+        estado.appendChild(volver);
+      } else {
+        const nombre = rutas.find((r) => r.id === rutaActual);
+        const txt = el("span", { className: "anda-kiosk__playing" });
+        txt.textContent =
+          nombre != null
+            ? t("kiosk_playing", { name: viewer.text(nombre.title as never) || nombre.id })
+            : t("kiosk_touch_hint");
+        estado.appendChild(txt);
+        const pista = el("span", { className: "anda-kiosk__hint" });
+        pista.textContent = t("kiosk_touch_hint");
+        if (nombre != null) estado.appendChild(pista);
+      }
+      pintarLista();
+    };
+
+    viewer.on("autopilotChange", (e) => {
+      rutaActual = e.routeId;
+      if (!explorando) pintar();
+    });
+
+    // Interacción del visitante: pasa a explorar por su cuenta; tras la
+    // inactividad configurada, el quiosco vuelve a empezar solo
+    const alInteractuar = (): void => {
+      if (!explorando) {
+        explorando = true;
+        pintar();
+      }
       if (kioskTimer != null) clearTimeout(kioskTimer);
       kioskTimer = setTimeout(() => {
+        explorando = false;
         panelHost.close();
         void viewer.goTo(tour.start.scene, { view: tour.start.view, force: true, skipHistory: true });
-        viewer.startAutopilot();
+        viewer.startAutopilotChain();
+        pintar();
       }, inactivity * 1000);
     };
     for (const evt of ["pointerdown", "keydown", "wheel", "touchstart"]) {
-      container.addEventListener(evt, reset, { passive: true });
+      container.addEventListener(evt, alInteractuar, { passive: true });
     }
-    reset();
-    viewer.on("ready", () => viewer.startAutopilot());
+
+    viewer.on("ready", () => {
+      viewer.startAutopilotChain();
+      pintar();
+    });
+    pintar();
+
     // Bloqueo de salida: interceptar teclas de navegacion del navegador
     window.addEventListener("keydown", (e) => {
       if ((e.key === "F5" || (e.ctrlKey && e.key === "w") || e.key === "Escape") && document.fullscreenElement != null) {

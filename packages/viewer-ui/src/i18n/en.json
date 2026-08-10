@@ -113,5 +113,12 @@
   "hotspot_state": "Action",
   "vr_needs_motion": "Looking around by moving your phone needs your permission to read motion and orientation.",
   "vr_allow_motion": "Allow motion",
-  "vr_motion_settings": "If no prompt appears, turn it on in Settings › Safari › Motion & Orientation Access and enter again."
+  "vr_motion_settings": "If no prompt appears, turn it on in Settings › Safari › Motion & Orientation Access and enter again.",
+  "treasure_found": "You found it!",
+  "treasure_hint": "Hint",
+  "kiosk_routes": "Tours",
+  "kiosk_exploring": "You are exploring on your own",
+  "kiosk_resume": "Back to the tour",
+  "kiosk_playing": "Playing “{name}”",
+  "kiosk_touch_hint": "Touch the screen to explore yourself"
 }

@@ -41,6 +41,7 @@ export const HOTSPOT_CATALOG: HotspotKind[] = [
   { type: "quiz", family: "learning", icon: "help-circle", keywords: ["pregunta", "test", "examen", "puntos", "quiz"] },
   { type: "form", family: "learning", icon: "clipboard-list", keywords: ["formulario", "encuesta", "contacto", "campos"] },
   { type: "compare", family: "learning", icon: "columns-2", keywords: ["comparador", "antes", "despues", "deslizador"] },
+  { type: "treasure", family: "learning", icon: "gem", keywords: ["tesoro", "busqueda", "juego", "gymkana", "escondido", "premio"] },
 ];
 
 export const FAMILY_ORDER: HotspotFamily[] = ["navigation", "content", "media", "learning"];

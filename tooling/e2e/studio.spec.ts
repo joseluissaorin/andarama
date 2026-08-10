@@ -185,6 +185,48 @@ test("el grafo tiene los cuatro modos y el plano ya no es una pestaña", async (
   await expect.poll(() => page.url()).toContain("mode=plan");
 });
 
+test("carpetas: crear, meter un tour dentro arrastrando y sacarlo", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+
+  await page.getByRole("button", { name: "Nueva carpeta" }).click();
+  await page.fill("#nf-name", "Planta baja");
+  await page.getByRole("button", { name: "Crear", exact: true }).click();
+  // Al crearla se entra dentro, y está vacía
+  await expect(page.getByText("0 recorridos en esta carpeta")).toBeVisible({ timeout: 15_000 });
+
+  // En la raíz aparece la carpeta junto a los tours sueltos
+  await page.getByRole("button", { name: "Todos los proyectos" }).click();
+  await expect(page.getByText("Planta baja").first()).toBeVisible();
+
+  // Arrastrar el tour sobre la carpeta. Se sintetiza el arrastre HTML5 porque
+  // es exactamente lo que hace el ratón, y es el gesto que se quiere probar.
+  const arrastre = await page.evaluate(() => {
+    const tarjetas = [...document.querySelectorAll(".grid > div")];
+    const tour = tarjetas.find((d) => d.textContent?.includes("Tour E2E"));
+    const carpeta = tarjetas.find((d) => d.textContent?.includes("Planta baja"));
+    if (tour == null || carpeta == null) return "faltan tarjetas";
+    const dt = new DataTransfer();
+    tour.dispatchEvent(new DragEvent("dragstart", { dataTransfer: dt, bubbles: true }));
+    carpeta.dispatchEvent(new DragEvent("dragover", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    carpeta.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    return "ok";
+  });
+  expect(arrastre).toBe("ok");
+
+  // Ya está dentro: la carpeta lo cuenta y deja de estar suelto
+  await expect(page.getByText("1 recorrido", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await page.getByText("Planta baja").first().click();
+  await expect(page.getByText("Tour E2E").first()).toBeVisible();
+
+  // Y se saca desde el menú de la tarjeta
+  await page.locator(".grid > div").first().getByRole("button", { name: "Acciones" }).click();
+  await page.getByText("Sacar de la carpeta").click();
+  await page.getByRole("button", { name: "Todos los proyectos" }).click();
+  await expect(page.getByText("0 recorridos", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Tour E2E").first()).toBeVisible();
+});
+
 test("autopilot: pulsar escenas crea el recorrido sin ceremonia", async ({ page }) => {
   await login(page);
   await page.goto("/studio/");

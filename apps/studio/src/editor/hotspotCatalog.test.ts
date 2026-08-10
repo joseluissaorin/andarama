@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
+import type { HotspotType } from "@andarama/schema";
 import { FAMILY_ORDER, HOTSPOT_CATALOG, fold, searchCatalog } from "./hotspotCatalog";
+
+/**
+ * Los tipos que el esquema admite. Fijar aquí la lista, y no un número, es lo
+ * que hace que añadir un tipo nuevo al esquema sin ofrecerlo en la paleta
+ * salte en rojo: un tipo que no se puede colocar no existe para nadie.
+ */
+const TIPOS: HotspotType[] = [
+  "navigation", "text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf",
+  "model3d", "web", "form", "compare", "quiz", "polygon", "tooltip", "link", "state", "treasure",
+];
 
 const LABELS: Record<string, string> = {
   navigation: "Navegación",
@@ -9,13 +20,13 @@ const LABELS: Record<string, string> = {
 const labelOf = (type: string): string => LABELS[type] ?? type;
 
 describe("catálogo de hotspots", () => {
-  it("están los 17 tipos y todos tienen familia conocida", () => {
-    expect(HOTSPOT_CATALOG).toHaveLength(17);
+  it("la paleta ofrece todos los tipos del esquema, con familia conocida", () => {
+    expect([...HOTSPOT_CATALOG.map((k) => k.type)].sort()).toEqual([...TIPOS].sort());
     for (const kind of HOTSPOT_CATALOG) expect(FAMILY_ORDER).toContain(kind.family);
   });
 
   it("no hay tipos repetidos", () => {
-    expect(new Set(HOTSPOT_CATALOG.map((k) => k.type)).size).toBe(17);
+    expect(new Set(HOTSPOT_CATALOG.map((k) => k.type)).size).toBe(TIPOS.length);
   });
 
   it("busca sin tildes: quien escribe deprisa no las pone", () => {
@@ -30,7 +41,7 @@ describe("catálogo de hotspots", () => {
   });
 
   it("sin consulta devuelve el catálogo entero", () => {
-    expect(searchCatalog("   ", labelOf)).toHaveLength(17);
+    expect(searchCatalog("   ", labelOf)).toHaveLength(TIPOS.length);
   });
 
   it("fold quita diacríticos y mayúsculas", () => {

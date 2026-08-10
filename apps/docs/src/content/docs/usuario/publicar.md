@@ -101,3 +101,20 @@ Cloudflare Pages o Netlify, gratuitos— sirve. Véase la
 [guía de realidad virtual](/docs/usuario/realidad-virtual/).
 
 También puedes automatizar la publicación desde CI con un token de API (`POST /api/v1/projects/{id}/publish`) y recibir webhooks de publicación.
+
+## Modo quiosco
+
+Para una pantalla en una sala, una feria o un vestíbulo: el tour se explica
+solo y cualquiera puede tomar el mando.
+
+- **Encadena todos los recorridos**, uno detrás de otro y vuelta a empezar. No
+  se queda en el primero.
+- **Antes de cambiar de escena mira hacia la puerta** por la que va a salir,
+  de modo que se entienda de dónde a dónde se va.
+- **Quien toca la pantalla se queda al mando**: aparece «Estás explorando por
+  tu cuenta» y un botón para volver al recorrido. Si nadie toca nada durante
+  un minuto, el quiosco vuelve al principio y sigue solo.
+- **La lista de recorridos** está siempre abajo: se pulsa uno y empieza ese.
+
+Se activa al exportar (**Exportar › Modo quiosco**) o añadiendo `?kiosk=1` a
+la dirección del tour publicado.

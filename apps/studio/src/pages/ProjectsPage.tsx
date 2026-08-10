@@ -3,8 +3,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { littlePlanetFor } from "../media/littlePlanet";
 import { useEffect, useMemo, useState } from "react";
 import {
+  ChevronLeft,
   Copy,
   ExternalLink,
+  Folder,
+  FolderPlus,
   LayoutTemplate,
   MoreVertical,
   Plus,
@@ -30,6 +33,7 @@ import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { Criatura } from "../components/Criatura";
+import { Cabecera } from "../components/Cabecera";
 
 interface ProjectSummary {
   id: string;
@@ -59,7 +63,11 @@ export function ProjectsPage(): React.ReactNode {
   const orgId = useAuth((s) => s.currentOrgId);
   const [view, setView] = useState<"active" | "templates" | "trash">("active");
   const [search, setSearch] = useState("");
+  /** Carpeta abierta. "" es la raíz; se entra y se sale, como en un explorador. */
   const [folder, setFolder] = useState<string | "">("");
+  const [folderOpen, setFolderOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [dragOver, setDragOver] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newFolder, setNewFolder] = useState("");
@@ -77,22 +85,73 @@ export function ProjectsPage(): React.ReactNode {
     enabled: orgId != null,
   });
 
+  // Las carpetas guardadas viven en la organización para que una recién
+  // creada, todavía vacía, no desaparezca al recargar
+  const guardadas = useQuery({
+    queryKey: ["folders", orgId],
+    queryFn: () => api<{ folders: string[] }>(`/orgs/${orgId}/folders`),
+    enabled: orgId != null,
+  });
+
   const folders = useMemo(() => {
-    const set = new Set<string>();
+    const set = new Set<string>(guardadas.data?.folders ?? []);
     for (const p of projects.data ?? []) {
       if (p.folder != null && p.folder !== "") set.add(p.folder);
     }
-    return [...set].sort();
-  }, [projects.data]);
+    return [...set].sort((a, b) => a.localeCompare(b, "es"));
+  }, [projects.data, guardadas.data]);
+
+  const contarEn = (nombre: string): number =>
+    (projects.data ?? []).filter((p) => !p.isTemplate && p.folder === nombre).length;
+
+  const guardarCarpetas = async (lista: string[]): Promise<void> => {
+    if (orgId == null) return;
+    await api(`/orgs/${orgId}/folders`, { method: "PUT", body: { folders: lista } });
+    void queryClient.invalidateQueries({ queryKey: ["folders"] });
+  };
+
+  const crearCarpeta = async (): Promise<void> => {
+    const nombre = newFolderName.trim();
+    if (nombre === "") return;
+    try {
+      await guardarCarpetas([...folders, nombre]);
+      setFolderOpen(false);
+      setNewFolderName("");
+      setFolder(nombre);
+    } catch (err) {
+      toast.push(String(err instanceof Error ? err.message : err), "error");
+    }
+  };
+
+  /** Mueve un tour a una carpeta (o a la raíz con null). */
+  const moverA = async (projectId: string, destino: string | null): Promise<void> => {
+    try {
+      await api(`/projects/${projectId}`, { method: "PATCH", body: { folder: destino } });
+      invalidate();
+      toast.push(destino != null ? t("moved_to_folder", { name: destino }) : t("moved_to_root"), "ok");
+    } catch (err) {
+      toast.push(String(err instanceof Error ? err.message : err), "error");
+    }
+  };
 
   const templates = (projects.data ?? []).filter((p) => p.isTemplate);
   const visible = (projects.data ?? []).filter((p) => {
     if (view === "templates" && !p.isTemplate) return false;
     if (view === "active" && p.isTemplate) return false;
     if (search !== "" && !p.title.toLowerCase().includes(search.toLowerCase()) && !p.tags.some((tag) => tag.includes(search.toLowerCase()))) return false;
-    if (folder !== "" && p.folder !== folder) return false;
+    // En la raíz solo se ven los tours sueltos: lo que está en carpetas se ve
+    // entrando en ellas, como en cualquier explorador
+    if (view === "active" && search === "") {
+      if (folder === "" && p.folder != null && p.folder !== "") return false;
+      if (folder !== "" && p.folder !== folder) return false;
+    } else if (folder !== "" && p.folder !== folder) return false;
     return true;
   });
+
+  // Las carpetas solo se ven en la raíz de «Proyectos» y sin búsqueda activa;
+  // se calcula aquí porque el estado vacío también depende de ellas: enseñar
+  // «no hay tours» tapando las carpetas las dejaba inalcanzables.
+  const carpetasVisibles = view === "active" && folder === "" && search === "" ? folders : [];
 
   const invalidate = (): void => {
     void queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -126,8 +185,17 @@ export function ProjectsPage(): React.ReactNode {
 
   return (
     <div className="mx-auto max-w-6xl p-6">
-      <div className="mb-6 flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-bold">{t("projects")}</h1>
+      <Cabecera
+        title={folder === "" ? t("projects") : folder}
+        hint={folder === "" ? t("projects_intro") : contarEn(folder) === 1 ? t("folder_intro_one") : t("folder_intro", { n: String(contarEn(folder)) })}
+      />
+
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        {folder !== "" && (
+          <Button variant="outline" size="sm" onClick={() => setFolder("")}>
+            <ChevronLeft className="h-4 w-4" /> {t("all_projects")}
+          </Button>
+        )}
         <div className="flex-1" />
         {usage.data != null && (
           <div className="text-xs text-[var(--anda-text-dim)]">
@@ -139,7 +207,12 @@ export function ProjectsPage(): React.ReactNode {
             </span>
           </div>
         )}
-        <Button onClick={() => setCreateOpen(true)}>
+        {view === "active" && (
+          <Button variant="outline" onClick={() => setFolderOpen(true)}>
+            <FolderPlus className="h-4 w-4" /> {t("new_folder")}
+          </Button>
+        )}
+        <Button onClick={() => { setNewFolder(folder); setCreateOpen(true); }}>
           <Plus className="h-4 w-4" /> {t("new_project")}
         </Button>
       </div>
@@ -152,14 +225,6 @@ export function ProjectsPage(): React.ReactNode {
           className="max-w-56"
           aria-label={t("search")}
         />
-        <Select value={folder} onChange={(e) => setFolder(e.target.value)} className="max-w-44" aria-label={t("folder")}>
-          <option value="">{t("no_folder")} / *</option>
-          {folders.map((f) => (
-            <option key={f} value={f}>
-              {f}
-            </option>
-          ))}
-        </Select>
         <div className="flex-1" />
         <div className="flex gap-1 rounded-lg bg-[var(--anda-surface-2)] p-1 text-sm">
           {(["active", "templates", "trash"] as const).map((v) => (
@@ -181,7 +246,7 @@ export function ProjectsPage(): React.ReactNode {
         <div className="flex justify-center p-16">
           <Spinner />
         </div>
-      ) : visible.length === 0 ? (
+      ) : visible.length === 0 && carpetasVisibles.length === 0 ? (
         <EmptyState
           icon={<Criatura size={72} andando />}
           title={t("no_projects")}
@@ -195,11 +260,70 @@ export function ProjectsPage(): React.ReactNode {
         />
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Las carpetas van primero, como en cualquier explorador */}
+          {carpetasVisibles.map((f) => (
+              <FolderCard
+                key={f}
+                name={f}
+                count={contarEn(f)}
+                dragOver={dragOver === f}
+                onOpen={() => setFolder(f)}
+                onDragOver={(over) => setDragOver(over ? f : null)}
+                onDropProject={(id) => {
+                  setDragOver(null);
+                  void moverA(id, f);
+                }}
+                onRename={async (nuevo) => {
+                  const lista = folders.map((x) => (x === f ? nuevo : x));
+                  await guardarCarpetas(lista);
+                  // Y con ella se mudan sus tours
+                  await Promise.all(
+                    (projects.data ?? [])
+                      .filter((p) => p.folder === f)
+                      .map((p) => api(`/projects/${p.id}`, { method: "PATCH", body: { folder: nuevo } })),
+                  );
+                  invalidate();
+                }}
+                onDelete={async () => {
+                  await guardarCarpetas(folders.filter((x) => x !== f));
+                  await Promise.all(
+                    (projects.data ?? [])
+                      .filter((p) => p.folder === f)
+                      .map((p) => api(`/projects/${p.id}`, { method: "PATCH", body: { folder: null } })),
+                  );
+                  invalidate();
+                }}
+              />
+          ))}
           {visible.map((p) => (
-            <ProjectCard key={p.id} project={p} inTrash={view === "trash"} onChanged={invalidate} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              inTrash={view === "trash"}
+              onChanged={invalidate}
+              onMoveOut={folder !== "" ? () => void moverA(p.id, null) : undefined}
+            />
           ))}
         </div>
       )}
+
+      <Dialog
+        open={folderOpen}
+        onOpenChange={setFolderOpen}
+        title={t("new_folder")}
+        description={t("new_folder_hint")}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setFolderOpen(false)}>{t("cancel")}</Button>
+            <Button onClick={() => void crearCarpeta()} disabled={newFolderName.trim() === ""}>{t("create")}</Button>
+          </>
+        }
+      >
+        <Field label={t("folder")} htmlFor="nf-name">
+          <Input id="nf-name" value={newFolderName} autoFocus onChange={(e) => setNewFolderName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") void crearCarpeta(); }} />
+        </Field>
+      </Dialog>
 
       <Dialog
         open={createOpen}
@@ -221,12 +345,12 @@ export function ProjectsPage(): React.ReactNode {
             <Input id="np-title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} autoFocus />
           </Field>
           <Field label={t("folder")} htmlFor="np-folder">
-            <Input id="np-folder" value={newFolder} onChange={(e) => setNewFolder(e.target.value)} list="folders" />
-            <datalist id="folders">
+            <Select id="np-folder" value={newFolder} onChange={(e) => setNewFolder(e.target.value)}>
+              <option value="">{t("no_folder")}</option>
               {folders.map((f) => (
-                <option key={f} value={f} />
+                <option key={f} value={f}>{f}</option>
               ))}
-            </datalist>
+            </Select>
           </Field>
           {templates.length > 0 && (
             <Field label={t("from_template")} htmlFor="np-template">
@@ -246,10 +370,101 @@ export function ProjectsPage(): React.ReactNode {
   );
 }
 
-function ProjectCard({ project, inTrash, onChanged }: {
+/**
+ * Carpeta: se abre pulsándola y acepta que le suelten tours encima. El
+ * contador dice cuántos hay dentro, que es lo único que se quiere saber
+ * desde fuera.
+ */
+function FolderCard({ name, count, dragOver, onOpen, onDragOver, onDropProject, onRename, onDelete }: {
+  name: string;
+  count: number;
+  dragOver: boolean;
+  onOpen: () => void;
+  onDragOver: (over: boolean) => void;
+  onDropProject: (projectId: string) => void;
+  onRename: (nuevo: string) => Promise<void>;
+  onDelete: () => Promise<void>;
+}): React.ReactNode {
+  const t = useT();
+  const toast = useToast();
+  const run = async (fn: () => Promise<unknown>): Promise<void> => {
+    try {
+      await fn();
+    } catch (err) {
+      toast.push(String(err instanceof Error ? err.message : err), "error");
+    }
+  };
+  return (
+    <div
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes(PROJECT_DRAG)) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          onDragOver(true);
+        }
+      }}
+      onDragLeave={() => onDragOver(false)}
+      onDrop={(e) => {
+        const id = e.dataTransfer.getData(PROJECT_DRAG);
+        if (id !== "") {
+          e.preventDefault();
+          onDropProject(id);
+        }
+      }}
+      className={`group flex items-center gap-3 rounded-2xl border-2 p-4 transition-all duration-200 hover:-translate-y-1 ${
+        dragOver
+          ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] shadow-[var(--anda-shadow-lg)]"
+          : "border-dashed border-[var(--anda-border)] bg-[var(--anda-surface)] hover:border-[var(--anda-primary)]"
+      }`}
+    >
+      <button type="button" className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={onOpen}>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--anda-yellow)] text-[#33260f] transition-transform group-hover:scale-105">
+          <Folder className="h-5 w-5" />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-[15px] font-semibold">{name}</span>
+          <span className="block text-xs text-[var(--anda-text-dim)]">{count === 1 ? t("one_tour") : t("n_tours", { n: String(count) })}</span>
+        </span>
+      </button>
+      <Dropdown.Root>
+        <Dropdown.Trigger asChild>
+          <Button variant="ghost" size="icon" aria-label={t("actions_for", { name })}>
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </Dropdown.Trigger>
+        <DropdownContent align="end">
+          <DropdownItem
+            onSelect={() => {
+              const nuevo = prompt(t("rename_folder"), name)?.trim();
+              if (nuevo != null && nuevo !== "" && nuevo !== name) void run(() => onRename(nuevo));
+            }}
+          >
+            <Tag className="h-4 w-4" /> {t("rename")}
+          </DropdownItem>
+          <DropdownItem
+            danger
+            onSelect={() => {
+              if (confirm(count > 0 ? t("confirm_delete_folder_full", { n: String(count) }) : t("confirm_delete_folder"))) {
+                void run(onDelete);
+              }
+            }}
+          >
+            <Trash2 className="h-4 w-4" /> {t("delete")}
+          </DropdownItem>
+        </DropdownContent>
+      </Dropdown.Root>
+    </div>
+  );
+}
+
+/** Tipo de arrastre propio: un tour que se suelta sobre una carpeta. */
+const PROJECT_DRAG = "application/x-andarama-project";
+
+function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
   project: ProjectSummary;
   inTrash: boolean;
   onChanged: () => void;
+  onMoveOut?: () => void;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -286,7 +501,14 @@ function ProjectCard({ project, inTrash, onChanged }: {
   }, [project.coverMediaId]);
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-shadow)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--anda-shadow-lg)]">
+    <div
+      draggable={!inTrash}
+      onDragStart={(e) => {
+        e.dataTransfer.setData(PROJECT_DRAG, project.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className="anda-enter group overflow-hidden rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-shadow)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--anda-shadow-lg)]"
+    >
       <button
         type="button"
         className="relative block h-24 w-full overflow-hidden text-left"
@@ -329,7 +551,7 @@ function ProjectCard({ project, inTrash, onChanged }: {
         >
           <h2 className="truncate text-[15px] font-semibold tracking-tight">{project.title}</h2>
           <p className="mt-0.5 text-xs text-[var(--anda-text-dim)]">
-            {project.folder != null && project.folder !== "" ? `${project.folder} - ` : ""}
+            {project.folder != null && project.folder !== "" ? `${project.folder} · ` : ""}
             {new Date(project.updatedAt).toLocaleDateString()}
           </p>
         </button>
@@ -355,6 +577,11 @@ function ProjectCard({ project, inTrash, onChanged }: {
                 >
                   <LayoutTemplate className="h-4 w-4" /> {project.isTemplate ? t("projects") : t("make_template")}
                 </DropdownItem>
+                {onMoveOut != null && (
+                  <DropdownItem onSelect={onMoveOut}>
+                    <FolderPlus className="h-4 w-4" /> {t("move_out_of_folder")}
+                  </DropdownItem>
+                )}
                 <DropdownItem danger onSelect={() => void run(() => api(`/projects/${project.id}`, { method: "DELETE" }))}>
                   <Trash2 className="h-4 w-4" /> {t("delete")}
                 </DropdownItem>

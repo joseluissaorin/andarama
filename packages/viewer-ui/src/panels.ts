@@ -10,6 +10,7 @@ import type {
   PdfHotspot,
   QuizHotspot,
   TextHotspot,
+  TreasureHotspot,
   VideoFileHotspot,
   WebHotspot,
 } from "@andarama/schema";
@@ -165,12 +166,41 @@ function buildPanelContent(hotspot: Hotspot, ctx: PanelContext): PanelContent | 
       return quizPanel(hotspot, ctx);
     case "tooltip":
       return textPanel({ ...hotspot, type: "text", body: hotspot.text } as unknown as TextHotspot, ctx);
+    case "treasure":
+      return treasurePanel(hotspot, ctx);
     default:
       return null;
   }
 }
 
 // ---------------------------------------------------------------------------
+
+/**
+ * Tesoro encontrado. El propio hotspot lleva lo que se lee al hallarlo; si no
+ * lleva nada, el visor felicita igual, porque encontrarlo ya es el premio.
+ */
+function treasurePanel(hs: TreasureHotspot, ctx: PanelContext): PanelContent {
+  const body = el("div", { className: "anda-panel__body anda-treasure-found" });
+  const icono = createIconSvg("gem", 44, "currentColor");
+  icono.classList.add("anda-treasure-found__icon");
+  body.appendChild(icono);
+  const titulo = el("p", { className: "anda-treasure-found__title" });
+  titulo.textContent = ctx.viewer.text(hs.label) || ctx.t("treasure_found");
+  body.appendChild(titulo);
+  const premio = ctx.viewer.text(hs.reward);
+  if (premio !== "") {
+    const prosa = el("div", { className: "anda-prose" });
+    prosa.innerHTML = renderMarkdown(premio);
+    body.appendChild(prosa);
+  }
+  const estado = ctx.viewer.treasureState();
+  if (estado.total > 0) {
+    const cuenta = el("p", { className: "anda-treasure-found__count" });
+    cuenta.textContent = ctx.t("treasure_progress", { found: String(estado.found), total: String(estado.total) });
+    body.appendChild(cuenta);
+  }
+  return { body };
+}
 
 function textPanel(hs: TextHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "anda-panel__body" });

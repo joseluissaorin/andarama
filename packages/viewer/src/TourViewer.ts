@@ -127,6 +127,12 @@ export class TourViewer {
       },
       closePanels: () => this.emit("hotspotDeactivate", {}),
       currentSceneId: () => this.currentId,
+      doorYawTo: (sceneId) => {
+        const escena = this.currentScene();
+        const paso = escena?.hotspots.find((h) => h.type === "navigation" && h.target === sceneId);
+        return paso?.yaw ?? null;
+      },
+      turnTo: (yaw, durationMs) => this.turnTo(yaw, durationMs),
     });
     this.autopilotCtl.onChange = (active, routeId) => this.emit("autopilotChange", { active, routeId });
 
@@ -845,23 +851,42 @@ export class TourViewer {
     this.emit("narrationBlock", { blocked });
   }
 
-  private markTreasure(sceneId: string, hotspotId: string): void {
+  /**
+   * Tesoros del tour.
+   *
+   * Un hotspot de tipo «treasure» colocado en una escena **es** un tesoro: no
+   * hay que declararlo en ninguna lista aparte. La configuración global
+   * (`treasureHunt.targets`) se sigue respetando para los tours antiguos.
+   */
+  private treasureTargets(): { hotspotId: string; sceneId: string }[] {
+    const propios = this.tour.scenes.flatMap((s) =>
+      s.hotspots.filter((h) => h.type === "treasure").map((h) => ({ hotspotId: h.id, sceneId: s.id })),
+    );
+    if (propios.length > 0) return propios;
     const hunt = this.tour.treasureHunt;
-    if (hunt?.enabled !== true) return;
-    const target = hunt.targets.find((t) => t.hotspotId === hotspotId && t.sceneId === sceneId);
+    return hunt?.enabled === true ? hunt.targets : [];
+  }
+
+  private markTreasure(sceneId: string, hotspotId: string): void {
+    const targets = this.treasureTargets();
+    const target = targets.find((t) => t.hotspotId === hotspotId && t.sceneId === sceneId);
     if (target == null || this.treasureFound.has(hotspotId)) return;
     this.treasureFound.add(hotspotId);
     this.vars.set(`found_${hotspotId}`, true);
     this.emit("treasureProgress", {
       found: this.treasureFound.size,
-      total: hunt.targets.length,
+      total: targets.length,
       lastFound: hotspotId,
     });
   }
 
   treasureState(): { found: number; total: number; foundIds: string[] } {
-    const total = this.tour.treasureHunt?.targets.length ?? 0;
-    return { found: this.treasureFound.size, total, foundIds: [...this.treasureFound] };
+    return { found: this.treasureFound.size, total: this.treasureTargets().length, foundIds: [...this.treasureFound] };
+  }
+
+  /** ¿Hay búsqueda del tesoro en este tour? */
+  hasTreasureHunt(): boolean {
+    return this.treasureTargets().length > 0;
   }
 
   // -----------------------------------------------------------------------
@@ -889,6 +914,17 @@ export class TourViewer {
     this.idleMovementActive = true;
   }
 
+  /** Todas las rutas del tour, para el quiosco y su lista. */
+  autopilotRoutes(): { id: string; title?: unknown }[] {
+    return (this.tour.autopilot ?? []).map((r) => ({ id: r.id, title: r.title }));
+  }
+
+  /** Encadena todas las rutas sin fin (modo quiosco). */
+  startAutopilotChain(): void {
+    const rutas = this.tour.autopilot ?? [];
+    if (rutas.length > 0) void this.autopilotCtl.startChain(rutas);
+  }
+
   startAutopilot(routeId?: string): void {
     const route: AutopilotRoute | undefined =
       routeId != null ? this.tour.autopilot?.find((r) => r.id === routeId) : this.tour.autopilot?.[0];
@@ -901,6 +937,15 @@ export class TourViewer {
 
   autopilotActive(): boolean {
     return this.autopilotCtl.active;
+  }
+
+  /** Gira hasta un rumbo absoluto por el camino más corto. */
+  private turnTo(yaw: number, durationMs: number): Promise<void> {
+    const actual = this.view().yaw;
+    let delta = yaw - actual;
+    while (delta > Math.PI) delta -= 2 * Math.PI;
+    while (delta < -Math.PI) delta += 2 * Math.PI;
+    return this.rotateBy(delta, durationMs);
   }
 
   private rotateBy(deltaYaw: number, durationMs: number): Promise<void> {

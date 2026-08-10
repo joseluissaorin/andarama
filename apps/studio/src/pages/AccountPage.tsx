@@ -6,6 +6,7 @@ import { Badge, Button, Dialog, Field, Input, Select, useToast } from "@andarama
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
+import { Cabecera } from "../components/Cabecera";
 
 export function AccountPage(): React.ReactNode {
   const t = useT();
@@ -82,10 +83,7 @@ export function AccountPage(): React.ReactNode {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 p-6">
-      <div>
-        <h1 className="text-xl font-bold">{me?.user?.name}</h1>
-        <p className="text-sm text-[var(--anda-text-dim)]">{me?.user?.email}</p>
-      </div>
+      <Cabecera title={me?.user?.name ?? ""} hint={me?.user?.email} />
 
       <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold">

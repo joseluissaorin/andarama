@@ -907,6 +907,23 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         {hotspot.type === "state" && (
           <StateEditor content={content} scenes={snapshot.scenes} canEdit={canEdit} onChange={setContent} />
         )}
+        {hotspot.type === "treasure" && (
+          <>
+            {/* Colocar este marcador ya pone en marcha la búsqueda: no hay
+                nada que activar en otra pantalla. */}
+            <p className="rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[12.5px] text-[var(--anda-text)]">
+              {t("treasure_count_hint", { n: String(snapshot.hotspots.filter((h) => h.type === "treasure").length) })}
+            </p>
+            <Field label={t("treasure_reward")} htmlFor="hs-reward" hint={t("treasure_reward_hint")}>
+              <Textarea id="hs-reward" rows={3} value={String(content.reward ?? "")} disabled={!canEdit}
+                onChange={(e) => setContent({ reward: e.target.value || undefined })} />
+            </Field>
+            <Field label={t("treasure_hint_label")} htmlFor="hs-thint" hint={t("treasure_hint_hint")}>
+              <Input id="hs-thint" value={String(content.hint ?? "")} disabled={!canEdit}
+                onChange={(e) => setContent({ hint: e.target.value || undefined })} />
+            </Field>
+          </>
+        )}
       </Section>
         </>
       )}

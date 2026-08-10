@@ -362,6 +362,7 @@ export const DEFAULT_ICON_BY_TYPE: Record<HotspotType, string> = {
   tooltip: "message-square",
   link: "external-link",
   state: "door-open",
+  treasure: "gem",
 };
 
 const SVG_NS = "http://www.w3.org/2000/svg";
