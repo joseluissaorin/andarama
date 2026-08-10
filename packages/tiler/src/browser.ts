@@ -23,6 +23,8 @@ export interface BrowserTileOptions {
   nadirPatch?: Blob;
   nadirPatchSize?: number;
   signal?: AbortSignal;
+  /** Imagen ya decodificada por `probeImage`, para no volver a hacerlo. */
+  decoded?: DecodedSource;
 }
 
 export interface BrowserTileResult {
@@ -104,49 +106,143 @@ function rotationMatrix(yaw, pitch, roll) {
   ]);
 }
 
+/** Reduce la fuente a la mitad sin volver a descomprimir el fichero. */
+function halve(source) {
+  const w = Math.max(1024, Math.floor(source.width / 2));
+  const h = Math.max(512, Math.floor(source.height / 2));
+  const c = new OffscreenCanvas(w, h);
+  const x = c.getContext("2d");
+  x.imageSmoothingEnabled = true;
+  x.imageSmoothingQuality = "high";
+  x.drawImage(source, 0, 0, w, h);
+  if (source.close) source.close();
+  return c;
+}
+
+function snapFace(raw, tileSize, maxFace) {
+  let size = tileSize;
+  while (size < raw && size < maxFace) size *= 2;
+  return Math.min(size, maxFace);
+}
+
 self.onmessage = async (e) => {
   const msg = e.data;
   try {
-    const { bitmap, faceSize, tileSize, format, quality, yaw, pitch, roll, exposure, saturation, nadir, nadirSize } = msg;
+    const { bitmap, tileSize, format, quality, yaw, pitch, roll, exposure, saturation, nadir, nadirSize, maxFace } = msg;
     const mime = format === "jpeg" ? "image/jpeg" : format === "avif" ? "image/avif" : "image/webp";
 
-    const glCanvas = new OffscreenCanvas(faceSize, faceSize);
-    const gl = glCanvas.getContext("webgl", { preserveDrawingBuffer: true, premultipliedAlpha: false });
-    if (gl == null) throw new Error("WebGL no disponible en el worker");
-    const compile = (type, src) => {
-      const sh = gl.createShader(type);
-      gl.shaderSource(sh, src);
-      gl.compileShader(sh);
-      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) || "shader");
-      return sh;
-    };
-    const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
-    gl.linkProgram(prog);
-    gl.useProgram(prog);
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, "aPos");
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    const tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
-    bitmap.close();
+    /**
+     * MAX_TEXTURE_SIZE dice el lado máximo, no si hay memoria para esa textura.
+     * Una equirectangular de 12.000 px son 286 MB de textura: la tarjeta la
+     * rechaza en silencio, la textura queda incompleta y **todas las teselas
+     * salen negras**. Las miniaturas, que se hacen aparte con un lienzo 2D,
+     * salen bien, así que el fallo no se ve hasta abrir el visor.
+     *
+     * Por eso aquí no se da nada por hecho: se sube la textura, se comprueba el
+     * error de GL y se pinta una muestra. Si sale negra, se reduce a la mitad y
+     * se vuelve a intentar.
+     */
+    let source = bitmap;
+    let gl = null;
+    let glCanvas = null;
+    let prog = null;
+    let faceSize = 0;
+    let limited = false;
 
-    gl.uniformMatrix3fv(gl.getUniformLocation(prog, "uRot"), false, rotationMatrix(yaw, pitch, roll));
-    gl.uniform1f(gl.getUniformLocation(prog, "uExposure"), exposure);
-    gl.uniform1f(gl.getUniformLocation(prog, "uSaturation"), saturation);
+    for (let intento = 0; intento < 4; intento++) {
+      faceSize = snapFace(Math.floor(source.width / 4), tileSize, maxFace);
+      glCanvas = new OffscreenCanvas(faceSize, faceSize);
+      const opciones = { preserveDrawingBuffer: true, premultipliedAlpha: false };
+      // WebGL 2 admite repetir texturas que no son potencia de dos; WebGL 1 no
+      gl = glCanvas.getContext("webgl2", opciones);
+      const webgl2 = gl != null;
+      if (gl == null) gl = glCanvas.getContext("webgl", opciones);
+      if (gl == null) throw new Error("WebGL no disponible en el worker");
+      const compile = (type, src) => {
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src);
+        gl.compileShader(sh);
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh) || "shader");
+        return sh;
+      };
+      prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, "aPos");
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      /**
+       * En WebGL 1 una textura que no sea potencia de dos **solo** puede usar
+       * CLAMP_TO_EDGE: con REPEAT queda incompleta y el muestreo devuelve negro.
+       * Aquí se repetía en horizontal para envolver la longitud, así que
+       * cualquier panorama que no midiera 4096, 8192... salía **entero negro**,
+       * y como la miniatura se hace aparte con un lienzo 2D, el fallo no se veía
+       * hasta abrir el visor.
+       */
+      const potencia = (n) => (n & (n - 1)) === 0;
+      const repetible = webgl2 || (potencia(source.width) && potencia(source.height));
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, repetible ? gl.REPEAT : gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      while (gl.getError() !== gl.NO_ERROR) {
+        // vaciar errores previos
+      }
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+      const errorTextura = gl.getError();
+
+      gl.uniformMatrix3fv(gl.getUniformLocation(prog, "uRot"), false, rotationMatrix(yaw, pitch, roll));
+      gl.uniform1f(gl.getUniformLocation(prog, "uExposure"), exposure);
+      gl.uniform1f(gl.getUniformLocation(prog, "uSaturation"), saturation);
+
+      // Muestra de las seis caras: si TODAS salen del mismo negro, no es una
+      // foto oscura, es una textura que no ha llegado a la tarjeta.
+      let vacio = errorTextura !== gl.NO_ERROR || gl.isContextLost();
+      let motivo = vacio ? ("gl " + errorTextura) : "";
+      if (!vacio) {
+        const lado = 16;
+        const px = new Uint8Array(lado * lado * 4);
+        let distintos = 0;
+        for (const faceName of FACES) {
+          const basis = BASES[faceName];
+          gl.uniform3fv(gl.getUniformLocation(prog, "uAxisX"), basis.x);
+          gl.uniform3fv(gl.getUniformLocation(prog, "uAxisY"), basis.y);
+          gl.uniform3fv(gl.getUniformLocation(prog, "uAxisZ"), basis.z);
+          gl.viewport(0, 0, lado, lado);
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+          gl.readPixels(0, 0, lado, lado, gl.RGBA, gl.UNSIGNED_BYTE, px);
+          for (let i = 0; i < px.length; i += 4) {
+            if (px[i] > 3 || px[i + 1] > 3 || px[i + 2] > 3) {
+              distintos++;
+              break;
+            }
+          }
+        }
+        vacio = distintos === 0;
+        if (vacio) motivo = "muestra en negro";
+      }
+
+      if (!vacio) break;
+      if (source.width <= 2048) throw new Error("La tarjeta gráfica no ha podido procesar el panorama (" + motivo + ", " + source.width + "x" + source.height + ")");
+      // Otra vuelta con la mitad de resolución
+      source = halve(source);
+      limited = true;
+    }
+
+    if (source.close) source.close();
+    self.postMessage({ kind: "ready", faceSize, limited });
 
     const levels = pyramid(faceSize, tileSize);
     const total = levels.reduce((a, l) => a + l.tiles * l.tiles * 6, 0);
     let done = 0;
+    const tileCanvases = new Map();
 
     for (const faceName of FACES) {
       const basis = BASES[faceName];
@@ -168,23 +264,36 @@ self.onmessage = async (e) => {
         fctx.restore();
       }
 
-      // Niveles de mayor a menor: reduccion sucesiva a la mitad
+      // Niveles de mayor a menor. Cada nivel se saca del anterior, no del
+      // original: reducir a la mitad seis veces es mucho más barato que seis
+      // reducciones desde 8192, y además el resultado es más limpio.
+      let prevCanvas = faceCanvas;
       for (let li = levels.length - 1; li >= 0; li--) {
         const level = levels[li];
-        let levelCanvas = faceCanvas;
-        if (level.size !== faceSize) {
+        let levelCanvas = prevCanvas;
+        if (level.size !== prevCanvas.width) {
           levelCanvas = new OffscreenCanvas(level.size, level.size);
           const lctx = levelCanvas.getContext("2d");
           lctx.imageSmoothingEnabled = true;
           lctx.imageSmoothingQuality = "high";
-          lctx.drawImage(faceCanvas, 0, 0, level.size, level.size);
+          lctx.drawImage(prevCanvas, 0, 0, level.size, level.size);
         }
+        prevCanvas = levelCanvas;
         for (let ty = 0; ty < level.tiles; ty++) {
           for (let tx = 0; tx < level.tiles; tx++) {
             const w = Math.min(tileSize, level.size - tx * tileSize);
             const h = Math.min(tileSize, level.size - ty * tileSize);
-            const tileCanvas = new OffscreenCanvas(w, h);
-            tileCanvas.getContext("2d").drawImage(levelCanvas, tx * tileSize, ty * tileSize, w, h, 0, 0, w, h);
+            // Un lienzo por tamaño en vez de uno por tesela: un panorama de
+            // 8192 son más de mil teselas, y mil lienzos cuestan lo suyo.
+            const ck = w + "x" + h;
+            let tileCanvas = tileCanvases.get(ck);
+            if (tileCanvas == null) {
+              tileCanvas = new OffscreenCanvas(w, h);
+              tileCanvases.set(ck, tileCanvas);
+            }
+            const tctx = tileCanvas.getContext("2d");
+            tctx.clearRect(0, 0, w, h);
+            tctx.drawImage(levelCanvas, tx * tileSize, ty * tileSize, w, h, 0, 0, w, h);
             const blob = await tileCanvas.convertToBlob({ type: mime, quality });
             done++;
             self.postMessage({ kind: "tile", level: level.level, face: faceName, x: tx, y: ty, blob, done, total });
@@ -192,6 +301,7 @@ self.onmessage = async (e) => {
         }
       }
       faceCanvas = null;
+      prevCanvas = null;
     }
     self.postMessage({ kind: "done" });
   } catch (err) {
@@ -222,37 +332,61 @@ function maxTextureSize(): number {
   return gl.getParameter(gl.MAX_TEXTURE_SIZE) as number;
 }
 
-/** Decodifica limitando al tamano de textura del dispositivo. */
-async function decodeSource(blob: Blob): Promise<{ bitmap: ImageBitmap; limited: boolean; width: number; height: number }> {
-  const probe = await createImageBitmap(blob);
-  const width = probe.width;
-  const height = probe.height;
+/** Imagen ya decodificada, lista para reutilizar en todo el proceso. */
+export interface DecodedSource {
+  /** Mapa de bits listo para la GPU (reducido si excede la textura máxima). */
+  bitmap: ImageBitmap;
+  /** Dimensiones **originales** del fichero, aunque el mapa se haya reducido. */
+  width: number;
+  height: number;
+  /** Hubo que reducir por el límite de textura del dispositivo. */
+  limited: boolean;
+  isPanorama: boolean;
+  reason: "xmp" | "aspect";
+}
+
+/**
+ * Decodifica la imagen **una sola vez** y de paso dice si es un panorama.
+ *
+ * Antes cada foto se decodificaba cinco o seis veces: una para detectar si era
+ * panorama, otra para medirla, otra para la textura y tres más para la
+ * previsualización, la miniatura y la imagen social. En una foto de 60 Mpx eso
+ * son varios segundos tirados por foto.
+ */
+export async function probeImage(blob: Blob): Promise<DecodedSource> {
+  const head = new Uint8Array(await blob.slice(0, 128 * 1024).arrayBuffer());
+  const text = new TextDecoder("latin1").decode(head);
+  const xmp = text.includes("GPano:ProjectionType") || text.includes("equirectangular");
+
+  const full = await createImageBitmap(blob);
+  const width = full.width;
+  const height = full.height;
+  const ratio = width / Math.max(1, height);
+  const isPanorama = xmp || (Math.abs(ratio - 2) < 0.02 && width >= 2048);
+
   const maxTex = maxTextureSize();
   if (width <= maxTex) {
-    return { bitmap: probe, limited: false, width, height };
+    return { bitmap: full, width, height, limited: false, isPanorama, reason: xmp ? "xmp" : "aspect" };
   }
-  probe.close();
-  const bitmap = await createImageBitmap(blob, {
+  // Reducir desde el mapa ya decodificado, no volviendo a descomprimir el JPEG
+  const bitmap = await createImageBitmap(full, {
     resizeWidth: maxTex,
     resizeHeight: Math.round((height * maxTex) / width),
     resizeQuality: "high",
   });
-  return { bitmap, limited: true, width, height };
+  full.close();
+  return { bitmap, width, height, limited: true, isPanorama, reason: xmp ? "xmp" : "aspect" };
 }
 
-async function renderDerivative(
-  blob: Blob,
-  w: number,
-  h: number,
-  mime: string,
-  quality: number,
-): Promise<Blob> {
-  const bitmap = await createImageBitmap(blob, { resizeWidth: w * 2, resizeQuality: "high" });
-  const canvas = new OffscreenCanvas(w, h);
-  const ctx = canvas.getContext("2d")!;
-  // Recorte central (la vista frontal del panorama esta en el centro)
+/**
+ * Derivado (previsualización, miniatura, imagen social) a partir del mapa ya
+ * decodificado. Si la reducción es muy grande se hace en dos pasos: bajar de
+ * 11.000 px a 1.200 de golpe deja escalones.
+ */
+async function renderDerivative(bitmap: ImageBitmap, w: number, h: number, mime: string, quality: number): Promise<Blob> {
   const srcW = bitmap.width;
   const srcH = bitmap.height;
+  // Recorte central (la vista frontal del panorama está en el centro)
   const targetRatio = w / h;
   let cw = srcW;
   let ch = srcW / targetRatio;
@@ -260,8 +394,34 @@ async function renderDerivative(
     ch = srcH;
     cw = srcH * targetRatio;
   }
-  ctx.drawImage(bitmap, (srcW - cw) / 2, (srcH - ch) / 2, cw, ch, 0, 0, w, h);
-  bitmap.close();
+  const sx = (srcW - cw) / 2;
+  const sy = (srcH - ch) / 2;
+
+  let source: OffscreenCanvas | ImageBitmap = bitmap;
+  let sourceX = sx;
+  let sourceY = sy;
+  let sourceW = cw;
+  let sourceH = ch;
+  if (cw / w > 4) {
+    const midW = Math.max(w, Math.round(cw / 4));
+    const midH = Math.max(h, Math.round(ch / 4));
+    const mid = new OffscreenCanvas(midW, midH);
+    const mctx = mid.getContext("2d")!;
+    mctx.imageSmoothingEnabled = true;
+    mctx.imageSmoothingQuality = "high";
+    mctx.drawImage(bitmap, sx, sy, cw, ch, 0, 0, midW, midH);
+    source = mid;
+    sourceX = 0;
+    sourceY = 0;
+    sourceW = midW;
+    sourceH = midH;
+  }
+
+  const canvas = new OffscreenCanvas(w, h);
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(source, sourceX, sourceY, sourceW, sourceH, 0, 0, w, h);
   return canvas.convertToBlob({ type: mime, quality });
 }
 
@@ -290,19 +450,23 @@ export async function tilePanorama(
   if (format === "webp" && !(await supportsMime("image/webp"))) format = "jpeg";
   const quality = options.quality ?? 0.82;
 
-  const { bitmap, limited, width, height } = await decodeSource(source);
+  // Si quien llama ya la ha decodificado, se reutiliza: es lo caro de todo esto
+  const decoded = options.decoded ?? (await probeImage(source));
+  const { bitmap, limited, width, height } = decoded;
   if (bitmap.width < 256) {
     bitmap.close();
     throw new Error("La imagen es demasiado pequeña para trocear (min 256 px de ancho)");
   }
-  // Cara en el esquema tileSize * 2^k (requisito de la geometria multires)
+  // Cara en el esquema tileSize * 2^k (requisito de la geometria multires).
+  // El tamaño definitivo lo decide el worker: si la tarjeta no traga la textura
+  // reduce la fuente y lo dice, y el manifiesto tiene que contar lo que hay.
   const maxRenderFace = Math.min(8192, maxTextureSize());
-  const faceSize = snapFaceSize(Math.floor(bitmap.width / 4), tileSize, maxRenderFace);
 
-  // Derivados en paralelo con el troceado
-  const previewPromise = renderDerivative(source, 512, 256, "image/jpeg", 0.6).then(blobToDataUrl);
-  const thumbPromise = renderDerivative(source, 640, 384, "image/jpeg", 0.75);
-  const ogPromise = renderDerivative(source, 1200, 630, "image/jpeg", 0.8);
+  // Los derivados salen del mismo mapa de bits, antes de cedérselo al worker
+  // (al transferirlo se queda vacío).
+  const preview = await renderDerivative(bitmap, 512, 256, "image/jpeg", 0.6).then(blobToDataUrl);
+  const thumbnail = await renderDerivative(bitmap, 640, 384, "image/jpeg", 0.75);
+  const ogImage = await renderDerivative(bitmap, 1200, 630, "image/jpeg", 0.8);
 
   let nadirBitmap: ImageBitmap | null = null;
   if (options.nadirPatch != null) {
@@ -311,6 +475,9 @@ export async function tilePanorama(
 
   const worker = new Worker(getWorkerUrl());
   const mimeExt = format === "jpeg" ? "jpg" : format;
+
+  let faceSize = snapFaceSize(Math.floor(bitmap.width / 4), tileSize, maxRenderFace);
+  let gpuLimited = false;
 
   const donePromise = new Promise<void>((resolve, reject) => {
     const abort = (): void => {
@@ -321,7 +488,10 @@ export async function tilePanorama(
     const pendingWrites: Promise<unknown>[] = [];
     worker.onmessage = (e: MessageEvent): void => {
       const msg = e.data as { kind: string; message?: string } & Record<string, unknown>;
-      if (msg.kind === "tile") {
+      if (msg.kind === "ready") {
+        faceSize = msg.faceSize as number;
+        gpuLimited = msg.limited === true;
+      } else if (msg.kind === "tile") {
         const p = callbacks.onTile({
           level: msg.level as number,
           face: msg.face as Face,
@@ -345,7 +515,7 @@ export async function tilePanorama(
   worker.postMessage(
     {
       bitmap,
-      faceSize,
+      maxFace: maxRenderFace,
       tileSize,
       format,
       quality,
@@ -366,7 +536,6 @@ export async function tilePanorama(
     worker.terminate();
   }
 
-  const preview = await previewPromise;
   const manifest: TileManifest = {
     levels: computePyramid(faceSize, tileSize).length,
     tileSize,
@@ -376,36 +545,17 @@ export async function tilePanorama(
     tileCount: totalTileCount(faceSize, tileSize),
     preview,
   };
-  return {
-    manifest,
-    preview,
-    thumbnail: await thumbPromise,
-    ogImage: await ogPromise,
-    clientLimited: limited,
-    sourceWidth: width,
-    sourceHeight: height,
-  };
+  return { manifest, preview, thumbnail, ogImage, clientLimited: limited || gpuLimited, sourceWidth: width, sourceHeight: height };
 }
 
-/** Detecta si un fichero de imagen parece un panorama equirectangular. */
+/**
+ * Detecta si un fichero de imagen parece un panorama equirectangular.
+ *
+ * Se conserva por compatibilidad; en el flujo de subida se usa `probeImage`,
+ * que además devuelve la imagen decodificada para no repetir el trabajo.
+ */
 export async function detectPanorama(blob: Blob): Promise<{ isPanorama: boolean; width: number; height: number; reason: string }> {
-  // Metadatos XMP GPano
-  const head = new Uint8Array(await blob.slice(0, 128 * 1024).arrayBuffer());
-  const text = new TextDecoder("latin1").decode(head);
-  if (text.includes("GPano:ProjectionType") || text.includes("equirectangular")) {
-    const bitmap = await createImageBitmap(blob);
-    const res = { isPanorama: true, width: bitmap.width, height: bitmap.height, reason: "xmp" };
-    bitmap.close();
-    return res;
-  }
-  const bitmap = await createImageBitmap(blob);
-  const ratio = bitmap.width / bitmap.height;
-  const result = {
-    isPanorama: Math.abs(ratio - 2) < 0.02 && bitmap.width >= 2048,
-    width: bitmap.width,
-    height: bitmap.height,
-    reason: "aspect",
-  };
-  bitmap.close();
-  return result;
+  const probe = await probeImage(blob);
+  probe.bitmap.close();
+  return { isPanorama: probe.isPanorama, width: probe.width, height: probe.height, reason: probe.reason };
 }

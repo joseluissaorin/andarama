@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, FolderOpen, Images, Search, UploadCloud } from "lucide-react";
+import { Camera, ChevronDown, FolderOpen, Images, Search, UploadCloud } from "lucide-react";
 import { Button, Input, Select, Spinner, useToast } from "@ull360/ui";
 import { api } from "../api";
 import { useT } from "../i18n";
@@ -8,6 +8,8 @@ import { uploadMedia, type UploadProgress } from "../upload";
 import { PlanetThumb, Pano360Dialog, isPano, previewEquirect } from "../media/PanoPreview";
 import { prefetchLittlePlanets } from "../media/littlePlanet";
 import { MEDIA_DRAG_TYPE, mediaDragPayload } from "../media/drag";
+import { ImportWizard } from "../pages/ImportWizard";
+import { deviceConcurrency, pooled } from "../pool";
 import type { MediaItem } from "../pages/MediaPage";
 
 /**
@@ -36,6 +38,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   const [search, setSearch] = useState("");
   const [preview, setPreview] = useState<MediaItem | null>(null);
   const [uploads, setUploads] = useState<Record<string, UploadProgress & { name: string }>>({});
+  const [wizardOpen, setWizardOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const list = useQuery({
@@ -70,19 +73,22 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
 
   /** Lo subido desde el editor pertenece a este tour: no hay que ir a buscarlo. */
   const doUpload = async (files: FileList | File[]): Promise<void> => {
-    for (const file of Array.from(files)) {
-      const key = `${file.name}-${Date.now()}`;
-      setUploads((u) => ({ ...u, [key]: { phase: "hashing", percent: 0, name: file.name } }));
-      try {
-        const result = await uploadMedia(orgId, file, null, (p) => setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })));
-        await api(`/media/${result.id}`, { method: "PATCH", body: { projectId, folder: projectTitle } });
-        setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1200);
-        void queryClient.invalidateQueries({ queryKey: ["media"] });
-      } catch (err) {
-        setUploads((u) => ({ ...u, [key]: { phase: "error", percent: 0, name: file.name, detail: String(err instanceof Error ? err.message : err) } }));
-        toast.push(String(err instanceof Error ? err.message : err), "error");
-      }
-    }
+    await pooled(
+      Array.from(files).map((file, i) => async () => {
+        const key = `${file.name}-${Date.now()}-${i}`;
+        setUploads((u) => ({ ...u, [key]: { phase: "hashing", percent: 0, name: file.name } }));
+        try {
+          const result = await uploadMedia(orgId, file, null, (p) => setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })));
+          await api(`/media/${result.id}`, { method: "PATCH", body: { projectId, folder: projectTitle } });
+          setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1200);
+          void queryClient.invalidateQueries({ queryKey: ["media"] });
+        } catch (err) {
+          setUploads((u) => ({ ...u, [key]: { phase: "error", percent: 0, name: file.name, detail: String(err instanceof Error ? err.message : err) } }));
+          toast.push(String(err instanceof Error ? err.message : err), "error");
+        }
+      }),
+      deviceConcurrency().files,
+    );
   };
 
   if (!open) {
@@ -147,9 +153,16 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
 
         <div className="flex-1" />
         {canEdit && (
-          <Button size="sm" variant="outline" onClick={() => fileInput.current?.click()}>
-            <UploadCloud className="h-4 w-4" /> {t("upload")}
-          </Button>
+          <>
+            {/* Volcar la tarjeta de la cámara sin salir del editor: es el paso
+                que más veces se repite y estaba solo en la biblioteca. */}
+            <Button size="sm" variant="outline" onClick={() => setWizardOpen(true)}>
+              <Camera className="h-4 w-4" /> {t("import_wizard")}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => fileInput.current?.click()}>
+              <UploadCloud className="h-4 w-4" /> {t("upload")}
+            </Button>
+          </>
         )}
         <Button size="icon" variant="ghost" className="h-7 w-7" aria-label={t("close")} onClick={() => setOpen(false)}>
           <ChevronDown className="h-4 w-4" />
@@ -235,6 +248,15 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
       <p className="px-3 pb-2 text-[11px] text-[var(--ull-text-dim)]">{t("dock_hint")}</p>
 
       <Pano360Dialog media={preview} onClose={() => setPreview(null)} />
+      <ImportWizard
+        orgId={orgId}
+        open={wizardOpen}
+        project={{ id: projectId, title: projectTitle }}
+        onClose={() => {
+          setWizardOpen(false);
+          void queryClient.invalidateQueries({ queryKey: ["media"] });
+        }}
+      />
     </section>
   );
 }

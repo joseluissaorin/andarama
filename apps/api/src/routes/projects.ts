@@ -387,6 +387,10 @@ export function guessContentType(key: string): string {
     js: "text/javascript",
     css: "text/css",
     html: "text/html; charset=utf-8",
+    // Sin este tipo el navegador ignora el manifiesto y la app no se instala
+    webmanifest: "application/manifest+json",
+    ico: "image/x-icon",
+    txt: "text/plain; charset=utf-8",
   };
   return map[ext] ?? "application/octet-stream";
 }

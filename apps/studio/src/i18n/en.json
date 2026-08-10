@@ -740,5 +740,13 @@
   "help_keyboard_connect": "Connect from the focused node",
   "help_route_reorder": "Reorder the route stops",
   "graph_issue_one": "1 warning",
-  "canvas_mode": "Canvas mode"
+  "canvas_mode": "Canvas mode",
+  "install_app": "Install the app",
+  "update_ready": "A new version is ready. Tap to update.",
+  "install_ios_hint": "On iPad and iPhone you add it to the Home Screen from Safari.",
+  "install_ios_step_share": "Open Safari’s Share menu.",
+  "install_ios_step_add": "Choose “Add to Home Screen”.",
+  "install_ios_step_confirm": "Confirm with “Add”: ULL360 opens as an app.",
+  "retile": "Rebuild tiles",
+  "retile_done": "Rebuilt tiles for {n} panoramas"
 }

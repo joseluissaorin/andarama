@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
+import { Camera, RefreshCw, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
 import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@ull360/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
@@ -8,7 +8,8 @@ import { useT } from "../i18n";
 import { PlanetThumb, Pano360Dialog, isPano, previewEquirect } from "../media/PanoPreview";
 import { prefetchLittlePlanets } from "../media/littlePlanet";
 import { MEDIA_DRAG_TYPE, mediaDragPayload } from "../media/drag";
-import { uploadMedia, type MediaKind, type UploadProgress } from "../upload";
+import { retileMedia, uploadMedia, type MediaKind, type UploadProgress } from "../upload";
+import { deviceConcurrency, pooled } from "../pool";
 import { ImportWizard } from "./ImportWizard";
 
 export interface MediaItem {
@@ -135,26 +136,51 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
     toast.push(t("saved"), "ok");
   };
 
+  /** Regenera las teselas de los panoramas seleccionados, uno a uno. */
+  const retileSelected = async (): Promise<void> => {
+    const panos = (list.data ?? []).filter((m) => selected.has(m.id) && isPano(m));
+    for (const m of panos) {
+      const key = `retile-${m.id}`;
+      setUploads((u) => ({ ...u, [key]: { phase: "tiling", percent: 0, name: m.filename } }));
+      try {
+        await retileMedia(m.id, (p) => setUploads((u) => ({ ...u, [key]: { ...p, name: m.filename } })));
+        setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1500);
+      } catch (err) {
+        setUploads((u) => ({ ...u, [key]: { phase: "error", percent: 0, name: m.filename, detail: String(err instanceof Error ? err.message : err) } }));
+      }
+    }
+    setSelected(new Set());
+    void queryClient.invalidateQueries({ queryKey: ["media"] });
+    toast.push(t("retile_done", { n: String(panos.length) }), "ok");
+  };
+
   const doUpload = useCallback(
     async (files: FileList | File[]): Promise<void> => {
-      for (const file of Array.from(files)) {
-        const key = `${file.name}-${Date.now()}`;
-        const kindGuess: MediaKind | null = kindFilter != null ? (kindFilter as MediaKind) : null;
-        setUploads((u) => ({ ...u, [key]: { phase: "hashing", percent: 0, name: file.name } }));
-        try {
-          const result = await uploadMedia(orgId, file, kindGuess, (p) =>
-            setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })),
-          );
-          if (result.deduplicated) toast.push(t("deduplicated"));
-          if (assignAfterUpload != null) {
-            await api(`/media/${result.id}`, { method: "PATCH", body: { projectId: assignAfterUpload } });
+      const list = Array.from(files);
+      const kindGuess: MediaKind | null = kindFilter != null ? (kindFilter as MediaKind) : null;
+      // Varias fotos a la vez: mientras una se trocea (que es cosa de la GPU),
+      // la anterior está subiendo (que es cosa de la red). De una en una se
+      // desperdiciaba la mitad del tiempo.
+      await pooled(
+        list.map((file, i) => async () => {
+          const key = `${file.name}-${Date.now()}-${i}`;
+          setUploads((u) => ({ ...u, [key]: { phase: "hashing", percent: 0, name: file.name } }));
+          try {
+            const result = await uploadMedia(orgId, file, kindGuess, (p) =>
+              setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })),
+            );
+            if (result.deduplicated) toast.push(t("deduplicated"));
+            if (assignAfterUpload != null) {
+              await api(`/media/${result.id}`, { method: "PATCH", body: { projectId: assignAfterUpload } });
+            }
+            setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1500);
+            void queryClient.invalidateQueries({ queryKey: ["media"] });
+          } catch (err) {
+            setUploads((u) => ({ ...u, [key]: { phase: "error", percent: 0, name: file.name, detail: String(err instanceof Error ? err.message : err) } }));
           }
-          setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1500);
-          void queryClient.invalidateQueries({ queryKey: ["media"] });
-        } catch (err) {
-          setUploads((u) => ({ ...u, [key]: { phase: "error", percent: 0, name: file.name, detail: String(err instanceof Error ? err.message : err) } }));
-        }
-      }
+        }),
+        deviceConcurrency().files,
+      );
     },
     [orgId, kindFilter, queryClient, toast, t, assignAfterUpload],
   );
@@ -448,6 +474,13 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
               </option>
             ))}
           </Select>
+          {/* Reparar panoramas cuyas teselas salieron mal: se vuelven a
+              generar del fichero original, sin volver a subir nada. */}
+          {(list.data ?? []).some((m) => selected.has(m.id) && isPano(m)) && (
+            <Button variant="outline" size="sm" onClick={() => void retileSelected()}>
+              <RefreshCw className="h-4 w-4" /> {t("retile")}
+            </Button>
+          )}
           <div className="flex-1" />
           <Button variant="danger" size="sm" onClick={() => void removeMedia([...selected])}>
             <Trash2 className="h-4 w-4" /> {t("delete")}

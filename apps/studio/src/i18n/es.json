@@ -740,5 +740,13 @@
   "help_keyboard_connect": "Conectar desde el nodo con el foco",
   "help_route_reorder": "Reordenar las paradas del recorrido",
   "graph_issue_one": "1 aviso",
-  "canvas_mode": "Modo del lienzo"
+  "canvas_mode": "Modo del lienzo",
+  "install_app": "Instalar la aplicación",
+  "update_ready": "Hay una versión nueva. Pulsa para actualizar.",
+  "install_ios_hint": "En iPad y iPhone se añade a la pantalla de inicio desde Safari.",
+  "install_ios_step_share": "Abre el menú Compartir de Safari.",
+  "install_ios_step_add": "Elige «Añadir a pantalla de inicio».",
+  "install_ios_step_confirm": "Confirma con «Añadir»: ULL360 se abre como una aplicación.",
+  "retile": "Regenerar teselas",
+  "retile_done": "Regeneradas las teselas de {n} panoramas"
 }

@@ -5,6 +5,7 @@ import { Button, Dialog, Field, Input, Select, Spinner, Switch, useToast } from 
 import { api } from "../api";
 import { useT } from "../i18n";
 import { uploadMedia } from "../upload";
+import { deviceConcurrency, pooled } from "../pool";
 
 /**
  * Importador de cámara 360 (§ingesta): sube un lote de fotos, permite
@@ -46,17 +47,22 @@ function floorplansOf(settings: { areas?: { id: string; title?: string; plan?: {
   return fromAreas.length > 0 ? fromAreas : (settings?.floorplans ?? []);
 }
 
-export function ImportWizard({ orgId, open, onClose }: {
+export function ImportWizard({ orgId, open, onClose, project }: {
   orgId: string;
   open: boolean;
   onClose: () => void;
+  /**
+   * Tour de destino cuando se abre desde el editor: ya se sabe a dónde van las
+   * fotos, así que no se pregunta.
+   */
+  project?: { id: string; title: string };
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
   const queryClient = useQueryClient();
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [items, setItems] = useState<WizardItem[]>([]);
-  const [projectId, setProjectId] = useState("");
+  const [projectId, setProjectId] = useState(project?.id ?? "");
   const [pattern, setPattern] = useState("");
   const [connectSequence, setConnectSequence] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -67,7 +73,7 @@ export function ImportWizard({ orgId, open, onClose }: {
   const projects = useQuery({
     queryKey: ["projects", orgId],
     queryFn: () => api<{ id: string; title: string }[]>(`/projects?org=${orgId}`),
-    enabled: open,
+    enabled: open && project == null,
   });
 
   const projectDetail = useQuery({
@@ -108,25 +114,30 @@ export function ImportWizard({ orgId, open, onClose }: {
 
   const uploadAll = async (): Promise<void> => {
     const queue = items.filter((i) => i.status === "pending" || i.status === "error");
-    for (const item of queue) {
-      setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, status: "uploading", percent: 0 } : x)));
-      try {
-        const result = await uploadMedia(orgId, item.file, null, (p) => {
-          setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, percent: p.percent } : x)));
-        });
-        const mediaId = result.id;
-        const ext = item.file.name.split(".").pop() ?? "";
-        await api(`/media/${mediaId}`, {
-          method: "PATCH",
-          body: { filename: `${item.name}.${ext}`, projectId: projectId || null },
-        });
-        setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, status: "done", percent: 100, mediaId } : x)));
-      } catch (err) {
-        setItems((prev) =>
-          prev.map((x) => (x.key === item.key ? { ...x, status: "error", error: String(err instanceof Error ? err.message : err) } : x)),
-        );
-      }
-    }
+    // Un volcado de cámara son decenas de fotos: se solapan unas cuantas para
+    // que la red no espere a la GPU ni al revés.
+    await pooled(
+      queue.map((item) => async () => {
+        setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, status: "uploading", percent: 0 } : x)));
+        try {
+          const result = await uploadMedia(orgId, item.file, null, (p) => {
+            setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, percent: p.percent } : x)));
+          });
+          const mediaId = result.id;
+          const ext = item.file.name.split(".").pop() ?? "";
+          await api(`/media/${mediaId}`, {
+            method: "PATCH",
+            body: { filename: `${item.name}.${ext}`, projectId: projectId || null },
+          });
+          setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, status: "done", percent: 100, mediaId } : x)));
+        } catch (err) {
+          setItems((prev) =>
+            prev.map((x) => (x.key === item.key ? { ...x, status: "error", error: String(err instanceof Error ? err.message : err) } : x)),
+          );
+        }
+      }),
+      deviceConcurrency().files,
+    );
     void queryClient.invalidateQueries({ queryKey: ["media"] });
   };
 
@@ -184,6 +195,7 @@ export function ImportWizard({ orgId, open, onClose }: {
     setStep(0);
     setCreatedCount(null);
     setPattern("");
+    setProjectId(project?.id ?? "");
   };
 
   const steps = [t("import_step_files"), t("import_step_plan"), t("import_step_scenes")];
@@ -255,14 +267,20 @@ export function ImportWizard({ orgId, open, onClose }: {
         >
           <div className="flex flex-wrap items-end gap-2">
             <Field label={t("target_project")} htmlFor="iw-project">
-              <Select id="iw-project" value={projectId} onChange={(e) => setProjectId(e.target.value)} className="min-w-56">
-                <option value="">—</option>
-                {(projects.data ?? []).map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))}
-              </Select>
+              {project != null ? (
+                <p id="iw-project" className="min-w-56 rounded-lg bg-[var(--ull-surface-2)] px-3 py-2 text-sm font-medium">
+                  {project.title}
+                </p>
+              ) : (
+                <Select id="iw-project" value={projectId} onChange={(e) => setProjectId(e.target.value)} className="min-w-56">
+                  <option value="">—</option>
+                  {(projects.data ?? []).map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </Select>
+              )}
             </Field>
             <div className="flex-1" />
             <Field label={t("rename_pattern")} htmlFor="iw-pattern" hint={t("rename_pattern_hint")}>
@@ -321,7 +339,7 @@ export function ImportWizard({ orgId, open, onClose }: {
                       {item.status === "done" ? (
                         <Check className="ml-auto h-4 w-4 text-emerald-500" />
                       ) : item.status === "uploading" ? (
-                        `${item.percent}%`
+                        `${item.percent.toFixed(2)} %`
                       ) : item.status === "error" ? (
                         <span className="text-[var(--ull-danger)]">{t("error")}</span>
                       ) : (
@@ -434,7 +452,7 @@ export function ImportWizard({ orgId, open, onClose }: {
               <p className="text-sm">
                 {t("import_summary", {
                   count: String(items.length),
-                  project: projects.data?.find((p) => p.id === projectId)?.title ?? "",
+                  project: project?.title ?? projects.data?.find((p) => p.id === projectId)?.title ?? "",
                 })}
               </p>
               <ol className="max-h-56 list-decimal space-y-0.5 overflow-y-auto pl-6 text-sm">

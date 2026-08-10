@@ -1,9 +1,10 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { FolderKanban, Image, Languages, LogOut, ShieldCheck, UserCircle, Building2} from "lucide-react";
-import { Button, Select, Spinner, Tooltip } from "@ull360/ui";
+import { useEffect, useState } from "react";
+import { Download, FolderKanban, Image, Languages, LogOut, RefreshCw, ShieldCheck, Share, UserCircle, Building2 } from "lucide-react";
+import { Button, Dialog, Select, Spinner, Tooltip } from "@ull360/ui";
 import { useAuth } from "../stores";
 import { useI18nStore, useT } from "../i18n";
+import { usePwa } from "../pwa";
 import logoUll360 from "../brand/logo-ull360.svg";
 import iconoUll from "../brand/icono-ull.svg";
 import iconoUllBlanco from "../brand/icono-ull-blanco.svg";
@@ -14,6 +15,8 @@ export function Shell(): React.ReactNode {
   const navigate = useNavigate();
   const { me, loaded, refresh, currentOrgId, setOrg, logout } = useAuth();
   const { lang, setLang } = useI18nStore();
+  const pwa = usePwa();
+  const [iosHelp, setIosHelp] = useState(false);
 
   useEffect(() => {
     void refresh();
@@ -72,6 +75,31 @@ export function Shell(): React.ReactNode {
             <NavItem to="/admin" icon={<ShieldCheck className="h-4 w-4" />} label={t("admin")} />
           )}
         </nav>
+        {/* Instalarla y avisar de una versión nueva: lo que espera cualquiera
+            de una aplicación de escritorio o de iPad. */}
+        {pwa.updateReady && (
+          <button
+            type="button"
+            onClick={pwa.applyUpdate}
+            className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-[var(--ull-primary-soft)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--ull-primary)]"
+          >
+            <RefreshCw className="h-4 w-4 shrink-0" />
+            {t("update_ready")}
+          </button>
+        )}
+        {!pwa.installed && (pwa.installable || pwa.iosManual) && (
+          <button
+            type="button"
+            onClick={() => {
+              if (pwa.installable) void pwa.install();
+              else setIosHelp(true);
+            }}
+            className="mx-3 mb-2 flex items-center gap-2 rounded-xl border border-dashed border-[var(--ull-border)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--ull-text-dim)] hover:border-[var(--ull-primary)] hover:text-[var(--ull-primary)]"
+          >
+            <Download className="h-4 w-4 shrink-0" />
+            {t("install_app")}
+          </button>
+        )}
         <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl bg-[var(--ull-surface-2)] p-1.5">
           <Tooltip content={lang === "es" ? "English" : "Español"}>
             <Button variant="ghost" size="icon" aria-label="Idioma de la interfaz" onClick={() => setLang(lang === "es" ? "en" : "es")}>
@@ -98,6 +126,16 @@ export function Shell(): React.ReactNode {
           <Outlet />
         </div>
       </main>
+      {/* En iPad y iPhone, Safari no ofrece diálogo: se instala a mano */}
+      <Dialog open={iosHelp} onOpenChange={setIosHelp} title={t("install_app")} description={t("install_ios_hint")}>
+        <ol className="list-decimal space-y-1.5 pl-5 text-[13px]">
+          <li className="flex items-center gap-1.5">
+            <Share className="h-4 w-4 text-[var(--ull-primary)]" /> {t("install_ios_step_share")}
+          </li>
+          <li>{t("install_ios_step_add")}</li>
+          <li>{t("install_ios_step_confirm")}</li>
+        </ol>
+      </Dialog>
     </div>
   );
 }

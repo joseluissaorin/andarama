@@ -4,7 +4,8 @@
  *   /viewer/*  - bundle standalone del visor (viewer-ui)
  * Lo consumen Workers Assets (Cloudflare) y el estatico de Node (self-host).
  */
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,6 +23,31 @@ try {
 } catch {
   console.warn("apps/docs sin construir; se omite /docs");
 }
+// Service worker: aquí es donde se saben los nombres con hash de esta
+// compilación, así que es aquí donde se escribe la lista de precarga y la
+// versión. Solo entra el armazón —el JavaScript principal, los estilos, el
+// tipo de letra y los iconos—; los trozos que se cargan bajo demanda se
+// guardan según se usan.
+const studioDir = join(out, "studio");
+const assets = await readdir(join(studioDir, "assets"));
+const shell = [
+  "/studio/",
+  "/studio/index.html",
+  "/studio/manifest.webmanifest",
+  ...assets.filter((f) => /^index-.*\.(js|css)$/.test(f)).map((f) => `/studio/assets/${f}`),
+  // Los tipos de letra van en public/, no empaquetados: sin ellos la app abre
+  // sin red pero con otra letra, que canta muchísimo.
+  ...(await readdir(join(studioDir, "fonts")).catch(() => [])).filter((f) => f.endsWith(".woff2")).map((f) => `/studio/fonts/${f}`),
+  "/studio/icons/icon-192.png",
+  "/studio/icons/icon-512.png",
+  "/studio/icons/apple-touch-icon.png",
+  "/studio/logo-ull360.svg",
+];
+const swPath = join(studioDir, "sw.js");
+const swSource = await readFile(swPath, "utf8");
+const version = createHash("sha256").update(shell.join("|")).digest("hex").slice(0, 12);
+await writeFile(swPath, swSource.replace("__VERSION__", version).replaceAll("__PRECACHE__", JSON.stringify(shell, null, 2)));
+
 // Cabeceras de cache (Workers Assets): entradas estables revalidan, chunks
 // con hash son inmutables. Evita servir bundles antiguos tras un deploy.
 await writeFile(
@@ -38,6 +64,15 @@ await writeFile(
   Cache-Control: public, max-age=31536000, immutable
 /studio/index.html
   Cache-Control: no-cache
+/studio/sw.js
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
+  Service-Worker-Allowed: /studio/
+/studio/manifest.webmanifest
+  Cache-Control: no-cache
+  Content-Type: application/manifest+json; charset=utf-8
+/studio/icons/*
+  Cache-Control: public, max-age=604800
 /docs/_astro/*
   Cache-Control: public, max-age=31536000, immutable
 `,

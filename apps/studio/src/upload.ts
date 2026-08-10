@@ -1,5 +1,6 @@
-import { detectPanorama, tilePanorama } from "@ull360/tiler";
+import { probeImage, tilePanorama, type DecodedSource } from "@ull360/tiler";
 import { api, sha256Hex } from "./api";
+import { Pool, deviceConcurrency, pooled } from "./pool";
 
 /**
  * Pipeline de subida del Studio (§5.5):
@@ -22,6 +23,15 @@ export interface UploadedMedia {
   id: string;
   deduplicated: boolean;
   clientLimited?: boolean;
+}
+
+/**
+ * El porcentaje se redondea aquí, en el origen: enseñar «37.41666666666667 %»
+ * queda descuidado, y arreglarlo en cada sitio donde se pinta es garantía de
+ * olvidarse de uno.
+ */
+function pct(value: number): number {
+  return Math.round(Math.min(100, Math.max(0, value)) * 100) / 100;
 }
 
 export function detectKind(file: File): MediaKind {
@@ -120,18 +130,20 @@ export async function uploadMedia(
   onProgress: (p: UploadProgress) => void,
 ): Promise<UploadedMedia> {
   onProgress({ phase: "hashing", percent: 2 });
-  const hash = await sha256Hex(file);
+  // El resumen y la lectura del EXIF no dependen el uno del otro
+  const [hash, exif] = await Promise.all([sha256Hex(file), file.type === "image/jpeg" ? extractExif(file) : Promise.resolve(null)]);
   let kind = kindOverride ?? detectKind(file);
-  let panoInfo: { isPanorama: boolean; width: number; height: number } | null = null;
-  if (kind === "image" || kind === "panorama") {
+  // Una sola decodificación para todo: detectar el panorama, medirlo, sacar los
+  // derivados y alimentar el troceador.
+  let decoded: DecodedSource | null = null;
+  if (kind === "image" || kind === "panorama" || kind === "floorplan") {
     try {
-      panoInfo = await detectPanorama(file);
-      if (kindOverride == null && panoInfo.isPanorama) kind = "panorama";
+      decoded = await probeImage(file);
+      if (kindOverride == null && decoded.isPanorama) kind = "panorama";
     } catch {
       // no decodificable como imagen: se tratara como fichero
     }
   }
-  const exif = file.type === "image/jpeg" ? await extractExif(file) : null;
 
   const created = await api<{
     deduplicated?: boolean;
@@ -150,97 +162,56 @@ export async function uploadMedia(
     },
   });
   if (created.deduplicated === true) {
+    decoded?.bitmap.close();
     onProgress({ phase: "done", percent: 100 });
     return { id: (created as unknown as { media: { id: string } }).media.id, deduplicated: true };
   }
   const mediaId = created.media.id;
   const upload = created.upload!;
+  const lanes = deviceConcurrency().network;
 
   onProgress({ phase: "uploading", percent: 8 });
   if (upload.kind === "simple") {
     await putWithRetry(upload.url!, file, file.type);
   } else {
-    // Multiparte reanudable
+    // Multiparte reanudable. Las partes van en paralelo: en fila india, un
+    // vídeo de medio giga usaba una sola conexión y tardaba lo que le diera la
+    // gana al servidor, no lo que da la línea.
     const partSize = upload.partSize ?? 10 * 1024 * 1024;
     const totalParts = Math.ceil(file.size / partSize);
     const parts: { partNumber: number; etag: string }[] = [];
+    let subidas = 0;
     for (let batchStart = 1; batchStart <= totalParts; batchStart += 20) {
       const nums = Array.from({ length: Math.min(20, totalParts - batchStart + 1) }, (_, i) => batchStart + i);
       const { urls } = await api<{ urls: Record<number, string> }>(`/media/${mediaId}/parts`, {
         method: "POST",
         body: { uploadId: upload.uploadId, partNumbers: nums },
       });
-      for (const n of nums) {
-        const blob = file.slice((n - 1) * partSize, Math.min(n * partSize, file.size));
-        const etag = await putWithRetry(urls[n]!, blob);
-        parts.push({ partNumber: n, etag: etag?.replaceAll('"', "") ?? `part-${n}` });
-        onProgress({ phase: "uploading", percent: 8 + (parts.length / totalParts) * 40 });
-      }
+      const done = await pooled(
+        nums.map((n) => async () => {
+          const blob = file.slice((n - 1) * partSize, Math.min(n * partSize, file.size));
+          const etag = await putWithRetry(urls[n]!, blob);
+          subidas++;
+          onProgress({ phase: "uploading", percent: pct(8 + (subidas / totalParts) * 40) });
+          return { partNumber: n, etag: etag?.replaceAll('"', "") ?? `part-${n}` };
+        }),
+        lanes,
+      );
+      parts.push(...done);
     }
+    parts.sort((a, b) => a.partNumber - b.partNumber);
     await api(`/media/${mediaId}/complete-multipart`, { method: "POST", body: { uploadId: upload.uploadId, parts } });
   }
 
   // Tiling en navegador para panoramas (§3.3)
   let clientLimited = false;
   if (kind === "panorama") {
-    onProgress({ phase: "tiling", percent: 50 });
-    const pendingUploads: Promise<unknown>[] = [];
-    let urlBatch: { key: string; blob: Blob }[] = [];
-    const flushBatch = async (): Promise<void> => {
-      if (urlBatch.length === 0) return;
-      const batch = urlBatch;
-      urlBatch = [];
-      const { urls } = await api<{ urls: Record<string, string> }>(`/media/${mediaId}/derivative-uploads`, {
-        method: "POST",
-        body: { keys: batch.map((b) => b.key) },
-      });
-      await Promise.all(
-        batch.map(async ({ key, blob }) => {
-          const url = urls[key];
-          if (url != null && url !== "") await putWithRetry(url, blob);
-        }),
-      );
-    };
-    const result = await tilePanorama(
-      file,
-      {},
-      {
-        onTile: (tile) => {
-          const key = `tiles/${mediaId}/${tile.level}/${tile.face}/${tile.y}/${tile.x}.${tile.blob.type === "image/jpeg" ? "jpg" : tile.blob.type.split("/")[1]}`;
-          urlBatch.push({ key, blob: tile.blob });
-          if (urlBatch.length >= 100) {
-            const p = flushBatch();
-            pendingUploads.push(p);
-            return p;
-          }
-          return undefined;
-        },
-        onProgress: (done, total) => {
-          onProgress({ phase: "tiling", percent: 50 + (done / total) * 40, detail: `${done}/${total}` });
-        },
-      },
-    );
+    const result = await tileAndUpload(mediaId, file, decoded, lanes, onProgress);
+    decoded = null;
     clientLimited = result.clientLimited;
-    await flushBatch();
-    await Promise.all(pendingUploads);
-    // Miniatura + OG
-    const { urls } = await api<{ urls: Record<string, string> }>(`/media/${mediaId}/derivative-uploads`, {
-      method: "POST",
-      body: { keys: [`derived/${mediaId}/thumb.jpg`, `derived/${mediaId}/og.jpg`] },
-    });
-    await putWithRetry(urls[`derived/${mediaId}/thumb.jpg`]!, result.thumbnail, "image/jpeg");
-    await putWithRetry(urls[`derived/${mediaId}/og.jpg`]!, result.ogImage, "image/jpeg");
-    onProgress({ phase: "finalizing", percent: 92 });
-    await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "tiles", manifest: result.manifest } });
-    await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "thumb", manifest: {} } });
-    await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "og", manifest: {} } });
     await api(`/media/${mediaId}/complete`, {
       method: "POST",
-      body: {
-        width: result.sourceWidth,
-        height: result.sourceHeight,
-        exif: exif ?? undefined,
-      },
+      body: { width: result.sourceWidth, height: result.sourceHeight, exif: exif ?? undefined },
     });
     if (clientLimited) {
       // Resolucion completa via contenedor de procesado
@@ -248,19 +219,12 @@ export async function uploadMedia(
     }
   } else {
     onProgress({ phase: "finalizing", percent: 92 });
-    let width: number | undefined;
-    let height: number | undefined;
+    // Las medidas salen de la decodificación que ya se hizo al abrirla
+    const width: number | undefined = decoded?.width;
+    const height: number | undefined = decoded?.height;
     let duration: number | undefined;
-    if (kind === "image" || kind === "floorplan") {
-      try {
-        const bmp = await createImageBitmap(file);
-        width = bmp.width;
-        height = bmp.height;
-        bmp.close();
-      } catch {
-        // no decodificable
-      }
-    }
+    decoded?.bitmap.close();
+    decoded = null;
     if (kind === "video" || kind === "audio") {
       duration = await mediaDuration(file).catch(() => undefined);
     }
@@ -284,4 +248,96 @@ function mediaDuration(file: File): Promise<number> {
     el.onerror = () => reject(new Error("No se pudo leer la duración"));
     el.src = URL.createObjectURL(file);
   });
+}
+
+/**
+ * Trocea el panorama y sube las teselas, la miniatura y la imagen social, y
+ * registra el manifiesto. Lo usan tanto la subida inicial como la regeneración
+ * de un medio que ya está en la biblioteca.
+ */
+async function tileAndUpload(
+  mediaId: string,
+  file: Blob,
+  decoded: DecodedSource | null,
+  lanes: number,
+  onProgress: (p: UploadProgress) => void,
+): Promise<{ clientLimited: boolean; sourceWidth: number; sourceHeight: number }> {
+  onProgress({ phase: "tiling", percent: 50 });
+  // Las teselas se suben mientras se generan, pero con la mano puesta: un
+  // puñado de peticiones a la vez y como mucho dos lotes esperando. Antes se
+  // soltaban de cien en cien y se acumulaban en memoria sin freno.
+  const pool = new Pool(2);
+  let urlBatch: { key: string; blob: Blob }[] = [];
+  const flushBatch = async (): Promise<void> => {
+    if (urlBatch.length === 0) return;
+    const batch = urlBatch;
+    urlBatch = [];
+    await pool.push(async () => {
+      const { urls } = await api<{ urls: Record<string, string> }>(`/media/${mediaId}/derivative-uploads`, {
+        method: "POST",
+        body: { keys: batch.map((b) => b.key) },
+      });
+      await pooled(
+        batch.map(({ key, blob }) => async () => {
+          const url = urls[key];
+          if (url != null && url !== "") await putWithRetry(url, blob);
+        }),
+        lanes,
+      );
+    });
+  };
+  const result = await tilePanorama(
+    file,
+    { decoded: decoded ?? undefined },
+    {
+      onTile: (tile) => {
+        const key = `tiles/${mediaId}/${tile.level}/${tile.face}/${tile.y}/${tile.x}.${tile.blob.type === "image/jpeg" ? "jpg" : tile.blob.type.split("/")[1]}`;
+        urlBatch.push({ key, blob: tile.blob });
+        // Lotes de 60: bastante para amortizar la petición de URLs y poco para
+        // no tener medio panorama en memoria.
+        return urlBatch.length >= 60 ? flushBatch() : undefined;
+      },
+      onProgress: (done, total) => {
+        onProgress({ phase: "tiling", percent: pct(50 + (done / total) * 40), detail: `${done}/${total}` });
+      },
+    },
+  );
+  await flushBatch();
+  await pool.drain();
+  const { urls } = await api<{ urls: Record<string, string> }>(`/media/${mediaId}/derivative-uploads`, {
+    method: "POST",
+    body: { keys: [`derived/${mediaId}/thumb.jpg`, `derived/${mediaId}/og.jpg`] },
+  });
+  await putWithRetry(urls[`derived/${mediaId}/thumb.jpg`]!, result.thumbnail, "image/jpeg");
+  await putWithRetry(urls[`derived/${mediaId}/og.jpg`]!, result.ogImage, "image/jpeg");
+  onProgress({ phase: "finalizing", percent: 92 });
+  await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "tiles", manifest: result.manifest } });
+  await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "thumb", manifest: {} } });
+  await api(`/media/${mediaId}/derivatives`, { method: "POST", body: { kind: "og", manifest: {} } });
+  return { clientLimited: result.clientLimited, sourceWidth: result.sourceWidth, sourceHeight: result.sourceHeight };
+}
+
+/**
+ * Vuelve a trocear un panorama que ya está subido, a partir del fichero
+ * original guardado.
+ *
+ * Hace falta porque una tarjeta gráfica que se queda sin memoria produce
+ * teselas **negras** sin dar ningún error: la foto se ve en la biblioteca —la
+ * miniatura se hace aparte— y en el visor no se ve nada. Con esto se arregla
+ * sin volver a subir nada.
+ */
+export async function retileMedia(mediaId: string, onProgress: (p: UploadProgress) => void): Promise<{ clientLimited: boolean }> {
+  onProgress({ phase: "hashing", percent: 2 });
+  const res = await fetch(`/api/v1/media/${mediaId}/file`);
+  if (!res.ok) throw new Error("No se pudo leer el fichero original");
+  const blob = await res.blob();
+  onProgress({ phase: "tiling", percent: 20 });
+  const decoded = await probeImage(blob);
+  const result = await tileAndUpload(mediaId, blob, decoded, deviceConcurrency().network, onProgress);
+  await api(`/media/${mediaId}/complete`, {
+    method: "POST",
+    body: { width: result.sourceWidth, height: result.sourceHeight },
+  });
+  onProgress({ phase: "done", percent: 100 });
+  return { clientLimited: result.clientLimited };
 }

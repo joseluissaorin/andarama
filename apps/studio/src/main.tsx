@@ -11,6 +11,7 @@ import {
 import { ToastProvider } from "@ull360/ui";
 import "./index.css";
 import { Shell } from "./components/Shell";
+import { setupPwa } from "./pwa";
 import { AuthPage } from "./pages/AuthPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { OrgDefaultsPage } from "./pages/OrgDefaultsPage";
@@ -113,6 +114,8 @@ declare module "@tanstack/react-router" {
     router: typeof router;
   }
 }
+
+setupPwa();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

@@ -14,8 +14,11 @@ const PASSWORD = "password-e2e-123";
 async function uploadSyntheticPano(page: Page, name: string, label: string, hue: number): Promise<void> {
   await page.evaluate(
     async ({ name, label, hue }) => {
-      const W = 2048;
-      const H = 1024;
+      // A propósito **no** son potencia de dos: con 2048x1024 no se veía que
+      // el troceador dejaba todas las teselas en negro para cualquier foto de
+      // una cámara real, que nunca mide una potencia de dos.
+      const W = 3000;
+      const H = 1500;
       const c = document.createElement("canvas");
       c.width = W;
       c.height = H;
@@ -72,6 +75,37 @@ test("subida de panorama con tiling en el navegador", async ({ page }) => {
       { timeout: 60_000 },
     )
     .toBe(true);
+});
+
+test("las teselas del panorama tienen imagen, no salen en negro", async ({ page }) => {
+  await login(page);
+  const me = (await (await page.request.get("/api/v1/me")).json()) as { orgs: { id: string }[] };
+  const items = (await (await page.request.get(`/api/v1/media?org=${me.orgs[0]!.id}`)).json()) as {
+    id: string;
+    kind: string;
+    derivatives: { kind: string; manifest: { extension?: string; faceSize?: number } }[];
+  }[];
+  const pano = items.find((m) => m.kind === "panorama")!;
+  const tiles = pano.derivatives.find((d) => d.kind === "tiles")!;
+  await page.goto("/studio/");
+  const analisis = await page.evaluate(
+    async ({ id, ext }) => {
+      const res = await fetch(`/api/v1/media/${id}/tiles/0/f/0/0.${ext}`);
+      if (!res.ok) return { status: res.status, colores: 0 };
+      const bmp = await createImageBitmap(await res.blob());
+      const c = new OffscreenCanvas(bmp.width, bmp.height);
+      c.getContext("2d")!.drawImage(bmp, 0, 0);
+      const d = c.getContext("2d")!.getImageData(0, 0, bmp.width, bmp.height).data;
+      const colores = new Set<string>();
+      for (let i = 0; i < d.length; i += 4) colores.add(`${d[i]},${d[i + 1]},${d[i + 2]}`);
+      bmp.close();
+      return { status: res.status, colores: colores.size };
+    },
+    { id: pano.id, ext: tiles.manifest.extension ?? "webp" },
+  );
+  expect(analisis.status).toBe(200);
+  // Una tesela real tiene cientos de colores; una rota, uno solo (negro)
+  expect(analisis.colores).toBeGreaterThan(20);
 });
 
 test("crear tour, escena, hotspot y publicar", async ({ page }) => {
@@ -243,7 +277,20 @@ async function csrf(page: Page): Promise<string> {
   return cookies.find((c) => c.name === "u3c")?.value ?? "";
 }
 
+/**
+ * Sesion compartida entre pruebas. Cada prueba estrena contexto, asi que
+ * autenticarse de verdad en todas acababa chocando con el limite de intentos
+ * de login (ocho por cuarto de hora), que es una proteccion deseable: se
+ * reutilizan las cookies de la primera.
+ */
+let sessionCookies: Awaited<ReturnType<Page["context"]>["cookies"]> extends Promise<infer T> ? T : never = [] as never;
+
 async function login(page: Page): Promise<void> {
+  if (sessionCookies.length > 0) {
+    // Solo las cookies: navegar aqui se pisaba con la navegacion de la prueba
+    await page.context().addCookies(sessionCookies);
+    return;
+  }
   await page.goto("/studio/login");
   // Si ya hay sesion, redirige solo
   if (page.url().endsWith("/studio/")) return;
@@ -251,4 +298,5 @@ async function login(page: Page): Promise<void> {
   await page.fill("#password", PASSWORD);
   await page.click('button[type="submit"]');
   await page.waitForURL("**/studio/");
+  sessionCookies = await page.context().cookies();
 }

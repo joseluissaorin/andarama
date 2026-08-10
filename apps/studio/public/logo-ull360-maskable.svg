@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ULL360">
+  <!--
+    Variante para iconos enmascarables (Android recorta el icono con la forma
+    que tenga el sistema). Aquí el fondo llega hasta el borde y el símbolo va
+    reducido dentro de la zona segura: el rectángulo redondeado de la marca
+    normal, metido dentro de un círculo recortado, se leía como una pegatina
+    sobre otra pegatina.
+  -->
+  <defs>
+    <linearGradient id="u3-bgm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6d0aa4" />
+      <stop offset="1" stop-color="#450569" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" fill="url(#u3-bgm)" />
+  <g transform="translate(32 32) scale(0.68) translate(-32 -32)">
+    <g fill="none" stroke="#ffffff" stroke-linecap="round">
+      <circle cx="32" cy="32" r="16.5" stroke-width="3.4" />
+      <ellipse cx="32" cy="32" rx="16.5" ry="6.6" stroke-width="2.6" opacity=".92" />
+      <ellipse cx="32" cy="32" rx="6.6" ry="16.5" stroke-width="2.2" opacity=".55" />
+    </g>
+    <circle cx="44.7" cy="27.4" r="4.3" fill="#ffd166" stroke="#450569" stroke-width="1.6" />
+  </g>
+</svg>
