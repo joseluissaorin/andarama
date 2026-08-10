@@ -16,6 +16,10 @@ escena viene, qué tipo es, borrar— y tres pestañas: **Contenido**, **Aspecto
 **Condiciones**. Lo que se busca casi siempre está en la primera, sin
 desplazarse. El panel se puede **ensanchar** arrastrando su borde izquierdo.
 
+La lista de hotspots de la escena marca los que están **sin colocar** (creados
+desde el grafo y aún en su posición provisional) y resalta en el panorama aquel
+sobre el que pasas el ratón.
+
 **Añadir hotspot** abre una paleta buscable: se escribe lo que se quiere
 («texto», «puerta», «examen», «3D») y aparece el tipo con una línea explicando
 qué hace. Después se pulsa en el panorama para colocarlo.

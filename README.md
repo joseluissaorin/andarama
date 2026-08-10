@@ -16,9 +16,16 @@ ULL360 se compone de tres piezas:
 
 La trazabilidad completa de la especificación a la implementación está en [REQUIREMENTS.md](REQUIREMENTS.md).
 
+## El editor de un vistazo
+
+- **Escenas**: panel de propiedades por pestañas (contenido, aspecto, condiciones), redimensionable, con paleta buscable para añadir cualquiera de los 17 tipos de hotspot. Arrastrar una escena sobre el panorama crea el paso hacia ella.
+- **Grafo**: cada flecha **es** un hotspot de navegación, no un dato paralelo. Se conecta arrastrando desde el borde del nodo, con la vuelta creada de una vez, y hay un modo aparte para los recorridos guiados del autopilot.
+- **Biblioteca de medios**: el ratón sobre un panorama lo enseña como *little planet* sin pedir nada a la red, y el doble clic lo abre en 360 para comprobarlo antes de convertirlo en escena. Los panoramas —o una carpeta entera— se arrastran al editor.
+- **Ajustes**: valores por defecto heredados de la organización, guía del CSS propio con prompt para IA, control de qué se acciona en gafas y vista previa de la tarjeta que se ve al compartir el enlace.
+
 ## Realidad virtual
 
-Todos los tours se ven con gafas (Meta Quest, Pico, Vive, Vision Pro y cualquier equipo con WebXR) sin instalar nada: se abre la dirección del tour en el navegador de las gafas y se pulsa **Modo VR**. Las manos aparecen dentro del tour con sus 25 articulaciones y accionan los hotspots con la pinza de pulgar e índice; con mandos se apunta con el rayo y se acciona con el gatillo. Los 17 tipos de hotspot son accesibles en la sesión inmersiva —los que no se pueden componer dentro de las gafas (PDF, formularios, web incrustada, modelos 3D) se abren automáticamente al salir—. Sin WebXR el mismo botón entra en modo cardboard (pantalla partida, giroscopio y selección por mirada).
+Todos los tours se ven con gafas (Meta Quest, Pico, Vive, Vision Pro y cualquier equipo con WebXR) sin instalar nada: se abre la dirección del tour en el navegador de las gafas y se pulsa **Modo VR**. Las manos aparecen dentro del tour con sus 25 articulaciones y accionan los hotspots con la pinza de pulgar e índice; con mandos se apunta con el rayo y se acciona con el gatillo. Los 17 tipos de hotspot son accesibles en la sesión inmersiva —los que no se pueden componer dentro de las gafas (PDF, formularios, web incrustada, modelos 3D) se abren automáticamente al salir—. Sin WebXR el mismo botón entra en **modo cartón**: pantalla partida, orientación por cuaterniones con compensación del giro de pantalla, selección por mirada con anillo de permanencia y activación inmediata al pulsar el botón físico de las gafas. En el visor plano con giroscopio hay el mismo retículo, que enseña el nombre de lo enfocado y se convierte en cursor cuando hay un panel abierto para poder cerrarlo.
 
 WebXR exige un contexto seguro: el tour debe servirse por `https://` (o `localhost`). Los paquetes exportados incluyen la realidad virtual, pero solo entran en modo inmersivo si se suben a un alojamiento con HTTPS. Detalles en la [guía de realidad virtual](apps/docs/src/content/docs/usuario/realidad-virtual.md).
 

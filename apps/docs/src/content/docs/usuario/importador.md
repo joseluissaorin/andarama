@@ -23,7 +23,7 @@ Este paso deja el plano del tour terminado antes incluso de crear las escenas. S
 
 ## Paso 3 — Escenas
 
-Un resumen muestra las escenas que se van a crear, en el orden de la lista. La opción **Conectar en secuencia** crea automáticamente flechas de navegación de ida y de vuelta entre escenas consecutivas: el grafo queda dibujado y el tour es recorrible desde el primer momento.
+Un resumen muestra las escenas que se van a crear, en el orden de la lista. La opción **Conectar en secuencia** crea hotspots de navegación de ida y de vuelta entre escenas consecutivas: son marcadores de verdad, visibles y pulsables en el panorama, y en el grafo aparecen como las aristas. Nacen en una posición provisional y marcados «sin colocar», así que conviene abrirlos y arrastrarlos a su sitio.
 
 Pulsa **Crear N escenas** y después **Abrir en el editor** para ajustar vistas iniciales, títulos y hotspots.
 

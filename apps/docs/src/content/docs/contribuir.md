@@ -13,7 +13,14 @@ pnpm build:packages
 pnpm dev:node        # self-host en http://localhost:8788
 pnpm dev:studio      # Studio con recarga en http://localhost:5173
 pnpm test            # unitarios (Vitest)
-pnpm test:e2e        # E2E (Playwright)
+pnpm test:e2e        # E2E (Playwright, incluye una sesión WebXR simulada)
+pnpm lint            # ESLint, sin avisos permitidos
+```
+
+Para comprobar que un paquete exportado funciona en un alojamiento cualquiera:
+
+```bash
+node scripts/verify-export.mjs   # exporta, descomprime y lo sirve en un subdirectorio
 ```
 
 ## Reglas de arquitectura
@@ -22,6 +29,8 @@ pnpm test:e2e        # E2E (Playwright)
 - Cualquier cambio del formato `tour.json` requiere nueva versión del esquema + migrador en `packages/schema`.
 - El visor no depende de frameworks de UI; la skin usa Web Components.
 - Iconografía exclusivamente SVG (lucide); sin emojis en la interfaz.
+- Todo lo que lee una persona va en español con sus tildes y sus eñes: interfaz, documentación, mensajes de error y contenido de ejemplo. Los identificadores y las claves JSON, no.
+- La geometría y la lógica que no necesita navegador se extrae a funciones puras y se prueba: la matemática de la esfera, del retículo, de la orientación y del grafo vive fuera de la vista por ese motivo.
 
 ## Traducciones
 

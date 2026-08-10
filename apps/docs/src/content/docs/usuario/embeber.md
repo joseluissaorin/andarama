@@ -64,3 +64,18 @@ window.addEventListener("message", (e) => {
 ## Restricción de dominios
 
 Si el tour se publica con visibilidad **Dominios**, solo podrá embeberse desde los dominios de la lista (se aplica con `frame-ancestors` y comprobación de `Referer`).
+
+## Pilotar el visor ya montado
+
+La página del tour deja la instancia accesible en `window.ULL360.instance`, de
+modo que un integrador puede actuar sobre el visor sin volver a montarlo:
+
+```js
+const { viewer } = window.ULL360.instance;
+viewer.setView({ yaw: 1.2, pitch: 0 });
+await viewer.goTo("sala-2");
+viewer.vrState();   // { active, mode, hands, openHotspotId, hotspots }
+```
+
+Desde fuera de un iframe usa `postMessage` (arriba); `window.ULL360` solo está
+disponible dentro del documento del visor.

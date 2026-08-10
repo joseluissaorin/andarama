@@ -3,7 +3,7 @@ title: El grafo de escenas
 description: Conectar escenas con un editor de nodos rápido, con miniaturas, puertos y auto-orden.
 ---
 
-La pestaña **Grafo** muestra el tour como un editor de nodos: cada escena es una tarjeta con su miniatura y las conexiones son curvas entre puertos. Las flechas discontinuas son las que definen los hotspots de navegación dentro de las escenas; las continuas son conexiones explícitas del grafo.
+La pestaña **Grafo** muestra el tour como un editor de nodos: cada escena es una tarjeta con su miniatura y cada flecha es un paso del recorrido. Las flechas discontinuas son pasos que aún están **sin colocar** en el panorama.
 
 ## Una arista es un hotspot de navegación
 
@@ -63,9 +63,14 @@ El grafo señala lo que está roto, que es donde más ayuda:
 |---|---|
 | Mover un nodo | Arrastrarlo (con imán a la rejilla) |
 | Mover varios | Selección con recuadro (arrastrar en el vacío) o Mayús+clic, y arrastrar |
-| Conectar dos escenas | Arrastrar desde el **puerto derecho** (violeta) de una escena hasta otra |
-| Editar una conexión | Clic sobre la curva → inspector lateral (modo de entrada, eliminar) |
-| Eliminar una conexión | Supr con la conexión seleccionada |
+| Conectar dos escenas | Arrastrar desde el **borde derecho** de una escena hasta otra. Vale todo el borde, no solo el punto violeta: mientras arrastras, el destino candidato se ilumina y el hilo se pega a su puerto |
+| Cancelar la conexión | **Esc** durante el arrastre |
+| Crear también la vuelta | Casilla de la barra superior, activada por defecto |
+| Editar un paso | Clic sobre la flecha → inspector lateral (etiqueta, destino, orientación de entrada, transición) |
+| Colocarlo en el panorama | Botón **Colocar en el panorama** del inspector, o doble clic en la flecha |
+| Eliminar un paso | Supr con la flecha seleccionada (borra su hotspot) |
+| Añadir escenas | Arrastrar panoramas de la biblioteca sobre el lienzo |
+| Cambiar de material | Selector **Escenas / Autopilot** de la barra superior |
 | Abrir una escena | Doble clic en el nodo |
 | Menú contextual | Clic derecho en un nodo (abrir, marcar como inicio) |
 | Zoom | Rueda del ratón (anclado al cursor) |
@@ -76,6 +81,6 @@ El grafo señala lo que está roto, que es donde más ayuda:
 ## Detalles útiles
 
 - El **minimapa** de la esquina es interactivo: haz clic o arrastra sobre él para moverte por un grafo grande.
-- El aviso de **escenas sin conexión** de la barra superior detecta escenas inalcanzables desde el inicio; ordénalas y conéctalas para que ningún visitante se quede fuera.
-- Las flechas definidas por hotspots de navegación no se editan aquí: selecciónalas y usa **Editar el hotspot** para saltar directamente a él en la pestaña Escenas.
-- El **modo de entrada** de cada conexión controla la orientación al llegar: fija, relativa al origen o mirando hacia atrás.
+- El contador de **avisos** de la barra superior resume lo que está roto: pasos sin destino, destinos borrados, pasos sin vuelta, marcadores sin colocar y escenas inalcanzables. Pasa el ratón por encima para verlos.
+- El **modo de entrada** de cada paso controla la orientación al llegar: fija, relativa al origen o mirando hacia atrás. «Mirar hacia atrás» necesita que exista el paso de vuelta, que es justo lo que crea la casilla de la barra.
+- La disposición de los nodos se guarda con el tour, así que la ves igual desde cualquier equipo.

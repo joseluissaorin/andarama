@@ -41,7 +41,9 @@ Grafo dirigido N:M derivado por completo de los hotspots de navegación —una a
 
 ## §2.6 Controles
 
-Ratón (drag/inercia/rueda/doble clic), táctil (pan/pinch), teclado completo (flechas, +/-, WASD, Tab/Enter/Esc nativos por ser botones DOM), gamepad opcional (`startGamepadLoop`), giroscopio con permiso iOS combinable con arrastre (`engine/gyro.ts`), sensibilidad/inercia/inversión configurables (`controls` en tour.json), cursores e indicadores hover/pulso. **C**
+Ratón (drag/inercia/rueda/doble clic), táctil (pan/pinch), teclado completo (flechas, +/-, WASD, Tab/Enter/Esc nativos por ser botones DOM), gamepad opcional (`startGamepadLoop`), giroscopio con permiso iOS combinable con arrastre (`engine/gyro.ts`), sensibilidad/inercia/inversión configurables (`controls` en tour.json), cursores e indicadores hover/pulso.
+
+**Sin manos**: con giroscopio o en modo cartón aparece un retículo con anillo de permanencia configurable (`vr.dwellSeconds`), margen de cabeza de 6°, rótulo de lo enfocado y guarda para no repetir lo ya accionado; con un panel abierto pasa a cursor arrastrado por la cabeza para poder alcanzar el aspa. `viewer-ui/gaze.ts`, `engine/vr.ts`. **C**
 
 ## §2.7 VR / WebXR
 
@@ -51,7 +53,7 @@ Sesión `immersive-vr` con render estéreo propio (una pasada por vista, viewpor
 
 **Interacción**: los 17 tipos de hotspot aparecen en VR (los polígonos anclados en su primer vértice) como pictogramas con etiqueta; rayo que se acorta al impacto y se tiñe con el color de marca. Paneles inmersivos dibujados con Canvas 2D y subidos como textura (texto con desplazamiento, imagen, galería, vídeo con transporte, audio con transcripción, quiz puntuable, comparador con divisor arrastrable); PDF, web, formulario, vídeo embebido y modelo 3D muestran tarjeta y se abren al salir de la sesión.
 
-**Respaldo**: cardboard SBS + giroscopio sin WebXR, selección por mirada con permanencia de 1,5 s y botón de salida accesible. Aviso explícito cuando falta HTTPS (WebXR exige contexto seguro). Los exports conservan la VR: el renderer es autocontenido, sin DOM ni dependencias, y el paquete incluye `.htaccess` y `LEEME.md` con las condiciones de alojamiento.
+**Respaldo (modo cartón)**: SBS + orientación por cuaterniones con compensación del ángulo de pantalla y permiso de iOS, aviso de girar el móvil en vertical, rumbo fijado al entrar, selección por mirada con permanencia configurable y activación inmediata al tocar la pantalla (el botón físico de unas gafas de cartón), y botón de salida accesible. Aviso explícito cuando falta HTTPS (WebXR exige contexto seguro). Los exports conservan la VR: el renderer es autocontenido, sin DOM ni dependencias, y el paquete incluye `.htaccess` y `LEEME.md` con las condiciones de alojamiento.
 
 `viewer/engine/vr.ts`, `viewer/engine/xr/{math,input,render,panel}.ts`. Pruebas: `xr.test.ts` (8 unitarias) y `tooling/e2e/webxr.spec.ts` (sesión WebXR simulada en navegador real: entrada en sesión, 25 articulaciones, pinza que abre panel, salida). **C**
 
@@ -61,7 +63,7 @@ Todos implementados con posición, icono (biblioteca lucide + SVG propio saneado
 
 ## §2.9 Interfaz del visor
 
-Todos los componentes activables: barra de título, menú de escenas (categorías+búsqueda+miniaturas), carrusel, brújula, indicador de carga, zoom, giroscopio, VR, pantalla completa, compartir, silencio, ayuda, selector de idioma, logotipo con enlace; plano de planta con radar multi-planta y mapa Leaflet/OSM; pantallas de bienvenida (con instrucciones) y final con CTA; temas claro/oscuro/auto/ULL + color primario + tipografía + radios + CSS propio saneado; marca de agua y parche de nadir; responsive con safe areas. `viewer-ui/skin.ts`, `components.ts`, `styles.ts`. **C**
+Dique de controles **plegable** (en móvil arranca plegado, se recuerda) y miniaturas conmutables desde el propio visor además de por configuración. Todos los componentes activables: barra de título, menú de escenas (categorías+búsqueda+miniaturas), carrusel, brújula, indicador de carga, zoom, giroscopio, VR, pantalla completa, compartir, silencio, ayuda, selector de idioma, logotipo con enlace; plano de planta con radar multi-planta y mapa Leaflet/OSM; pantallas de bienvenida (con instrucciones) y final con CTA; temas claro/oscuro/auto/ULL + color primario + tipografía + radios + CSS propio saneado; marca de agua y parche de nadir; responsive con safe areas. `viewer-ui/skin.ts`, `components.ts`, `styles.ts`. **C**
 
 ## §2.10 Multiidioma de contenido
 
@@ -73,7 +75,7 @@ Teclado completo con focus visible y trampa de foco en diálogos, ARIA + anuncio
 
 ## §2.12 Compartición, SEO y embebido
 
-`/t/{slug}` con deep links, Open Graph/Twitter Card con imagen OG del pipeline, embed iframe con generador en el Studio + **API postMessage** (goTo/setView/setLang/getState + eventos), QR por tour (Studio, qrcode), sitemap.xml + robots.txt + HTML accesible pre-renderizado. **C**
+`/t/{slug}` con deep links, **bloque `social` completo y traducible** (título, texto, imagen con alternativo, nombre del sitio, `og:type`, `og:locale`, `og:url`, canonical, tarjeta de X con cuenta y autor, `noindex`) editable en el Studio con vista previa de la tarjeta y aplicado igual al tour publicado y al paquete exportado; embed iframe con generador en el Studio + **API postMessage** (goTo/setView/setLang/getState + eventos) y acceso a la instancia montada en `window.ULL360.instance`; QR por tour (Studio, qrcode), sitemap.xml + robots.txt + HTML accesible pre-renderizado. **C**
 
 ## §2.13 Protección de acceso
 
@@ -93,8 +95,8 @@ Variables de estado evaluables en condiciones y acciones, quizzes con puntuació
 
 ## §3.1-3.7 Studio
 
-- **Proyectos**: orgs->proyectos->escenas, carpetas y etiquetas, roles org (admin/editor/colaborador/lector) + compartición por proyecto, duplicar, plantillas, papelera 30 días, cuotas con panel de uso. **C** (compartición por grupo: vía rol de organización; la directa es por usuario)
-- **Biblioteca**: carpetas/búsqueda/filtros/detalles, drag&drop múltiple, multiparte reanudable directa (S3 prefirmado o pass-through streaming), dedup sha256, detección GPano/aspecto, EXIF con GPS, magic bytes, límites configurables, saneado SVG. **C**
+- **Proyectos**: orgs->proyectos->escenas, carpetas y etiquetas, roles org (admin/editor/colaborador/lector) + compartición por proyecto, duplicar, plantillas (heredan la configuración y exigen acceso a la plantilla), papelera 30 días, cuotas con panel de uso, y **valores por defecto en cascada** instancia→organización→usuario→plantilla→tour con propagación a los borradores que no personalizaron la clave (`api/lib/defaults.ts`). **C** (compartición por grupo: vía rol de organización; la directa es por usuario)
+- **Biblioteca**: **previsualización 360 al vuelo** (little planet al pasar el ratón, calculado con Canvas 2D desde el preview del manifiesto y sin red; doble clic abre el panorama completo servido por `GET /media/:id/tiles/*`) y **arrastre al editor** de un medio, una selección o una carpeta entera; carpetas/búsqueda/filtros/detalles, drag&drop múltiple, multiparte reanudable directa (S3 prefirmado o pass-through streaming), dedup sha256, detección GPano/aspecto, EXIF con GPS, magic bytes, límites configurables, saneado SVG. **C**
 - **Pipeline**: tiling en navegador (WebWorker+GPU) con cola IndexedDB reanudable, ruta servidor (CLI `ull360-tile` + cola jobs), preview/miniatura/OG, nivelado/yaw offset/nadir/exposición-saturación como opciones no destructivas del tiler, transcodificación Stream/ffmpeg/validación. **C**
 - **Edición**: vista previa = visor real en modo edición (WYSIWYG), colocación por clic y polígonos vértice a vértice, paneles por tipo, "usar vista actual" (vista inicial y entradas), editor de grafo canvas con minimapa/huérfanas/arrastrar-conectar, editor de plano (subir, arrastrar escenas, norte del radar, multi-planta), timeline de video, traducciones lado a lado con completitud + XLIFF/CSV. **C**
 - **Productividad**: undo/redo ilimitado por sesión, autosave con indicador, historial de versiones (auto al publicar + manuales) con diff por escena/hotspot y restauración, presencia + bloqueo blando por escena (DO/ws), comentarios anclados con hilos y resolución, atajos + paleta Cmd+K, Studio es/en. **C**
@@ -131,6 +133,11 @@ EUPL-1.2 (texto oficial en `LICENSE`), titularidad ULL, medios CC BY 4.0, `AUTHO
 |---|---|---|
 | Editor | Modo edición real del visor (sin chrome del tour), clic en hotspot = editar (nunca navegar), arrastre de marcadores, yaw/pitch en grados, iconos por hotspot, editores ampliables, esquinas de vídeo proyectado por clics | `packages/viewer-ui/src/skin.ts`, `packages/viewer/src/TourViewer.ts`, `apps/studio/src/editor/ScenesView.tsx`, `PropertiesPanel.tsx` |
 | Grafo | Editor de nodos estilo Blender: miniaturas, puertos, bezier fantasma, marquee, teclado (Supr/F/Esc), doble clic, menú contextual, auto-orden, minimapa interactivo | `apps/studio/src/editor/GraphView.tsx` |
+| Grafo (unificación) | Una arista **es** un hotspot de navegación: se elimina la tabla `connections`, arrastrar crea el paso y su vuelta en posición provisional marcada, el inspector edita el hotspot, modos Escenas/Autopilot y avisos de lo roto. Conexión desde todo el borde del nodo, destino resaltado, Esc para cancelar y hilo dibujado sin repintar React | `apps/studio/src/editor/graphModel.ts`, `GraphView.tsx`, migración `0004` |
+| Panel de propiedades | Cabecera fija con migas y tipo, pestañas Contenido/Aspecto/Condiciones, reinicio del desplazamiento al cambiar de marcador, panel redimensionable persistido, paleta buscable de los 17 tipos con descripciones y búsqueda sin tildes, deslizador de tamaño con muestra y herencia del tamaño del tour | `apps/studio/src/editor/PropertiesPanel.tsx`, `HotspotPalette.tsx`, `hotspotCatalog.ts` |
+| Biblioteca | Little planet al pasar el ratón (Canvas 2D, sin red, precalculado en tiempo ocioso), visor 360 al doble clic sobre los tiles del propio medio, carpetas y arrastre de medios al grafo o a la lista de escenas | `apps/studio/src/media/littlePlanet.ts`, `PanoPreview.tsx`, `drag.ts`, `apps/api/src/routes/media.ts` |
+| Ajustes | Cascada instancia→organización→usuario→plantilla→tour con propagación a borradores, nombres legibles de los componentes de interfaz, guía del CSS propio con prompt para IA, configuración de qué se acciona en gafas y metadatos de compartición con vista previa | `apps/api/src/lib/defaults.ts`, `apps/studio/src/pages/OrgDefaultsPage.tsx`, `editor/CssGuide.tsx`, `TourSettingsView.tsx`, migración `0005` |
+| Sin manos | Retículo de mirada con anillo de permanencia, margen de cabeza, rótulo de lo enfocado, guarda anti-repetición y cursor arrastrado por la cabeza con panel abierto; en cartón, orientación por cuaterniones con compensación de pantalla, permiso de iOS, aviso de girar el móvil y activación al tocar la pantalla | `packages/viewer-ui/src/gaze.ts`, `packages/viewer/src/engine/xr/orientation.ts`, `engine/vr.ts` |
 | Ingesta | Importador de cámara 360 en 3 pasos (lote+renombrado por patrón+orden, colocación en plano, creación de escenas conectadas); biblioteca por tour; renombrado y borrado seguro de medios | `apps/studio/src/pages/ImportWizard.tsx`, `MediaPage.tsx`, `apps/api/src/routes/media.ts`, migración `0002` |
 | Administración | Alta de usuarios y organizaciones, despublicación, webhooks con conmutador y prueba firmada, dashboard (almacenamiento por org, publicaciones, actividad), errores visibles | `apps/studio/src/pages/AdminPage.tsx`, `apps/api/src/routes/admin.ts` |
 | Motor | Proyecciones correctas por cubemap/entorno 360 (little planet, ojo de pez, Panini, arquitectónica) con retorno intacto; anclaje de hotspots reescrito (sin desbordes de etiqueta, visibilidad condicional funcional); brújula centrada con norte real; precarga del nivel base y LRU de escenas | `packages/viewer/src/engine/projections.ts`, `hotspots/markers.ts`, `packages/viewer-ui/src/components.ts` |
