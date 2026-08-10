@@ -71,6 +71,9 @@ export class PanelHost {
       className: "ull360-btn",
       type: "button",
       "aria-label": this.ctx.t("close"),
+      // Accionable con la mirada: con el giroscopio puesto no hay dedo que
+      // valga, y un panel que se abre pero no se cierra es una trampa.
+      "data-gaze": "1",
     });
     closeBtn.appendChild(createIconSvg("x", 20));
     closeBtn.addEventListener("click", () => this.close());

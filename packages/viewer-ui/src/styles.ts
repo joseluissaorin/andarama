@@ -410,7 +410,8 @@ export const VIEWER_CSS = `
 /* ============ HUD del tesoro ============ */
 .ull360-toast--hud { bottom: auto; top: max(74px, calc(env(safe-area-inset-top) + 60px)); animation: none; }
 /* Retículo de mirada (giroscopio): sostener la mirada acciona el marcador */
-.ull360-gaze{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:26;opacity:.7;transition:opacity .2s}
+.ull360-gaze{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:60;opacity:.7;transition:opacity .2s}
+.ull360-gaze.is-cursor{opacity:.95}
 .ull360-gaze.is-active{opacity:1}
 .ull360-gaze-track{fill:none;stroke:rgba(255,255,255,.32);stroke-width:4}
 .ull360-gaze-ring{fill:none;stroke:var(--u3-primary,#5c068c);stroke-width:4;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;filter:drop-shadow(0 0 3px rgba(0,0,0,.55))}

@@ -136,10 +136,23 @@ pantalla se mira, no se toca. En cuanto se activa cualquiera de los dos aparece
 un **punto en el centro** con un **anillo que se va dibujando** mientras se
 sostiene la mirada sobre un marcador; al completarse, el marcador se acciona.
 
-- El anillo se reinicia si se cambia de objetivo o si la cabeza se mueve más de
-  unos seis grados, así que un pulso de la mano no lo estropea.
-- Funciona con los diecisiete tipos de hotspot, no solo con la navegación.
-- La duración es la misma «permanencia de la mirada» de los ajustes del tour.
+En el visor plano el retículo tiene dos comportamientos, y el segundo es el que
+lo hace usable de verdad:
+
+- **Mirando el panorama**, el retículo está en el centro: girar el móvil mueve
+  la escena, así que centrar un marcador es apuntarlo.
+- **Con un panel abierto**, el panel es un cuadro fijo en la pantalla y un
+  retículo también fijo nunca alcanzaría su aspa. Entonces el retículo pasa a
+  ser un **cursor que la cabeza arrastra** por la pantalla: unos diez grados a
+  la derecha y quince hacia arriba bastan para llegar al botón de cerrar.
+
+Sostener la mirada sobre algo ya accionado no lo repite: hay que apartar la
+vista y volver. Y el anillo se reinicia si se cambia de objetivo o si la cabeza
+se mueve más de unos seis grados, de modo que un pulso de la mano no lo
+estropea.
+
+Funciona con los diecisiete tipos de hotspot, no solo con la navegación, y la
+duración es la «permanencia de la mirada» de los ajustes del tour.
 
 ## Al embeber un tour
 
