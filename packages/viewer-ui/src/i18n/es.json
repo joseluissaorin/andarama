@@ -16,6 +16,7 @@
   "link_copied": "Enlace copiado",
   "vr_mode": "Modo VR",
   "gyro": "Giroscopio",
+  "gaze_hint": "Mira un marcador y mantén la vista: el círculo se completa y se activa solo.",
   "help": "Ayuda",
   "language": "Idioma",
   "map": "Mapa",

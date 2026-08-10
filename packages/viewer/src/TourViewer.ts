@@ -166,6 +166,8 @@ export class TourViewer {
       url: (value) => resolveUrl(this.baseUrl, value),
       t: (key, params) => this.options.translate?.(key, params) ?? key,
     });
+    // Permanencia de la mirada configurable por tour
+    this.vr.dwellMs = Math.max(800, Math.round((this.tour.vr?.dwellSeconds ?? 2.5) * 1000));
     this.vr.onChange = (active, mode) => {
       this.emit("vrChange", { active, mode });
       if (active) this.analytics.track({ event: "vr", sceneId: this.currentId ?? undefined });
@@ -1058,10 +1060,22 @@ export class TourViewer {
    * Hotspots visibles en VR: TODOS los tipos, no solo la navegación. Los
    * polígonos usan el primero de sus vértices como ancla del billboard.
    */
+  /** Un tipo de hotspot está disponible en gafas según los ajustes del tour. */
+  private vrTypeAllowed(type: string): boolean {
+    const cfg = this.tour.vr;
+    const mode = cfg?.hotspots ?? "all";
+    if (mode === "all") return true;
+    if (mode === "navigationOnly") return type === "navigation";
+    // "custom": la navegación nunca se apaga (sin ella el tour es una foto)
+    if (type === "navigation") return true;
+    return cfg?.types?.[type] !== false;
+  }
+
   private vrHotspots(): VrHotspot[] {
     const scene = this.currentScene();
     if (scene == null) return [];
     return scene.hotspots
+      .filter((h) => this.vrTypeAllowed(h.type))
       .filter((h) => evalConditions(h.conditions, this.vars, this.lang, this.currentVideoTime()))
       .map((h) => {
         const anchor =

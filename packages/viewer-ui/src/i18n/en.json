@@ -16,6 +16,7 @@
   "link_copied": "Link copied",
   "vr_mode": "VR mode",
   "gyro": "Gyroscope",
+  "gaze_hint": "Look at a marker and hold still: the ring fills and it activates on its own.",
   "help": "Help",
   "language": "Language",
   "map": "Map",

@@ -13,6 +13,7 @@ import "./index.css";
 import { Shell } from "./components/Shell";
 import { AuthPage } from "./pages/AuthPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
+import { OrgDefaultsPage } from "./pages/OrgDefaultsPage";
 import { MediaPage } from "./pages/MediaPage";
 import { AccountPage } from "./pages/AccountPage";
 import { AdminPage } from "./pages/AdminPage";
@@ -46,6 +47,12 @@ const mediaRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: "/media",
   component: MediaPage,
+});
+
+const orgDefaultsRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: "/org",
+  component: OrgDefaultsPage,
 });
 
 const accountRoute = createRoute({
@@ -91,7 +98,7 @@ const inviteRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  shellRoute.addChildren([projectsRoute, mediaRoute, accountRoute, adminRoute]),
+  shellRoute.addChildren([projectsRoute, mediaRoute, accountRoute, adminRoute, orgDefaultsRoute]),
   editorRoute,
   loginRoute,
   registerRoute,

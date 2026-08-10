@@ -4,10 +4,11 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { media, orgInvites, orgMembers, orgs, projects, users } from "@ull360/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
-import { newId, newToken, nowMs, sha256Hex, slugify } from "../lib/util.js";
+import { newId, newToken, nowMs, parseJson, sha256Hex, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
+import { INHERITED_KEYS, propagateOrgDefaults, type OrgDefaults } from "../lib/defaults.js";
 
 const roleSchema = z.enum(["admin", "editor", "collaborator", "reader"]);
 
@@ -52,6 +53,45 @@ export function orgRoutes(): Hono<AppEnv> {
       .where(eq(orgs.id, orgId));
     await audit(c, "org.update", "org", orgId, body, orgId);
     return c.json({ ok: true });
+  });
+
+  /**
+   * Valores por defecto de la organización. Al cambiarlos se propagan a los
+   * borradores que no habían personalizado esa clave: eso es lo que significa
+   * heredar. Los tours publicados no se tocan —son instantáneas compiladas—
+   * hasta que alguien los vuelva a publicar.
+   */
+  r.put("/:orgId/defaults", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const orgId = c.req.param("orgId");
+    await requireOrgRole(db, orgId, auth.user, "admin");
+    const body = z.object({ defaults: z.record(z.unknown()) }).parse(await c.req.json());
+    const next = body.defaults as OrgDefaults;
+    const changed = INHERITED_KEYS.filter((k) => (next as Record<string, unknown>)[k] !== undefined);
+
+    await db.update(orgs).set({ settingsJson: JSON.stringify(next) }).where(eq(orgs.id, orgId));
+
+    const drafts = await db.select().from(projects).where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt)));
+    let propagated = 0;
+    for (const project of drafts) {
+      const current = parseJson<Record<string, unknown>>(project.settingsJson, {});
+      const updated = propagateOrgDefaults(current, next, changed);
+      if (JSON.stringify(updated) === JSON.stringify(current)) continue;
+      await db.update(projects).set({ settingsJson: JSON.stringify(updated), updatedAt: nowMs() }).where(eq(projects.id, project.id));
+      propagated++;
+    }
+    await audit(c, "org.defaults", "org", orgId, { keys: changed, propagated }, orgId);
+    return c.json({ ok: true, propagated });
+  });
+
+  r.get("/:orgId/defaults", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const orgId = c.req.param("orgId");
+    await requireOrgRole(db, orgId, auth.user, "reader");
+    const row = (await db.select().from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
+    return c.json(parseJson<OrgDefaults>(row?.settingsJson ?? "{}", {}));
   });
 
   r.get("/:orgId/usage", async (c) => {

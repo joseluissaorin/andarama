@@ -53,15 +53,21 @@ export function PlanetThumb({ media, className }: { media: MediaItem; className?
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
     >
-      <img src={thumb} alt="" className="h-full w-full object-cover" loading="lazy" />
+      <img
+        src={thumb}
+        alt=""
+        loading="lazy"
+        className={`h-full w-full object-cover transition-opacity duration-150 ${hover && planet != null ? "opacity-0" : "opacity-100"}`}
+      />
       {planet != null && (
-        <img
-          src={planet}
-          alt=""
+        <span
           aria-hidden
-          className={`absolute inset-0 m-auto h-full w-auto transition-opacity duration-150 ${hover ? "opacity-100" : "opacity-0"}`}
-          style={{ background: "radial-gradient(circle, var(--ull-surface-2) 0%, var(--ull-surface) 70%)" }}
-        />
+          className={`absolute inset-0 flex items-center justify-center bg-[var(--ull-surface-2)] transition-opacity duration-150 ${
+            hover ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <img src={planet} alt="" className="h-full w-auto max-w-none" />
+        </span>
       )}
       <span
         className="pointer-events-none absolute bottom-1 right-1 rounded-md bg-black/55 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
@@ -80,12 +86,13 @@ export function PlanetThumb({ media, className }: { media: MediaItem; className?
  */
 export function Pano360Dialog({ media, onClose }: { media: MediaItem | null; onClose: () => void }): React.ReactNode {
   const t = useT();
-  const hostRef = useRef<HTMLDivElement>(null);
+  // El contenido del diálogo se monta cuando se abre, así que el contenedor no
+  // existe todavía cuando cambia `media`: hay que esperar a que el nodo llegue.
+  const [host, setHost] = useState<HTMLDivElement | null>(null);
   const skinRef = useRef<MountedSkin | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const host = hostRef.current;
     if (media == null || host == null) return;
     setReady(false);
     const tiles = media.derivatives.find((d) => d.kind === "tiles");
@@ -132,12 +139,12 @@ export function Pano360Dialog({ media, onClose }: { media: MediaItem | null; onC
       skinRef.current?.destroy();
       skinRef.current = null;
     };
-  }, [media]);
+  }, [media, host]);
 
   return (
     <Dialog open={media != null} onOpenChange={(o) => !o && onClose()} title={media?.filename ?? ""} wide>
       <div className="relative h-[60vh] min-h-80 overflow-hidden rounded-xl bg-black">
-        <div ref={hostRef} className="absolute inset-0" />
+        <div ref={setHost} className="absolute inset-0" />
         {!ready && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-white/70">
             <Loader2 className="h-6 w-6 animate-spin" />

@@ -15,6 +15,7 @@ import {
   showHelp,
   showShareDialog,
 } from "./components.js";
+import { startGaze, type GazeHandle } from "./gaze.js";
 import { buildAccessibleView } from "./accessible.js";
 import { downloadCertificate } from "./certificate.js";
 import { LiveClient, type LiveOptions } from "./live.js";
@@ -62,6 +63,9 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   if (theme?.primaryColor != null) container.style.setProperty("--u3-primary", theme.primaryColor);
   if (theme?.fontFamily != null) container.style.setProperty("--u3-font", theme.fontFamily);
   if (theme?.borderRadius != null) container.style.setProperty("--u3-radius", theme.borderRadius);
+
+  // Trabajos de limpieza que hay que deshacer al desmontar
+  const cleanups: (() => void)[] = [];
 
   const stage = el("div", { style: "position:absolute;inset:0;" });
   container.appendChild(stage);
@@ -233,15 +237,40 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   }
 
   if (ui.gyroToggle !== false && "DeviceOrientationEvent" in window && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    // Con el giroscopio la pantalla se mira, no se toca: aparece el retículo
+    // central y sostener la mirada sobre un marcador lo acciona.
+    let gaze: GazeHandle | null = null;
+    const stopGaze = (): void => {
+      gaze?.stop();
+      gaze = null;
+    };
+    const startGazeReticle = (): void => {
+      stopGaze();
+      gaze = startGaze(container, {
+        seconds: tour.vr?.dwellSeconds ?? 2.5,
+        getView: () => {
+          const v = viewer.view();
+          return { yaw: v.yaw, pitch: v.pitch };
+        },
+      });
+    };
     const gyroBtn = iconButton("smartphone", t("gyro"), () => {
       if (viewer.gyroActive()) {
         viewer.disableGyro();
+        stopGaze();
         gyroBtn.setAttribute("aria-pressed", "false");
       } else {
-        void viewer.enableGyro().then((ok) => gyroBtn.setAttribute("aria-pressed", String(ok)));
+        void viewer.enableGyro().then((ok) => {
+          gyroBtn.setAttribute("aria-pressed", String(ok));
+          if (ok) {
+            startGazeReticle();
+            toast(container, t("gaze_hint"));
+          }
+        });
       }
     });
     controls.appendChild(gyroBtn);
+    cleanups.push(stopGaze);
   }
 
   if (ui.vr !== false) {
@@ -602,6 +631,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     panelHost,
     live,
     destroy: () => {
+      for (const fn of cleanups) fn();
       window.removeEventListener("message", onMessage);
       if (kioskTimer != null) clearTimeout(kioskTimer);
       live?.disconnect();

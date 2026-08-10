@@ -1,4 +1,8 @@
-import { Field, Input, Select, Switch, Textarea } from "@ull360/ui";
+import { useState } from "react";
+import { BookOpen, Sparkles } from "lucide-react";
+import { Button, Field, Input, Select, Switch, Textarea, useToast } from "@ull360/ui";
+import { CssGuideDialog, cssPrompt } from "./CssGuide";
+import { FAMILY_ORDER, HOTSPOT_CATALOG } from "./hotspotCatalog";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import type { ProjectInfo } from "./EditorPage";
@@ -6,6 +10,7 @@ import type { ProjectInfo } from "./EditorPage";
 /** Ajustes del tour: UI, tema, autorotate, pantallas, quiz, tesoro, autopilot, variables. */
 export function TourSettingsView({ project: _project, canEdit }: { project: ProjectInfo; canEdit: boolean }): React.ReactNode {
   const t = useT();
+  const toast = useToast();
   const editor = useEditor();
   const snapshot = editor.snapshot!;
   const settings = snapshot.settings;
@@ -17,11 +22,18 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
   const final = (ui.final as Record<string, any>) ?? {};
   const geoMap = (settings.geoMap as Record<string, any>) ?? {};
   const hunt = (settings.treasureHunt as Record<string, any>) ?? {};
+  const vr = (settings.vr as Record<string, any>) ?? {};
+
+  const [cssHelp, setCssHelp] = useState(false);
 
   const patch = (fn: (s: Record<string, any>) => void): void => {
     if (!canEdit) return;
     editor.apply((draft) => fn(draft.settings));
   };
+  const patchVr = (patchObj: Record<string, unknown>): void =>
+    patch((s) => {
+      s.vr = { ...(s.vr as object), ...patchObj };
+    });
   const patchUi = (patchObj: Record<string, unknown>): void =>
     patch((s) => {
       s.ui = { ...(s.ui as object), ...patchObj };
@@ -85,7 +97,16 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         <h2 className="mb-4 text-[15px] font-semibold">{t("ui_components")}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {UI_TOGGLES.map((key) => (
-            <Switch key={key} id={`ui-${key}`} checked={ui[key] !== false} disabled={!canEdit} onCheckedChange={(v) => patchUi({ [key]: v })} label={key} />
+            <div key={key}>
+              <Switch
+                id={`ui-${key}`}
+                checked={ui[key] !== false}
+                disabled={!canEdit}
+                onCheckedChange={(v) => patchUi({ [key]: v })}
+                label={t(`ui_${key}` as never)}
+              />
+              <p className="ml-11 mt-0.5 text-xs leading-snug text-[var(--ull-text-dim)]">{t(`ui_${key}_desc` as never)}</p>
+            </div>
           ))}
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -105,10 +126,103 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
           </Field>
         </div>
         <div className="mt-4">
-          <Field label={t("custom_css")} htmlFor="th-css">
-            <Textarea id="th-css" rows={3} className="font-mono text-xs" value={String(theme.customCss ?? "")} disabled={!canEdit} onChange={(e) => patchTheme({ customCss: e.target.value })} />
+          <Field label={t("custom_css")} htmlFor="th-css" hint={t("custom_css_hint")}>
+            <Textarea id="th-css" rows={4} className="font-mono text-xs" value={String(theme.customCss ?? "")} disabled={!canEdit} onChange={(e) => patchTheme({ customCss: e.target.value })} />
+          </Field>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setCssHelp(true)}>
+              <BookOpen className="h-4 w-4" /> {t("css_guide")}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                void navigator.clipboard.writeText(cssPrompt(String(theme.base ?? "ull"), String(theme.primaryColor ?? "#5c068c")));
+                toast.push(t("prompt_copied"), "ok");
+              }}
+            >
+              <Sparkles className="h-4 w-4" /> {t("copy_ai_prompt")}
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <CssGuideDialog open={cssHelp} onClose={() => setCssHelp(false)} />
+
+      {/* Gafas y cardboard: qué se puede accionar sin ratón ni teclado */}
+      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+        <h2 className="mb-1 text-[15px] font-semibold">{t("vr_settings")}</h2>
+        <p className="mb-4 text-xs text-[var(--ull-text-dim)]">{t("vr_settings_intro")}</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label={t("vr_hotspots_mode")} htmlFor="vr-mode">
+            <Select
+              id="vr-mode"
+              value={String(vr.hotspots ?? "all")}
+              disabled={!canEdit}
+              onChange={(e) => patchVr({ hotspots: e.target.value })}
+            >
+              <option value="all">{t("vr_hotspots_all")}</option>
+              <option value="navigationOnly">{t("vr_hotspots_nav")}</option>
+              <option value="custom">{t("vr_hotspots_custom")}</option>
+            </Select>
+          </Field>
+          <Field label={t("vr_dwell")} htmlFor="vr-dwell" hint={t("vr_dwell_hint")}>
+            <Input
+              id="vr-dwell"
+              type="number"
+              step="0.5"
+              min="0.8"
+              max="8"
+              value={String(vr.dwellSeconds ?? 2.5)}
+              disabled={!canEdit}
+              onChange={(e) => patchVr({ dwellSeconds: Number(e.target.value) })}
+            />
           </Field>
         </div>
+
+        {vr.hotspots === "custom" && (
+          <div className="mt-4 space-y-3">
+            {FAMILY_ORDER.map((family) => {
+              const kinds = HOTSPOT_CATALOG.filter((k) => k.family === family && k.type !== "navigation");
+              if (kinds.length === 0) return null;
+              const allOn = kinds.every((k) => (vr.types as Record<string, boolean> | undefined)?.[k.type] !== false);
+              return (
+                <div key={family} className="rounded-lg border border-[var(--ull-border)] p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-[13px] font-semibold">{t(`hotspot_family_${family}` as never)}</h3>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={!canEdit}
+                      onClick={() => {
+                        const next: Record<string, boolean> = { ...((vr.types as Record<string, boolean>) ?? {}) };
+                        for (const k of kinds) next[k.type] = !allOn;
+                        patchVr({ types: next });
+                      }}
+                    >
+                      {allOn ? t("disable_family") : t("enable_family")}
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                    {kinds.map((k) => (
+                      <Switch
+                        key={k.type}
+                        id={`vr-${k.type}`}
+                        checked={(vr.types as Record<string, boolean> | undefined)?.[k.type] !== false}
+                        disabled={!canEdit}
+                        label={t(`hotspot_${k.type}` as never)}
+                        onCheckedChange={(v) =>
+                          patchVr({ types: { ...((vr.types as Record<string, boolean>) ?? {}), [k.type]: v } })
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            <p className="text-xs text-[var(--ull-text-dim)]">{t("vr_nav_always")}</p>
+          </div>
+        )}
       </section>
 
       <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">

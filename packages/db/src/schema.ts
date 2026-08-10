@@ -24,6 +24,8 @@ export const users = sqliteTable(
     totpSecret: text("totp_secret"),
     emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
     avatar: text("avatar"),
+    /** Preferencias personales: idioma del editor, valores por defecto al crear. */
+    prefsJson: text("prefs_json").notNull().default("{}"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },

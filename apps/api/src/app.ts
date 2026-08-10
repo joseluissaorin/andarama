@@ -128,9 +128,27 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
         emailVerified: auth.user.emailVerified,
         totpEnabled: auth.user.totpSecret != null,
         ssoLinked: auth.user.idpSubject != null,
+        prefs: JSON.parse(auth.user.prefsJson ?? "{}") as Record<string, unknown>,
       },
       orgs: memberships.map((m) => ({ id: m.org.id, name: m.org.name, slug: m.org.slug, role: m.role })),
     });
+  });
+
+  /** Preferencias personales: idioma del editor y valores por defecto propios. */
+  api.put("/me/prefs", async (c) => {
+    const auth = c.get("auth");
+    if (auth == null) return c.json({ error: "Sin sesión" }, 401);
+    const db = c.get("db");
+    const { users } = await import("@ull360/db");
+    const { eq } = await import("drizzle-orm");
+    const body = (await c.req.json()) as Record<string, unknown>;
+    const prefs = {
+      ...(typeof body.editorLang === "string" ? { editorLang: body.editorLang } : {}),
+      ...(typeof body.defaultLang === "string" ? { defaultLang: body.defaultLang } : {}),
+      ...(typeof body.entryMode === "string" ? { entryMode: body.entryMode } : {}),
+    };
+    await db.update(users).set({ prefsJson: JSON.stringify(prefs), updatedAt: Date.now() }).where(eq(users.id, auth.user.id));
+    return c.json({ ok: true, prefs });
   });
 
   app.route("/api/v1", api);

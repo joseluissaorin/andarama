@@ -12,6 +12,7 @@ import {
   type PanelZone,
 } from "./xr/panel.js";
 import {
+  angleDiff,
   dirFromYawPitch,
   matPosition,
   matTranslateScale,
@@ -86,6 +87,9 @@ const PANEL_DISTANCE = 1.6;
 const PANEL_WIDTH_M = 1.6;
 const PANEL_HEIGHT_M = (PANEL_WIDTH_M * PANEL_HEIGHT) / PANEL_WIDTH;
 const TOUCH_DISTANCE = 0.045;
+/** Margen de cabeza (radianes) que no rompe la permanencia de la mirada. */
+const GAZE_TOLERANCE = 0.1;
+const DEFAULT_DWELL_MS = 2500;
 
 type PointerTarget =
   | { kind: "hotspot"; hotspot: VrHotspot; distance: number }
@@ -123,6 +127,10 @@ export class VRManager {
   private hover = new Map<string, PointerTarget>();
   private images = new Map<string, HTMLImageElement>();
   private headPosition: Vec3 = [0, 0, 0];
+  private gazeProgress = 0;
+  private reticleTex = new Map<string, WebGLTexture>();
+  /** Permanencia configurable por tour (`vr.dwellSeconds`). */
+  dwellMs = DEFAULT_DWELL_MS;
 
   onChange: ((active: boolean, mode: "xr" | "cardboard" | null) => void) | null = null;
 
@@ -310,9 +318,13 @@ export class VRManager {
     window.addEventListener("deviceorientation", this.orientationHandler);
     this.onChange?.(true, "cardboard");
 
-    // Selección por mirada: el retículo central activa el hotspot enfocado.
+    // Selección por mirada: sin mando ni pantalla táctil accesible, el
+    // visitante no puede pulsar nada, así que el retículo central acumula
+    // permanencia sobre lo que mira y lo acciona solo. Se reinicia si cambia
+    // de objetivo o si la cabeza se mueve más de un margen.
     let gazeTarget: string | null = null;
     let gazeStart = 0;
+    let gazeAnchor = { yaw: 0, pitch: 0 };
     const loop = (): void => {
       if (this.mode !== "cardboard" || this.gl == null || this.canvas == null) return;
       this.raf = requestAnimationFrame(loop);
@@ -329,15 +341,19 @@ export class VRManager {
       const { yaw, pitch } = this.cardboardYawPitch;
       const forward = dirFromYawPitch(yaw, pitch);
       const gaze: Ray = { origin: [0, 0, 0], direction: forward };
-      const target = this.pickHotspot(gaze);
-      const id = target?.kind === "hotspot" ? target.hotspot.id : null;
-      if (id !== gazeTarget) {
+      const target = this.pickPanelAt(vecAdd(this.headPosition, vecScale(forward, PANEL_DISTANCE))) ?? this.pickHotspot(gaze);
+      const id =
+        target == null ? null : target.kind === "hotspot" ? target.hotspot.id : `zone:${target.zone.id}`;
+      const drift = Math.hypot(angleDiff(yaw, gazeAnchor.yaw), pitch - gazeAnchor.pitch);
+      if (id !== gazeTarget || drift > GAZE_TOLERANCE) {
         gazeTarget = id;
         gazeStart = performance.now();
-      } else if (id != null && performance.now() - gazeStart > 1500) {
+        gazeAnchor = { yaw, pitch };
+      } else if (id != null && performance.now() - gazeStart > this.dwellMs) {
         gazeTarget = null;
         this.activate(target);
       }
+      this.gazeProgress = gazeTarget != null ? Math.min(1, (performance.now() - gazeStart) / this.dwellMs) : 0;
       this.hover.clear();
       if (target != null) this.hover.set("gaze", target);
       this.refreshPanelTexture();
@@ -699,15 +715,55 @@ export class VRManager {
       }
     }
 
-    // Retículo del modo cardboard
+    // Retículo del modo cardboard, con el anillo que se va dibujando
     if (this.mode === "cardboard") {
       const forward = dirFromYawPitch(this.cardboardYawPitch.yaw, this.cardboardYawPitch.pitch);
       const reticle = vecAdd(this.headPosition, vecScale(forward, 2.2));
-      const focused = this.hover.get("gaze") != null;
-      r.draw(r.jointSphere, matTranslateScale(reticle, focused ? 0.05 : 0.03), {
-        color: focused ? [0.72, 0.42, 0.92, 0.95] : [1, 1, 1, 0.6],
-      });
+      const tex = this.reticleTexture(this.gazeProgress);
+      if (tex != null) {
+        r.draw(r.quad, r.billboardMatrix(reticle, this.headPosition, 0.34), { texture: tex, color: [1, 1, 1, 1] });
+      }
     }
+  }
+
+  /**
+   * Retículo con el anillo de permanencia. Se cachea por pasos del 5 % para no
+   * subir una textura nueva en cada fotograma.
+   */
+  private reticleTexture(progress: number): WebGLTexture | null {
+    const r = this.renderer;
+    if (r == null) return null;
+    const step = Math.round(Math.max(0, Math.min(1, progress)) * 20) / 20;
+    const key = step.toFixed(2);
+    const cached = this.reticleTex.get(key);
+    if (cached != null) return cached;
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d")!;
+    ctx.clearRect(0, 0, 128, 128);
+    // Punto central siempre visible
+    ctx.beginPath();
+    ctx.arc(64, 64, step > 0 ? 7 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = step > 0 ? "rgba(255,255,255,.95)" : "rgba(255,255,255,.75)";
+    ctx.fill();
+    // Anillo de fondo y anillo que se dibuja
+    ctx.lineWidth = 7;
+    ctx.strokeStyle = "rgba(255,255,255,.28)";
+    ctx.beginPath();
+    ctx.arc(64, 64, 42, 0, Math.PI * 2);
+    ctx.stroke();
+    if (step > 0) {
+      ctx.strokeStyle = "rgba(184,107,235,.98)";
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.arc(64, 64, 42, -Math.PI / 2, -Math.PI / 2 + step * Math.PI * 2);
+      ctx.stroke();
+    }
+    const tex = r.createTexture();
+    r.upload(tex, canvas);
+    this.reticleTex.set(key, tex);
+    return tex;
   }
 
   private headForward(): Vec3 {

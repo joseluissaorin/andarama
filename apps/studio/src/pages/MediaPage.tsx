@@ -67,6 +67,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
   const [detail, setDetail] = useState<MediaItem | null>(null);
   const [folder, setFolder] = useState("");
   const [preview, setPreview] = useState<MediaItem | null>(null);
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [renaming, setRenaming] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -283,16 +284,32 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                 className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--ull-primary)]"
                 title={isPano(m) ? t("dblclick_to_preview") : undefined}
                 onClick={() => {
-                  if (onSelect != null) onSelect(m);
-                  else {
+                  if (onSelect != null) {
+                    onSelect(m);
+                    return;
+                  }
+                  // Un clic abre la ficha y dos abren el visor 360, así que la
+                  // ficha espera a que se descarte el segundo clic.
+                  if (!isPano(m)) {
                     setDetail(m);
                     setRenaming(m.filename);
+                    return;
                   }
+                  if (clickTimer.current != null) clearTimeout(clickTimer.current);
+                  clickTimer.current = setTimeout(() => {
+                    clickTimer.current = null;
+                    setDetail(m);
+                    setRenaming(m.filename);
+                  }, 220);
                 }}
                 onDoubleClick={(e) => {
                   if (!isPano(m)) return;
                   e.preventDefault();
                   e.stopPropagation();
+                  if (clickTimer.current != null) {
+                    clearTimeout(clickTimer.current);
+                    clickTimer.current = null;
+                  }
                   setDetail(null);
                   setPreview(m);
                 }}

@@ -50,6 +50,9 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
     : scenes.filter((s) => s.title.toLowerCase().includes(filter.trim().toLowerCase()));
 
   const [mediaOver, setMediaOver] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(readPanelWidth);
+  const panelWidthRef = useRef(panelWidth);
+  panelWidthRef.current = panelWidth;
 
   const addScene = (): void => {
     if (newTitle.trim() === "") return;
@@ -178,10 +181,13 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
             return (
               <div
                 key={scene.id}
-                draggable={canEdit && filter.trim() === ""}
+                draggable={canEdit}
                 onDragStart={(e) => {
                   setDragId(scene.id);
-                  e.dataTransfer.effectAllowed = "move";
+                  // Dentro de la lista reordena; sobre el panorama crea el paso
+                  // hacia esta escena. El mismo gesto, dos destinos.
+                  e.dataTransfer.setData(SCENE_DRAG_TYPE, scene.id);
+                  e.dataTransfer.effectAllowed = "copyMove";
                 }}
                 onDragOver={(e) => {
                   if (dragId == null || dragId === scene.id) return;
@@ -191,7 +197,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
                 onDragLeave={() => setDropAt((d) => (d === scene.id ? null : d))}
                 onDrop={(e) => {
                   e.preventDefault();
-                  if (dragId != null) reorder(dragId, scene.id);
+                  if (dragId != null && filter.trim() === "") reorder(dragId, scene.id);
                   setDragId(null);
                   setDropAt(null);
                 }}
@@ -263,7 +269,38 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
       </div>
 
       {selected != null && (
-        <aside className="w-80 overflow-y-auto border-l border-[var(--ull-border)] bg-[var(--ull-surface)]">
+        <aside
+          className="relative flex shrink-0 flex-col border-l border-[var(--ull-border)] bg-[var(--ull-surface)]"
+          style={{ width: panelWidth }}
+        >
+          {/* Tirador: 320 px se queda corto para las etiquetas en español */}
+          <div
+            role="separator"
+            aria-label={t("resize_panel")}
+            aria-orientation="vertical"
+            tabIndex={0}
+            className="absolute -left-1 top-0 z-20 h-full w-2 cursor-col-resize hover:bg-[var(--ull-primary)]/25"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              const startX = e.clientX;
+              const startW = panelWidth;
+              const move = (ev: PointerEvent): void => setPanelWidth(clampPanel(startW + (startX - ev.clientX)));
+              const up = (): void => {
+                window.removeEventListener("pointermove", move);
+                window.removeEventListener("pointerup", up);
+                localStorage.setItem(PANEL_WIDTH_KEY, String(panelWidthRef.current));
+              };
+              window.addEventListener("pointermove", move);
+              window.addEventListener("pointerup", up);
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+              e.preventDefault();
+              const next = clampPanel(panelWidth + (e.key === "ArrowLeft" ? 24 : -24));
+              setPanelWidth(next);
+              localStorage.setItem(PANEL_WIDTH_KEY, String(next));
+            }}
+          />
           <PropertiesPanel project={project} scene={selected} canEdit={canEdit} />
         </aside>
       )}
@@ -301,6 +338,22 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
   );
 }
 
+/** Arrastre de una escena de la lista: crea el paso hacia ella. */
+export const SCENE_DRAG_TYPE = "application/x-ull360-scene";
+
+const PANEL_WIDTH_KEY = "ull360.panelWidth";
+const PANEL_MIN = 320;
+const PANEL_MAX = 620;
+
+function clampPanel(width: number): number {
+  return Math.max(PANEL_MIN, Math.min(PANEL_MAX, Math.round(width)));
+}
+
+function readPanelWidth(): number {
+  const saved = Number(localStorage.getItem(PANEL_WIDTH_KEY));
+  return Number.isFinite(saved) && saved > 0 ? clampPanel(saved) : 380;
+}
+
 // ---------------------------------------------------------------------------
 // Previsualización WYSIWYG (el propio Viewer en modo edición §3.4)
 // ---------------------------------------------------------------------------
@@ -317,6 +370,25 @@ let currentPlacement: PlacementMode = { kind: "none" };
 export function setPlacementMode(mode: PlacementMode): void {
   currentPlacement = mode;
   for (const l of placementListeners) l(mode);
+}
+
+/**
+ * Resaltar un marcador desde la lista del panel: pasar el ratón por la lista
+ * enseña de cuál se habla sin tener que buscarlo en el panorama.
+ */
+let highlighted: string | null = null;
+export function highlightHotspot(id: string | null): void {
+  highlighted = id;
+  for (const node of document.querySelectorAll<HTMLElement>(".ull360-hotspot")) {
+    const isIt = id != null && node.dataset.hotspotId === id;
+    node.style.outline = isIt ? "3px solid var(--ull-primary)" : "";
+    node.style.outlineOffset = isIt ? "3px" : "";
+    node.style.zIndex = isIt ? "30" : "";
+  }
+}
+
+export function currentHighlight(): string | null {
+  return highlighted;
 }
 
 export function usePlacementMode(): PlacementMode {
@@ -348,6 +420,55 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   placementRef.current = placement;
   const [compiling, setCompiling] = useState(false);
   const firstMount = useRef(true);
+
+  // Arrastrar una escena de la lista sobre el panorama crea el paso hacia ella
+  // justo donde se suelta: es la acción más repetida al construir un tour.
+  useEffect(() => {
+    const node = containerRef.current;
+    if (node == null || !canEdit) return;
+    const ac = new AbortController();
+    node.addEventListener(
+      "dragover",
+      (e) => {
+        if (!Array.from(e.dataTransfer?.types ?? []).includes(SCENE_DRAG_TYPE)) return;
+        e.preventDefault();
+        if (e.dataTransfer != null) e.dataTransfer.dropEffect = "link";
+      },
+      { signal: ac.signal },
+    );
+    node.addEventListener(
+      "drop",
+      (e) => {
+        const target = e.dataTransfer?.getData(SCENE_DRAG_TYPE);
+        if (target == null || target === "" || target === sceneId) return;
+        e.preventDefault();
+        const viewer = skinRef.current?.viewer;
+        const rect = node.getBoundingClientRect();
+        const coords = viewer?.marzipanoViewer().view()?.screenToCoordinates?.({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        if (coords == null) return;
+        const id = clientId();
+        editor.apply((draft) => {
+          draft.hotspots.push({
+            id,
+            sceneId,
+            type: "navigation",
+            positionJson: JSON.stringify({ yaw: coords.yaw, pitch: coords.pitch }),
+            styleJson: null,
+            contentJson: JSON.stringify({
+              target,
+              label: draft.scenes.find((sc) => sc.id === target)?.title ?? "",
+              entry: { mode: "relative" },
+            }),
+            conditionsJson: null,
+            sort: draft.hotspots.filter((h) => h.sceneId === sceneId).length,
+          });
+        });
+        editor.select(sceneId, id);
+      },
+      { signal: ac.signal },
+    );
+    return () => ac.abort();
+  }, [canEdit, sceneId, editor]);
 
   // Los listeners de colocación viven en el contenedor UNA sola vez, con
   // AbortController: los remontajes del visor no acumulan duplicados.

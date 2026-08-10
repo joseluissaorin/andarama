@@ -68,6 +68,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled === true || loading}
       className={cx(
         "inline-flex items-center justify-center rounded-[var(--ull-radius)] font-medium transition-colors",
+        // El texto no se sale del botón: en español las etiquetas son largas y
+        // los paneles estrechos, y un rótulo desbordado se lee como un error.
+        "min-w-0 max-w-full overflow-hidden whitespace-nowrap [&>span]:min-w-0 [&>span]:truncate",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ull-primary)]",
         BUTTON_STYLES[variant],
         sizeCls,
@@ -75,8 +78,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       )}
       {...rest}
     >
-      {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-      {children}
+      {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />}
+      {typeof children === "string" ? <span className="truncate">{children}</span> : children}
     </button>
   );
 });

@@ -38,6 +38,8 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/auth/totp/confirm": { post: p("Activar 2FA TOTP", "auth") },
       "/auth/totp/disable": { post: p("Desactivar 2FA", "auth") },
       "/me": { get: p("Perfil y organizaciones del usuario", "auth") },
+      "/me/prefs": { put: p("Preferencias personales (idioma, valores por defecto)", "auth") },
+      "/orgs/{id}/defaults": { get: p("Valores por defecto de la organización", "orgs"), put: p("Fijar valores por defecto y propagarlos a los borradores", "orgs") },
       "/orgs": { post: p("Crear organización", "orgs") },
       "/orgs/{orgId}": { get: p("Detalle", "orgs"), patch: p("Actualizar", "orgs") },
       "/orgs/{orgId}/usage": { get: p("Uso de cuotas (almacenamiento y tours)", "orgs") },

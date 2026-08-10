@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowLeft,
@@ -8,6 +8,7 @@ import {
   BookOpen,
   Building2,
   Camera,
+  ChevronLeft,
   ChevronRight,
   Coffee,
   Crosshair,
@@ -30,15 +31,11 @@ import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@ull360/
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
-import { getCurrentEditorView, setPlacementMode } from "./ScenesView";
+import { getCurrentEditorView, highlightHotspot, setPlacementMode } from "./ScenesView";
+import { HotspotPalette } from "./HotspotPalette";
 import { MediaPicker } from "./MediaPicker";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
-
-const HOTSPOT_TYPES = [
-  "navigation", "text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf",
-  "model3d", "web", "form", "compare", "quiz", "polygon", "tooltip", "link", "state",
-] as const;
 
 /** Iconos elegibles (registrados también en el visor). */
 const ICON_OPTIONS: { name: string; Icon: LucideIcon }[] = [
@@ -101,6 +98,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const t = useT();
   const editor = useEditor();
   const [pickerFor, setPickerFor] = useState<"panorama" | "ambient" | "narration" | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const meta = readJson<Record<string, unknown>>(scene.metaJson, {});
   const audio = readJson<Record<string, any>>(scene.audioJson, {});
   const map = readJson<Record<string, any>>(scene.mapJson, {});
@@ -250,41 +248,45 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         </div>
       </Section>
 
-      <Section title={`${t("add_hotspot")} (${hotspots.length})`}>
+      <Section title={`${t("hotspots")} (${hotspots.length})`}>
         {canEdit && (
-          <div className="mb-2 grid grid-cols-2 gap-1.5">
-            {HOTSPOT_TYPES.map((type) => (
-              <Button
-                key={type}
-                size="sm"
-                variant="outline"
-                className="justify-start text-xs"
-                onClick={() => setPlacementMode(type === "polygon" ? { kind: "polygon", points: [] } : { kind: "hotspot", type })}
-              >
-                <Plus className="h-3 w-3" /> {t(`hotspot_${type}`)}
-              </Button>
-            ))}
-          </div>
+          <Button size="sm" variant="outline" className="mb-2 w-full" onClick={() => setPaletteOpen(true)}>
+            <Plus className="h-4 w-4" /> {t("add_hotspot_button")}
+          </Button>
         )}
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {hotspots.map((h) => {
             const content = readJson<Record<string, unknown>>(h.contentJson, {});
-            const label = String(content.label ?? content.altText ?? t(`hotspot_${h.type}`));
+            const label = String(content.label ?? content.altText ?? "") || t(`hotspot_${h.type}`);
             return (
               <button
                 key={h.id}
                 type="button"
                 className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] hover:bg-[var(--ull-surface-2)]"
                 onClick={() => useEditor.getState().select(scene.id, h.id)}
+                onMouseEnter={() => highlightHotspot(h.id)}
+                onMouseLeave={() => highlightHotspot(null)}
               >
-                <ChevronRight className="h-3.5 w-3.5 text-[var(--ull-text-dim)]" />
-                <span className="flex-1 truncate">{label}</span>
-                <span className="text-[11px] text-[var(--ull-text-dim)]">{t(`hotspot_${h.type}`)}</span>
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--ull-text-dim)]" />
+                <span className="min-w-0 flex-1 truncate">{label}</span>
+                {content.unplaced === true && (
+                  <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600">
+                    {t("unplaced_badge")}
+                  </span>
+                )}
+                <span className="shrink-0 text-[11px] text-[var(--ull-text-dim)]">{t(`hotspot_${h.type}`)}</span>
               </button>
             );
           })}
+          {hotspots.length === 0 && <p className="px-2 py-1.5 text-[13px] text-[var(--ull-text-dim)]">{t("no_hotspots_yet")}</p>}
         </div>
       </Section>
+
+      <HotspotPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onPick={(type) => setPlacementMode(type === "polygon" ? { kind: "polygon", points: [] } : { kind: "hotspot", type })}
+      />
 
       {isVideo && <TimelinePanel scene={scene} hotspots={hotspots} canEdit={canEdit} />}
 
@@ -385,6 +387,16 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   const conditions = readJson<Record<string, any>>(hotspot.conditionsJson, {});
   const [pickerField, setPickerField] = useState<string | null>(null);
   const [expand, setExpand] = useState<{ key: string; label: string } | null>(null);
+  const [activeTab, setTab] = useState<"content" | "style" | "conditions">("content");
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Al cambiar de marcador se vuelve arriba y a la primera pestaña. Sin esto,
+  // el panel conservaba el desplazamiento del formulario anterior —mucho más
+  // alto— y se abría por el final, en «Aspecto».
+  useEffect(() => {
+    setTab("content");
+    bodyRef.current?.scrollTo({ top: 0 });
+  }, [hotspot.id]);
 
   const patch = (fn: (h: HotspotRow) => void): void => {
     editor.apply((draft) => {
@@ -443,29 +455,58 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   ));
 
   return (
-    <div className="space-y-5 p-4">
-      <div className="flex items-center justify-between">
-        <button type="button" className="text-[13px] text-[var(--ull-primary)] hover:underline" onClick={() => editor.select(scene.id, null)}>
-          {"< "}{scene.title}
-        </button>
-        {canEdit && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("delete")}
-            onClick={() => {
-              editor.apply((draft) => {
-                draft.hotspots = draft.hotspots.filter((h) => h.id !== hotspot.id);
-              });
-              editor.select(scene.id, null);
-            }}
+    <div className="flex h-full flex-col">
+      {/* Cabecera fija: de dónde vengo, qué estoy tocando y cómo borrarlo */}
+      <div className="sticky top-0 z-10 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 pb-2 pt-3">
+        <div className="flex items-center justify-between gap-2">
+          <button
+            type="button"
+            className="flex min-w-0 items-center gap-1 text-[13px] text-[var(--ull-primary)] hover:underline"
+            onClick={() => editor.select(scene.id, null)}
           >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+            <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{scene.title}</span>
+          </button>
+          {canEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t("delete")}
+              onClick={() => {
+                editor.apply((draft) => {
+                  draft.hotspots = draft.hotspots.filter((h) => h.id !== hotspot.id);
+                });
+                editor.select(scene.id, null);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <h3 className="mt-1 truncate text-[15px] font-semibold">{t(`hotspot_${hotspot.type}`)}</h3>
+        {content.unplaced === true && (
+          <p className="mt-1.5 rounded-lg bg-amber-500/10 px-2 py-1 text-xs text-amber-600">{t("unplaced_hint")}</p>
         )}
+        {/* Tres pestañas: lo que se viene a tocar está siempre en la primera */}
+        <div className="mt-2 flex rounded-lg bg-[var(--ull-surface-2)] p-0.5">
+          {(["content", "style", "conditions"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setTab(tab)}
+              className={`flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                activeTab === tab ? "bg-[var(--ull-surface)] text-[var(--ull-text)] shadow-sm" : "text-[var(--ull-text-dim)]"
+              }`}
+            >
+              {t(tab === "content" ? "content" : tab === "style" ? "style" : "conditions")}
+            </button>
+          ))}
+        </div>
       </div>
-      <h3 className="text-[15px] font-semibold">{t(`hotspot_${hotspot.type}`)}</h3>
 
+      <div ref={bodyRef} className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
+      {activeTab === "content" && (
+        <>
       <Field label={t("label")} htmlFor="hs-label">
         <Input id="hs-label" value={String(content.label ?? "")} disabled={!canEdit} onChange={(e) => setContent({ label: e.target.value })} />
       </Field>
@@ -833,8 +874,10 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           <StateEditor content={content} scenes={snapshot.scenes} canEdit={canEdit} onChange={setContent} />
         )}
       </Section>
+        </>
+      )}
 
-      {/* Estilo */}
+      {activeTab === "style" && (
       <Section title={t("style")}>
         <Field label={t("icon")}>
           <div className="grid grid-cols-7 gap-1">
@@ -886,8 +929,9 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         <Switch id="hs-pulse" checked={style.pulse === true} disabled={!canEdit} onCheckedChange={(v) => setStyle({ pulse: v })} label={t("pulse")} />
         <Switch id="hs-dscale" checked={style.distanceScale !== false} disabled={!canEdit} onCheckedChange={(v) => setStyle({ distanceScale: v })} label={t("distance_scale")} />
       </Section>
+      )}
 
-      {/* Condiciones de visibilidad */}
+      {activeTab === "conditions" && (
       <Section title={t("conditions")}>
         <Field label={t("visibility_by_lang")} htmlFor="hs-langs" hint="es, en (vacio = todos)">
           <Input
@@ -928,6 +972,8 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           />
         </Field>
       </Section>
+      )}
+      </div>
 
       {/* Editor ampliado para textos largos (Markdown) */}
       <Dialog

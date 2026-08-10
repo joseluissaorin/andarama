@@ -16,6 +16,7 @@ import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { listAccessibleProjects, projectAccess, requireOrgRole } from "../lib/authz.js";
 import { audit, getSettings } from "../lib/helpers.js";
+import { resolveNewTourSettings, type OrgDefaults, type UserPrefs } from "../lib/defaults.js";
 import { compileProject } from "../compiler.js";
 
 export function projectRoutes(): Hono<AppEnv> {
@@ -74,7 +75,6 @@ export function projectRoutes(): Hono<AppEnv> {
     if (orgRow != null && count.length >= orgRow.quotaTours) {
       throw forbidden(`La organización ha alcanzado su cuota de ${orgRow.quotaTours} tours`);
     }
-    void settings;
 
     const id = newId();
     let slug = slugify(body.title);
@@ -85,34 +85,30 @@ export function projectRoutes(): Hono<AppEnv> {
       .limit(1);
     if (taken.length > 0) slug = `${slug}-${newId(6).toLowerCase()}`;
 
-    let baseSettings: Record<string, unknown> = {
-      defaultLang: body.defaultLang,
-      langs: [body.defaultLang],
-      ui: { theme: { base: "ull" } },
-    };
-
     // Partir de una plantilla exige acceso de lectura a la plantilla: sin esta
     // comprobacion bastaba conocer un id de proyecto para clonar el contenido
     // de otra organizacion.
-    let template: { settingsJson: string } | null = null;
+    let templateSettings: Record<string, unknown> | null = null;
     if (body.fromTemplate != null) {
       const tplAccess = await projectAccess(db, body.fromTemplate, auth.user);
       if (tplAccess.project.orgId !== body.orgId) {
         throw forbidden("La plantilla pertenece a otra organización");
       }
-      template = tplAccess.project;
       // La razon de ser de una plantilla es la configuracion (tema, idiomas,
       // pantallas, variables, plano, quiz); duplicar solo las escenas dejaba
-      // fuera justo lo reutilizable.
-      const tplSettings = parseJson<Record<string, unknown>>(template.settingsJson, {});
-      const tplLangs = Array.isArray(tplSettings.langs) ? (tplSettings.langs as string[]) : [];
-      baseSettings = {
-        ...tplSettings,
-        defaultLang: body.defaultLang,
-        langs: tplLangs.includes(body.defaultLang) ? tplLangs : [body.defaultLang, ...tplLangs],
-      };
-      // startScene se conserva: duplicateContent lo reapunta al id nuevo.
+      // fuera justo lo reutilizable. startScene se conserva: duplicateContent
+      // lo reapunta al id nuevo.
+      templateSettings = parseJson<Record<string, unknown>>(tplAccess.project.settingsJson, {});
     }
+
+    // Cascada instancia → organización → usuario → plantilla → lo elegido aquí
+    const baseSettings = resolveNewTourSettings({
+      instanceLangs: settings.defaultLangs,
+      org: parseJson<OrgDefaults>(orgRow?.settingsJson ?? "{}", {}),
+      user: parseJson<UserPrefs>(auth.user.prefsJson ?? "{}", {}),
+      template: templateSettings,
+      explicit: { defaultLang: body.defaultLang },
+    });
 
     await db.insert(projects).values({
       id,

@@ -1,6 +1,6 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { FolderKanban, Image, Languages, LogOut, ShieldCheck, UserCircle } from "lucide-react";
+import { FolderKanban, Image, Languages, LogOut, ShieldCheck, UserCircle, Building2} from "lucide-react";
 import { Button, Select, Spinner, Tooltip } from "@ull360/ui";
 import { useAuth } from "../stores";
 import { useI18nStore, useT } from "../i18n";
@@ -67,6 +67,7 @@ export function Shell(): React.ReactNode {
         <nav className="flex-1 space-y-0.5 px-3" aria-label="Principal">
           <NavItem to="/" icon={<FolderKanban className="h-4 w-4" />} label={t("projects")} />
           <NavItem to="/media" icon={<Image className="h-4 w-4" />} label={t("media_library")} />
+          <NavItem to="/org" icon={<Building2 className="h-4 w-4" />} label={t("org_defaults")} />
           <NavItem to="/account" icon={<UserCircle className="h-4 w-4" />} label={me.user.name} />
           {me.user.roleGlobal === "admin" && (
             <NavItem to="/admin" icon={<ShieldCheck className="h-4 w-4" />} label={t("admin")} />

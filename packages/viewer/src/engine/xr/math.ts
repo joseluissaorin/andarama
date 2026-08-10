@@ -91,6 +91,14 @@ export function viewMatrix(yaw: number, pitch: number): Float32Array {
 }
 
 /** Dirección unitaria desde yaw/pitch en el convenio del visor (yaw 0 mira a -Z). */
+/** Diferencia angular mínima entre dos yaw, en (-PI, PI]. */
+export function angleDiff(a: number, b: number): number {
+  let d = (a - b) % (2 * Math.PI);
+  if (d > Math.PI) d -= 2 * Math.PI;
+  if (d < -Math.PI) d += 2 * Math.PI;
+  return d;
+}
+
 export function dirFromYawPitch(yaw: number, pitch: number): Vec3 {
   return [Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch), -Math.cos(pitch) * Math.cos(yaw)];
 }

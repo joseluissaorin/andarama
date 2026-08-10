@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dirFromYawPitch, matForward, matPosition, rayRect, raySphere, vecDistance, vecNormalize } from "./math.js";
+import { angleDiff, dirFromYawPitch, matForward, matPosition, rayRect, raySphere, vecDistance, vecNormalize } from "./math.js";
 import { HAND_JOINTS } from "./input.js";
 import { needsExternalContinuation, isImmersivePanel, stripMarkdown } from "./panel.js";
 
@@ -98,5 +98,19 @@ describe("paneles inmersivos", () => {
     expect(plain).toContain("• uno");
     expect(plain).not.toContain("**");
     expect(plain).not.toContain("](");
+  });
+});
+
+describe("permanencia de la mirada", () => {
+  it("angleDiff da la vuelta corta también cruzando ±PI", () => {
+    expect(angleDiff(0.1, -0.1)).toBeCloseTo(0.2, 6);
+    expect(angleDiff(Math.PI - 0.05, -Math.PI + 0.05)).toBeCloseTo(-0.1, 6);
+    expect(Math.abs(angleDiff(Math.PI, -Math.PI))).toBeLessThanOrEqual(1e-9);
+  });
+
+  it("el margen de cabeza tolera un temblor pequeño y no un giro", () => {
+    const TOLERANCE = 0.1;
+    expect(Math.abs(angleDiff(1.0, 1.02))).toBeLessThan(TOLERANCE);
+    expect(Math.abs(angleDiff(1.0, 1.4))).toBeGreaterThan(TOLERANCE);
   });
 });

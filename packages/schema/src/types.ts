@@ -644,6 +644,22 @@ export interface UIConfig {
   accessibleMode?: boolean;
 }
 
+/**
+ * Qué se puede accionar dentro de las gafas. Hay recorridos donde solo se
+ * quiere caminar y que el contenido se lea fuera, y otros donde todo debe
+ * estar disponible: se decide por familias o tipo a tipo.
+ */
+export interface VrConfig {
+  /** Modo inmersivo disponible (por defecto sí). */
+  enabled?: boolean;
+  /** all: todos; navigationOnly: solo pasos; custom: la lista `types`. */
+  hotspots?: "all" | "navigationOnly" | "custom";
+  /** Excepciones por tipo cuando `hotspots` es "custom" (true = disponible). */
+  types?: Record<string, boolean>;
+  /** Retículo de mirada: segundos de permanencia para activar. */
+  dwellSeconds?: number;
+}
+
 export interface AnalyticsConfig {
   /** Analitica propia sin cookies (activada por defecto en publicacion). */
   enabled?: boolean;
@@ -698,6 +714,8 @@ export interface Tour {
   geoMap?: GeoMapConfig;
   ui?: UIConfig;
   controls?: ControlsConfig;
+  /** Comportamiento en gafas y cardboard. */
+  vr?: VrConfig;
   /** Transicion por defecto entre escenas. */
   transition?: TransitionSpec;
   autorotate?: AutorotateConfig;
