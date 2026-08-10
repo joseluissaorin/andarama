@@ -46,9 +46,9 @@ void main() {
   vec2 ndc = vUv * 2.0 - 1.0;
   float x = ndc.x * uAspect;
   float y = ndc.y;
-  // Eje vertical de pantalla para los modos de camara (calibrado
-  // empiricamente contra el render rectilineo de Marzipano).
-  float ys = -y;
+  // Con el entorno canonico (fila 0 = cenit) el eje vertical de pantalla
+  // coincide con el de camara.
+  float ys = y;
   float S = tan(uFov * 0.5);
 
   // Direccion rectilinea (para la mezcla de entrada/salida)
@@ -59,11 +59,10 @@ void main() {
     // Little planet: estereografica desde el nadir; el arrastre gira y ladea el planeta.
     float r = length(vec2(x, y));
     float theta = 2.0 * atan(r * S * 0.9);
-    // phi invertida: al mirar el suelo desde arriba la quiralidad se voltea
-    // y sin esta inversion el texto del panorama se lee en espejo.
-    float phi = atan(y, -x);
+    // Con el eje en el nadir la quiralidad de pantalla se conserva con phi directa.
+    float phi = atan(y, x);
     vec3 cam = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-    world = camToWorld(cam, uYaw, -1.57079632679 + uPitch * 0.5);
+    world = camToWorld(cam, uYaw, 1.57079632679 + uPitch * 0.5);
   } else if (uMode == 2) {
     // Ojo de pez equidistante: theta proporcional al radio.
     float r = length(vec2(x, y));

@@ -219,7 +219,9 @@ async function serveStatic(roots: string[], pathname: string): Promise<Response 
       return new Response(Readable.toWeb(stream) as unknown as ReadableStream, {
         headers: {
           "content-type": guessContentType(extname(filePath).slice(1) === "" ? "x.html" : filePath),
-          "cache-control": clean.includes("/chunks/") || /\.[a-f0-9]{8,}\./.test(clean) ? "public, max-age=31536000, immutable" : "public, max-age=300",
+          // Misma politica que _headers en Cloudflare: los nombres con hash son
+          // inmutables; los estables (viewer.js, index.html) se revalidan siempre.
+          "cache-control": clean.includes("/chunks/") || /\.[a-f0-9]{8,}\./.test(clean) ? "public, max-age=31536000, immutable" : "no-cache",
         },
       });
     } catch {

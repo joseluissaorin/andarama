@@ -1146,10 +1146,7 @@ function loadImageAsync(url: string): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Ensambla un equirect a partir de tiles de cubo para el modo VR: elige el
- * nivel de piramide con cara <= maxFace, compone cada cara y reproyecta.
- */
+
 async function assembleEquirectFromCube(
   base: string,
   src: { levels: number; tileSize: number; faceSize: number; extension?: string },
@@ -1209,7 +1206,7 @@ async function assembleEquirectFromCube(
       for (let px = 0; px < outW; px++) {
         const theta = ((px + 0.5) / outW) * 2 * Math.PI - Math.PI;
         const dx = cosPhi * Math.sin(theta);
-        const dy = -sinPhi;
+        const dy = sinPhi;
         const dz = cosPhi * Math.cos(theta);
         const ax = Math.abs(dx);
         const ay = Math.abs(dy);
