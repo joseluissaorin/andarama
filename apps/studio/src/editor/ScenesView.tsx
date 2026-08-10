@@ -22,6 +22,7 @@ import { clientId, readJson } from "./editorApi";
 import { MediaPicker } from "./MediaPicker";
 import { Criatura } from "../components/Criatura";
 import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
+import { arrivalsOf, resolveArrivalView } from "./arrivals";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { HotspotPalette } from "./HotspotPalette";
 import type { ProjectInfo } from "./EditorPage";
@@ -422,6 +423,19 @@ export function setEditorView(view: { yaw: number; pitch: number; fov?: number }
   mountedViewer?.viewer.setView({ yaw: view.yaw, pitch: view.pitch, fov: view.fov ?? lastView.fov });
 }
 
+/**
+ * Vista con la que abrir la siguiente escena que se monte.
+ *
+ * La orientación de llegada no es de la sala, es del camino: quien salta por
+ * un paso concreto tiene que aterrizar mirando a donde mira el visitante que
+ * viene por ahí. Se deja apuntada aquí porque quien monta el visor es el panel
+ * de la escena de destino, que aún no existe cuando se pulsa el botón.
+ */
+let llegadaPendiente: { sceneId: string; view: { yaw: number; pitch: number; fov?: number } } | null = null;
+export function programarVistaDeLlegada(sceneId: string, view: { yaw: number; pitch: number; fov?: number }): void {
+  llegadaPendiente = { sceneId, view };
+}
+
 function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; sceneId: string; canEdit: boolean }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -606,8 +620,13 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         // Escena sin medios aún: nada que previsualizar
         return;
       }
-      // Tras un guardado, el encuadre se conserva: la vista previa no salta.
-      const view = firstMount.current ? undefined : { ...lastView };
+      // Si se ha llegado por un paso, se entra con SU orientación; si no, tras
+      // un guardado el encuadre se conserva y la vista previa no salta.
+      const llegada = llegadaPendiente?.sceneId === sceneId ? llegadaPendiente.view : null;
+      if (llegada != null) llegadaPendiente = null;
+      const view = llegada != null
+        ? { yaw: llegada.yaw, pitch: llegada.pitch, fov: llegada.fov ?? lastView.fov }
+        : firstMount.current ? undefined : { ...lastView };
       firstMount.current = false;
       tour.start = { scene: sceneId, intro: "none", view };
       const mounted = mountViewer({
@@ -797,7 +816,14 @@ function SaltoDeHotspot({ contenedor, sceneId }: {
   return (
     <button
       type="button"
-      onClick={() => editor.select(destino.id)}
+      onClick={() => {
+        // Aterrizar como aterriza quien viene por este paso
+        const llegada = snapshot == null ? null : arrivalsOf(snapshot, destino.id).find((a) => a.id === hotspotId);
+        if (snapshot != null && llegada != null) {
+          programarVistaDeLlegada(destino.id, resolveArrivalView(snapshot, destino.id, llegada));
+        }
+        editor.select(destino.id);
+      }}
       style={{ left: pos.x, top: pos.y }}
       className="anda-salto absolute z-20 flex max-w-56 -translate-x-1/2 items-center gap-1.5 truncate rounded-full border border-[var(--anda-border)] bg-[image:var(--anda-tecla)] px-3 py-1.5 text-[12.5px] font-semibold text-[#33260f] shadow-[var(--anda-relieve)] hover:brightness-105"
     >

@@ -422,8 +422,30 @@ test("un hotspot de navegación ofrece el salto a su escena, y el icono se puede
   const salto = page.locator(".anda-salto");
   await expect(salto).toBeVisible({ timeout: 20_000 });
   await expect(salto).toContainText("Escena destino");
+  // El paso se coloca en un rumbo concreto para poder comprobar la llegada
+  await page.fill("#hs-yaw", "60");
+  await page.locator("#hs-yaw").blur();
   await salto.click();
   await expect(page.locator("#sc-title")).toHaveValue("Escena destino", { timeout: 20_000 });
+
+  // Se llega mirando como llega quien viene por ese paso, no a la vista por
+  // defecto de la escena (yaw 0). Sin marcador de vuelta, «hacia delante»
+  // deja la vista en el rumbo del propio paso.
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(() => {
+          const aguja = document.querySelector<SVGGElement>(".anda-compass__needle");
+          const m = /rotate\((-?[\d.]+)deg\)/.exec(aguja?.style.transform ?? "");
+          if (m == null) return null;
+          // La aguja marca el norte respecto a la vista: el yaw es su opuesto
+          const yaw = ((-parseFloat(m[1]!) % 360) + 360) % 360;
+          return Math.round(yaw);
+        }),
+      { timeout: 20_000 },
+    )
+    .toBeGreaterThan(55);
 
   // El giro del icono llega al marcador del panorama
   await abrirEscena(page, "Escena E2E");
