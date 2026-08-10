@@ -119,15 +119,6 @@ body {
  * algo. Es un relieve de tecla, no una pegatina recortada: la marca gritona
  * se queda para la portada y el acceso, que es donde toca gritar.
  * ------------------------------------------------------------------------- */
-:root {
-  --anda-luz: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  --anda-relieve: var(--anda-luz), 0 1px 2px rgba(72, 52, 8, 0.1), 0 2px 8px rgba(72, 52, 8, 0.06);
-  --anda-relieve-alto: var(--anda-luz), 0 2px 4px rgba(72, 52, 8, 0.12), 0 10px 24px rgba(72, 52, 8, 0.14);
-}
-.dark {
-  --anda-luz: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
 /* Cabecera de sección: una banda con relieve, no un cartel */
 .anda-cabecera {
   border: 1px solid var(--anda-border);
@@ -229,7 +220,104 @@ body {
   box-shadow: var(--anda-relieve);
 }
 
+/* Barra de herramientas del editor: superficie con filo de luz, no una franja
+   plana. Es el borde superior de todo lo que hay debajo. */
+.anda-barra {
+  border-bottom: 1px solid var(--anda-border);
+  background: linear-gradient(180deg, var(--anda-surface) 0%, var(--anda-surface-2) 100%);
+  box-shadow: var(--anda-luz);
+}
+
+/* Pestañas del editor: el mismo raíl hundido del segmentado, en horizontal y
+   con sitio para el icono. La pestaña activa es la tecla ámbar. */
+.anda-pestanas {
+  display: flex;
+  gap: 3px;
+  border: 1px solid var(--anda-border);
+  border-radius: 999px;
+  padding: 3px;
+  background: linear-gradient(180deg, var(--anda-surface-2) 0%, var(--anda-surface) 100%);
+  box-shadow: var(--anda-hundido);
+}
+.anda-pestanas button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--anda-text-dim);
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.anda-pestanas button:hover { color: var(--anda-text); }
+.anda-pestanas button[aria-pressed="true"] {
+  background: var(--anda-tecla);
+  color: #33260f;
+  box-shadow: var(--anda-relieve);
+}
+
+/* Bloque: la caja de contenido que no se pulsa (secciones de ajustes, fichas
+   de administración). Mismo relieve que la tarjeta, pero quieto. */
+.anda-bloque {
+  border: 1px solid var(--anda-border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--anda-surface) 0%, var(--anda-surface-2) 100%);
+  box-shadow: var(--anda-relieve);
+}
+
+/* Panel hundido: listas y bandejas donde se deja caer contenido */
+.anda-hueco {
+  border: 1px solid var(--anda-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--anda-surface-2) 0%, var(--anda-surface) 100%);
+  box-shadow: var(--anda-hundido);
+}
+
+/* Ficha de lista (escenas, medios del muelle): relieve corto que sube al pasar */
+.anda-ficha {
+  border: 1px solid var(--anda-border);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--anda-surface) 0%, var(--anda-surface-2) 100%);
+  box-shadow: var(--anda-relieve);
+  transition: transform 0.15s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.anda-ficha:hover { transform: translateY(-2px); box-shadow: var(--anda-relieve-alto); border-color: var(--anda-primary-light); }
+.anda-ficha--activa {
+  border-color: var(--anda-primary);
+  background: linear-gradient(180deg, var(--anda-primary-soft) 0%, var(--anda-surface-2) 100%);
+  box-shadow: var(--anda-relieve-alto);
+}
+
+/* ---------------------------------------------------------------------------
+ * El cameo: cada tanto la criatura cruza el editor por abajo y se va. No
+ * interrumpe nada —no recibe clics, no la lee el lector de pantalla— y no
+ * aparece si el sistema pide menos movimiento. Es solo un guiño.
+ * ------------------------------------------------------------------------- */
+@keyframes anda-cameo {
+  from { transform: translateX(-96px); }
+  to { transform: translateX(calc(100vw + 96px)); }
+}
+@keyframes anda-cameo-vuelta {
+  from { transform: translateX(calc(100vw + 96px)); }
+  to { transform: translateX(-96px); }
+}
+.anda-cameo {
+  position: fixed;
+  bottom: 14px;
+  left: 0;
+  z-index: 20;
+  pointer-events: none;
+  animation: anda-cameo var(--anda-cameo-dur, 15s) linear forwards;
+}
+/* A veces vuelve por donde vino */
+.anda-cameo--vuelta { animation-name: anda-cameo-vuelta; }
+
 @media (prefers-reduced-motion: reduce) {
   .anda-tarjeta, .anda-nav, .anda-buscador input, .anda-portada img, .anda-portada span[data-fondo] { transition: none; }
+  .anda-ficha { transition: none; }
+  .anda-ficha:hover { transform: none; }
+  .anda-cameo { display: none; }
   .anda-tarjeta:hover { transform: none; }
 }

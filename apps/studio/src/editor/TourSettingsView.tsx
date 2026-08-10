@@ -67,7 +67,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("tour_settings")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t("default_lang")} htmlFor="ts-lang">
@@ -109,7 +109,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("ui_components")}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {UI_TOGGLES.map((key) => (
@@ -258,7 +258,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       <CssGuideDialog open={cssHelp} onClose={() => setCssHelp(false)} />
 
       {/* Cómo se ve el enlace del tour al pegarlo en un chat o una red */}
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-1 text-[15px] font-semibold">{t("social_settings")}</h2>
         <p className="mb-4 text-xs text-[var(--anda-text-dim)]">{t("social_intro")}</p>
 
@@ -345,7 +345,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       </section>
 
       {/* Gafas y cardboard: qué se puede accionar sin ratón ni teclado */}
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-1 text-[15px] font-semibold">{t("vr_settings")}</h2>
         <p className="mb-4 text-xs text-[var(--anda-text-dim)]">{t("vr_settings_intro")}</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -420,7 +420,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         )}
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("autorotate")}</h2>
         <div className="flex flex-wrap items-end gap-4">
           <Switch id="ar-enabled" checked={autorotate.enabled === true} disabled={!canEdit}
@@ -436,7 +436,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("welcome_screen")} / {t("final_screen")}</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="space-y-3">
@@ -467,7 +467,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("quiz_settings")}</h2>
         <div className="flex flex-wrap items-end gap-4">
           <Field label={t("passing_score")} htmlFor="qz-pass">
@@ -483,7 +483,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-1 text-[15px] font-semibold">{t("treasure_hunt")}</h2>
         <p className="mb-4 text-[13px] leading-relaxed text-[var(--anda-text-dim)]">{t("treasure_explain")}</p>
         {(() => {
@@ -528,13 +528,13 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         })()}
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("geo_map")}</h2>
         <Switch id="geo-en" checked={geoMap.enabled === true} disabled={!canEdit}
           onCheckedChange={(v) => patch((s) => { s.geoMap = { ...(s.geoMap as object), enabled: v }; })} label={t("enabled")} />
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("autopilot_routes")} / {t("variables")}</h2>
         <Field label={`${t("autopilot_routes")} (JSON)`} htmlFor="ap-json" hint='[{"id":"r1","title":"Visita","steps":[{"scene":"...","rotate":6.28,"dwell":2}],"loop":true}]'>
           <Textarea

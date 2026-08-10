@@ -1102,17 +1102,15 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
     <div className="flex h-full">
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Barra de herramientas */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5">
-          <div className="flex rounded-lg bg-[var(--anda-surface-2)] p-0.5" role="group" aria-label={t("canvas_mode")}>
+        <div className="anda-barra flex flex-wrap items-center gap-2 px-3 py-1.5">
+          <div className="anda-pestanas" role="group" aria-label={t("canvas_mode")}>
             {GRAPH_MODES.map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => setMode(m)}
                 aria-pressed={mode === m}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  mode === m ? "bg-[var(--anda-surface)] text-[var(--anda-text)] shadow-sm" : "text-[var(--anda-text-dim)]"
-                }`}
+                className="!px-2.5 !py-1 !text-xs"
               >
                 {t(`graph_mode_${m}`)}
               </button>
@@ -1131,7 +1129,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           )}
 
           {selectedNodes.size >= 2 && canEdit && (
-            <div className="flex items-center gap-0.5 rounded-lg bg-[var(--anda-surface-2)] p-0.5">
+            <div className="anda-hueco flex items-center gap-0.5 !rounded-lg p-0.5">
               {(
                 [
                   ["left", AlignStartVertical, t("align_left")],

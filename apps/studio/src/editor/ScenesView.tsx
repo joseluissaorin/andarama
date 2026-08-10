@@ -11,7 +11,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Badge, Button, Dialog, Field, Input, Tooltip, useToast } from "@andarama/ui";
+import { Badge, Button, Dialog, EmptyState, Field, Input, Tooltip, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
 import { mountViewer, type MountedSkin } from "@andarama/viewer-ui";
 import { api } from "../api";
@@ -19,6 +19,7 @@ import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
 import { MediaPicker } from "./MediaPicker";
+import { Criatura } from "../components/Criatura";
 import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { HotspotPalette } from "./HotspotPalette";
@@ -163,14 +164,14 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
           )}
         </div>
         {scenes.length > 6 && (
-          <div className="relative mx-2 mb-2">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--anda-text-dim)]" />
+          <div className="anda-buscador mx-2 mb-2">
+            <Search />
             <input
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               placeholder={t("search")}
               aria-label={t("search")}
-              className="w-full rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface-2)] py-1.5 pl-8 pr-2 text-[13px] outline-none focus:border-[var(--anda-primary)]"
+              className="!py-1.5 !text-[13px]"
             />
           </div>
         )}
@@ -206,11 +207,9 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
                   setDragId(null);
                   setDropAt(null);
                 }}
-                className={`group relative mb-1 rounded-lg border p-2 transition-shadow ${
-                  selected?.id === scene.id
-                    ? "border-[var(--anda-primary)] bg-[var(--anda-surface-2)]"
-                    : "border-transparent hover:bg-[var(--anda-surface-2)]"
-                } ${dropAt === scene.id ? "shadow-[inset_0_2px_0_var(--anda-primary)]" : ""} ${dragId === scene.id ? "opacity-40" : ""}`}
+                className={`anda-ficha group relative mb-1.5 p-2 ${
+                  selected?.id === scene.id ? "anda-ficha--activa" : ""
+                } ${dropAt === scene.id ? "!shadow-[inset_0_2px_0_var(--anda-primary)]" : ""} ${dragId === scene.id ? "opacity-40" : ""}`}
               >
                 <button type="button" className="flex w-full items-center gap-2 text-left" onClick={() => editor.select(scene.id)}>
                   {canEdit && (
@@ -265,7 +264,9 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
         {selected != null ? (
           <ViewerPane key={selected.id} project={project} sceneId={selected.id} canEdit={canEdit} />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-[var(--anda-text-dim)]">{t("no_projects")}</div>
+          <div className="flex h-full items-center justify-center p-8">
+            <EmptyState icon={<Criatura size={64} andando />} title={t("no_scenes_yet")} hint={t("no_scenes_yet_hint")} />
+          </div>
         )}
       </div>
 
@@ -671,7 +672,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   return (
     <>
       {/* Barra de herramientas del lienzo: nada flota sobre el visor */}
-      <div className="flex min-h-10 items-center gap-2 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5">
+      <div className="anda-barra flex min-h-10 items-center gap-2 px-3 py-1.5">
         {placement.kind !== "none" ? (
           <span className="flex items-center gap-2 rounded-full bg-[var(--anda-primary-soft)] px-3 py-1 text-[13px] font-medium text-[var(--anda-primary)]">
             <Crosshair className="h-3.5 w-3.5" />

@@ -65,7 +65,7 @@ export function VersionsView({ project }: { project: ProjectInfo }): React.React
       </div>
       <div className="space-y-2">
         {versions.map((v, i) => (
-          <div key={v.id} className="flex items-center gap-3 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-3 text-sm">
+          <div key={v.id} className="flex items-center gap-3 anda-ficha px-4 py-3 text-sm">
             <span className="font-mono font-bold">v{v.number}</span>
             <Badge tone={v.kind === "publish" ? "ok" : "default"}>{v.kind === "publish" ? t("published") : v.kind}</Badge>
             <span className="flex-1 truncate">{v.note ?? ""}</span>

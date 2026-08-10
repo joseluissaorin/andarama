@@ -324,7 +324,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
                       });
                     }}
                     onDragEnd={() => setDragKey(null)}
-                    className="flex items-center gap-2.5 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-2"
+                    className="flex items-center gap-2.5 anda-ficha p-2"
                   >
                     <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-[var(--anda-text-dim)]" />
                     <span className="w-6 text-right text-xs tabular-nums text-[var(--anda-text-dim)]">{i + 1}</span>

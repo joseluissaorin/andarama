@@ -29,6 +29,13 @@
   --anda-shadow: 0 1px 2px rgba(72, 52, 8, 0.06), 0 4px 14px rgba(72, 52, 8, 0.07);
   --anda-shadow-lg: 0 2px 6px rgba(72, 52, 8, 0.08), 0 18px 44px rgba(72, 52, 8, 0.14);
   --anda-ring: 0 0 0 3px rgba(245, 158, 0, 0.28);
+  /* Relieve: el filo de luz arriba y la sombra corta debajo. Es la gramática
+     de todo lo que se pulsa, se escribe o contiene algo. */
+  --anda-luz: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --anda-hundido: inset 0 1px 2px rgba(72, 52, 8, 0.08);
+  --anda-relieve: var(--anda-luz), 0 1px 2px rgba(72, 52, 8, 0.1), 0 2px 8px rgba(72, 52, 8, 0.06);
+  --anda-relieve-alto: var(--anda-luz), 0 2px 4px rgba(72, 52, 8, 0.12), 0 10px 24px rgba(72, 52, 8, 0.14);
+  --anda-tecla: linear-gradient(180deg, var(--anda-primary-light) 0%, var(--anda-primary) 100%);
 }
 
 .dark {
@@ -44,6 +51,8 @@
   --anda-text-dim: #bda87a;
   --anda-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
   --anda-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.4);
+  --anda-luz: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --anda-hundido: inset 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 /* ---------------------------------------------------------------------------

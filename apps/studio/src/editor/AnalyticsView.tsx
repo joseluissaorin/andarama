@@ -93,7 +93,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
       </div>
 
       {/* Serie temporal */}
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("visits")}</h2>
         {data.timeseries.length === 0 ? (
           <p className="text-sm text-[var(--anda-text-dim)]">{t("no_data")}</p>
@@ -111,7 +111,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
       </section>
 
       {/* Embudo de escenas */}
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("scene_funnel")}</h2>
         <div className="space-y-2">
           {[...data.sceneViews]
@@ -132,7 +132,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
       </section>
 
       {/* Hotspots mas usados */}
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("top_hotspots")}</h2>
         <div className="space-y-1.5 text-sm">
           {[...data.hotspotClicks]
@@ -151,7 +151,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
       </section>
 
       {/* Mapa de calor de orientaciones (a donde mira la gente §2.14) */}
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("orientation_heatmap")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[...heatByScene.entries()].map(([sceneId, cells]) => {
@@ -192,7 +192,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
 
 function Stat({ label, value }: { label: string; value: number | string }): React.ReactNode {
   return (
-    <div className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+    <div className="anda-bloque p-4">
       <p className="text-2xl font-bold">{value}</p>
       <p className="text-xs text-[var(--anda-text-dim)]">{label}</p>
     </div>
@@ -202,7 +202,7 @@ function Stat({ label, value }: { label: string; value: number | string }): Reac
 function ListCard({ title, items }: { title: string; items: [string, number][] }): React.ReactNode {
   const t = useT();
   return (
-    <div className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+    <div className="anda-bloque p-4">
       <h3 className="mb-2 text-sm font-semibold">{title}</h3>
       {items.length === 0 ? (
         <p className="text-xs text-[var(--anda-text-dim)]">{t("no_data")}</p>

@@ -123,7 +123,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
             key={key}
             type="button"
             onClick={() => onNavigate(tab)}
-            className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4 text-left transition-shadow hover:shadow-md"
+            className="anda-tarjeta p-4 text-left"
           >
             <p className="text-2xl font-bold tabular-nums">
               {q.data?.[key] != null ? (format != null ? format(q.data[key]!) : q.data[key]) : "—"}
@@ -145,7 +145,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Almacenamiento por organización */}
-        <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+        <section className="anda-bloque p-4">
           <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("storage_by_org")}</h2>
           <div className="space-y-3">
             {(orgsQ.data ?? []).map((o) => {
@@ -172,7 +172,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
         </section>
 
         {/* Últimas publicaciones */}
-        <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+        <section className="anda-bloque p-4">
           <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("latest_publications")}</h2>
           <div className="space-y-1.5">
             {(pubsQ.data ?? [])
@@ -197,7 +197,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
       </div>
 
       {/* Actividad reciente */}
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+      <section className="anda-bloque p-4">
         <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("recent_activity")}</h2>
         <div className="space-y-1 text-xs">
           {(auditQ.data ?? []).slice(0, 10).map((a) => (
@@ -475,7 +475,7 @@ function OrgsTable(): React.ReactNode {
       </div>
       <div className="space-y-2">
         {(q.data ?? []).map((o) => (
-          <div key={o.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 text-sm">
+          <div key={o.id} className="flex flex-wrap items-center gap-3 anda-ficha px-4 py-2.5 text-sm">
             <Input
               defaultValue={o.name}
               className="max-w-56 font-medium"
@@ -579,7 +579,7 @@ function PubsTable(): React.ReactNode {
       <Input placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-64" aria-label={t("search")} />
       <div className="space-y-2 text-sm">
         {rows.map((p) => (
-          <div key={p.projectId} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5">
+          <div key={p.projectId} className="flex items-center gap-3 anda-ficha px-4 py-2.5">
             <a href={`/t/${p.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 font-medium text-[var(--anda-primary)] hover:underline">
               {p.title} <ExternalLink className="h-3.5 w-3.5" />
             </a>
@@ -634,7 +634,7 @@ function JobsTable(): React.ReactNode {
       </Select>
       <div className="space-y-2 text-sm">
         {rows.map((j) => (
-          <div key={j.id} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5">
+          <div key={j.id} className="flex items-center gap-3 anda-ficha px-4 py-2.5">
             <span className="font-mono text-xs">{j.kind}</span>
             <Badge tone={j.status === "done" ? "ok" : j.status === "error" ? "danger" : "warn"}>{j.status}</Badge>
             <span className="flex-1 truncate text-xs text-[var(--anda-text-dim)]">{j.error ?? ""}</span>
@@ -720,7 +720,7 @@ function WebhooksPanel(): React.ReactNode {
   return (
     <div className="max-w-2xl space-y-4">
       {(q.data ?? []).map((h) => (
-        <div key={h.id} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 text-sm">
+        <div key={h.id} className="flex items-center gap-3 anda-ficha px-4 py-2.5 text-sm">
           <Globe className={`h-4 w-4 shrink-0 ${h.active ? "text-emerald-500" : "text-[var(--anda-text-dim)]"}`} />
           <span className="flex-1 truncate font-mono text-xs">{h.url}</span>
           <span className="text-xs text-[var(--anda-text-dim)]">{parseEvents(h.eventsJson).join(", ")}</span>
@@ -820,7 +820,7 @@ function LtiPanel(): React.ReactNode {
   return (
     <div className="max-w-2xl space-y-5">
       {first != null && (
-        <div className="rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4 text-xs">
+        <div className="anda-ficha p-4 text-xs">
           <p className="mb-2 font-semibold">{t("lti_endpoints_hint")}</p>
           {Object.entries(first.toolEndpoints).map(([k, v]) => (
             <p key={k} className="font-mono">
@@ -830,7 +830,7 @@ function LtiPanel(): React.ReactNode {
         </div>
       )}
       {(q.data ?? []).map((r) => (
-        <div key={r.id} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 text-sm">
+        <div key={r.id} className="flex items-center gap-3 anda-ficha px-4 py-2.5 text-sm">
           <span className="flex-1 truncate">{r.issuer}</span>
           <span className="font-mono text-xs text-[var(--anda-text-dim)]">{r.clientId}</span>
           <Button

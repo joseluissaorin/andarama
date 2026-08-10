@@ -356,7 +356,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
       </div>
 
       {Object.entries(uploads).map(([key, u]) => (
-        <div key={key} className="mb-2 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5">
+        <div key={key} className="mb-2 anda-ficha px-4 py-2.5">
           <div className="flex items-center justify-between text-sm">
             <span className="truncate">{u.name}</span>
             <span className="text-xs text-[var(--anda-text-dim)]">

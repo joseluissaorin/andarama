@@ -97,7 +97,7 @@ export function OrgDefaultsPage(): React.ReactNode {
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <Cabecera title={t("org_defaults")} hint={t("org_defaults_intro")} />
 
-      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="space-y-4 anda-bloque p-5">
         <h2 className="text-[15px] font-semibold">{t("languages")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t("default_lang")} htmlFor="od-lang">
@@ -126,7 +126,7 @@ export function OrgDefaultsPage(): React.ReactNode {
         </Field>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="space-y-4 anda-bloque p-5">
         <h2 className="text-[15px] font-semibold">{t("theme")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label={t("theme")} htmlFor="od-base">
@@ -172,7 +172,7 @@ export function OrgDefaultsPage(): React.ReactNode {
         </Field>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="space-y-4 anda-bloque p-5">
         <h2 className="text-[15px] font-semibold">{t("vr_settings")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t("vr_hotspots_mode")} htmlFor="od-vr">
@@ -203,7 +203,7 @@ export function OrgDefaultsPage(): React.ReactNode {
         />
       </section>
 
-      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="space-y-4 anda-bloque p-5">
         <h2 className="text-[15px] font-semibold">{t("brand_kits")}</h2>
         <p className="text-[13px] leading-relaxed text-[var(--anda-text-dim)]">{t("brand_kits_intro")}</p>
         {(draft.brandKits ?? []).map((kit, i) => (

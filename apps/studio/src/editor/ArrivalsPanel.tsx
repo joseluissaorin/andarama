@@ -50,7 +50,7 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
         const view = resolveArrivalView(snapshot, sceneId, a);
         const falta = arrivalNeedsReturn(snapshot, sceneId, a);
         return (
-          <li key={a.id} className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-2">
+          <li key={a.id} className="anda-ficha p-2">
             <div className="flex items-center gap-2">
               {/* La brújula dice de un vistazo hacia dónde se entra */}
               <Compass yaw={view.yaw} muted={a.mode === "relative"} />

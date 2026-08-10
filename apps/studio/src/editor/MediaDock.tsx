@@ -105,24 +105,23 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   }
 
   return (
-    <section className="flex h-56 flex-col border-t border-[var(--anda-border)] bg-[var(--anda-surface)]">
+    <section className="anda-barra flex h-56 flex-col border-b-0 border-t border-t-[var(--anda-border)]">
       <header className="flex items-center gap-2 px-3 py-1.5">
         <Images className="h-4 w-4 text-[var(--anda-primary)]" />
         <h2 className="text-[13px] font-semibold">{t("media_dock")}</h2>
 
         {/* Por defecto, solo lo de este tour */}
-        <div className="ml-2 flex rounded-lg bg-[var(--anda-surface-2)] p-0.5">
+        <div className="anda-pestanas ml-2">
           {(["tour", "all"] as const).map((s) => (
             <button
               key={s}
               type="button"
+              aria-pressed={scope === s}
               onClick={() => {
                 setScope(s);
                 setFolder("");
               }}
-              className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${
-                scope === s ? "bg-[var(--anda-surface)] shadow-sm" : "text-[var(--anda-text-dim)]"
-              }`}
+              className="!px-2.5 !py-1 !text-xs"
             >
               {s === "tour" ? t("dock_this_tour") : t("dock_all_media")}
             </button>
@@ -229,7 +228,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
                   if (isPano(m)) setPreview(m);
                 }}
                 title={m.filename}
-                className="group relative flex w-36 shrink-0 cursor-grab flex-col overflow-hidden rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)]"
+                className="anda-ficha group relative flex w-36 shrink-0 cursor-grab flex-col overflow-hidden"
               >
                 <div className="relative h-20 overflow-hidden">
                   {isPano(m) ? (

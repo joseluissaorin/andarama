@@ -820,5 +820,7 @@
   "admin_intro": "Cuentas, organizaciones y ajustes de la instancia.",
   "one_tour": "1 recorrido",
   "folder_intro_one": "1 recorrido en esta carpeta.",
-  "search_tours": "Buscar un recorrido…"
+  "search_tours": "Buscar un recorrido…",
+  "no_scenes_yet": "Aún no hay ninguna escena",
+  "no_scenes_yet_hint": "Arrastra un panorama desde la biblioteca de abajo o pulsa «Añadir escena»."
 }

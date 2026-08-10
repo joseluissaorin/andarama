@@ -85,7 +85,7 @@ export function AccountPage(): React.ReactNode {
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       <Cabecera title={me?.user?.name ?? ""} hint={me?.user?.email} />
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold">
           <ShieldCheck className="h-4 w-4" /> {t("security")}
         </h2>
@@ -116,7 +116,7 @@ export function AccountPage(): React.ReactNode {
         )}
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-[15px] font-semibold">
             <Users className="h-4 w-4" /> {t("members")}
@@ -160,7 +160,7 @@ export function AccountPage(): React.ReactNode {
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+      <section className="anda-bloque p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-[15px] font-semibold">
             <KeyRound className="h-4 w-4" /> {t("api_tokens")}

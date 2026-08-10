@@ -122,13 +122,11 @@ export function HotspotPalette({ open, onClose, onPick }: {
                     type="button"
                     onMouseEnter={() => setActive(index)}
                     onClick={() => pick(kind.type)}
-                    className={`flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left transition-colors ${
-                      index === active
-                        ? "border-[var(--anda-primary)] bg-[var(--anda-primary)]/8"
-                        : "border-[var(--anda-border)] hover:bg-[var(--anda-surface-2)]"
+                    className={`anda-ficha flex w-full items-start gap-2.5 p-2.5 text-left ${
+                      index === active ? "anda-ficha--activa" : ""
                     }`}
                   >
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--anda-surface-2)] text-[var(--anda-primary)]">
+                    <span className="anda-hueco mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center !rounded-lg text-[var(--anda-primary)]">
                       <Icon className="h-4 w-4" />
                     </span>
                     <span className="min-w-0">

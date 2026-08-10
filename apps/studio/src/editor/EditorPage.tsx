@@ -32,6 +32,7 @@ import { CommentsView } from "./CommentsView";
 import { VersionsView } from "./VersionsView";
 import { ExportDialog, LiveDialog, PublishDialog, ShareDialog } from "./dialogs";
 import { CommandPalette } from "./CommandPalette";
+import { CriaturaCameo } from "../components/Criatura";
 
 export interface ProjectInfo {
   id: string;
@@ -230,7 +231,7 @@ export function EditorPage(): React.ReactNode {
 
   return (
     <div className="flex h-full flex-col bg-[var(--anda-bg)]">
-      <header className="flex items-center gap-2 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-2">
+      <header className="anda-barra flex items-center gap-2 px-3 py-2">
         <Tooltip content={t("projects")}>
           <Button variant="ghost" size="icon" aria-label={t("projects")} onClick={() => void navigate({ to: "/" })}>
             <ArrowLeft className="h-4 w-4" />
@@ -289,22 +290,17 @@ export function EditorPage(): React.ReactNode {
         )}
       </header>
 
-      <nav className="flex gap-1 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5" aria-label="Vistas del editor">
-        {TABS.map(({ id, icon, label }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] transition-colors ${
-              tab === id
-                ? "bg-[var(--anda-primary-soft)] font-semibold text-[var(--anda-primary)]"
-                : "text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)] hover:text-[var(--anda-text)]"
-            }`}
-          >
-            {icon}
-            {label}
-          </button>
-        ))}
+      <nav className="anda-barra flex px-3 py-2" aria-label="Vistas del editor">
+        {/* El raíl hundido y la pestaña elegida como tecla ámbar: el mismo
+            relieve del botón principal, aquí en pequeño. */}
+        <div className="anda-pestanas overflow-x-auto">
+          {TABS.map(({ id, icon, label }) => (
+            <button key={id} type="button" aria-pressed={tab === id} onClick={() => setTab(id)}>
+              {icon}
+              {label}
+            </button>
+          ))}
+        </div>
       </nav>
 
       <div className="flex min-h-0 flex-1 flex-col">
@@ -356,6 +352,9 @@ export function EditorPage(): React.ReactNode {
           else if (action.kind === "redo") editor.redo();
         }}
       />
+      {/* De vez en cuando la criatura cruza el editor y se va. No hace nada:
+          está de paso. */}
+      <CriaturaCameo />
     </div>
   );
 }

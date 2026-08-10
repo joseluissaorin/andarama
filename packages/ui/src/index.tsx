@@ -35,11 +35,12 @@ type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "outline";
 
 const BUTTON_STYLES: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-b from-[var(--anda-primary-light)] to-[var(--anda-primary)] text-[#33260f] shadow-[0_1px_2px_rgba(72,52,8,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] hover:brightness-105 hover:-translate-y-px active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0",
-  secondary: "bg-[var(--anda-surface-2)] text-[var(--anda-text)] hover:bg-[var(--anda-border)] disabled:opacity-50",
+    "bg-[image:var(--anda-tecla)] text-[#33260f] shadow-[var(--anda-relieve)] hover:brightness-105 hover:-translate-y-px active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0",
+  secondary:
+    "bg-[image:linear-gradient(180deg,var(--anda-surface),var(--anda-surface-2))] text-[var(--anda-text)] shadow-[var(--anda-relieve)] hover:brightness-[0.98] hover:-translate-y-px active:translate-y-0 disabled:opacity-50",
   ghost: "bg-transparent text-[var(--anda-text)] hover:bg-[var(--anda-surface-2)] disabled:opacity-40",
   outline:
-    "bg-[var(--anda-surface)] border border-[var(--anda-border)] text-[var(--anda-text)] shadow-sm hover:border-[var(--anda-primary-light)] hover:bg-[var(--anda-primary-soft)] disabled:opacity-50",
+    "bg-[image:linear-gradient(180deg,var(--anda-surface),var(--anda-surface-2))] border border-[var(--anda-border)] text-[var(--anda-text)] shadow-[var(--anda-relieve)] hover:border-[var(--anda-primary-light)] hover:-translate-y-px active:translate-y-0 disabled:opacity-50",
   danger: "bg-[var(--anda-danger)] text-white shadow-sm hover:brightness-90 disabled:opacity-50",
 };
 
@@ -88,8 +89,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 // Campos de formulario
 // ---------------------------------------------------------------------------
 
+/* Lo que recibe escritura se hunde: sombra interior en vez de exterior. Al
+   enfocar conserva el hundido y añade el anillo, para que no parezca que el
+   campo sale de la página justo cuando se va a escribir en él. */
 const FIELD_CLS =
-  "w-full rounded-[var(--anda-radius)] border border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-2 text-sm text-[var(--anda-text)] placeholder:text-[var(--anda-text-dim)] transition-shadow duration-150 focus:outline-none focus:border-[var(--anda-primary)] focus:shadow-[var(--anda-ring)] disabled:opacity-50";
+  "w-full rounded-[var(--anda-radius)] border border-[var(--anda-border)] bg-[image:linear-gradient(180deg,var(--anda-surface-2),var(--anda-surface))] px-3 py-2 text-sm text-[var(--anda-text)] placeholder:text-[var(--anda-text-dim)] shadow-[var(--anda-hundido)] transition-shadow duration-150 focus:outline-none focus:border-[var(--anda-primary)] focus:shadow-[var(--anda-hundido),var(--anda-ring)] disabled:opacity-50";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...rest },
@@ -180,7 +184,7 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
         <RadixDialog.Overlay className="anda-anim-overlay fixed inset-0 z-50 bg-[#0a0e20]/55 backdrop-blur-[6px]" />
         <RadixDialog.Content
           className={cx(
-            "anda-anim-dialog fixed left-1/2 top-1/2 z-50 max-h-[86vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-6 shadow-[var(--anda-shadow-lg)]",
+            "anda-anim-dialog fixed left-1/2 top-1/2 z-50 max-h-[86vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-6 shadow-[var(--anda-relieve-alto)]",
             wide === true ? "max-w-3xl" : "max-w-lg",
           )}
         >
@@ -247,7 +251,7 @@ export function DropdownItem({ children, className, danger, ...rest }: RadixDrop
 
 export function TabList({ children }: { children: ReactNode }): ReactNode {
   return (
-    <RadixTabs.List className="flex gap-1 rounded-lg bg-[var(--anda-surface-2)] p-1">{children}</RadixTabs.List>
+    <RadixTabs.List className="flex gap-1 rounded-full border border-[var(--anda-border)] bg-[image:linear-gradient(180deg,var(--anda-surface-2),var(--anda-surface))] p-1 shadow-[var(--anda-hundido)]">{children}</RadixTabs.List>
   );
 }
 
@@ -255,7 +259,7 @@ export function TabTrigger({ value, children }: { value: string; children: React
   return (
     <RadixTabs.Trigger
       value={value}
-      className="rounded-md px-3 py-1.5 text-sm text-[var(--anda-text-dim)] outline-none transition-colors data-[state=active]:bg-[var(--anda-surface)] data-[state=active]:text-[var(--anda-text)] data-[state=active]:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--anda-primary)]"
+      className="rounded-full px-3 py-1.5 text-sm font-medium text-[var(--anda-text-dim)] outline-none transition-all hover:text-[var(--anda-text)] data-[state=active]:bg-[image:var(--anda-tecla)] data-[state=active]:font-semibold data-[state=active]:text-[#33260f] data-[state=active]:shadow-[var(--anda-relieve)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--anda-primary)]"
     >
       {children}
     </RadixTabs.Trigger>
@@ -357,7 +361,7 @@ export function EmptyState({ icon, title, hint, action }: {
   action?: ReactNode;
 }): ReactNode {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--anda-border)] p-10 text-center">
+    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-[var(--anda-border)] bg-[image:linear-gradient(180deg,var(--anda-surface),var(--anda-surface-2))] p-10 text-center shadow-[var(--anda-hundido)]">
       {icon != null && <div className="text-[var(--anda-text-dim)]">{icon}</div>}
       <p className="text-sm font-medium text-[var(--anda-text)]">{title}</p>
       {hint != null && <p className="max-w-sm text-[13px] text-[var(--anda-text-dim)]">{hint}</p>}

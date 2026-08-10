@@ -115,9 +115,19 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
               <option value="flat">Gigapixel 2D</option>
             </Select>
           </Field>
+          {/* El panorama se reconoce por la foto, no por su identificador:
+              antes aquí salía un «3visq8IE3oDZ» que no le dice nada a nadie. */}
           <Field label={t("select_panorama")}>
             <Button variant="outline" size="sm" disabled={!canEdit} onClick={() => setPickerFor("panorama")}>
-              {scene.mediaId != null ? scene.mediaId.slice(0, 12) : t("select_media")}
+              {scene.mediaId != null && (
+                <img
+                  src={`/api/v1/media/${scene.mediaId}/derived/thumb`}
+                  alt=""
+                  className="-ml-1 h-6 w-10 rounded object-cover"
+                  loading="lazy"
+                />
+              )}
+              {scene.mediaId != null ? t("change") : t("select_media")}
             </Button>
           </Field>
           <Field label={t("alt_text")} htmlFor="sc-alt" hint={t("alt_required")}>
@@ -524,15 +534,14 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           <p className="mt-1.5 rounded-lg bg-amber-500/10 px-2 py-1 text-xs text-amber-600">{t("unplaced_hint")}</p>
         )}
         {/* Tres pestañas: lo que se viene a tocar está siempre en la primera */}
-        <div className="mt-2 flex rounded-lg bg-[var(--anda-surface-2)] p-0.5">
+        <div className="anda-pestanas mt-2">
           {(["content", "style", "conditions"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
+              aria-pressed={activeTab === tab}
               onClick={() => setTab(tab)}
-              className={`flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-                activeTab === tab ? "bg-[var(--anda-surface)] text-[var(--anda-text)] shadow-sm" : "text-[var(--anda-text-dim)]"
-              }`}
+              className="flex-1 justify-center !px-2 !text-xs"
             >
               {t(tab === "content" ? "content" : tab === "style" ? "style" : "conditions")}
             </button>
