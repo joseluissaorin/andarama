@@ -618,7 +618,7 @@
   "placed_on_plan": "Colocada en el plano",
   "connect_sequence": "Conectar en secuencia",
   "connect_sequence_hint": "Crea flechas de ida y vuelta entre escenas consecutivas: el grafo queda dibujado.",
-  "failed_jobs_warning": "{count} trabajos fallidos en la cola — revisar",
+  "failed_jobs_warning": "{count} trabajos fallidos en la cola: revisar",
   "storage_by_org": "Almacenamiento por organización",
   "latest_publications": "Últimas publicaciones",
   "recent_activity": "Actividad reciente",

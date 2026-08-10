@@ -672,7 +672,7 @@ export interface SocialConfig {
   image?: string;
   /** Texto alternativo de esa imagen. */
   imageAlt?: L10n;
-  /** og:type — "website" salvo casos raros. */
+  /** og:type: "website" salvo casos raros. */
   type?: string;
   /** og:site_name: el nombre de la institución. */
   siteName?: string;

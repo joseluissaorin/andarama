@@ -2,8 +2,8 @@
  * Verificación del paquete exportado en condiciones de alojamiento básico.
  *
  * Exporta un tour publicado a un ZIP con el mismo código que usa el Studio,
- * lo descomprime y lo sirve con un servidor estático mínimo — sin cabeceras
- * especiales, sin reescrituras y desde un subdirectorio — para comprobar que
+ * lo descomprime y lo sirve con un servidor estático mínimo —sin cabeceras
+ * especiales, sin reescrituras y desde un subdirectorio— para comprobar que
  * un hosting compartido cualquiera lo sirve tal cual.
  *
  * Uso: node scripts/verify-export.mjs [url-base] [slug]

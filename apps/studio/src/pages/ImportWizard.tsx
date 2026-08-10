@@ -285,7 +285,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
             <div className="flex-1" />
             <Field label={t("rename_pattern")} htmlFor="iw-pattern" hint={t("rename_pattern_hint")}>
               <div className="flex gap-1.5">
-                <Input id="iw-pattern" value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder="Planta 1 — {n}" className="w-48" />
+                <Input id="iw-pattern" value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder="Planta 1 ({n})" className="w-48" />
                 <Button variant="outline" size="sm" onClick={applyPattern} aria-label={t("apply")}>
                   <Wand2 className="h-4 w-4" />
                 </Button>

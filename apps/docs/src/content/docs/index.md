@@ -1,6 +1,6 @@
 ---
 title: Andarama
-description: Recorridos virtuales 360 de código abierto — ¡anda! andarama me deja andar por panoramas
+description: Recorridos virtuales 360 de código abierto. ¡anda! andarama me deja andar por panoramas
 ---
 
 Andarama es una plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360 interactivos. Se compone de tres piezas:

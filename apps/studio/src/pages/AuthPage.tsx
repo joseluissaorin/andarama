@@ -113,7 +113,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
               Editor visual, publicación en un clic, realidad virtual y exportación abierta.
             </p>
           </div>
-          <p className="relative font-mono text-[11px] text-white/60">código abierto — EUPL-1.2</p>
+          <p className="relative font-mono text-[11px] text-white/60">código abierto (EUPL-1.2)</p>
         </div>
 
         {/* Formulario */}

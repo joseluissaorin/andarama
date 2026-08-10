@@ -200,7 +200,7 @@ self.addEventListener("fetch", (e) => {
  * hosting que ya sirva bien estos tipos, el fichero simplemente se ignora.
  */
 export function renderHtaccess(): string {
-  return `# Andarama — tour exportado. Fichero opcional para servidores Apache.
+  return `# Andarama: tour exportado. Fichero opcional para servidores Apache.
 AddType image/webp .webp
 AddType image/avif .avif
 AddType application/manifest+json .webmanifest
@@ -272,10 +272,10 @@ navegador, no de Andarama:
 
 ## Ficheros
 
-- \`index.html\` — punto de entrada.
-- \`viewer/\` — motor del visor.
-- \`a/\` — panoramas, tiles y demás medios.
-- \`tour.json\` — definición del tour.
-- \`.htaccess\` — tipos MIME para Apache (opcional; se puede borrar).
+- \`index.html\`: punto de entrada.
+- \`viewer/\`: motor del visor.
+- \`a/\`: panoramas, tiles y demás medios.
+- \`tour.json\`: definición del tour.
+- \`.htaccess\`: tipos MIME para Apache (opcional; se puede borrar).
 `;
 }

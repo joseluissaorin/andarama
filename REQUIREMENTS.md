@@ -127,7 +127,7 @@ Adaptadores (`packages/adapters`) sin imports de plataforma en dominio; cómputo
 
 EUPL-1.2 (texto oficial en `LICENSE`), titularidad ULL, medios CC BY 4.0, `AUTHORS` con reconocimiento (incl. Marzipano Apache-2.0). **C**
 
-## Beta 1.0 — ampliaciones sobre la especificación
+## Beta 1.0: ampliaciones sobre la especificación
 
 | Área | Entrega | Implementación |
 |---|---|---|

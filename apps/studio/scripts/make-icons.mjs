@@ -8,11 +8,11 @@
  * año y no merece la pena atar la construcción del Studio a sharp.
  *
  * Salen tres cosas distintas, que no son la misma imagen a distintos tamaños:
- *   - `icon-*.png`     — el icono tal cual, con sus esquinas redondeadas.
- *   - `maskable-*.png` — para Android, que recorta el icono con la forma que
+ *   - `icon-*.png`:     el icono tal cual, con sus esquinas redondeadas.
+ *   - `maskable-*.png`: para Android, que recorta el icono con la forma que
  *     tenga el sistema: el símbolo va reducido dentro de la zona segura y el
  *     fondo llega hasta el borde.
- *   - `apple-touch-icon.png` — iOS lo redondea él, así que va cuadrado y opaco.
+ *   - `apple-touch-icon.png`: iOS lo redondea él, así que va cuadrado y opaco.
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";

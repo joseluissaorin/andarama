@@ -139,7 +139,7 @@ export function drawPanel(
       ctx.font = "500 28px system-ui, sans-serif";
       ctx.textAlign = "center";
       const label = item != null ? ctxApi.text(item.title) : "";
-      ctx.fillText(`${state.index + 1} / ${items.length}${label !== "" ? ` — ${truncate(ctx, label, 700)}` : ""}`, PANEL_WIDTH / 2, PANEL_HEIGHT - 76);
+      ctx.fillText(`${state.index + 1} / ${items.length}${label !== "" ? ` · ${truncate(ctx, label, 700)}` : ""}`, PANEL_WIDTH / 2, PANEL_HEIGHT - 76);
       addPrevNext(ctx, zones, ctxApi);
       break;
     }

@@ -106,7 +106,7 @@ export async function buildScene(scene: Scene, baseUrl: string, initialViewParam
   switch (src.kind) {
     case "multires": {
       // Piramide real; el nivel base (una tile por cara) actua de fallback.
-      // Nota: NO se usa cubeMapPreviewUrl — exige una tira vertical de 6 caras
+      // Nota: NO se usa cubeMapPreviewUrl: exige una tira vertical de 6 caras
       // y nuestro preview es equirectangular (el preview queda para VR/poster).
       const geometryLevels: { tileSize: number; size: number }[] = [];
       let size = src.faceSize;

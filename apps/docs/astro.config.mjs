@@ -6,7 +6,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "andarama",
-      description: "¡anda! andarama me deja andar por panoramas — recorridos 360 de código abierto",
+      description: "¡anda! andarama me deja andar por panoramas: recorridos 360 de código abierto",
       defaultLocale: "root",
       locales: {
         root: { label: "Español", lang: "es" },
