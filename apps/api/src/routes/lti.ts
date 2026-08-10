@@ -58,7 +58,7 @@ export function ltiRoutes(): Hono<AppEnv> {
     const targetLinkUri = String(params.target_link_uri ?? "");
     const clientId = String(params.client_id ?? "");
     const ltiMessageHint = params.lti_message_hint != null ? String(params.lti_message_hint) : undefined;
-    if (iss === "" || loginHint === "") throw badRequest("Peticion de login LTI incompleta");
+    if (iss === "" || loginHint === "") throw badRequest("Petición de login LTI incompleta");
     const reg = (await db
       .select()
       .from(ltiRegistrations)
@@ -92,7 +92,7 @@ export function ltiRoutes(): Hono<AppEnv> {
     const state = String(body.state ?? "");
     if (idToken === "" || state === "") throw badRequest("Launch LTI incompleto");
     const stateData = parseJson<{ nonce: string; registrationId: string } | null>(await runtime.kv.get(`lti-state:${state}`), null);
-    if (stateData == null) throw forbidden("Estado LTI invalido o caducado");
+    if (stateData == null) throw forbidden("Estado LTI inválido o caducado");
     await runtime.kv.delete(`lti-state:${state}`);
     const reg = (await db.select().from(ltiRegistrations).where(eq(ltiRegistrations.id, stateData.registrationId)).limit(1))[0];
     if (reg == null) throw forbidden("Registro LTI no encontrado");
@@ -100,7 +100,7 @@ export function ltiRoutes(): Hono<AppEnv> {
     const { createRemoteJWKSet, jwtVerify } = await import("jose");
     const jwks = createRemoteJWKSet(new URL(reg.jwksUrl));
     const { payload } = await jwtVerify(idToken, jwks, { issuer: reg.issuer, audience: reg.clientId });
-    if (payload.nonce !== stateData.nonce) throw forbidden("Nonce LTI invalido");
+    if (payload.nonce !== stateData.nonce) throw forbidden("Nonce LTI inválido");
 
     const messageType = payload["https://purl.imsglobal.org/spec/lti/claim/message_type"];
     if (messageType === "LtiDeepLinkingRequest") {
@@ -115,7 +115,7 @@ export function ltiRoutes(): Hono<AppEnv> {
       const m = /\/t\/([^/?#]+)/.exec(target);
       if (m != null) slug = m[1]!;
     }
-    if (slug === "") throw badRequest("El launch no indica ningun tour (custom.tour)");
+    if (slug === "") throw badRequest("El launch no indica ningún tour (custom.tour)");
     const ags = payload["https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"] as
       | { lineitem?: string; lineitems?: string; scope?: string[] }
       | undefined;

@@ -80,7 +80,7 @@ export function mediaRoutes(): Hono<AppEnv> {
 
     const settings = await getSettings(db);
     if (body.bytes > settings.maxUploadMb * 1024 * 1024) {
-      throw payloadTooLarge(`El limite de subida es ${settings.maxUploadMb} MB`);
+      throw payloadTooLarge(`El límite de subida es ${settings.maxUploadMb} MB`);
     }
     const org = (await db.select().from(orgs).where(eq(orgs.id, body.orgId)).limit(1))[0];
     if (org == null) throw notFound();
@@ -89,7 +89,7 @@ export function mediaRoutes(): Hono<AppEnv> {
       .from(media)
       .where(and(eq(media.orgId, body.orgId), isNull(media.deletedAt)));
     if (Number(used[0]?.total ?? 0) + body.bytes > org.quotaBytes) {
-      throw forbidden("La organizacion ha agotado su cuota de almacenamiento");
+      throw forbidden("La organización ha agotado su cuota de almacenamiento");
     }
 
     // Deduplicacion por hash de contenido (§3.2)
@@ -234,7 +234,7 @@ export function mediaRoutes(): Hono<AppEnv> {
       ];
       for (const key of checks) {
         if ((await runtime.storage.head(key)) == null) {
-          throw badRequest(`Validacion de tiles fallida: falta ${key}`);
+          throw badRequest(`Validación de tiles fallida: falta ${key}`);
         }
       }
     }
@@ -270,7 +270,7 @@ export function mediaRoutes(): Hono<AppEnv> {
     const { keys } = z.object({ keys: z.array(z.string().max(300)).max(200) }).parse(await c.req.json());
     const urls: Record<string, string> = {};
     for (const rel of keys) {
-      if (rel.includes("..")) throw badRequest("Clave invalida");
+      if (rel.includes("..")) throw badRequest("Clave inválida");
       const allowed =
         rel.startsWith(`tiles/${row.id}/`) ||
         rel.startsWith(`ftiles/${row.id}/`) ||
@@ -411,9 +411,9 @@ export function directUploadRoutes(): Hono<AppEnv> {
     const config = c.get("config");
     const url = new URL(c.req.url);
     const parsed = await verifyUploadUrl(config.secret, url.searchParams);
-    if (parsed == null) throw forbidden("Firma de subida invalida o caducada");
+    if (parsed == null) throw forbidden("Firma de subida inválida o caducada");
     const body = c.req.raw.body;
-    if (body == null) throw badRequest("Cuerpo vacio");
+    if (body == null) throw badRequest("Cuerpo vacío");
     const key = parsed.part != null ? `${parsed.key}.part-${parsed.part}` : parsed.key;
     await runtime.storage.put(key, body, {
       contentType: c.req.header("content-type"),

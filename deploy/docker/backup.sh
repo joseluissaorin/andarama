@@ -19,4 +19,4 @@ docker compose exec -T ull360 rm -f /data/backup-tmp.db
 # Medios (rsync incremental del volumen)
 docker compose cp "ull360:/data/storage" "$DEST/storage-sync" 2>/dev/null || true
 
-echo "Copia completada en $DEST (considera litestream para replicacion continua)"
+echo "Copia completada en $DEST (considera litestream para replicación continua)"

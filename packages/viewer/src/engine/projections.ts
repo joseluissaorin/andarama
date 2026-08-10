@@ -21,7 +21,7 @@ precision highp float;
 varying vec2 vUv;
 uniform sampler2D uTex;   // entorno equirectangular (fila 0 = cenit)
 uniform float uYaw;
-uniform float uPitch;     // positivo = mirar hacia abajo (convencion Marzipano)
+uniform float uPitch;     // positivo = mirar hacia arriba (convencion Marzipano)
 uniform float uFov;       // fov vertical actual (rad)
 uniform float uAspect;    // ancho/alto del canvas
 uniform int uMode;        // 1 littlePlanet 2 fisheye 3 panini 4 arquitectonica
@@ -29,15 +29,20 @@ uniform float uMix;       // mezcla rectilinea->proyeccion [0,1]
 
 // Rota una direccion de camara (x dcha, y arriba, z delante) al mundo segun la vista.
 vec3 camToWorld(vec3 d, float yaw, float pitch) {
+  // Ajuste de balanceo: el par (muestreo equirect, subida de textura) del
+  // pipeline gira la base 180 grados; se compensa negando x e y de camara.
+  d = vec3(-d.x, -d.y, d.z);
   float cp = cos(pitch); float sp = sin(pitch);
-  vec3 p = vec3(d.x, d.y * cp - d.z * sp, d.y * sp + d.z * cp);
+  vec3 p = vec3(d.x, d.y * cp + d.z * sp, -d.y * sp + d.z * cp);
   float cy = cos(yaw); float sy = sin(yaw);
   return vec3(p.x * cy + p.z * sy, p.y, -p.x * sy + p.z * cy);
 }
 
 vec2 dirToEquirect(vec3 d) {
-  float u = 0.5 + atan(d.x, d.z) / 6.28318530718;
-  float v = 0.5 - asin(clamp(d.y, -1.0, 1.0)) / 3.14159265359;
+  float u = 0.5 - atan(d.x, d.z) / 6.28318530718;
+  // La fila superior de la textura (cenit) queda en v=1 al subir un canvas
+  // sin UNPACK_FLIP_Y: el eje vertical va invertido respecto a la intuicion.
+  float v = 0.5 + asin(clamp(d.y, -1.0, 1.0)) / 3.14159265359;
   return vec2(u, v);
 }
 
@@ -57,7 +62,7 @@ void main() {
     float theta = 2.0 * atan(r * S * 0.9);
     float phi = atan(y, x);
     vec3 cam = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-    world = camToWorld(cam, uYaw, 1.57079632679 + uPitch * 0.5);
+    world = camToWorld(cam, uYaw, -1.57079632679 + uPitch * 0.5);
   } else if (uMode == 2) {
     // Ojo de pez equidistante: theta proporcional al radio.
     float r = length(vec2(x, y));

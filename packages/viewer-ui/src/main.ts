@@ -45,7 +45,7 @@ async function boot(): Promise<void> {
     tour = (await res.json()) as Tour;
   }
   if (tour == null) {
-    container.textContent = "Sin configuracion de tour";
+    container.textContent = "Sin configuración de tour";
     return;
   }
   const params = new URLSearchParams(location.search);

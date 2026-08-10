@@ -4,19 +4,19 @@ title: Publicar y exportar
 
 ## Publicar en la plataforma
 
-**Publicar** congela una version inmutable del tour en el almacenamiento y la sirve en `/t/{slug}`. El borrador sigue siendo editable; los visitantes no ven los cambios hasta la siguiente publicacion. Puedes despublicar o **republicar cualquier version anterior** desde la pestana Versiones.
+**Publicar** congela una versión inmutable del tour en el almacenamiento y la sirve en `/t/{slug}`. El borrador sigue siendo editable; los visitantes no ven los cambios hasta la siguiente publicación. Puedes despublicar o **republicar cualquier versión anterior** desde la pestaña Versiones.
 
-Opciones de visibilidad (§proteccion de acceso):
+Opciones de visibilidad (§protección de acceso):
 
-- **Publico**: indexable, aparece en el sitemap.
+- **Público**: indexable, aparece en el sitemap.
 - **No listado**: solo con enlace.
-- **Protegido por contrasena**.
-- **Solo usuarios de la organizacion**: requiere iniciar sesion.
+- **Protegido por contraseña**.
+- **Solo usuarios de la organización**: requiere iniciar sesión.
 - **Restringido a dominios de embebido**: allowlist de dominios (frame-ancestors + Referer).
 
-Ademas: fecha de publicacion programada y fecha de expiracion.
+Además: fecha de publicación programada y fecha de expiración.
 
-Tras publicar obtienes: URL publica con **deep links** (`#s=escena&y=120&p=-5&f=70`), **codigo QR**, **codigo de embebido** responsive y metadatos Open Graph con imagen de la vista inicial.
+Tras publicar obtienes: URL pública con **deep links** (`#s=escena&y=120&p=-5&f=70`), **código QR**, **código de embebido** responsive y metadatos Open Graph con imagen de la vista inicial.
 
 ### API postMessage del visor embebido
 
@@ -32,18 +32,18 @@ addEventListener("message", (e) => {
 });
 ```
 
-## Exportar paquete estatico
+## Exportar paquete estático
 
-**Exportar** genera en tu navegador un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python -m http.server`, en GitHub Pages o Cloudflare Pages sin configuracion.
+**Exportar** genera en tu navegador un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python -m http.server`, en GitHub Pages o Cloudflare Pages sin configuración.
 
 Opciones:
 
-- **Idiomas incluidos** y **resolucion maxima de tiles** (para reducir peso).
-- **Incluir/excluir descargas** de PDF e imagenes.
-- **Analitica**: endpoint propio configurable o desactivada.
+- **Idiomas incluidos** y **resolución máxima de tiles** (para reducir peso).
+- **Incluir/excluir descargas** de PDF e imágenes.
+- **Analítica**: endpoint propio configurable o desactivada.
 - **Service worker offline**: PWA instalable, ideal para museos y kioscos sin red.
-- **HTML unico**: todo inline en base64 para tours pequenos (funciona abriendo el fichero directamente).
-- **SCORM 1.2 / 2004**: paquete para LMS con reporte de finalizacion y puntuacion.
+- **HTML único**: todo inline en base64 para tours pequeños (funciona abriendo el fichero directamente).
+- **SCORM 1.2 / 2004**: paquete para LMS con reporte de finalización y puntuación.
 - **Kiosko**: autopilot + reinicio por inactividad + bloqueo de salida.
 
-Tambien puedes automatizar la publicacion desde CI con un token de API (`POST /api/v1/projects/{id}/publish`) y recibir webhooks de publicacion.
+También puedes automatizar la publicación desde CI con un token de API (`POST /api/v1/projects/{id}/publish`) y recibir webhooks de publicación.

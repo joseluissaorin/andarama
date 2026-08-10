@@ -98,7 +98,7 @@ export function checkCsrf(c: Context<AppEnv>): void {
   const cookie = getCookie(c, CSRF_COOKIE);
   const header = c.req.header("x-csrf-token");
   if (cookie == null || header == null || cookie !== header) {
-    throw forbidden("Token CSRF invalido");
+    throw forbidden("Token CSRF inválido");
   }
 }
 
@@ -107,7 +107,7 @@ export function requireAuth(c: Context<AppEnv>): AuthState {
   if (auth == null) throw unauthorized();
   // Con TOTP pendiente la sesion no sirve (salvo el endpoint de verificacion)
   if (auth.session != null && auth.user.totpSecret != null && !auth.session.totpOk) {
-    throw unauthorized("Verificacion en dos pasos pendiente");
+    throw unauthorized("Verificación en dos pasos pendiente");
   }
   return auth;
 }

@@ -122,7 +122,7 @@ export function adminRoutes(): Hono<AppEnv> {
     const auth = requireAuth(c);
     if (userId === auth.user.id && body.roleGlobal === "user") {
       const admins = await db.select().from(users).where(eq(users.roleGlobal, "admin"));
-      if (admins.length <= 1) throw badRequest("No puedes quitarte el rol de administrador siendo el ultimo");
+      if (admins.length <= 1) throw badRequest("No puedes quitarte el rol de administrador siendo el último");
     }
     await db
       .update(users)
@@ -136,7 +136,7 @@ export function adminRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const auth = requireAuth(c);
     const userId = c.req.param("userId");
-    if (userId === auth.user.id) throw badRequest("No puedes eliminar tu propia cuenta desde aqui");
+    if (userId === auth.user.id) throw badRequest("No puedes eliminar tu propia cuenta desde aquí");
     await db.delete(users).where(eq(users.id, userId));
     await audit(c, "admin.user_delete", "user", userId);
     return c.json({ ok: true });

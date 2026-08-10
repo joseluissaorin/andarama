@@ -93,7 +93,7 @@ export class LiveTourRoom {
       case "chat": {
         const text = String(msg.text ?? "").slice(0, 500);
         if (text === "") return;
-        this.broadcast({ type: "chat", from: participant.name || (participant.role === "guide" ? "Guia" : "Visitante"), text });
+        this.broadcast({ type: "chat", from: participant.name || (participant.role === "guide" ? "Guía" : "Visitante"), text });
         return;
       }
       default:

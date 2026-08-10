@@ -1,10 +1,10 @@
 # Medios de ejemplo
 
-Tres panoramas equirectangulares sinteticos (4096x2048) para los tutoriales
+Tres panoramas equirectangulares sintéticos (4096x2048) para los tutoriales
 y las pruebas: `entrada-campus.jpg`, `pasillo-central.jpg` y `aula-magna.jpg`.
 Incluyen rejilla de meridianos/paralelos y marcadores cardinales (FRENTE,
 ESTE, OESTE, ATRAS, CENIT, NADIR) que permiten verificar visualmente la
-proyeccion esferica, la orientacion de entrada y el radar del plano.
+proyección esférica, la orientación de entrada y el radar del plano.
 
 Generados con `generador.cjs` (Node + sharp):
 
@@ -12,4 +12,4 @@ Generados con `generador.cjs` (Node + sharp):
 node generador.cjs
 ```
 
-Licencia de estos medios: **CC BY 4.0** (atribucion: proyecto ULL360).
+Licencia de estos medios: **CC BY 4.0** (atribución: proyecto ULL360).

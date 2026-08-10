@@ -17,10 +17,10 @@ export function analyticsRoutes(): Hono<AppEnv> {
     const runtime = c.get("runtime");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     const pub = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
-    if (pub == null) throw notFound("El proyecto no esta publicado; no hay analitica");
+    if (pub == null) throw notFound("El proyecto no está publicado; no hay analítica");
     const from = parseInt(c.req.query("from") ?? "", 10);
     const to = parseInt(c.req.query("to") ?? "", 10);
-    if (!Number.isFinite(from) || !Number.isFinite(to)) throw badRequest("Parametros from/to (epoch ms) requeridos");
+    if (!Number.isFinite(from) || !Number.isFinite(to)) throw badRequest("Parámetros from/to (epoch ms) requeridos");
     try {
       const summary = await runtime.analytics.query(pub.slug, { from, to });
       return c.json({ slug: pub.slug, ...summary });
@@ -28,7 +28,7 @@ export function analyticsRoutes(): Hono<AppEnv> {
       return c.json({
         slug: pub.slug,
         unavailable: true,
-        reason: err instanceof Error ? err.message : "Analitica no disponible",
+        reason: err instanceof Error ? err.message : "Analítica no disponible",
       });
     }
   });

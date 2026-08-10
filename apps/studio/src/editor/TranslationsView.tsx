@@ -34,11 +34,11 @@ export function TranslationsView({ project, canEdit }: { project: ProjectInfo; c
     queryFn: async () => {
       // Las cadenas de origen se derivan del snapshot local (ya cargado)
       const out: { entity: string; entityId: string; field: string; value: string; label: string }[] = [];
-      out.push({ entity: "tour", entityId: "meta", field: "title", value: String(project.title), label: "Titulo del tour" });
+      out.push({ entity: "tour", entityId: "meta", field: "title", value: String(project.title), label: "Título del tour" });
       const desc = snapshot.settings.description;
-      if (typeof desc === "string" && desc !== "") out.push({ entity: "tour", entityId: "meta", field: "description", value: desc, label: "Descripcion" });
+      if (typeof desc === "string" && desc !== "") out.push({ entity: "tour", entityId: "meta", field: "description", value: desc, label: "Descripción" });
       for (const scene of snapshot.scenes) {
-        out.push({ entity: "scene", entityId: scene.id, field: "title", value: scene.title, label: `${scene.title}: titulo` });
+        out.push({ entity: "scene", entityId: scene.id, field: "title", value: scene.title, label: `${scene.title}: título` });
         const meta = JSON.parse(scene.metaJson || "{}") as Record<string, unknown>;
         for (const f of ["description", "altText", "category"]) {
           if (typeof meta[f] === "string" && meta[f] !== "") {

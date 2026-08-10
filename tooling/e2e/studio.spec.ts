@@ -137,6 +137,56 @@ test("tour.json publicado es valido y estatico", async ({ request }) => {
   expect(tour.scenes[0].hotspots.length).toBe(1);
 });
 
+test("web component embebible servido en /embed.js", async ({ request }) => {
+  const res = await request.get("/embed.js");
+  expect(res.ok()).toBeTruthy();
+  const js = await res.text();
+  expect(js).toContain("ull360-tour");
+  expect(js).toContain("customElements.define");
+});
+
+test("medios: renombrar y asignar a tour via API", async ({ page }) => {
+  await login(page);
+  const me = (await (await page.request.get("/api/v1/me")).json()) as { orgs: { id: string }[] };
+  const orgId = me.orgs[0]!.id;
+  const items = (await (await page.request.get(`/api/v1/media?org=${orgId}`)).json()) as { id: string; filename: string }[];
+  const item = items[0]!;
+  const patch = await page.request.patch(`/api/v1/media/${item.id}`, {
+    data: { filename: "pano-renombrado.jpg" },
+    headers: { "x-csrf-token": await csrf(page) },
+  });
+  expect(patch.ok()).toBeTruthy();
+  const after = (await (await page.request.get(`/api/v1/media?org=${orgId}`)).json()) as { id: string; filename: string }[];
+  expect(after.find((m) => m.id === item.id)?.filename).toBe("pano-renombrado.jpg");
+  // Un medio referenciado por una escena no puede borrarse (409)
+  const del = await page.request.delete(`/api/v1/media/${item.id}`, { headers: { "x-csrf-token": await csrf(page) } });
+  expect(del.status()).toBe(409);
+});
+
+test("admin: crear organizacion y usuario desde la API", async ({ page }) => {
+  await login(page);
+  const token = await csrf(page);
+  const org = await page.request.post("/api/v1/admin/orgs", {
+    data: { name: "Facultad E2E" },
+    headers: { "x-csrf-token": token },
+  });
+  expect(org.status()).toBe(201);
+  const { id: orgId } = (await org.json()) as { id: string };
+  const user = await page.request.post("/api/v1/admin/users", {
+    data: { email: "docente@ull360.test", name: "Docente E2E", password: "password-e2e-456", orgId },
+    headers: { "x-csrf-token": token },
+  });
+  expect(user.status()).toBe(201);
+  const list = (await (await page.request.get("/api/v1/admin/users")).json()) as { email: string }[];
+  expect(list.some((u) => u.email === "docente@ull360.test")).toBeTruthy();
+});
+
+/** Token CSRF de la cookie u3c de la sesion actual. */
+async function csrf(page: Page): Promise<string> {
+  const cookies = await page.context().cookies();
+  return cookies.find((c) => c.name === "u3c")?.value ?? "";
+}
+
 async function login(page: Page): Promise<void> {
   await page.goto("/studio/login");
   // Si ya hay sesion, redirige solo

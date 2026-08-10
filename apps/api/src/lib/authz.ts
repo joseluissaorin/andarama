@@ -29,7 +29,7 @@ export async function orgRole(db: Db, orgId: string, user: UserRow): Promise<Org
 export async function requireOrgRole(db: Db, orgId: string, user: UserRow, min: OrgRole): Promise<OrgRole> {
   const role = await orgRole(db, orgId, user);
   if (role == null || ORG_ORDER[role] < ORG_ORDER[min]) {
-    throw forbidden("No tienes permisos suficientes en esta organizacion");
+    throw forbidden("No tienes permisos suficientes en esta organización");
   }
   return role;
 }

@@ -28,7 +28,7 @@ export function projectRoutes(): Hono<AppEnv> {
     requireScope(auth, "projects:read");
     const db = c.get("db");
     const orgId = c.req.query("org");
-    if (orgId == null) throw badRequest("Falta el parametro org");
+    if (orgId == null) throw badRequest("Falta el parámetro org");
     const trashed = c.req.query("trashed") === "1";
     if (trashed) {
       await requireOrgRole(db, orgId, auth.user, "editor");
@@ -73,7 +73,7 @@ export function projectRoutes(): Hono<AppEnv> {
     void org;
     const orgRow = (await db.select().from((await import("@ull360/db")).orgs).where(eq((await import("@ull360/db")).orgs.id, body.orgId)).limit(1))[0];
     if (orgRow != null && count.length >= orgRow.quotaTours) {
-      throw forbidden(`La organizacion ha alcanzado su cuota de ${orgRow.quotaTours} tours`);
+      throw forbidden(`La organización ha alcanzado su cuota de ${orgRow.quotaTours} tours`);
     }
     void settings;
 
@@ -246,7 +246,7 @@ export function projectRoutes(): Hono<AppEnv> {
       .object({ email: z.string().email(), role: z.enum(["editor", "collaborator", "reader"]) })
       .parse(await c.req.json());
     const user = (await db.select().from(users).where(eq(users.email, body.email.trim().toLowerCase())).limit(1))[0];
-    if (user == null) throw notFound("No existe ningun usuario con ese email en la instancia");
+    if (user == null) throw notFound("No existe ningún usuario con ese email en la instancia");
     const existing = await db
       .select()
       .from(projectMembers)

@@ -108,7 +108,7 @@ export function AccountPage(): React.ReactNode {
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-[var(--ull-text-dim)]">{t("totp_scan")}</p>
-            <img src={totpSetup.qr} alt="Codigo QR TOTP" className="rounded-lg border border-[var(--ull-border)]" />
+            <img src={totpSetup.qr} alt="Código QR TOTP" className="rounded-lg border border-[var(--ull-border)]" />
             <p className="font-mono text-xs">{totpSetup.secret}</p>
             <div className="flex gap-2">
               <Input value={totpCode} onChange={(e) => setTotpCode(e.target.value)} placeholder="123456" className="max-w-36" aria-label={t("totp_code")} />

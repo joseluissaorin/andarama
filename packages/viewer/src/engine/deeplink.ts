@@ -24,7 +24,8 @@ export function parseDeepLink(href: string): DeepLinkState {
     const hash = url.hash.replace(/^#/, "");
     if (hash !== "") {
       const params = new URLSearchParams(hash);
-      sceneId = params.get("s");
+      // Un "s" vacio no es una escena: se ignora (robustez ante enlaces mal formados)
+      sceneId = params.get("s") || null;
       const y = params.get("y");
       const p = params.get("p");
       const f = params.get("f");

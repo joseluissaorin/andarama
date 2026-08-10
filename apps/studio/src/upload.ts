@@ -281,7 +281,7 @@ function mediaDuration(file: File): Promise<number> {
       URL.revokeObjectURL(el.src);
       resolve(el.duration);
     };
-    el.onerror = () => reject(new Error("No se pudo leer la duracion"));
+    el.onerror = () => reject(new Error("No se pudo leer la duración"));
     el.src = URL.createObjectURL(file);
   });
 }

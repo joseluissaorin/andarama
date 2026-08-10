@@ -48,7 +48,7 @@ export function Shell(): React.ReactNode {
         {me.orgs.length > 0 && (
           <div className="px-3 pb-4">
             <Select
-              aria-label="Organizacion"
+              aria-label="Organización"
               value={currentOrgId ?? ""}
               onChange={(e) => setOrg(e.target.value)}
               className="bg-[var(--ull-surface-2)] text-[13px] font-medium"
@@ -73,7 +73,7 @@ export function Shell(): React.ReactNode {
           )}
         </nav>
         <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl bg-[var(--ull-surface-2)] p-1.5">
-          <Tooltip content={lang === "es" ? "English" : "Espanol"}>
+          <Tooltip content={lang === "es" ? "English" : "Español"}>
             <Button variant="ghost" size="icon" aria-label="Idioma de la interfaz" onClick={() => setLang(lang === "es" ? "en" : "es")}>
               <Languages className="h-4 w-4" />
             </Button>

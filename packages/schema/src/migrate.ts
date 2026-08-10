@@ -37,7 +37,7 @@ const migrations: Record<number, TourMigration> = {
     return {
       version: 1,
       meta: {
-        title: doc.title ?? "Tour sin titulo",
+        title: doc.title ?? "Tour sin título",
         defaultLang: (doc.lang as string) ?? "es",
         langs: [(doc.lang as string) ?? "es"],
       },
@@ -81,7 +81,7 @@ export function migrateTour(input: unknown): Tour {
     doc = migration(doc);
     const next = typeof doc.version === "number" ? doc.version : version + 1;
     if (next <= version) {
-      throw new TourMigrationError(`El migrador de v${version} no avanzo la version`, version);
+      throw new TourMigrationError(`El migrador de v${version} no avanzó la version`, version);
     }
     version = next;
   }

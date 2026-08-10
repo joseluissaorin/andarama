@@ -293,7 +293,7 @@ export async function tilePanorama(
   const { bitmap, limited, width, height } = await decodeSource(source);
   if (bitmap.width < 256) {
     bitmap.close();
-    throw new Error("La imagen es demasiado pequena para trocear (min 256 px de ancho)");
+    throw new Error("La imagen es demasiado pequeña para trocear (min 256 px de ancho)");
   }
   // Cara en el esquema tileSize * 2^k (requisito de la geometria multires)
   const maxRenderFace = Math.min(8192, maxTextureSize());

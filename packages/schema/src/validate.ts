@@ -59,7 +59,7 @@ export function validateTour(input: unknown): ValidationResult {
   const tour = input as Partial<Tour>;
 
   if (!isFiniteNumber(tour.version)) {
-    err("missing-version", "$.version", "Falta el numero de version del esquema");
+    err("missing-version", "$.version", "Falta el número de version del esquema");
   } else if (tour.version > TOUR_SCHEMA_VERSION) {
     err(
       "unknown-version",
@@ -71,7 +71,7 @@ export function validateTour(input: unknown): ValidationResult {
   if (tour.meta == null || typeof tour.meta !== "object") {
     err("missing-meta", "$.meta", "Falta el bloque meta");
   } else {
-    if (tour.meta.title == null) err("missing-title", "$.meta.title", "Falta el titulo del tour");
+    if (tour.meta.title == null) err("missing-title", "$.meta.title", "Falta el título del tour");
     if (typeof tour.meta.defaultLang !== "string" || tour.meta.defaultLang === "")
       err("missing-default-lang", "$.meta.defaultLang", "Falta el idioma por defecto");
     if (!Array.isArray(tour.meta.langs) || tour.meta.langs.length === 0)
@@ -83,7 +83,7 @@ export function validateTour(input: unknown): ValidationResult {
       err(
         "default-lang-not-listed",
         "$.meta.langs",
-        `El idioma por defecto "${tour.meta.defaultLang}" no esta en la lista de idiomas`,
+        `El idioma por defecto "${tour.meta.defaultLang}" no está en la lista de idiomas`,
       );
   }
 
@@ -197,7 +197,7 @@ function validateScene(
   err: (c: string, p: string, m: string) => void,
   warn: (c: string, p: string, m: string) => void,
 ): void {
-  if (scene.title == null) err("scene-no-title", `${p}.title`, `Escena "${scene.id}" sin titulo`);
+  if (scene.title == null) err("scene-no-title", `${p}.title`, `Escena "${scene.id}" sin título`);
   if (scene.altText == null || scene.altText === "")
     warn("scene-no-alt", `${p}.altText`, `Escena "${scene.id}" sin texto alternativo accesible`);
   if (scene.source == null || typeof scene.source !== "object") {
@@ -210,7 +210,7 @@ function validateScene(
       const s = scene.source as { levels?: number; tileSize?: number; faceSize?: number; base?: string };
       if (!isFiniteNumber(s.levels) || s.levels < 1) err("multires-levels", `${p}.source.levels`, "Niveles invalidos");
       if (!isFiniteNumber(s.tileSize) || s.tileSize < 64)
-        err("multires-tilesize", `${p}.source.tileSize`, "tileSize invalido");
+        err("multires-tilesize", `${p}.source.tileSize`, "tileSize inválido");
       if (typeof s.base !== "string") err("multires-base", `${p}.source.base`, "Falta el prefijo base de tiles");
       if (isFiniteNumber(s.faceSize) && s.faceSize > 8192)
         warn("multires-face-large", `${p}.source.faceSize`, "Cara de cubo > 8192 px (equivale a >32K equirect)");
@@ -233,7 +233,7 @@ function validateScene(
     }
     if (hs.type !== "polygon") {
       if (!isFiniteNumber(hs.yaw) || !isFiniteNumber(hs.pitch))
-        err("hotspot-no-pos", hp, `Hotspot "${hs.id}" sin posicion yaw/pitch valida`);
+        err("hotspot-no-pos", hp, `Hotspot "${hs.id}" sin posición yaw/pitch valida`);
     }
     if (hs.altText == null && hs.type !== "tooltip" && hs.type !== "polygon")
       warn("hotspot-no-alt", `${hp}.altText`, `Hotspot "${hs.id}" sin texto alternativo accesible`);
@@ -308,7 +308,7 @@ function validateHotspotContent(
     }
     case "polygon":
       if (!Array.isArray(hs.points) || hs.points.length < 3)
-        err("polygon-few-points", `${hp}.points`, "Poligono con menos de 3 vertices");
+        err("polygon-few-points", `${hp}.points`, "Polígono con menos de 3 vertices");
       if (hs.action?.kind === "goto") {
         if (!sceneIds.has(hs.action.target))
           err("polygon-target-missing", `${hp}.action.target`, `Destino inexistente: ${hs.action.target}`);
@@ -334,7 +334,7 @@ function validateView(
   p: string,
   err: (c: string, p: string, m: string) => void,
 ): void {
-  if (view.yaw != null && !isFiniteNumber(view.yaw)) err("bad-yaw", `${p}.yaw`, "yaw invalido");
+  if (view.yaw != null && !isFiniteNumber(view.yaw)) err("bad-yaw", `${p}.yaw`, "yaw inválido");
   if (view.pitch != null && (!isFiniteNumber(view.pitch) || Math.abs(view.pitch) > Math.PI / 2 + 1e-6))
     err("bad-pitch", `${p}.pitch`, "pitch fuera de rango [-PI/2, PI/2]");
   if (view.fov != null && (!isFiniteNumber(view.fov) || view.fov <= 0 || view.fov >= Math.PI))

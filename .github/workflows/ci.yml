@@ -22,7 +22,7 @@ jobs:
         run: pnpm build:packages
       - name: Typecheck
         run: pnpm typecheck
-      - name: Tests unitarios e integracion
+      - name: Tests unitarios e integración
         run: pnpm test
       - name: Compilar Studio + visor + docs
         run: |

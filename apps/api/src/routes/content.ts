@@ -240,7 +240,7 @@ export function contentRoutes(): Hono<AppEnv> {
       .where(eq(scenesTable.projectId, project.id));
     const validIds = new Set(scenesInProject.map((s) => s.id));
     if (!validIds.has(body.fromScene) || !validIds.has(body.toScene)) {
-      throw badRequest("Las escenas de la conexion no pertenecen al proyecto");
+      throw badRequest("Las escenas de la conexión no pertenecen al proyecto");
     }
     const id = body.id ?? newId();
     await db.insert(connectionsTable).values({

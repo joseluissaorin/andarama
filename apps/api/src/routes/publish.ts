@@ -63,7 +63,7 @@ export function publishRoutes(): Hono<AppEnv> {
     const body = publishSchema.parse(await c.req.json().catch(() => ({})));
     if (body.visibility === "password" && body.password == null) {
       const existing = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
-      if (existing?.passwordHash == null) throw badRequest("La visibilidad por contrasena requiere una contrasena");
+      if (existing?.passwordHash == null) throw badRequest("La visibilidad por contraseña requiere una contraseña");
     }
 
     const compiled = await compileProject(db, access.project.id);
@@ -199,7 +199,7 @@ export function publishRoutes(): Hono<AppEnv> {
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     if (!access.canPublish) throw forbidden();
     const pub = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
-    if (pub == null) throw notFound("El proyecto no esta publicado");
+    if (pub == null) throw notFound("El proyecto no está publicado");
     await runtime.storage.delete(`pub/${pub.slug}/current.json`);
     await runtime.kv.delete(`pub:${pub.slug}`);
     if (pub.customDomain != null) await runtime.kv.delete(`domain:${pub.customDomain}`);
@@ -290,14 +290,14 @@ export function publishRoutes(): Hono<AppEnv> {
       .limit(1))[0];
     if (row == null) throw notFound();
     const pub = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
-    if (pub == null) throw badRequest("El proyecto no esta publicado; publica primero");
+    if (pub == null) throw badRequest("El proyecto no está publicado; publica primero");
     // El artefacto de la version debe estar bajo pub/{slug}/ para poder servirse
     if (!row.tourJsonKey.startsWith(`pub/${pub.slug}/`)) {
       throw badRequest("Solo se pueden restaurar versiones publicadas de este slug");
     }
     const currentRaw = await runtime.storage.getBytes(`pub/${pub.slug}/current.json`);
     const pointer = currentRaw != null ? (JSON.parse(new TextDecoder().decode(currentRaw)) as PublicationPointer) : null;
-    if (pointer == null) throw badRequest("Falta el puntero de publicacion");
+    if (pointer == null) throw badRequest("Falta el puntero de publicación");
     pointer.version = number;
     await runtime.storage.put(`pub/${pub.slug}/current.json`, JSON.stringify(pointer), { contentType: "application/json" });
     await runtime.kv.delete(`pub:${pub.slug}`);

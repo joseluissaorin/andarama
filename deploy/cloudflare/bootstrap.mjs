@@ -40,10 +40,10 @@ const wrangler = (args, opts = {}) => {
 
 const log = (msg) => console.log(`\n== ${msg}`);
 
-log("Comprobando autenticacion de Cloudflare");
+log("Comprobando autenticación de Cloudflare");
 const who = wrangler(["whoami"], { capture: true, allowFail: true });
 if (who.includes("not authenticated") || who.includes("You are logged in") === false && !who.includes("Account")) {
-  console.log("Inicia sesion en Cloudflare:");
+  console.log("Inicia sesión en Cloudflare:");
   wrangler(["login"]);
 }
 
@@ -111,10 +111,10 @@ if (!secretsOut.includes("APP_SECRET")) {
 
 const rl = createInterface({ input: process.stdin, output: process.stdout });
 const optionalSecrets = [
-  ["EMAIL_WEBHOOK_URL", "URL del webhook de email (Resend u otro; vacio = modo log)"],
-  ["TURNSTILE_SITE_KEY", "Clave de sitio Turnstile (vacio = sin anti-spam)"],
+  ["EMAIL_WEBHOOK_URL", "URL del webhook de email (Resend u otro; vacío = modo log)"],
+  ["TURNSTILE_SITE_KEY", "Clave de sitio Turnstile (vacío = sin anti-spam)"],
   ["TURNSTILE_SECRET", "Clave secreta Turnstile"],
-  ["OIDC_ISSUER", "Issuer OIDC del SSO institucional (vacio = sin SSO)"],
+  ["OIDC_ISSUER", "Issuer OIDC del SSO institucional (vacío = sin SSO)"],
 ];
 if (process.stdin.isTTY) {
   for (const [name, prompt] of optionalSecrets) {
@@ -137,8 +137,8 @@ log("Listo");
 console.log(`
 Instancia desplegada. Siguientes pasos:
  1. Abre la URL workers.dev mostrada arriba y registra el primer usuario
-    (sera administrador de la instancia).
+    (será administrador de la instancia).
  2. Fija PUBLIC_URL en deploy/cloudflare/wrangler.jsonc (vars) con esa URL
     y vuelve a ejecutar pnpm deploy:cloudflare.
  3. Opcional: dominio propio (routes), Turnstile, SSO OIDC, email.
-Documentacion completa: apps/docs (guia de despliegue Cloudflare).`);
+Documentación completa: apps/docs (guia de despliegue Cloudflare).`);

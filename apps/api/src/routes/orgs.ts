@@ -131,8 +131,8 @@ export function orgRoutes(): Hono<AppEnv> {
     runtime.deferred(
       runtime.email.send({
         to: emailNorm,
-        subject: `Invitacion a ${org?.name ?? "ULL360"}`,
-        text: `${auth.user.name} te invita a colaborar en "${org?.name}" en ULL360.\n\nAcepta la invitacion aqui (caduca en 14 dias):\n${url}`,
+        subject: `Invitación a ${org?.name ?? "ULL360"}`,
+        text: `${auth.user.name} te invita a colaborar en "${org?.name}" en ULL360.\n\nAcepta la invitación aquí (caduca en 14 días):\n${url}`,
       }),
     );
     await audit(c, "org.invite", "invite", id, { email: emailNorm, role: body.role }, orgId);
@@ -144,9 +144,9 @@ export function orgRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const { token, id } = z.object({ token: z.string(), id: z.string() }).parse(await c.req.json());
     const invite = (await db.select().from(orgInvites).where(eq(orgInvites.id, id)).limit(1))[0];
-    if (invite == null || invite.expiresAt < nowMs()) throw badRequest("Invitacion invalida o caducada");
-    if (invite.tokenHash !== (await sha256Hex(token))) throw badRequest("Invitacion invalida");
-    if (invite.email !== auth.user.email) throw forbidden("La invitacion es para otra direccion de email");
+    if (invite == null || invite.expiresAt < nowMs()) throw badRequest("Invitación inválida o caducada");
+    if (invite.tokenHash !== (await sha256Hex(token))) throw badRequest("Invitación inválida");
+    if (invite.email !== auth.user.email) throw forbidden("La invitación es para otra dirección de email");
     await db.insert(orgMembers).values({ orgId: invite.orgId, userId: auth.user.id, role: invite.role, createdAt: nowMs() });
     await db.delete(orgInvites).where(eq(orgInvites.id, id));
     await audit(c, "org.invite_accept", "org", invite.orgId, {}, invite.orgId);
@@ -179,7 +179,7 @@ export function orgRoutes(): Hono<AppEnv> {
         .select()
         .from(orgMembers)
         .where(and(eq(orgMembers.orgId, orgId), eq(orgMembers.role, "admin")));
-      if (admins.length <= 1) throw badRequest("No puedes eliminar al ultimo administrador");
+      if (admins.length <= 1) throw badRequest("No puedes eliminar al último administrador");
     }
     await db.delete(orgMembers).where(and(eq(orgMembers.orgId, orgId), eq(orgMembers.userId, userId)));
     await audit(c, "org.member_remove", "user", userId, {}, orgId);

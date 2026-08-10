@@ -31,7 +31,7 @@ export function formRoutes(): Hono<AppEnv> {
       .parse(await c.req.json());
     const config = c.get("config");
     const turnstileOk = await verifyTurnstile(config.turnstileSecret, body.turnstileToken ?? undefined, clientIp(c));
-    if (!turnstileOk) throw forbidden("Verificacion anti-spam fallida");
+    if (!turnstileOk) throw forbidden("Verificación anti-spam fallida");
     // Limitar tamano de datos
     const json = JSON.stringify(body.data);
     if (json.length > 20000) throw badRequest("Datos demasiado grandes");
@@ -160,7 +160,7 @@ export function formRoutes(): Hono<AppEnv> {
       .from(quizResults)
       .where(eq(quizResults.projectId, access.project.id))
       .orderBy(desc(quizResults.createdAt));
-    const lines = [["fecha", "sesion", "participante", "puntuacion", "maximo", "aprobado", "lti"].map(csv).join(",")];
+    const lines = [["fecha", "sesión", "participante", "puntuacion", "maximo", "aprobado", "lti"].map(csv).join(",")];
     for (const row of rows) {
       lines.push(
         [

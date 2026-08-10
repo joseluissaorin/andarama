@@ -62,7 +62,7 @@ async function putUrl(url, data, contentType) {
 const log = (m) => console.log(`== ${m}`);
 
 // ---------------------------------------------------------------------------
-log(`Sesion en ${base}`);
+log(`Sesión en ${base}`);
 try {
   await call("/api/v1/auth/login", { method: "POST", body: { email, password } });
 } catch {
@@ -71,7 +71,7 @@ try {
 }
 const me = await call("/api/v1/me");
 const orgId = me.orgs[0].id;
-log(`Organizacion: ${me.orgs[0].name}`);
+log(`Organización: ${me.orgs[0].name}`);
 
 const atrib = JSON.parse(await readFile(join(dir, "atribuciones.json"), "utf8"));
 
@@ -218,7 +218,7 @@ for (const scene of SCENES) {
   });
 }
 
-log("Hotspots de navegacion y contenido");
+log("Hotspots de navegación y contenido");
 const nav = async (fromFile, toFile, yaw, pitch, label) => {
   await call(`/api/v1/projects/${projectId}/scenes/${sceneIds[fromFile]}/hotspots`, {
     method: "POST",
@@ -277,7 +277,7 @@ await call(`/api/v1/projects/${projectId}/scenes/${sceneIds["san-diego.jpg"]}/ho
   },
 });
 
-log("Ajustes del tour y publicacion");
+log("Ajustes del tour y publicación");
 await call(`/api/v1/projects/${projectId}`, {
   method: "PATCH",
   body: {

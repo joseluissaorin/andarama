@@ -25,7 +25,7 @@ export function createFsStorage(opts: FsStorageOptions): StorageAdapter {
 
   const safePath = (key: string): string => {
     const p = resolve(join(root, key));
-    if (!p.startsWith(root + sep) && p !== root) throw new Error(`Clave de almacenamiento invalida: ${key}`);
+    if (!p.startsWith(root + sep) && p !== root) throw new Error(`Clave de almacenamiento inválida: ${key}`);
     return p;
   };
 

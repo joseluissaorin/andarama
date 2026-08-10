@@ -39,7 +39,7 @@ export function authRoutes(): Hono<AppEnv> {
 
     if (!isFirstUser) {
       if (settings.registration === "invite") {
-        throw forbidden("El registro es solo por invitacion");
+        throw forbidden("El registro es solo por invitación");
       }
       if (settings.registration === "domain" && !settings.allowedDomains.includes(domain)) {
         throw forbidden("El registro esta limitado a dominios institucionales");
@@ -109,7 +109,7 @@ export function authRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const token = c.req.query("token");
     const uid = c.req.query("uid");
-    if (token == null || uid == null) throw badRequest("Faltan parametros");
+    if (token == null || uid == null) throw badRequest("Faltan parámetros");
     const hash = await sha256Hex(token);
     const rows = await db
       .select()
@@ -117,7 +117,7 @@ export function authRoutes(): Hono<AppEnv> {
       .where(and(eq(emailTokens.userId, uid), eq(emailTokens.kind, "verify"), eq(emailTokens.tokenHash, hash)))
       .limit(1);
     const row = rows[0];
-    if (row == null || row.expiresAt < nowMs()) throw badRequest("Enlace de verificacion invalido o caducado");
+    if (row == null || row.expiresAt < nowMs()) throw badRequest("Enlace de verificación inválido o caducado");
     await db.update(users).set({ emailVerified: true, updatedAt: nowMs() }).where(eq(users.id, uid));
     await db.delete(emailTokens).where(eq(emailTokens.id, row.id));
     return c.redirect("/studio/?verified=1");
@@ -141,7 +141,7 @@ export function authRoutes(): Hono<AppEnv> {
         return c.json({ totpRequired: true }, 200);
       }
       totpOk = await verifyTotp(user.totpSecret, body.totp);
-      if (!totpOk) throw unauthorized("Codigo de verificacion incorrecto");
+      if (!totpOk) throw unauthorized("Código de verificación incorrecto");
     }
     await createSession(c, user.id, { totpOk, ipHash: await dailyIpHash(clientIp(c), c.get("config").secret) });
     await audit(c, "user.login", "user", user.id);
@@ -174,8 +174,8 @@ export function authRoutes(): Hono<AppEnv> {
       runtime.deferred(
         runtime.email.send({
           to: user.email,
-          subject: "Restablecer contrasena de ULL360",
-          text: `Para restablecer tu contrasena abre este enlace (caduca en 2 horas):\n${url}`,
+          subject: "Restablecer contraseña de ULL360",
+          text: `Para restablecer tu contraseña abre este enlace (caduca en 2 horas):\n${url}`,
         }),
       );
     }
@@ -196,7 +196,7 @@ export function authRoutes(): Hono<AppEnv> {
       .where(and(eq(emailTokens.userId, body.uid), eq(emailTokens.kind, "reset"), eq(emailTokens.tokenHash, hash)))
       .limit(1);
     const row = rows[0];
-    if (row == null || row.expiresAt < nowMs()) throw badRequest("Enlace invalido o caducado");
+    if (row == null || row.expiresAt < nowMs()) throw badRequest("Enlace inválido o caducado");
     await db
       .update(users)
       .set({ passwordHash: await runtime.passwords.hash(body.password), updatedAt: nowMs() })
@@ -240,7 +240,7 @@ export function authRoutes(): Hono<AppEnv> {
     const state = c.req.query("state");
     if (code == null || state == null) throw badRequest("Respuesta OIDC incompleta");
     const stored = await runtime.kv.get(`oidc:${state}`);
-    if (stored == null) throw badRequest("Estado OIDC invalido o caducado");
+    if (stored == null) throw badRequest("Estado OIDC inválido o caducado");
     await runtime.kv.delete(`oidc:${state}`);
     const { nonce, verifier } = JSON.parse(stored) as { nonce: string; verifier: string };
 
@@ -267,7 +267,7 @@ export function authRoutes(): Hono<AppEnv> {
       issuer: disco.issuer,
       audience: cfg.clientId,
     });
-    if (payload.nonce !== nonce) throw badRequest("Nonce OIDC invalido");
+    if (payload.nonce !== nonce) throw badRequest("Nonce OIDC inválido");
     const email = String(payload.email ?? "").toLowerCase();
     const sub = String(payload.sub);
     const name = String(payload.name ?? payload.preferred_username ?? email.split("@")[0] ?? "Usuario");
@@ -333,8 +333,8 @@ export function authRoutes(): Hono<AppEnv> {
     const auth = requireAuth(c);
     const { code } = z.object({ code: z.string().min(6).max(8) }).parse(await c.req.json());
     const secret = await c.get("runtime").kv.get(`totp-setup:${auth.user.id}`);
-    if (secret == null) throw badRequest("No hay configuracion TOTP pendiente");
-    if (!(await verifyTotp(secret, code))) throw badRequest("Codigo incorrecto");
+    if (secret == null) throw badRequest("No hay configuración TOTP pendiente");
+    if (!(await verifyTotp(secret, code))) throw badRequest("Código incorrecto");
     await c.get("db").update(users).set({ totpSecret: secret, updatedAt: nowMs() }).where(eq(users.id, auth.user.id));
     await c.get("runtime").kv.delete(`totp-setup:${auth.user.id}`);
     await audit(c, "user.totp_enabled", "user", auth.user.id);
@@ -346,7 +346,7 @@ export function authRoutes(): Hono<AppEnv> {
     const { password } = z.object({ password: z.string() }).parse(await c.req.json());
     if (auth.user.passwordHash != null) {
       const ok = await c.get("runtime").passwords.verify(password, auth.user.passwordHash);
-      if (!ok) throw unauthorized("Contrasena incorrecta");
+      if (!ok) throw unauthorized("Contraseña incorrecta");
     }
     await c.get("db").update(users).set({ totpSecret: null, updatedAt: nowMs() }).where(eq(users.id, auth.user.id));
     await audit(c, "user.totp_disabled", "user", auth.user.id);

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ull360.dev/schema/tour-1.json",
   "title": "ULL360 Tour",
-  "description": "Formato de tour virtual 360 de ULL360, version 1",
+  "description": "Formato de tour virtual 360 de ULL360, versión 1",
   "type": "object",
   "required": ["version", "meta", "start", "scenes"],
   "properties": {

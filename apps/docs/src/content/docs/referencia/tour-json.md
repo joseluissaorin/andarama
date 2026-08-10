@@ -4,7 +4,7 @@ title: Formato tour.json
 
 `tour.json` es el contrato central entre editor, visor, exportador y API. El **JSON Schema** completo se publica en el paquete `@ull360/schema` (`schema/tour-1.json`) con `$id` `https://ull360.dev/schema/tour-1.json`.
 
-El esquema esta **versionado**: `@ull360/schema` incluye migradores automaticos entre versiones, de modo que los tours antiguos siempre abren.
+El esquema está **versionado**: `@ull360/schema` incluye migradores automáticos entre versiones, de modo que los tours antiguos siempre abren.
 
 ## Extracto ilustrativo
 
@@ -46,7 +46,7 @@ El esquema esta **versionado**: `@ull360/schema` incluye migradores automaticos 
 ## Notas del formato
 
 - Todas las cadenas visibles son **localizables**: un literal (idioma por defecto) o un mapa `{ "es": "...", "en": "..." }` con fallback.
-- Los angulos van en **radianes** (yaw en [-PI, PI], pitch en [-PI/2, PI/2], fov vertical en (0, PI)).
-- Las fuentes de escena soportan `multires`, `equirect` (completa o **parcial**), `cubemap` (caras o tira), `flat` (gigapixel 2D) y `video` (renditions + HLS + estereo TB/SBS).
-- Las rutas relativas `a/...` se resuelven contra el mapa de assets congelado de la publicacion; en paquetes exportados apuntan a ficheros locales.
-- El validador semantico (`validateTour`) comprueba unicidad de IDs, existencia de destinos, alcanzabilidad de escenas y textos alternativos, ademas de la validacion estructural del JSON Schema.
+- Los ángulos van en **radianes** (yaw en [-PI, PI], pitch en [-PI/2, PI/2], fov vertical en (0, PI)).
+- Las fuentes de escena soportan `multires`, `equirect` (completa o **parcial**), `cubemap` (caras o tira), `flat` (gigapixel 2D) y `video` (renditions + HLS + estéreo TB/SBS).
+- Las rutas relativas `a/...` se resuelven contra el mapa de assets congelado de la publicación; en paquetes exportados apuntan a ficheros locales.
+- El validador semántico (`validateTour`) comprueba unicidad de IDs, existencia de destinos, alcanzabilidad de escenas y textos alternativos, además de la validación estructural del JSON Schema.

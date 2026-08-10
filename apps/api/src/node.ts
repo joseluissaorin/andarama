@@ -189,7 +189,7 @@ function findMigrationsDir(): string {
   for (const dir of candidates) {
     if (existsSync(join(dir, "0001_init.sql"))) return dir;
   }
-  throw new Error("No se encontro el directorio de migraciones");
+  throw new Error("No se encontró el directorio de migraciones");
 }
 
 function findAssetRoots(): string[] {
