@@ -69,7 +69,9 @@ ${opts.accessibleHtml != null ? `<noscript>${opts.accessibleHtml}</noscript>` : 
 <script${nonceAttr}>${configJs}</script>
 ${
   opts.inlineViewerJs != null
-    ? `<script type="module"${nonceAttr}>${opts.inlineViewerJs}</script>`
+    ? // El bundle inline es IIFE, no un módulo: type="module" impondría reglas
+      // de CORS que file:// no cumple.
+      `<script${nonceAttr}>${opts.inlineViewerJs}</script>`
     : `<script type="module" src="${esc(opts.viewerPath ?? "viewer/viewer.js")}"${nonceAttr}></script>`
 }
 ${opts.scorm === true ? `<script src="scorm-adapter.js"${nonceAttr}></script>` : ""}
@@ -207,6 +209,19 @@ datos, ni Node.js.
 Funciona igual dentro de un subdirectorio (\`https://midominio.es/tours/mi-tour/\`):
 todas las rutas del paquete son relativas.
 
+**Hace falta servirlo, no abrirlo.** Este paquete no funciona haciendo doble clic
+en \`index.html\` (\`file://\`): el navegador bloquea por seguridad la carga de los
+módulos y de los panoramas desde el sistema de ficheros. Para verlo en local sin
+subirlo a ningún sitio, basta con levantar un servidor en la carpeta:
+
+\`\`\`
+python3 -m http.server 8000
+\`\`\`
+
+y abrir \`http://localhost:8000\`. Si necesitas un fichero que se pueda abrir con
+doble clic, exporta el tour en modo **HTML único** (solo para tours con escenas
+equirectangulares, sin teselar).
+
 ## Modo VR con gafas
 
 El modo inmersivo (Meta Quest, Pico y visores compatibles, con manos o mandos)
@@ -215,8 +230,6 @@ navegador, no de ULL360:
 
 - Sirve el tour por \`https://\` (hoy casi todos los alojamientos ofrecen
   certificado gratuito con Let's Encrypt; en cPanel suele llamarse «SSL/TLS»).
-- Abriendo el \`index.html\` con doble clic (\`file://\`) el tour se ve, pero el
-  botón de VR entra en modo cardboard en lugar de inmersivo.
 - Si lo embebes en un iframe, añade
   \`allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer"\`.
 

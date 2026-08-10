@@ -231,8 +231,12 @@ export async function runExport(
       const uri = dataUris.get(path);
       return uri != null ? JSON.stringify(uri) : match;
     });
-    const viewerJs = viewerFiles.find((f) => f.path === "viewer.js");
-    if (viewerJs == null) throw new Error("Falta viewer.js para el modo single-file");
+    // El HTML único necesita el bundle sin trocear: con file:// el navegador
+    // bloquea los import() dinámicos, así que viewer.js (con chunks perezosos)
+    // no sirve aquí.
+    const viewerJs =
+      viewerFiles.find((f) => f.path === "viewer.standalone.js") ?? viewerFiles.find((f) => f.path === "viewer.js");
+    if (viewerJs == null) throw new Error("Falta viewer.standalone.js para el modo single-file");
     const html = renderIndexHtml({
       title,
       description,
@@ -246,9 +250,12 @@ export async function runExport(
   } else {
     // Paquete estandar
     let done = 0;
-    for (const vf of viewerFiles) {
+    // viewer.standalone.js solo lo usa el HTML único: en el paquete estándar
+    // serían 2,6 MB duplicados.
+    const splitFiles = viewerFiles.filter((f) => f.path !== "viewer.standalone.js");
+    for (const vf of splitFiles) {
       await add(`viewer/${vf.path}`, vf.data);
-      onProgress?.({ phase: "viewer", done: ++done, total: viewerFiles.length });
+      onProgress?.({ phase: "viewer", done: ++done, total: splitFiles.length });
     }
     await add("tour.json", enc.encode(JSON.stringify(tour)));
     const assetPaths = await assets.list();

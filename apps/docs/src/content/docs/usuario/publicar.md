@@ -34,7 +34,9 @@ addEventListener("message", (e) => {
 
 ## Exportar paquete estático
 
-**Exportar** genera en tu navegador un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python -m http.server`, en GitHub Pages o Cloudflare Pages sin configuración.
+**Exportar** genera en tu navegador un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python3 -m http.server`, en GitHub Pages o Cloudflare Pages sin configuración. No lleva backend, ni CDN, ni llamadas a la plataforma: una vez subido, el tour vive por su cuenta.
+
+Eso sí, hay que **servirlo**, no abrirlo: el paquete estándar no funciona haciendo doble clic en `index.html` (`file://`), porque el navegador bloquea desde el sistema de ficheros tanto los módulos JavaScript como los panoramas. Para verlo en local, `python3 -m http.server` en la carpeta y abrir `http://localhost:8000`.
 
 Opciones:
 
@@ -42,7 +44,7 @@ Opciones:
 - **Incluir/excluir descargas** de PDF e imágenes.
 - **Analítica**: endpoint propio configurable o desactivada.
 - **Service worker offline**: PWA instalable, ideal para museos y kioscos sin red.
-- **HTML único**: todo inline en base64 para tours pequeños (funciona abriendo el fichero directamente).
+- **HTML único**: un solo `index.html` con el visor y los medios en base64, que sí se abre con doble clic. Solo admite escenas equirectangulares: los tiles multirresolución no se pueden incrustar porque el visor calcula sus URL nivel a nivel, así que con un tour teselado la opción aparece desactivada. Al abrirse por `file://` no hay WebXR (no es contexto seguro) y la VR queda en modo cardboard.
 - **SCORM 1.2 / 2004**: paquete para LMS con reporte de finalización y puntuación.
 - **Kiosko**: autopilot + reinicio por inactividad + bloqueo de salida.
 

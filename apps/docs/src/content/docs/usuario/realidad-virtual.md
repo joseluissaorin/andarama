@@ -85,9 +85,15 @@ un tour publicado y en un paquete `.zip` exportado.
 
 La realidad virtual viaja dentro del `.zip`. El paquete estándar lleva el mismo
 motor que el tour publicado, así que el botón **Modo VR** aparece y funciona con
-una condición: **hay que servirlo por HTTPS**. Abrir el `index.html` con doble
-clic (`file://`) permite ver el tour, pero no entrar en modo inmersivo — el
-navegador lo prohíbe. En ese caso el visor entra en modo cardboard.
+una condición: **hay que servirlo por HTTPS**.
+
+El paquete estándar necesita un servidor, cualquiera: no funciona abriendo el
+`index.html` con doble clic, porque el navegador bloquea los módulos y los
+panoramas cargados desde `file://`. Para una prueba local basta
+`python3 -m http.server` en la carpeta; para VR de verdad hace falta HTTPS. La
+variante **HTML único** sí se abre con doble clic, pero entonces WebXR no está
+disponible (`file://` no es un contexto seguro) y el visor entra en modo
+cardboard.
 
 El fichero `LEEME.md` que acompaña a cada paquete lo recuerda, y el `.htaccess`
 incluido añade los tipos MIME y las cabeceras de caché que necesita un

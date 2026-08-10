@@ -35,6 +35,23 @@ const result = await build({
   define: { "process.env.NODE_ENV": '"production"' },
 });
 
+// Bundle sin trocear para el export «HTML único»: un index.html abierto con
+// doble clic (file://) no puede resolver import() dinámicos —el navegador los
+// bloquea por CORS—, así que ese modo necesita todo el código en un solo
+// fichero, sin chunks perezosos.
+await build({
+  entryPoints: [join(here, "src/main.ts")],
+  bundle: true,
+  splitting: false,
+  format: "iife",
+  outfile: join(outdir, "viewer.standalone.js"),
+  minify: true,
+  sourcemap: false,
+  target: ["es2020"],
+  logLevel: "warning",
+  define: { "process.env.NODE_ENV": '"production"' },
+});
+
 // Assets adicionales autocontenidos
 const leafletCss = require.resolve("leaflet/dist/leaflet.css");
 await copyFile(leafletCss, join(outdir, "leaflet.css"));

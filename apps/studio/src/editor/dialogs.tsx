@@ -230,6 +230,16 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
   const [analyticsEndpoint, setAnalyticsEndpoint] = useState("");
   const [sw, setSw] = useState(false);
   const [single, setSingle] = useState(false);
+  // El HTML único inline los medios como data URIs, y los tiles multirresolución
+  // no se pueden mapear (sus URL las calcula el visor nivel a nivel). Con tours
+  // teselados el paquete saldría sin panoramas, así que la opción se cierra.
+  const hasMultires = (editor.snapshot?.scenes ?? []).some((sc) => {
+    try {
+      return (JSON.parse(sc.sourceJson ?? "{}") as { kind?: string }).kind === "multires";
+    } catch {
+      return false;
+    }
+  });
   const [scorm, setScorm] = useState<"" | ScormVersion>("");
   const [kiosk, setKiosk] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
@@ -338,7 +348,14 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
           <Input id="ex-analytics" value={analyticsEndpoint} onChange={(e) => setAnalyticsEndpoint(e.target.value)} placeholder="https://mi-instancia/ingest/e" />
         </Field>
         <Switch id="ex-sw" checked={sw} onCheckedChange={setSw} label={t("export_sw")} />
-        <Switch id="ex-single" checked={single} onCheckedChange={setSingle} label={t("export_single")} />
+        <Switch
+          id="ex-single"
+          checked={single && !hasMultires}
+          disabled={hasMultires}
+          onCheckedChange={setSingle}
+          label={t("export_single")}
+        />
+        {hasMultires && <p className="-mt-2 pl-1 text-xs text-[var(--ull-text-dim)]">{t("export_single_multires")}</p>}
         <Field label={t("export_scorm")} htmlFor="ex-scorm">
           <Select id="ex-scorm" value={scorm} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
             <option value="">-</option>
