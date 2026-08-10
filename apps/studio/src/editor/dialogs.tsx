@@ -6,6 +6,7 @@ import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@an
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
+import { captureShareImage } from "./shareCapture";
 import type { ProjectInfo } from "./EditorPage";
 
 // ---------------------------------------------------------------------------
@@ -34,10 +35,15 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const publish = async (): Promise<void> => {
     setBusy(true);
     try {
+      // La portada para compartir: la escena inicial con la proyección real
+      // del visor. Si la captura falla, se publica igual y el servidor usa la
+      // previsualización equirectangular.
+      const shareImage = (await captureShareImage(project.id)) ?? undefined;
       const res = await api<{ slug: string; url: string; warnings: { message: string }[] }>(`/projects/${project.id}/publish`, {
         method: "POST",
         body: {
           slug,
+          shareImage,
           visibility,
           password: password !== "" ? password : undefined,
           domains: visibility === "domains" ? domains.split("\n").map((d) => d.trim()).filter((d) => d !== "") : undefined,

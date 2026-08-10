@@ -892,10 +892,19 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
             });
           }
         }
-      } else if (!st.moved && mode === "autopilot" && canEdit && route != null) {
-        const clicked = [...selectedNodes][0];
+      } else if (!st.moved && mode === "autopilot" && canEdit) {
+        // La parada es el nodo de este mismo gesto (st.orig), no la selección,
+        // que puede no haberse re-renderizado aún entre el down y el up
+        const clicked = Object.keys(st.orig)[0];
         if (clicked != null) {
-          patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, steps: [...r.steps, { scene: clicked, seconds: 6 }] } : r)));
+          if (route == null) {
+            // Primer clic sin ruta: se crea sola. Obligar a pulsar antes
+            // «Nueva ruta» era una dependencia escondida que nadie descubría.
+            patchRoutes((list) => [...list, { id: `ruta-${list.length + 1}`, title: t("route_n", { n: String(list.length + 1) }), steps: [{ scene: clicked, seconds: 6 }], loop: true }]);
+            setRouteIndex(routes.length);
+          } else {
+            patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, steps: [...r.steps, { scene: clicked, seconds: 6 }] } : r)));
+          }
         }
       }
     } else if (st.kind === "place") {
@@ -2220,6 +2229,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
             <Plus className="h-4 w-4" /> {t("new_route")}
           </Button>
 
+          {route == null && <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("autopilot_empty_hint")}</p>}
+
           {route != null && (
             <>
               <label className="block text-[13px]">
@@ -2254,7 +2265,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                       );
                     }}
                   >
-                    <span className="flex h-5 w-5 cursor-grab items-center justify-center rounded-full bg-[var(--anda-primary)] text-[11px] font-semibold text-white">
+                    <span className="flex h-5 w-5 cursor-grab items-center justify-center rounded-full bg-[var(--anda-primary)] text-[11px] font-semibold text-[#33260f]">
                       {i + 1}
                     </span>
                     <span className="flex-1 truncate">{snapshot.scenes.find((sc) => sc.id === step.scene)?.title ?? step.scene}</span>

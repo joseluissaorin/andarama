@@ -9,5 +9,5 @@ export { VRManager } from "./engine/vr.js";
 export { DeviceOrientationControlMethod, orientationToYawPitch } from "./engine/gyro.js";
 export { ProjectionPass, littlePlanetIntroParams } from "./engine/projections.js";
 export { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
-export { createIconSvg, sanitizeSvg, registerIcons, DEFAULT_ICON_BY_TYPE, type IconNode } from "./hotspots/icons.js";
+export { createIconSvg, sanitizeSvg, registerIcons, hasIcon, DEFAULT_ICON_BY_TYPE, type IconNode } from "./hotspots/icons.js";
 export { SceneMarkers } from "./hotspots/markers.js";

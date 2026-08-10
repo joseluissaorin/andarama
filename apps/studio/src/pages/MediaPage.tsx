@@ -5,6 +5,7 @@ import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useTo
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
+import { Criatura } from "../components/Criatura";
 import { PlanetThumb, Pano360Dialog, isPano, previewEquirect } from "../media/PanoPreview";
 import { prefetchLittlePlanets } from "../media/littlePlanet";
 import { MEDIA_DRAG_TYPE, mediaDragPayload } from "../media/drag";
@@ -71,6 +72,37 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [renaming, setRenaming] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  /* Selección estilo explorador de archivos: Ctrl/Cmd alterna, Mayús coge el
+     rango desde la última tarjeta pulsada, Esc lo suelta todo. El ancla es un
+     ref porque cambiarla no debe repintar nada. */
+  const anclaSeleccion = useRef<number | null>(null);
+  const alternarSeleccion = (id: string): void => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const seleccionarRango = (hasta: number): void => {
+    const desde = anclaSeleccion.current ?? hasta;
+    const [a, b] = desde <= hasta ? [desde, hasta] : [hasta, desde];
+    const ids = (list.data ?? []).slice(a, b + 1).map((x) => x.id);
+    setSelected((prev) => new Set([...prev, ...ids]));
+  };
+  useEffect(() => {
+    if (!fullPage) return;
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === "Escape") setSelected(new Set());
+      // Ctrl/Cmd+A selecciona todo si no se está escribiendo en un campo
+      if ((e.metaKey || e.ctrlKey) && e.key === "a" && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setSelected(new Set((list.data ?? []).map((x) => x.id)));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   const [wizardOpen, setWizardOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const fullPage = onSelect == null;
@@ -296,6 +328,14 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             <Camera className="h-4 w-4" /> {t("import_wizard")}
           </Button>
         )}
+        {fullPage && (list.data ?? []).length > 0 && (
+          <Button variant="ghost" size="sm" onClick={() => {
+            const todos = new Set((list.data ?? []).map((x) => x.id));
+            setSelected((prev) => (prev.size === todos.size ? new Set() : todos));
+          }}>
+            {selected.size === (list.data ?? []).length && selected.size > 0 ? t("select_none") : t("select_all")}
+          </Button>
+        )}
         <Button onClick={() => fileInput.current?.click()}>
           <UploadCloud className="h-4 w-4" /> {t("upload")}
         </Button>
@@ -353,10 +393,10 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
         </div>
       ) : (list.data ?? []).length === 0 ? (
         <button type="button" className="w-full" onClick={() => fileInput.current?.click()}>
-          <EmptyState icon={<UploadCloud className="h-10 w-10" />} title={t("no_media")} hint={t("drop_files")} />
+          <EmptyState icon={<Criatura size={72} andando />} title={t("no_media")} hint={t("drop_files")} />
         </button>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid select-none grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {(list.data ?? []).map((m) => (
             <div
               key={m.id}
@@ -376,7 +416,16 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                 type="button"
                 className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--anda-primary)]"
                 title={isPano(m) ? t("dblclick_to_preview") : undefined}
-                onClick={() => {
+                onClick={(e) => {
+                  if (fullPage && (e.metaKey || e.ctrlKey)) {
+                    alternarSeleccion(m.id);
+                    anclaSeleccion.current = (list.data ?? []).findIndex((x) => x.id === m.id);
+                    return;
+                  }
+                  if (fullPage && e.shiftKey) {
+                    seleccionarRango((list.data ?? []).findIndex((x) => x.id === m.id));
+                    return;
+                  }
                   if (onSelect != null) {
                     onSelect(m);
                     return;
@@ -436,6 +485,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                   aria-label={t("select_item", { name: m.filename })}
                   checked={selected.has(m.id)}
                   onChange={(e) => {
+                    anclaSeleccion.current = (list.data ?? []).findIndex((x) => x.id === m.id);
                     setSelected((prev) => {
                       const next = new Set(prev);
                       if (e.target.checked) next.add(m.id);
@@ -457,6 +507,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
       {fullPage && selected.size > 0 && (
         <div className="sticky bottom-4 mt-4 flex items-center gap-3 rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 shadow-[var(--anda-shadow-lg)]">
           <span className="text-sm font-medium">{t("n_selected", { count: String(selected.size) })}</span>
+          <span className="hidden font-mono text-[11px] text-[var(--anda-text-dim)] lg:inline">{t("selection_hint")}</span>
           <Select
             value=""
             aria-label={t("assign_to_tour")}

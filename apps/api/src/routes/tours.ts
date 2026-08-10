@@ -171,6 +171,14 @@ export function tourRoutes(): Hono<AppEnv> {
     const runtime = c.get("runtime");
     const tourBytes = await runtime.storage.getBytes(`pub/${slug}/${pointer.version}/tour.json`);
     if (tourBytes == null) return c.notFound();
+    // La portada preferida es la capturada al publicar: la escena inicial con
+    // la proyección real del visor, no el rectángulo equirectangular
+    const capturada = await runtime.storage.getBytes(`pub/${slug}/${pointer.version}/share.jpg`);
+    if (capturada != null) {
+      return new Response(new Uint8Array(capturada).buffer as ArrayBuffer, {
+        headers: { "content-type": "image/jpeg", "cache-control": "public, max-age=3600" },
+      });
+    }
     const tour = JSON.parse(new TextDecoder().decode(tourBytes)) as Tour;
     const inicial = tour.scenes.find((s) => s.id === tour.start.scene) ?? tour.scenes[0];
     const preview = (inicial?.source as { preview?: string } | undefined)?.preview;

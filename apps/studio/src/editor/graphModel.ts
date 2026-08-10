@@ -285,8 +285,12 @@ export function readAutopilot(settings: Record<string, unknown>): AutopilotRoute
 }
 
 export function writeAutopilot(settings: Record<string, unknown>, routes: AutopilotRouteDraft[]): void {
-  if (routes.length === 0 || routes.every((r) => r.steps.length === 0)) delete settings.autopilot;
-  else settings.autopilot = routes.filter((r) => r.steps.length > 0);
+  // Las rutas vacías se conservan: una ruta recién creada aún no tiene paradas
+  // y borrarla aquí hacía imposible crear la primera (se autodestruía al
+  // escribirse). Quien no quiere rutas vacías es el tour publicado, y de eso
+  // se encarga el compilador.
+  if (routes.length === 0) delete settings.autopilot;
+  else settings.autopilot = routes;
 }
 
 /** Resultado de intentar reconectar una arista. */

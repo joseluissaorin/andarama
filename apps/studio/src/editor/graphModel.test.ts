@@ -123,8 +123,16 @@ describe("grafo basado en hotspots", () => {
     const settings: Record<string, unknown> = {};
     writeAutopilot(settings, [{ id: "r1", title: "Visita", steps: [{ scene: "a", seconds: 5 }], loop: true }]);
     expect(readAutopilot(settings)).toEqual([{ id: "r1", title: "Visita", steps: [{ scene: "a", seconds: 5 }], loop: true }]);
-    writeAutopilot(settings, [{ id: "r1", title: "Visita", steps: [] }]);
+    writeAutopilot(settings, []);
     expect(settings.autopilot).toBeUndefined();
+  });
+
+  it("una ruta recién creada, aún sin paradas, sobrevive en el borrador", () => {
+    // Antes se autodestruía al escribirse y era imposible crear la primera:
+    // el clic que añade paradas exige que la ruta exista.
+    const settings: Record<string, unknown> = {};
+    writeAutopilot(settings, [{ id: "r1", title: "Visita", steps: [] }]);
+    expect(readAutopilot(settings)).toEqual([{ id: "r1", title: "Visita", steps: [], loop: false }]);
   });
 });
 

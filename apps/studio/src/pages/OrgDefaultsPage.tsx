@@ -5,6 +5,7 @@ import { Button, Field, Input, Select, Spinner, Switch, useToast } from "@andara
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
+import { MediaPicker } from "../editor/MediaPicker";
 
 /**
  * Valores por defecto de la organización.
@@ -15,6 +16,15 @@ import { useT } from "../i18n";
  * se quedan como están hasta que se vuelvan a publicar.
  */
 
+export interface BrandKit {
+  id: string;
+  name: string;
+  base?: string;
+  primaryColor?: string;
+  fontFamily?: string;
+  watermark?: { image?: string; link?: string };
+}
+
 interface Defaults {
   langs?: string[];
   defaultLang?: string;
@@ -22,6 +32,14 @@ interface Defaults {
   ui?: { theme?: { base?: string; primaryColor?: string; fontFamily?: string }; [k: string]: unknown };
   transition?: { kind?: string };
   vr?: { hotspots?: string; dwellSeconds?: number };
+  /** Marcas reutilizables de la organización; la de serie es la de Andarama. */
+  brandKits?: BrandKit[];
+}
+
+/** Una referencia media:<id> convertida en URL servible para la miniatura. */
+function logoPreviewUrl(ref: string): string {
+  const m = /^media:([A-Za-z0-9_-]+)$/.exec(ref);
+  return m != null ? `/api/v1/media/${m[1]}/file` : ref;
 }
 
 export function OrgDefaultsPage(): React.ReactNode {
@@ -30,6 +48,7 @@ export function OrgDefaultsPage(): React.ReactNode {
   const orgId = useAuth((s) => s.currentOrgId);
   const [draft, setDraft] = useState<Defaults>({});
   const [saving, setSaving] = useState(false);
+  const [logoPickerFor, setLogoPickerFor] = useState<string | null>(null);
 
   const current = useQuery({
     queryKey: ["org-defaults", orgId],
@@ -191,12 +210,97 @@ export function OrgDefaultsPage(): React.ReactNode {
         />
       </section>
 
+      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
+        <h2 className="text-[15px] font-semibold">{t("brand_kits")}</h2>
+        <p className="text-[13px] leading-relaxed text-[var(--anda-text-dim)]">{t("brand_kits_intro")}</p>
+        {(draft.brandKits ?? []).map((kit, i) => (
+          <div key={kit.id} className="space-y-3 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-4">
+            <div className="flex items-center gap-3">
+              <Input
+                aria-label={t("brand_name")}
+                className="max-w-xs font-semibold"
+                value={kit.name}
+                onChange={(e) => patch((d) => { d.brandKits![i]!.name = e.target.value; })}
+              />
+              <div className="flex-1" />
+              <Button size="sm" variant="ghost" onClick={() => patch((d) => { d.brandKits = d.brandKits!.filter((k) => k.id !== kit.id); })}>
+                {t("delete")}
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Field label={t("theme")} htmlFor={`bk-base-${kit.id}`}>
+                <Select id={`bk-base-${kit.id}`} value={kit.base ?? "anda"}
+                  onChange={(e) => patch((d) => { d.brandKits![i]!.base = e.target.value; })}>
+                  <option value="anda">Andarama</option>
+                  <option value="dark">Oscuro</option>
+                  <option value="light">Claro</option>
+                  <option value="auto">Auto</option>
+                </Select>
+              </Field>
+              <Field label={t("primary_color")} htmlFor={`bk-color-${kit.id}`}>
+                <div className="flex items-center gap-2">
+                  <input type="color" aria-label={t("primary_color")} value={kit.primaryColor ?? "#f59e00"}
+                    className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-[var(--anda-border)] bg-transparent p-0.5"
+                    onChange={(e) => patch((d) => { d.brandKits![i]!.primaryColor = e.target.value; })} />
+                  <Input aria-label={`${t("primary_color")} (hex)`} className="font-mono text-xs uppercase"
+                    value={kit.primaryColor ?? ""} placeholder="#f59e00"
+                    onChange={(e) => patch((d) => { d.brandKits![i]!.primaryColor = e.target.value || undefined; })} />
+                </div>
+              </Field>
+              <Field label={t("font")} htmlFor={`bk-font-${kit.id}`}>
+                <Input id={`bk-font-${kit.id}`} value={kit.fontFamily ?? ""} placeholder="Baloo 2"
+                  onChange={(e) => patch((d) => { d.brandKits![i]!.fontFamily = e.target.value || undefined; })} />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label={t("brand_logo")} htmlFor={`bk-logo-${kit.id}`} hint={t("brand_logo_hint")}>
+                <div className="flex items-center gap-2">
+                  {kit.watermark?.image != null && kit.watermark.image !== "" && (
+                    <img src={logoPreviewUrl(kit.watermark.image)} alt="" className="h-9 w-9 rounded-lg border border-[var(--anda-border)] bg-white object-contain" />
+                  )}
+                  <Button size="sm" variant="outline" onClick={() => setLogoPickerFor(kit.id)}>
+                    {kit.watermark?.image != null ? t("change") : t("choose")}
+                  </Button>
+                  {kit.watermark?.image != null && (
+                    <Button size="sm" variant="ghost" onClick={() => patch((d) => { d.brandKits![i]!.watermark = { ...d.brandKits![i]!.watermark, image: undefined }; })}>
+                      {t("delete")}
+                    </Button>
+                  )}
+                </div>
+              </Field>
+              <Field label={t("brand_logo_link")} htmlFor={`bk-link-${kit.id}`}>
+                <Input id={`bk-link-${kit.id}`} value={kit.watermark?.link ?? ""} placeholder="https://…"
+                  onChange={(e) => patch((d) => { d.brandKits![i]!.watermark = { ...d.brandKits![i]!.watermark, link: e.target.value || undefined }; })} />
+              </Field>
+            </div>
+          </div>
+        ))}
+        <Button size="sm" variant="outline"
+          onClick={() => patch((d) => {
+            d.brandKits = [...(d.brandKits ?? []), { id: `marca-${Date.now().toString(36)}`, name: t("brand_new_name"), base: "anda", primaryColor: "#f59e00" }];
+          })}>
+          {t("brand_add")}
+        </Button>
+      </section>
+
       <div className="flex items-center gap-3">
         <Button onClick={() => void save()} loading={saving}>
           <Save className="h-4 w-4" /> {t("save")}
         </Button>
         <p className="text-xs text-[var(--anda-text-dim)]">{t("defaults_propagation_note")}</p>
       </div>
+
+      <MediaPicker
+        open={logoPickerFor != null}
+        onClose={() => setLogoPickerFor(null)}
+        kind="image"
+        onSelect={(item) => {
+          patch((d) => {
+            const kit = d.brandKits?.find((k) => k.id === logoPickerFor);
+            if (kit != null) kit.watermark = { ...kit.watermark, image: `media:${item.id}` };
+          });
+        }}
+      />
     </div>
   );
 }

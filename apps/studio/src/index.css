@@ -35,6 +35,11 @@ body {
   font-family: var(--anda-font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Grano de papel, como en la landing: la huella del proceso */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.06 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+.dark body {
+  background-image: none;
 }
 
 ::selection {
@@ -67,6 +72,41 @@ body {
 .anda-enter {
   animation: anda-fade-up 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
+
+/* La criatura: el brinco blando de la landing, reutilizable en el Studio */
+@keyframes anda-brinco {
+  from { transform: scaleY(0.96) scaleX(1.02); }
+  to { transform: scaleY(1.04) scaleX(0.98) translateY(-5px); }
+}
+.anda-brinca {
+  animation: anda-brinco 0.55s ease-in-out infinite alternate;
+  transform-origin: 50% 100%;
+}
+/* Y el paseo: cruza su contenedor sobre una línea de suelo */
+@keyframes anda-pasear {
+  from { transform: translateX(-70px); }
+  to { transform: translateX(calc(100% + 70px)); }
+}
+.anda-paseo { position: relative; overflow: hidden; }
+.anda-paseo__suelo {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  border-bottom: 2.5px solid currentColor;
+  opacity: 0.75;
+}
+/* El desplazamiento y el brinco van en elementos distintos: dos animaciones
+   de transform sobre el mismo elemento se pisan en vez de sumarse */
+.anda-paseo__anda {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  animation: anda-pasear 14s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .anda-enter { animation: none; }
+  .anda-brinca, .anda-paseo__anda { animation: none; }
+  .anda-paseo__anda { left: 62%; }
 }

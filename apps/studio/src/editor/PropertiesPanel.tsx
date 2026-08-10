@@ -1,31 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
   ArrowUpRight,
-  BookOpen,
-  Building2,
-  Camera,
   ChevronLeft,
   ChevronRight,
-  Coffee,
   Crosshair,
-  DoorOpen,
-  Eye,
-  FlaskConical,
-  Footprints,
-  GraduationCap,
-  Landmark,
-  LogIn,
-  LogOut,
+  ImagePlus,
   Maximize2,
   Plus,
-  Star,
   Trash2,
-  Trees,
-  type LucideIcon,
 } from "lucide-react";
 import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@andarama/ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
@@ -36,31 +18,17 @@ import { getCurrentEditorView, highlightHotspot, setEditorView, setPlacementMode
 import { ArrivalsPanel } from "./ArrivalsPanel";
 import { HotspotPalette } from "./HotspotPalette";
 import { MediaPicker } from "./MediaPicker";
+import { ICON_CATALOG } from "./hotspotIcons";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
 
 /** Iconos elegibles (registrados también en el visor). */
-const ICON_OPTIONS: { name: string; Icon: LucideIcon }[] = [
-  { name: "arrow-up", Icon: ArrowUp },
-  { name: "arrow-down", Icon: ArrowDown },
-  { name: "arrow-left", Icon: ArrowLeft },
-  { name: "arrow-right", Icon: ArrowRight },
-  { name: "arrow-up-right", Icon: ArrowUpRight },
-  { name: "door-open", Icon: DoorOpen },
-  { name: "log-in", Icon: LogIn },
-  { name: "log-out", Icon: LogOut },
-  { name: "footprints", Icon: Footprints },
-  { name: "building-2", Icon: Building2 },
-  { name: "landmark", Icon: Landmark },
-  { name: "trees", Icon: Trees },
-  { name: "graduation-cap", Icon: GraduationCap },
-  { name: "book-open", Icon: BookOpen },
-  { name: "flask-conical", Icon: FlaskConical },
-  { name: "coffee", Icon: Coffee },
-  { name: "camera", Icon: Camera },
-  { name: "eye", Icon: Eye },
-  { name: "star", Icon: Star },
-];
+
+/** Una referencia media:<id> del borrador, convertida en URL servible. */
+function mediaRefUrl(ref: string): string {
+  const m = /^media:([A-Za-z0-9_-]+)$/.exec(ref);
+  return m != null ? `/api/v1/media/${m[1]}/file` : ref;
+}
 
 /** parseInt con guarda: un campo vacío no debe escribir NaN/null en el JSON. */
 function num(value: string, fallback: number): number {
@@ -444,6 +412,16 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   const [pickerField, setPickerField] = useState<string | null>(null);
   const [expand, setExpand] = useState<{ key: string; label: string } | null>(null);
   const [activeTab, setTab] = useState<"content" | "style" | "conditions">("content");
+  const [iconSearch, setIconSearch] = useState("");
+  // Búsqueda sobre nombre y palabras clave, sin tildes para que «baño» case con "bano"
+  const sinTildes = (v: string): string => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const iconosFiltrados =
+    iconSearch.trim() === ""
+      ? ICON_CATALOG
+      : ICON_CATALOG.filter((o) => {
+          const q = sinTildes(iconSearch.trim());
+          return o.name.includes(q) || o.keywords.some((k) => sinTildes(k).includes(q));
+        });
   const tourHotspotSize = Number((snapshot.settings.ui as { hotspotSize?: number } | undefined)?.hotspotSize ?? 44);
   const hotspotSize = Number(style.icon?.size ?? tourHotspotSize);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -936,39 +914,70 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       {activeTab === "style" && (
       <Section title={t("style")}>
         <Field label={t("icon")}>
-          <div className="grid grid-cols-7 gap-1">
-            <button
-              type="button"
-              title={t("icon_default")}
-              aria-label={t("icon_default")}
-              disabled={!canEdit}
-              onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name: undefined } })}
-              className={`flex h-8 items-center justify-center rounded-lg border text-[10px] font-semibold ${
-                style.icon?.name == null
-                  ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
-                  : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
-              }`}
-            >
-              Auto
-            </button>
-            {ICON_OPTIONS.map(({ name, Icon }) => (
-              <button
-                key={name}
-                type="button"
-                title={name}
-                aria-label={name}
-                disabled={!canEdit}
-                onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name } })}
-                className={`flex h-8 items-center justify-center rounded-lg border ${
-                  style.icon?.name === name
-                    ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
-                    : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-              </button>
-            ))}
-          </div>
+          {/* El icono propio manda: si hay imagen elegida se enseña con su
+              miniatura; quitarla devuelve el catálogo */}
+          {style.icon?.url != null ? (
+            <div className="flex items-center gap-3 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-2">
+              <img
+                src={mediaRefUrl(String(style.icon.url))}
+                alt=""
+                className="h-10 w-10 rounded-lg border border-[var(--anda-border)] bg-white object-contain"
+              />
+              <span className="flex-1 text-[12.5px] text-[var(--anda-text-dim)]">{t("icon_custom_active")}</span>
+              <Button size="sm" variant="ghost" disabled={!canEdit}
+                onClick={() => setStyle({ icon: { ...(style.icon ?? {}), url: undefined } })}>
+                {t("delete")}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Input
+                aria-label={t("icon_search")}
+                placeholder={t("icon_search")}
+                className="mb-2"
+                value={iconSearch}
+                onChange={(e) => setIconSearch(e.target.value)}
+              />
+              <div className="grid max-h-56 grid-cols-7 gap-1 overflow-y-auto pr-1">
+                <button
+                  type="button"
+                  title={t("icon_default")}
+                  aria-label={t("icon_default")}
+                  disabled={!canEdit}
+                  onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name: undefined } })}
+                  className={`flex h-8 items-center justify-center rounded-lg border text-[10px] font-semibold ${
+                    style.icon?.name == null
+                      ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                      : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
+                  }`}
+                >
+                  Auto
+                </button>
+                {iconosFiltrados.map(({ name, Icon }) => (
+                  <button
+                    key={name}
+                    type="button"
+                    title={name}
+                    aria-label={name}
+                    disabled={!canEdit}
+                    onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name } })}
+                    className={`flex h-8 items-center justify-center rounded-lg border ${
+                      style.icon?.name === name
+                        ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                        : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </button>
+                ))}
+              </div>
+              {/* Un icono propio: una imagen de la biblioteca, que es de la
+                  organización y por tanto sirve para todos los tours */}
+              <Button size="sm" variant="outline" className="mt-2" disabled={!canEdit} onClick={() => setPickerField("icono:image")}>
+                <ImagePlus className="h-4 w-4" /> {t("icon_from_library")}
+              </Button>
+            </>
+          )}
         </Field>
         {/* Tamaño del botón: deslizador con muestra a escala real, porque el
             número solo no dice nada hasta que se ve sobre el panorama. */}
@@ -1116,6 +1125,8 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             setContent({ before: { ...content.before, url: `media:${item.id}` } });
           } else if (field === "compare-after") {
             setContent({ after: { ...content.after, url: `media:${item.id}` } });
+          } else if (field === "icono") {
+            setStyle({ icon: { ...(style.icon ?? {}), url: `media:${item.id}`, name: undefined } });
           } else {
             setContent({ [field]: `media:${item.id}` });
           }

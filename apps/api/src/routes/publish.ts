@@ -48,6 +48,13 @@ const publishSchema = z.object({
   publishAt: z.number().optional(),
   expireAt: z.number().optional(),
   note: z.string().max(500).optional(),
+  /** Portada para compartir capturada por el editor: la escena inicial con la
+   *  proyección real del visor, como data URL JPEG. */
+  shareImage: z
+    .string()
+    .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/)
+    .max(2_000_000)
+    .optional(),
 });
 
 export function publishRoutes(): Hono<AppEnv> {
@@ -97,6 +104,12 @@ export function publishRoutes(): Hono<AppEnv> {
     await runtime.storage.put(mapKey, JSON.stringify({ assets: compiled.assets, prefixes: compiled.prefixes }), {
       contentType: "application/json",
     });
+    if (body.shareImage != null) {
+      const binario = atob(body.shareImage.split(",", 2)[1]!);
+      const bytes = new Uint8Array(binario.length);
+      for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
+      await runtime.storage.put(`pub/${slug}/${number}/share.jpg`, bytes, { contentType: "image/jpeg" });
+    }
 
     const versionId = newId();
     await db.insert(versions).values({

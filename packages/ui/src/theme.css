@@ -45,3 +45,27 @@
   --anda-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
   --anda-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.4);
 }
+
+/* ---------------------------------------------------------------------------
+ * Animaciones del Studio. Poquitas y con intención: los diálogos brotan, los
+ * avisos suben desde abajo, y todo se apaga si el sistema pide menos
+ * movimiento.
+ * ------------------------------------------------------------------------- */
+@keyframes anda-anim-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes anda-anim-pop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes anda-anim-sube {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.anda-anim-overlay { animation: anda-anim-fade 0.18s ease-out; }
+.anda-anim-dialog { animation: anda-anim-pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.15); }
+.anda-anim-toast { animation: anda-anim-sube 0.22s cubic-bezier(0.2, 0.9, 0.3, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .anda-anim-overlay, .anda-anim-dialog, .anda-anim-toast { animation: none; }
+}

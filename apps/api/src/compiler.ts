@@ -328,7 +328,9 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
     social: deepResolve(settings.social as Tour["social"]) ?? undefined,
     transition: (settings.transition as Tour["transition"]) ?? undefined,
     autorotate: (settings.autorotate as Tour["autorotate"]) ?? undefined,
-    autopilot: (settings.autopilot as Tour["autopilot"]) ?? undefined,
+    // Las rutas sin paradas son borradores a medias: viven en el editor pero
+    // no tienen nada que reproducir en el tour publicado
+    autopilot: filtrarAutopilot(settings.autopilot as Tour["autopilot"]),
     variables: (settings.variables as Tour["variables"]) ?? undefined,
     quiz: (settings.quiz as Tour["quiz"]) ?? undefined,
     treasureHunt: (settings.treasureHunt as Tour["treasureHunt"]) ?? undefined,
@@ -338,6 +340,13 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
 
   const validation = validateTour(tour);
   return { tour, assets, prefixes, issues: validation.issues };
+}
+
+/** Deja fuera del tour publicado las rutas de autopilot sin paradas. */
+function filtrarAutopilot(routes: Tour["autopilot"]): Tour["autopilot"] {
+  if (routes == null) return undefined;
+  const conParadas = routes.filter((r) => Array.isArray(r.steps) && r.steps.length > 0);
+  return conParadas.length > 0 ? conParadas : undefined;
 }
 
 function buildSourceFromMedia(

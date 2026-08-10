@@ -1,10 +1,11 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Download, FolderKanban, Image, Languages, LogOut, RefreshCw, ShieldCheck, Share, UserCircle, Building2 } from "lucide-react";
-import { Button, Dialog, Select, Spinner, Tooltip } from "@andarama/ui";
+import { Download, FolderKanban, Image, Languages, LogOut, Menu, RefreshCw, ShieldCheck, Share, UserCircle, Building2, X } from "lucide-react";
+import { Button, Dialog, Select, Tooltip } from "@andarama/ui";
 import { useAuth } from "../stores";
 import { useI18nStore, useT } from "../i18n";
 import { usePwa } from "../pwa";
+import { Criatura } from "./Criatura";
 import logoAndarama from "../brand/logo-andarama.svg";
 import andaCriatura from "../brand/anda-criatura.svg";
 
@@ -16,6 +17,8 @@ export function Shell(): React.ReactNode {
   const { lang, setLang } = useI18nStore();
   const pwa = usePwa();
   const [iosHelp, setIosHelp] = useState(false);
+  // En pantallas estrechas la barra lateral es un cajón que se desliza
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   useEffect(() => {
     void refresh();
@@ -29,15 +32,40 @@ export function Shell(): React.ReactNode {
 
   if (!loaded || me?.user == null) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner />
+      <div className="flex h-full flex-col items-center justify-center gap-3">
+        <Criatura size={64} andando />
+        <p className="text-[13px] font-medium text-[var(--anda-text-dim)]">{t("loading")}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full">
-      <aside className="flex w-60 flex-col border-r border-[var(--anda-border)] bg-[var(--anda-surface)]">
+    <div className="flex h-full flex-col md:flex-row">
+      {/* Cabecera móvil: la marca y el botón del cajón */}
+      <header className="flex items-center gap-3 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 md:hidden">
+        <img src={logoAndarama} alt="" width={30} height={30} className="rounded-lg" />
+        <span className="flex-1 text-[15px] font-bold tracking-tight">andarama</span>
+        <Button variant="ghost" size="icon" aria-label="Menú" aria-expanded={menuAbierto} onClick={() => setMenuAbierto((v) => !v)}>
+          {menuAbierto ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+      </header>
+      {menuAbierto && (
+        <button
+          type="button"
+          aria-label="Cerrar el menú"
+          className="fixed inset-0 z-30 bg-[#0a0e20]/40 md:hidden"
+          onClick={() => setMenuAbierto(false)}
+        />
+      )}
+      <aside
+        onClick={(e) => {
+          // Navegar desde el cajón lo cierra; los botones sueltos no
+          if ((e.target as HTMLElement).closest("a") != null) setMenuAbierto(false);
+        }}
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-[var(--anda-border)] bg-[var(--anda-surface)] transition-transform duration-200 md:static md:z-auto md:translate-x-0 ${
+          menuAbierto ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
         <div className="flex items-center gap-3 px-4 pb-4 pt-5">
           <img src={logoAndarama} alt="" width={40} height={40} className="rounded-xl shadow-[var(--anda-shadow)]" />
           <div className="leading-tight">

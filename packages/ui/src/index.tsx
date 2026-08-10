@@ -177,10 +177,10 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Portal>
-        <RadixDialog.Overlay className="fixed inset-0 z-50 bg-[#0a0e20]/55 backdrop-blur-[6px] data-[state=open]:animate-in data-[state=open]:fade-in" />
+        <RadixDialog.Overlay className="anda-anim-overlay fixed inset-0 z-50 bg-[#0a0e20]/55 backdrop-blur-[6px]" />
         <RadixDialog.Content
           className={cx(
-            "fixed left-1/2 top-1/2 z-50 max-h-[86vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-6 shadow-[var(--anda-shadow-lg)]",
+            "anda-anim-dialog fixed left-1/2 top-1/2 z-50 max-h-[86vh] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-6 shadow-[var(--anda-shadow-lg)]",
             wide === true ? "max-w-3xl" : "max-w-lg",
           )}
         >
@@ -314,7 +314,7 @@ export function ToastProvider({ children }: { children: ReactNode }): ReactNode 
             key={t.id}
             role="status"
             className={cx(
-              "pointer-events-auto rounded-full px-4 py-2 text-sm shadow-lg",
+              "anda-anim-toast pointer-events-auto rounded-full px-4 py-2 text-sm shadow-lg",
               t.kind === "error"
                 ? "bg-[var(--anda-danger)] text-white"
                 : t.kind === "ok"

@@ -5,7 +5,7 @@ import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { AndaLogo } from "../components/Shell";
-import andaCriatura from "../brand/anda-criatura.svg";
+import { CriaturaPaseo } from "../components/Criatura";
 
 export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "invite" }): React.ReactNode {
   const t = useT();
@@ -83,37 +83,31 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
 
   return (
     <div className="flex min-h-full items-center justify-center bg-[var(--anda-bg)] p-6">
-      <div className="flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-shadow-lg)]">
-        {/* Panel de marca */}
-        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[image:var(--anda-grad-deep)] p-10 text-white md:flex">
-          <svg
-            className="pointer-events-none absolute -right-28 -top-24 opacity-25"
-            width="420"
-            height="420"
-            viewBox="0 0 200 200"
-            aria-hidden="true"
-          >
-            <circle cx="100" cy="100" r="88" fill="none" stroke="white" strokeWidth="1.5" />
-            <ellipse cx="100" cy="100" rx="88" ry="34" fill="none" stroke="white" strokeWidth="1" />
-            <ellipse cx="100" cy="100" rx="88" ry="62" fill="none" stroke="white" strokeWidth="0.7" opacity="0.7" />
-            <ellipse cx="100" cy="100" rx="34" ry="88" fill="none" stroke="white" strokeWidth="1" />
-            <ellipse cx="100" cy="100" rx="62" ry="88" fill="none" stroke="white" strokeWidth="0.7" opacity="0.7" />
-            <circle cx="100" cy="100" r="5" fill="white" />
-          </svg>
+      <div className="anda-enter flex w-full max-w-4xl overflow-hidden rounded-3xl border-[3px] border-[var(--anda-text)] bg-[var(--anda-surface)] shadow-[10px_10px_0_var(--anda-yellow)]">
+        {/* Panel de marca: naranja plano de risografía, el grito con su
+            desregistro y la criatura paseando por su suelo */}
+        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[#ff8a00] p-10 text-[#fff8ec] md:flex">
           <div className="flex items-center gap-3">
-            <img src={andaCriatura} alt="" className="h-12 w-12" />
-            <span className="text-[22px] font-bold tracking-tight">andarama</span>
+            <span className="text-[24px] font-bold tracking-tight">andarama</span>
           </div>
           <div className="relative">
-            <h2 className="text-[30px] font-bold leading-snug tracking-tight">¡anda!</h2>
-            <p className="mt-2 max-w-[300px] text-[17px] font-semibold leading-relaxed text-white/90">
-              andarama me deja andar por panoramas
+            <h2
+              className="-rotate-2 text-[64px] font-extrabold leading-none tracking-tight text-[#33260f]"
+              style={{ textShadow: "4px 4px 0 #ffd900" }}
+            >
+              ¡anda!
+            </h2>
+            <p className="mt-4 max-w-[300px] text-[18px] font-bold leading-relaxed">
+              andarama me deja <span className="rounded-md bg-[#ffd900] px-1.5 text-[#33260f]">andar</span> por panoramas
             </p>
-            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-white/70">
+            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-[#fff8ec]/85">
               Editor visual, publicación en un clic, realidad virtual y exportación abierta.
             </p>
           </div>
-          <p className="relative font-mono text-[11px] text-white/60">código abierto (EUPL-1.2)</p>
+          <div>
+            <CriaturaPaseo size={54} className="text-[#33260f]" />
+            <p className="mt-3 font-mono text-[11px] text-[#fff8ec]/75">código abierto (EUPL-1.2)</p>
+          </div>
         </div>
 
         {/* Formulario */}

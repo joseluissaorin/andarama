@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Copy,
   ExternalLink,
-  FolderKanban,
   LayoutTemplate,
   MoreVertical,
   Plus,
@@ -30,6 +29,7 @@ import {
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
+import { Criatura } from "../components/Criatura";
 
 interface ProjectSummary {
   id: string;
@@ -183,7 +183,7 @@ export function ProjectsPage(): React.ReactNode {
         </div>
       ) : visible.length === 0 ? (
         <EmptyState
-          icon={<FolderKanban className="h-10 w-10" />}
+          icon={<Criatura size={72} andando />}
           title={t("no_projects")}
           action={
             view === "active" ? (

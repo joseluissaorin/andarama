@@ -185,6 +185,32 @@ test("el grafo tiene los cuatro modos y el plano ya no es una pestaña", async (
   await expect.poll(() => page.url()).toContain("mode=plan");
 });
 
+test("autopilot: pulsar escenas crea el recorrido sin ceremonia", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  const projectUrl = page.url().split("?")[0]!;
+  await page.goto(`${projectUrl}?tab=graph&mode=autopilot`);
+
+  const modos = page.getByRole("group", { name: "Modo del lienzo" });
+  await expect(modos.getByRole("button", { name: "Autopilot", exact: true })).toHaveAttribute("aria-pressed", "true", { timeout: 20_000 });
+
+  // Sin recorridos aún: el panel lo dice y el primer clic crea la ruta
+  await expect(page.getByText("Todavía no hay ningún recorrido")).toBeVisible();
+  const nodo = page.getByRole("button", { name: /^Escena E2E/ }).first();
+  await nodo.click();
+  await expect(page.getByRole("listitem").filter({ hasText: "Escena E2E" })).toHaveCount(1, { timeout: 10_000 });
+  // Otro clic añade la segunda parada (revisitar está permitido)
+  await nodo.click();
+  await expect(page.getByRole("listitem").filter({ hasText: "Escena E2E" })).toHaveCount(2);
+
+  // El recorrido sobrevive a recargar: se guardó en el borrador
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+  await page.reload();
+  await expect(page.getByRole("listitem").filter({ hasText: "Escena E2E" })).toHaveCount(2, { timeout: 20_000 });
+});
+
 test("un área es la categoría del menú de escenas", async ({ page }) => {
   await login(page);
   await page.goto("/studio/");
