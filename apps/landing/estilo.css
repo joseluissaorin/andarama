@@ -70,21 +70,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1080px;
+  gap: 24px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 22px 24px 0;
+  padding: 34px 28px 0;
 }
 .marca {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   text-decoration: none;
   color: var(--tinta);
   font-weight: 700;
-  font-size: 20px;
+  font-size: 24px;
+  letter-spacing: -0.01em;
 }
-.marca img { border-radius: 9px; }
-.cabecera__nav { display: flex; align-items: center; gap: 18px; }
+.marca img { width: 48px; height: 48px; border-radius: 12px; }
+.cabecera__nav { display: flex; align-items: center; gap: 28px; }
 .cabecera__nav > a:not(.btn) {
   font-family: "Space Mono", monospace;
   font-size: 13px;
@@ -93,6 +95,10 @@ body {
   border-bottom: 2px solid transparent;
 }
 .cabecera__nav > a:not(.btn):hover { border-bottom-color: var(--naranja); }
+/* En pantallas estrechas la documentación ya espera en el pie: que la marca respire */
+@media (max-width: 560px) {
+  .cabecera__nav > a:not(.btn) { display: none; }
+}
 
 /* ---------- botones ---------- */
 .btn {
