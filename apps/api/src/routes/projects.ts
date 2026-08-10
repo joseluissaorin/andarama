@@ -86,11 +86,35 @@ export function projectRoutes(): Hono<AppEnv> {
       .limit(1);
     if (taken.length > 0) slug = `${slug}-${newId(6).toLowerCase()}`;
 
-    const baseSettings = {
+    let baseSettings: Record<string, unknown> = {
       defaultLang: body.defaultLang,
       langs: [body.defaultLang],
       ui: { theme: { base: "ull" } },
     };
+
+    // Partir de una plantilla exige acceso de lectura a la plantilla: sin esta
+    // comprobacion bastaba conocer un id de proyecto para clonar el contenido
+    // de otra organizacion.
+    let template: { settingsJson: string } | null = null;
+    if (body.fromTemplate != null) {
+      const tplAccess = await projectAccess(db, body.fromTemplate, auth.user);
+      if (tplAccess.project.orgId !== body.orgId) {
+        throw forbidden("La plantilla pertenece a otra organización");
+      }
+      template = tplAccess.project;
+      // La razon de ser de una plantilla es la configuracion (tema, idiomas,
+      // pantallas, variables, plano, quiz); duplicar solo las escenas dejaba
+      // fuera justo lo reutilizable.
+      const tplSettings = parseJson<Record<string, unknown>>(template.settingsJson, {});
+      const tplLangs = Array.isArray(tplSettings.langs) ? (tplSettings.langs as string[]) : [];
+      baseSettings = {
+        ...tplSettings,
+        defaultLang: body.defaultLang,
+        langs: tplLangs.includes(body.defaultLang) ? tplLangs : [body.defaultLang, ...tplLangs],
+      };
+      // startScene se conserva: duplicateContent lo reapunta al id nuevo.
+    }
+
     await db.insert(projects).values({
       id,
       orgId: body.orgId,

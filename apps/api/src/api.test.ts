@@ -289,6 +289,50 @@ describe("flujo critico", () => {
     csrf = savedCsrf;
   });
 
+  it("plantillas: hereda la configuracion y no cruza organizaciones", async () => {
+    // Marcar el proyecto como plantilla y darle una configuracion propia
+    await call(`/api/v1/projects/${projectId}`, {
+      method: "PATCH",
+      body: { isTemplate: true, settings: { langs: ["es", "en"], ui: { theme: { base: "ull", primaryColor: "#5c068c" } } } },
+    });
+    const creado = await call("/api/v1/projects", {
+      method: "POST",
+      body: { orgId, title: "Desde plantilla", fromTemplate: projectId, defaultLang: "es" },
+    });
+    expect(creado.status).toBe(201);
+    const { id: nuevoId } = (await creado.json()) as { id: string };
+    const detalle = (await (await call(`/api/v1/projects/${nuevoId}`)).json()) as {
+      settings: { langs: string[]; ui: { theme: { primaryColor?: string } } };
+    };
+    // La plantilla vale por su configuracion, no solo por sus escenas
+    expect(detalle.settings.langs).toEqual(["es", "en"]);
+    expect(detalle.settings.ui.theme.primaryColor).toBe("#5c068c");
+    const contenido = (await (await call(`/api/v1/projects/${nuevoId}/scenes`)).json()) as {
+      scenes: unknown[];
+      hotspots: unknown[];
+    };
+    expect(contenido.scenes.length).toBeGreaterThan(0);
+    expect(contenido.hotspots.length).toBeGreaterThan(0);
+
+    // Un usuario ajeno no puede clonar el contenido conociendo el id
+    const savedCookies = cookies;
+    const savedCsrf = csrf;
+    cookies = "";
+    csrf = "";
+    await call("/api/v1/auth/login", { method: "POST", body: { email: "otro@test.ull", password: "password-larga-2" } });
+    const propia = (await (await call("/api/v1/me")).json()) as { orgs: { id: string }[] };
+    const intruso = await call("/api/v1/projects", {
+      method: "POST",
+      body: { orgId: propia.orgs[0]!.id, title: "Robado", fromTemplate: projectId, defaultLang: "es" },
+    });
+    expect([403, 404]).toContain(intruso.status);
+    cookies = savedCookies;
+    csrf = savedCsrf;
+
+    await call(`/api/v1/projects/${nuevoId}`, { method: "DELETE" });
+    await call(`/api/v1/projects/${projectId}`, { method: "PATCH", body: { isTemplate: false } });
+  });
+
   it("papelera y restauracion", async () => {
     await call(`/api/v1/projects/${projectId}`, { method: "DELETE" });
     const list = (await (await call(`/api/v1/projects?org=${orgId}`)).json()) as unknown[];
