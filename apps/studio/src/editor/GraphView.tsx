@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Expand, LayoutGrid, Map as MapIcon, Plus, Trash2, Undo2, Wand2 } from "lucide-react";
-import { Button, Input, Select, Tooltip } from "@ull360/ui";
+import { Button, Input, Select, Tooltip, useToast } from "@ull360/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import { readJson } from "./editorApi";
 import {
   createNavHotspot,
   deleteEdge,
+  reconnectEdge,
   graphEdges,
   graphIssues,
   readAutopilot,
   writeAutopilot,
   type AutopilotRouteDraft,
   type GraphIssue,
+  type ReconnectResult,
 } from "./graphModel";
 import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
 import { GraphHelp } from "./GraphHelp";
@@ -42,6 +44,7 @@ export function GraphView({ canEdit, onOpenScene }: {
   onOpenScene?: (sceneId: string, hotspotId?: string) => void;
 }): React.ReactNode {
   const t = useT();
+  const toast = useToast();
   const editor = useEditor();
   const snapshot = editor.snapshot!;
   const svgRef = useRef<SVGSVGElement>(null);
@@ -67,6 +70,7 @@ export function GraphView({ canEdit, onOpenScene }: {
     | { kind: "pan"; startX: number; startY: number; ox: number; oy: number }
     | { kind: "nodes"; startX: number; startY: number; orig: Record<string, NodePos>; moved: boolean }
     | { kind: "connect"; from: string }
+    | { kind: "reconnect"; edgeId: string; end: "from" | "to"; anchor: string }
     | { kind: "marquee"; x0: number; y0: number }
     | null
   >(null);
@@ -260,7 +264,7 @@ export function GraphView({ canEdit, onOpenScene }: {
       } else if ((e.key === "a" || e.key === "A") && !e.metaKey && !e.ctrlKey) {
         setSelectedNodes(new Set(snapshot.scenes.map((sc) => sc.id)));
       } else if (e.key === "Escape") {
-        if (dragRef.current?.kind === "connect") {
+        if (dragRef.current?.kind === "connect" || dragRef.current?.kind === "reconnect") {
           dragRef.current = null;
           setConnecting(null);
           setHoverNode(null);
@@ -381,6 +385,11 @@ export function GraphView({ canEdit, onOpenScene }: {
       const target = over != null && over !== st.from ? over : null;
       if (target !== hoverNodeRef.current) setHoverNode(target);
       drawGhost(st.from, x, y, target);
+    } else if (st.kind === "reconnect") {
+      const over = hitNode(x, y);
+      const target = over != null && over !== st.anchor ? over : null;
+      if (target !== hoverNodeRef.current) setHoverNode(target);
+      drawGhost(st.anchor, x, y, target);
     } else if (st.kind === "marquee") {
       setMarquee({ x0: st.x0, y0: st.y0, x1: x, y1: y });
     }
@@ -405,6 +414,24 @@ export function GraphView({ canEdit, onOpenScene }: {
           if (created != null && bothWays) createNavHotspot(draft, target, st.from, { entryMode: "lookBack" });
         });
         if (created != null) setSelectedEdge(created);
+      }
+    } else if (st.kind === "reconnect") {
+      const { x, y } = toWorld(e.clientX, e.clientY);
+      const target = hitNode(x, y);
+      setConnecting(null);
+      setHoverNode(null);
+      hideGhost();
+      // Soltar en el vacío no borra nada: para eso está el aspa
+      if (target != null && target !== st.anchor && canEdit) {
+        // TypeScript no ve la asignación dentro del callback: se recoge fuera
+        const outcome: { result: ReconnectResult } = { result: "missing" };
+        editor.apply((draft) => {
+          outcome.result = reconnectEdge(draft, st.edgeId, st.end === "to" ? { to: target } : { from: target });
+        });
+        const result = outcome.result;
+        if (result === "duplicate") toast.push(t("reconnect_duplicate"), "error");
+        else if (result === "same") toast.push(t("reconnect_same"), "error");
+        else if (result === "ok" && st.end === "from") toast.push(t("reconnect_moved"), "ok");
       }
     } else if (st.kind === "nodes") {
       if (st.moved && canEdit) persistLayout();
@@ -801,6 +828,40 @@ export function GraphView({ canEdit, onOpenScene }: {
                   </g>
                 );
               })}
+
+              {/* Extremos agarrables de la arista seleccionada. Van en su
+                  propia capa, después de los nodos: dibujados con las aristas
+                  quedaban debajo del nodo y no se podían agarrar. */}
+              {mode === "scenes" && canEdit && selectedHotspot != null && (() => {
+                const edge = edges.find((e) => e.id === selectedHotspot.id);
+                if (edge == null) return null;
+                const from = positions[edge.from];
+                const to = positions[edge.to];
+                if (from == null || to == null) return null;
+                const handles = [
+                  { end: "from" as const, x: from.x + NODE_W + 12, y: from.y + NODE_H / 2, anchor: edge.to, hint: t("reconnect_source") },
+                  { end: "to" as const, x: to.x - 12, y: to.y + NODE_H / 2, anchor: edge.from, hint: t("reconnect_target") },
+                ];
+                return (
+                  <g>
+                    {handles.map((h) => (
+                      <g key={h.end} style={{ cursor: "grab" }}
+                        onPointerDown={(ev) => {
+                          ev.stopPropagation();
+                          const { x, y } = toWorld(ev.clientX, ev.clientY);
+                          dragRef.current = { kind: "reconnect", edgeId: edge.id, end: h.end, anchor: h.anchor };
+                          setConnecting(h.anchor);
+                          drawGhost(h.anchor, x, y);
+                        }}
+                      >
+                        <title>{h.hint}</title>
+                        <circle cx={h.x} cy={h.y} r={11} fill="var(--ull-primary)" fillOpacity={0.15} />
+                        <circle cx={h.x} cy={h.y} r={6.5} fill="var(--ull-surface)" stroke="var(--ull-primary)" strokeWidth={3} />
+                      </g>
+                    ))}
+                  </g>
+                );
+              })()}
 
               {/* Marquee */}
               {marquee != null && (

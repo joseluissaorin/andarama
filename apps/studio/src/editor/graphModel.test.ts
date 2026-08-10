@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createNavHotspot, deleteEdge, graphEdges, graphIssues, readAutopilot, temporaryPlacement, writeAutopilot } from "./graphModel";
+import { createNavHotspot, deleteEdge, graphEdges, graphIssues, readAutopilot, reconnectEdge, temporaryPlacement, writeAutopilot } from "./graphModel";
 import type { EditorSnapshot, SceneRow } from "../stores";
 
 /**
@@ -112,5 +112,82 @@ describe("grafo basado en hotspots", () => {
     expect(readAutopilot(settings)).toEqual([{ id: "r1", title: "Visita", steps: [{ scene: "a", seconds: 5 }], loop: true }]);
     writeAutopilot(settings, [{ id: "r1", title: "Visita", steps: [] }]);
     expect(settings.autopilot).toBeUndefined();
+  });
+});
+
+describe("reconectar aristas", () => {
+  function conPaso(): { draft: EditorSnapshot; id: string } {
+    const draft = snapshot([scene("a", "Entrada"), scene("b", "Sala B"), scene("c", "Sala C")]);
+    const id = createNavHotspot(draft, "a", "b")!;
+    // Se da por colocado: así se ve si mover el origen lo vuelve a marcar
+    const h = draft.hotspots.find((x) => x.id === id)!;
+    const content = JSON.parse(h.contentJson) as Record<string, unknown>;
+    delete content.unplaced;
+    h.contentJson = JSON.stringify(content);
+    h.positionJson = JSON.stringify({ yaw: 1.23, pitch: 0.1 });
+    return { draft, id };
+  }
+
+  it("mover el destino conserva el marcador y su posición", () => {
+    const { draft, id } = conPaso();
+    expect(reconnectEdge(draft, id, { to: "c" })).toBe("ok");
+    const h = draft.hotspots.find((x) => x.id === id)!;
+    const content = JSON.parse(h.contentJson) as { target: string; label: string; unplaced?: boolean };
+    expect(content.target).toBe("c");
+    expect(h.sceneId).toBe("a");
+    expect(JSON.parse(h.positionJson).yaw).toBeCloseTo(1.23, 5);
+    expect(content.unplaced).toBeUndefined();
+  });
+
+  it("la etiqueta sigue al destino si no se había tocado a mano", () => {
+    const { draft, id } = conPaso();
+    reconnectEdge(draft, id, { to: "c" });
+    expect((JSON.parse(draft.hotspots[0]!.contentJson) as { label: string }).label).toBe("Sala C");
+  });
+
+  it("una etiqueta escrita a mano se respeta", () => {
+    const { draft, id } = conPaso();
+    const h = draft.hotspots.find((x) => x.id === id)!;
+    h.contentJson = JSON.stringify({ ...JSON.parse(h.contentJson), label: "Por aquí" });
+    reconnectEdge(draft, id, { to: "c" });
+    expect((JSON.parse(h.contentJson) as { label: string }).label).toBe("Por aquí");
+  });
+
+  it("mover el origen traslada el hotspot y lo deja sin colocar", () => {
+    const { draft, id } = conPaso();
+    expect(reconnectEdge(draft, id, { from: "c" })).toBe("ok");
+    const h = draft.hotspots.find((x) => x.id === id)!;
+    expect(h.sceneId).toBe("c");
+    // La posición era un punto del otro panorama: no vale
+    expect(JSON.parse(h.positionJson).yaw).not.toBeCloseTo(1.23, 5);
+    expect((JSON.parse(h.contentJson) as { unplaced?: boolean }).unplaced).toBe(true);
+  });
+
+  it("conserva el modo de entrada y la transición al reconectar", () => {
+    const { draft, id } = conPaso();
+    const h = draft.hotspots.find((x) => x.id === id)!;
+    h.contentJson = JSON.stringify({ ...JSON.parse(h.contentJson), entry: { mode: "lookBack" }, transition: { kind: "zoom" } });
+    reconnectEdge(draft, id, { to: "c" });
+    const content = JSON.parse(h.contentJson) as { entry: { mode: string }; transition: { kind: string } };
+    expect(content.entry.mode).toBe("lookBack");
+    expect(content.transition.kind).toBe("zoom");
+  });
+
+  it("no deja una escena apuntándose a sí misma", () => {
+    const { draft, id } = conPaso();
+    expect(reconnectEdge(draft, id, { to: "a" })).toBe("same");
+  });
+
+  it("no duplica un paso que ya existe", () => {
+    const { draft, id } = conPaso();
+    createNavHotspot(draft, "a", "c");
+    expect(reconnectEdge(draft, id, { to: "c" })).toBe("duplicate");
+    expect(graphEdges(draft)).toHaveLength(2);
+  });
+
+  it("reconectar a una escena inexistente no toca nada", () => {
+    const { draft, id } = conPaso();
+    expect(reconnectEdge(draft, id, { to: "zzz" })).toBe("missing");
+    expect((JSON.parse(draft.hotspots[0]!.contentJson) as { target: string }).target).toBe("b");
   });
 });

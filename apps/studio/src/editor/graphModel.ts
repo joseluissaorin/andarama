@@ -184,3 +184,68 @@ export function writeAutopilot(settings: Record<string, unknown>, routes: Autopi
   if (routes.length === 0 || routes.every((r) => r.steps.length === 0)) delete settings.autopilot;
   else settings.autopilot = routes.filter((r) => r.steps.length > 0);
 }
+
+/** Resultado de intentar reconectar una arista. */
+export type ReconnectResult = "ok" | "same" | "duplicate" | "missing";
+
+/**
+ * Reconecta una arista existente moviendo uno de sus extremos.
+ *
+ * Sin esto, cambiar a dónde lleva un paso obligaba a borrarlo y rehacerlo, y
+ * con él se perdían la etiqueta, el icono, el modo de entrada y la transición.
+ *
+ * - Mover el **destino** solo cambia a dónde apunta: el marcador sigue donde
+ *   estaba, porque el sitio desde el que se sale no ha cambiado.
+ * - Mover el **origen** traslada el hotspot a otra escena, y entonces su
+ *   posición ya no significa nada —era un punto del otro panorama—, así que se
+ *   recoloca y vuelve a marcarse como «sin colocar».
+ */
+export function reconnectEdge(
+  draft: EditorSnapshot,
+  hotspotId: string,
+  change: { from?: string; to?: string },
+): ReconnectResult {
+  const hotspot = draft.hotspots.find((h) => h.id === hotspotId);
+  if (hotspot == null) return "missing";
+  const content = readJson<Record<string, unknown>>(hotspot.contentJson, {});
+  const currentFrom = hotspot.sceneId;
+  const currentTo = typeof content.target === "string" ? content.target : "";
+
+  const nextFrom = change.from ?? currentFrom;
+  const nextTo = change.to ?? currentTo;
+  if (nextFrom === nextTo) return "same";
+  if (nextFrom === currentFrom && nextTo === currentTo) return "same";
+  if (draft.scenes.find((s) => s.id === nextFrom) == null || draft.scenes.find((s) => s.id === nextTo) == null) {
+    return "missing";
+  }
+  // Dos pasos idénticos en la misma escena solo estorban
+  const duplicate = draft.hotspots.some(
+    (h) =>
+      h.id !== hotspotId &&
+      h.sceneId === nextFrom &&
+      h.type === "navigation" &&
+      readJson<{ target?: string }>(h.contentJson, {}).target === nextTo,
+  );
+  if (duplicate) return "duplicate";
+
+  // La etiqueta seguía al destino: si no se había tocado a mano, sigue.
+  const oldTargetTitle = draft.scenes.find((s) => s.id === currentTo)?.title ?? "";
+  const newTargetTitle = draft.scenes.find((s) => s.id === nextTo)?.title ?? "";
+  if (content.label === oldTargetTitle || content.label === "" || content.label == null) {
+    content.label = newTargetTitle;
+  }
+  content.target = nextTo;
+
+  if (nextFrom !== currentFrom) {
+    hotspot.sceneId = nextFrom;
+    const place = temporaryPlacement(
+      draft.scenes.find((s) => s.id === nextFrom),
+      draft.hotspots.filter((h) => h.sceneId === nextFrom && h.id !== hotspotId),
+    );
+    hotspot.positionJson = JSON.stringify({ yaw: place.yaw, pitch: place.pitch });
+    hotspot.sort = draft.hotspots.filter((h) => h.sceneId === nextFrom && h.id !== hotspotId).length;
+    content.unplaced = true;
+  }
+  hotspot.contentJson = JSON.stringify(content);
+  return "ok";
+}

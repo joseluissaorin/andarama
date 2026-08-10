@@ -37,6 +37,7 @@ export function GraphHelp({ mode }: { mode: "scenes" | "autopilot" }): React.Rea
               { keys: [t("key_drag_edge")], what: t("help_connect") },
               { keys: ["Esc"], what: t("help_cancel_connect") },
               { keys: [t("key_click"), t("key_on_edge")], what: t("help_select_edge") },
+              { keys: [t("key_drag_end")], what: t("help_reconnect") },
               { keys: ["Supr"], what: t("help_delete_edge") },
               { keys: [t("key_dblclick"), t("key_on_edge")], what: t("help_open_edge") },
             ],

@@ -48,6 +48,23 @@ un editor de nodos cuando se pasa de materiales a mundo:
 Así nunca se confunde lo que puede pulsar un visitante con lo que hace la
 visita automática.
 
+## Reconectar en vez de rehacer
+
+Cambiar a dónde lleva un paso no obliga a borrarlo: al seleccionar la flecha
+aparecen dos agarres, uno en cada extremo, y arrastrarlos la reconecta
+conservando la etiqueta, el icono, la orientación de entrada y la transición.
+
+- Arrastrando el **extremo del destino**, el marcador se queda donde está —el
+  sitio del que se sale no ha cambiado— y solo cambia a dónde lleva. Si la
+  etiqueta era el nombre de la escena anterior, sigue al nuevo destino; si la
+  habías escrito a mano, se respeta.
+- Arrastrando el **extremo del origen**, el paso se traslada a otra escena.
+  Entonces su posición ya no significa nada —era un punto del otro panorama—,
+  así que se recoloca y vuelve a marcarse como «sin colocar».
+- Soltar en el vacío no borra nada: para eso está el aspa roja de la flecha.
+- No se admite que una escena lleve a sí misma ni duplicar un paso que ya
+  existe; en ambos casos se avisa y no se toca nada.
+
 ## Avisos
 
 El grafo señala lo que está roto, que es donde más ayuda:
@@ -67,6 +84,7 @@ El grafo señala lo que está roto, que es donde más ayuda:
 | Cancelar la conexión | **Esc** durante el arrastre |
 | Crear también la vuelta | Casilla de la barra superior, activada por defecto |
 | Editar un paso | Clic sobre la flecha → inspector lateral (etiqueta, destino, orientación de entrada, transición) |
+| **Reconectar** | Con la flecha seleccionada, arrastrar uno de sus **extremos** a otra escena. El del destino cambia a dónde lleva; el del origen mueve el paso a otra escena |
 | Colocarlo en el panorama | Botón **Colocar en el panorama** del inspector, o doble clic en la flecha |
 | Eliminar un paso | Supr con la flecha seleccionada (borra su hotspot) |
 | Añadir escenas | Arrastrar panoramas de la biblioteca sobre el lienzo |
