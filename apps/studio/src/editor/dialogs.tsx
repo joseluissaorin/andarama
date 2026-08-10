@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { Copy } from "lucide-react";
 import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
 import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
@@ -133,9 +134,26 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
       ) : (
         <div className="space-y-3">
           <p className="text-sm">{t("publish_url")}:</p>
-          <a href={result.url} target="_blank" rel="noopener noreferrer" className="block break-all rounded-lg bg-[var(--anda-surface-2)] p-3 text-sm text-[var(--anda-primary)]">
-            {result.url}
-          </a>
+          {/* El enlace recién publicado se va a pegar en algún sitio: el botón
+              de copiar tiene que estar aquí, no en otro diálogo. */}
+          <div className="flex items-center gap-2">
+            <a
+              href={result.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="anda-hueco min-w-0 flex-1 break-all p-3 text-sm text-[var(--anda-primary)]"
+            >
+              {result.url}
+            </a>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                void navigator.clipboard.writeText(result.url).then(() => toast.push(t("copied"), "ok"));
+              }}
+            >
+              <Copy className="h-4 w-4" /> {t("copy")}
+            </Button>
+          </div>
           {result.warnings.length > 0 && (
             <details className="text-xs text-amber-600">
               <summary>

@@ -822,5 +822,9 @@
   "folder_intro_one": "1 recorrido en esta carpeta.",
   "search_tours": "Buscar un recorrido…",
   "no_scenes_yet": "Aún no hay ninguna escena",
-  "no_scenes_yet_hint": "Arrastra un panorama desde la biblioteca de abajo o pulsa «Añadir escena»."
+  "no_scenes_yet_hint": "Arrastra un panorama desde la biblioteca de abajo o pulsa «Añadir escena».",
+  "icon_rotation": "Giro del icono",
+  "icon_rotation_hint": "Grados en el sentido de las agujas del reloj. Gira el dibujo, no el fondo.",
+  "copy_link": "Copiar el enlace",
+  "go_to_scene": "Ir a"
 }

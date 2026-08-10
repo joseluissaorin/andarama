@@ -158,6 +158,8 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await publishDialog.getByRole("button", { name: "Publicar", exact: true }).click();
   const link = publishDialog.locator('a[href*="/t/"]');
   await expect(link).toBeVisible({ timeout: 30_000 });
+  // El enlace recién publicado se copia desde aquí mismo
+  await expect(publishDialog.getByRole("button", { name: "Copiar" })).toBeVisible();
 });
 
 test("el grafo tiene los cuatro modos y el plano ya no es una pestaña", async ({ page }) => {
@@ -389,6 +391,76 @@ test("admin: crear organizacion y usuario desde la API", async ({ page }) => {
   const list = (await (await page.request.get("/api/v1/admin/users")).json()) as { email: string }[];
   expect(list.some((u) => u.email === "docente@andarama.test")).toBeTruthy();
 });
+
+test("un hotspot de navegación ofrece el salto a su escena, y el icono se puede girar", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+
+  // Una segunda escena para tener un destino distinto
+  await page.locator('button[aria-label="Añadir escena"]').click();
+  await page.fill("#ns-title", "Escena destino");
+  const sceneDialog = page.locator('[role="dialog"]', { hasText: "Añadir escena" });
+  await sceneDialog.getByRole("button", { name: "Elegir de la biblioteca" }).click();
+  const picker = page.locator('[role="dialog"]', { hasText: "Elegir de la biblioteca" }).last();
+  await picker.getByRole("button", { name: /\.jpg/ }).first().click();
+  await sceneDialog.getByRole("button", { name: "Crear", exact: true }).click();
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+
+  // Volver a la primera y colocar allí el paso hacia la nueva
+  await abrirEscena(page, "Escena E2E");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
+  await page.locator('[role="dialog"] input').first().fill("navegación");
+  await page.getByRole("button", { name: /^Navegación/ }).first().click();
+  await page.locator(".anda-viewer").first().click({ position: { x: 520, y: 300 } });
+  await page.selectOption("#hs-target", { label: "Escena destino" });
+
+  // El salto aparece pegado al marcador y lleva a la escena de destino
+  const salto = page.locator(".anda-salto");
+  await expect(salto).toBeVisible({ timeout: 20_000 });
+  await expect(salto).toContainText("Escena destino");
+  await salto.click();
+  await expect(page.locator("#sc-title")).toHaveValue("Escena destino", { timeout: 20_000 });
+
+  // El giro del icono llega al marcador del panorama
+  await abrirEscena(page, "Escena E2E");
+  await expect(page.locator(".anda-hotspot").first()).toBeVisible({ timeout: 30_000 });
+  await page.locator(".anda-hotspot").first().click();
+  await page.getByRole("button", { name: "Estilo", exact: true }).click();
+  await page.getByRole("button", { name: "135°", exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(() => {
+          const glifo = document.querySelector<HTMLElement>(".anda-hotspot__icon > *");
+          return glifo?.style.transform ?? "";
+        }),
+      { timeout: 30_000 },
+    )
+    .toBe("rotate(135deg)");
+});
+
+test("la barra de vídeo no se queda de pastilla negra en las escenas de foto", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  const visible = await page.evaluate(() => {
+    const barra = document.querySelector<HTMLElement>(".anda-videobar");
+    if (barra == null) return false;
+    return getComputedStyle(barra).display !== "none" || barra.getBoundingClientRect().height > 0;
+  });
+  expect(visible).toBe(false);
+});
+
+/** Elegir una escena de la lista sin tropezar con sus botones flotantes. */
+async function abrirEscena(page: Page, titulo: string): Promise<void> {
+  await page.locator(".anda-ficha").filter({ hasText: titulo }).first().click({ position: { x: 40, y: 20 } });
+}
 
 /** Token CSRF de la cookie u3c de la sesion actual. */
 async function csrf(page: Page): Promise<string> {

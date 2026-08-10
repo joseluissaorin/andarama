@@ -822,5 +822,9 @@
   "folder_intro_one": "1 tour in this folder.",
   "search_tours": "Search for a tour…",
   "no_scenes_yet": "No scenes yet",
-  "no_scenes_yet_hint": "Drag a panorama from the library below, or press “Add scene”."
+  "no_scenes_yet_hint": "Drag a panorama from the library below, or press “Add scene”.",
+  "icon_rotation": "Icon rotation",
+  "icon_rotation_hint": "Degrees clockwise. It turns the drawing, not the chip.",
+  "copy_link": "Copy link",
+  "go_to_scene": "Go to"
 }

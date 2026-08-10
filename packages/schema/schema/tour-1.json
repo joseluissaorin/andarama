@@ -422,7 +422,8 @@
             "url": { "type": "string" },
             "size": { "type": "number" },
             "color": { "type": "string" },
-            "chip": { "type": "boolean" }
+            "chip": { "type": "boolean" },
+            "rotation": { "type": "number" }
           }
         },
         "distanceScale": { "type": "boolean" },

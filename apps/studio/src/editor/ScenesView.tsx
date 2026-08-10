@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
+  ArrowRight,
   Copy,
   Crosshair,
   GripVertical,
@@ -720,6 +721,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
           ref={containerRef}
           className={`absolute inset-0 bg-[#0b1020] ${placement.kind !== "none" ? "cursor-crosshair" : ""}`}
         />
+        <SaltoDeHotspot contenedor={containerRef} sceneId={sceneId} />
       </div>
 
       <HotspotPalette
@@ -728,6 +730,80 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         onPick={(type) => setPlacementMode(type === "polygon" ? { kind: "polygon", points: [] } : { kind: "hotspot", type })}
       />
     </>
+  );
+}
+
+/**
+ * El salto: al elegir un hotspot de navegación aparece, justo debajo de su
+ * marcador, un botón que lleva a la escena de destino.
+ *
+ * Es la manera natural de recorrer el tour mientras se edita —seguir el paso
+ * que se acaba de colocar— sin ir a buscar la escena en la lista. El botón
+ * viaja pegado al marcador: cada fotograma lee dónde ha quedado, porque quien
+ * mueve los marcadores es el motor del panorama, no React.
+ */
+function SaltoDeHotspot({ contenedor, sceneId }: {
+  contenedor: React.RefObject<HTMLDivElement>;
+  sceneId: string;
+}): React.ReactNode {
+  const t = useT();
+  const editor = useEditor();
+  const snapshot = editor.snapshot;
+  const hotspotId = editor.selectedHotspotId;
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  const hotspot = hotspotId == null ? null : snapshot?.hotspots.find((h) => h.id === hotspotId) ?? null;
+  const destinoId = hotspot != null && hotspot.type === "navigation"
+    ? (readJson<{ target?: string }>(hotspot.contentJson, {}).target ?? null)
+    : null;
+  const destino = destinoId == null ? null : snapshot?.scenes.find((s) => s.id === destinoId) ?? null;
+
+  useEffect(() => {
+    if (hotspotId == null || destino == null || contenedor.current == null) {
+      setPos(null);
+      return;
+    }
+    const caja = contenedor.current;
+    let vivo = true;
+    let frame = 0;
+    const seguir = (): void => {
+      if (!vivo) return;
+      const marcador = caja.querySelector<HTMLElement>(`.anda-hotspot[data-hotspot-id="${hotspotId}"]`);
+      if (marcador == null || marcador.offsetParent == null) {
+        setPos((p) => (p == null ? p : null));
+      } else {
+        const r = marcador.getBoundingClientRect();
+        const c = caja.getBoundingClientRect();
+        const x = r.left - c.left + r.width / 2;
+        const y = r.bottom - c.top + 10;
+        // Fuera del lienzo no se dibuja: el marcador puede quedar a la espalda
+        const dentro = x > -60 && x < c.width + 60 && y > -40 && y < c.height + 40;
+        setPos((p) => {
+          if (!dentro) return p == null ? p : null;
+          if (p != null && Math.abs(p.x - x) < 0.5 && Math.abs(p.y - y) < 0.5) return p;
+          return { x, y };
+        });
+      }
+      frame = requestAnimationFrame(seguir);
+    };
+    frame = requestAnimationFrame(seguir);
+    return () => {
+      vivo = false;
+      cancelAnimationFrame(frame);
+    };
+  }, [hotspotId, destino, contenedor, sceneId]);
+
+  if (destino == null || pos == null) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => editor.select(destino.id)}
+      style={{ left: pos.x, top: pos.y }}
+      className="anda-salto absolute z-20 flex max-w-56 -translate-x-1/2 items-center gap-1.5 truncate rounded-full border border-[var(--anda-border)] bg-[image:var(--anda-tecla)] px-3 py-1.5 text-[12.5px] font-semibold text-[#33260f] shadow-[var(--anda-relieve)] hover:brightness-105"
+    >
+      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+      <span className="truncate">{t("go_to_scene")} {destino.title}</span>
+    </button>
   );
 }
 

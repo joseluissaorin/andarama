@@ -65,6 +65,11 @@ export const VIEWER_CSS = `
 .anda-viewer[data-theme="anda"], .anda-viewer[data-theme="ull"] { --u3-primary: #f59e00; --u3-primary-strong: #ffc233; }
 
 .anda-viewer *, .anda-viewer *::before, .anda-viewer *::after { box-sizing: border-box; }
+/* El atributo hidden tiene que ganar siempre. Cualquier regla de esta hoja con
+   display lo pisaba —es de autor y la del navegador no—, y así la barra de vídeo,
+   creada oculta, se quedaba de pastilla negra vacía sobre las miniaturas en
+   todas las escenas de foto. */
+.anda-viewer [hidden] { display: none !important; }
 .anda-viewer button { font-family: inherit; }
 .anda-viewer :focus-visible { outline: 2px solid var(--u3-primary-strong); outline-offset: 2px; border-radius: 6px; }
 

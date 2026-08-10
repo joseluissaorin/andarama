@@ -70,7 +70,7 @@ Cada paso define su **orientación de entrada**:
 
 ## Los 17 tipos de hotspot
 
-Todos comparten posición, etiqueta, texto alternativo, icono (biblioteca SVG o propio), estilo (tamaño, color, pulso, escala con zoom) y **condiciones de visibilidad** (por idioma, por variables de estado, por rango temporal en escenas de vídeo).
+Todos comparten posición, etiqueta, texto alternativo, icono (biblioteca SVG o propio), estilo (tamaño, color, giro del dibujo, pulso, escala con zoom) y **condiciones de visibilidad** (por idioma, por variables de estado, por rango temporal en escenas de vídeo).
 
 1. **Navegación**: salto a otra escena; variante flecha de suelo.
 2. **Texto**: panel Markdown (títulos, listas, enlaces, tablas).

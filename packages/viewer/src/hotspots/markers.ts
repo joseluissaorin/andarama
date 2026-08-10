@@ -194,6 +194,13 @@ export class SceneMarkers {
         createIconSvg(style?.icon?.name ?? DEFAULT_ICON_BY_TYPE[hotspot.type], Math.round(size * 0.55), color),
       );
     }
+    // El giro es del dibujo, no del chip: una flecha puede apuntar a 37° sin
+    // que se ladee el fondo circular ni la etiqueta.
+    const giro = style?.icon?.rotation;
+    if (giro != null && giro !== 0) {
+      const glifo = iconWrap.firstElementChild as HTMLElement | SVGElement | null;
+      if (glifo != null) glifo.style.transform = `rotate(${giro}deg)`;
+    }
     scaleWrap.appendChild(iconWrap);
     el.appendChild(scaleWrap);
 

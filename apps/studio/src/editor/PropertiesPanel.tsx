@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  ArrowUp,
   ArrowUpRight,
   ChevronLeft,
   ChevronRight,
@@ -434,6 +435,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         });
   const tourHotspotSize = Number((snapshot.settings.ui as { hotspotSize?: number } | undefined)?.hotspotSize ?? 44);
   const hotspotSize = Number(style.icon?.size ?? tourHotspotSize);
+  const hotspotRotation = Number(style.icon?.rotation ?? 0);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // Al cambiar de marcador se vuelve arriba y a la primera pestaña. Sin esto,
@@ -1058,6 +1060,52 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         <Field label={t("icon_color")} htmlFor="hs-color">
           <Input id="hs-color" type="color" value={String(style.icon?.color ?? "#ffffff")} disabled={!canEdit}
             onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), color: e.target.value } })} />
+        </Field>
+        {/* Giro del dibujo: una flecha tiene que poder apuntar al pasillo, no
+            solo al norte. La muestra gira a la vez para verlo sin salir. */}
+        <Field label={t("icon_rotation")} htmlFor="hs-rot" hint={t("icon_rotation_hint")}>
+          <div className="flex items-center gap-3">
+            <input
+              id="hs-rot"
+              type="range"
+              min={0}
+              max={359}
+              step={1}
+              value={hotspotRotation}
+              disabled={!canEdit}
+              className="h-1.5 flex-1 accent-[var(--anda-primary)]"
+              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), rotation: num(e.target.value, 0) } })}
+            />
+            <Input
+              type="number"
+              min="0"
+              max="359"
+              className="max-w-20"
+              aria-label={t("icon_rotation")}
+              value={String(hotspotRotation)}
+              disabled={!canEdit}
+              onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), rotation: num(e.target.value, 0) } })}
+            />
+            <span
+              aria-hidden
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--anda-border)] bg-[var(--anda-surface-2)] text-[var(--anda-primary)]"
+            >
+              <ArrowUp className="h-4 w-4 transition-transform" style={{ transform: `rotate(${hotspotRotation}deg)` }} />
+            </span>
+          </div>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((grados) => (
+              <Button
+                key={grados}
+                size="sm"
+                variant={hotspotRotation === grados ? "secondary" : "ghost"}
+                disabled={!canEdit}
+                onClick={() => setStyle({ icon: { ...(style.icon ?? {}), rotation: grados === 0 ? undefined : grados } })}
+              >
+                {grados}°
+              </Button>
+            ))}
+          </div>
         </Field>
         <Switch id="hs-chip" checked={style.icon?.chip !== false} disabled={!canEdit}
           onCheckedChange={(v) => setStyle({ icon: { ...(style.icon ?? {}), chip: v } })} label={t("icon_chip")} />

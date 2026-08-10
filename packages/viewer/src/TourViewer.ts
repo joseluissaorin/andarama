@@ -353,6 +353,9 @@ export class TourViewer {
     if (scene == null) throw new Error(`Escena inexistente: ${sceneId}`);
     const initial = scene.initialView ?? DEFAULT_VIEW;
     const built = await buildScene(scene, this.baseUrl, { ...initial });
+    // Construir la escena tarda: si mientras tanto se destruyó el visor, crear
+    // la escena dentro de Marzipano falla contra un DOM que ya no existe.
+    if (this.destroyed) throw new Error("Visor destruido durante la carga");
     const marzScene = this.viewer.createScene({
       source: built.source,
       geometry: built.geometry,
@@ -474,7 +477,14 @@ export class TourViewer {
     if (this.navBlocked && opts.force !== true) return;
     const previousId = this.currentId;
     const previousView = this.view();
-    const entry = await this.ensureLoaded(sceneId);
+    let entry: LoadedScene;
+    try {
+      entry = await this.ensureLoaded(sceneId);
+    } catch (err) {
+      // Si el visor murió mientras cargaba, no es un fallo: es un remontaje
+      if (this.destroyed) return;
+      throw err;
+    }
     // La escena anterior sigue visible hasta que el nivel base este listo:
     // el fundido nunca ocurre sobre tiles a medio cargar.
     await this.preloadBase(entry);
@@ -517,11 +527,16 @@ export class TourViewer {
       };
     }
 
+    // Entre el `await` de la carga y este punto puede haberse destruido el
+    // visor —el editor lo remonta en cada guardado—: seguir aquí reventaba
+    // dentro de Marzipano con un TypeError que acababa de aviso rojo.
+    if (this.destroyed) return;
     this.currentId = sceneId;
     this.sceneEnterTime = Date.now();
     await new Promise<void>((resolve) => {
       this.viewer.switchScene(entry.marzScene, switchOpts, () => resolve());
     });
+    if (this.destroyed) return;
 
     if (!opts.skipHistory && previousId != null && previousId !== sceneId) {
       this.historyStack.push(previousId);

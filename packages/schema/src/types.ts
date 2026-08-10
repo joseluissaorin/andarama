@@ -221,6 +221,11 @@ export interface HotspotIcon {
   color?: string;
   /** Fondo circular. */
   chip?: boolean;
+  /**
+   * Giro del dibujo en grados (0 = como viene). Gira solo el icono, no el
+   * fondo circular: es lo que permite apuntar una flecha a un ángulo concreto.
+   */
+  rotation?: number;
 }
 
 export interface HotspotStyle {
