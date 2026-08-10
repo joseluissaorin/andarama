@@ -10,6 +10,12 @@ export interface FsStorageOptions {
   rootDir: string;
   hmacSecret: string;
   publicUrl: string;
+  /**
+   * Origen contra el que el navegador sube, si no es el canónico. En el
+   * self-host casi siempre coinciden; existe por simetría con Cloudflare,
+   * donde el Studio vive en otro subdominio.
+   */
+  uploadOrigin?: string;
   /** S3/MinIO opcional: si se configura, las subidas se prefirman contra el. */
   s3?: S3Config;
 }
@@ -153,12 +159,12 @@ export function createFsStorage(opts: FsStorageOptions): StorageAdapter {
         const uploadId = `local-${Math.random().toString(36).slice(2)}`;
         return { kind: "multipart", key, uploadId, partSize: 10 * 1024 * 1024 };
       }
-      return { kind: "simple", key, url: await signUploadUrl(opts.hmacSecret, opts.publicUrl, key) };
+      return { kind: "simple", key, url: await signUploadUrl(opts.hmacSecret, opts.uploadOrigin ?? opts.publicUrl, key) };
     },
 
     async presignUploadPart(key, uploadId, partNumber) {
       if (presigner != null) return presigner.presignUploadPart(key, uploadId, partNumber);
-      return signUploadUrl(opts.hmacSecret, opts.publicUrl, key, { part: partNumber, uploadId });
+      return signUploadUrl(opts.hmacSecret, opts.uploadOrigin ?? opts.publicUrl, key, { part: partNumber, uploadId });
     },
 
     async completeMultipart(key, uploadId, parts) {

@@ -819,5 +819,6 @@
   "media_intro": "Panoramas, floor plans, videos and audio for your organisation.",
   "admin_intro": "Accounts, organisations and instance settings.",
   "one_tour": "1 tour",
-  "folder_intro_one": "1 tour in this folder."
+  "folder_intro_one": "1 tour in this folder.",
+  "search_tours": "Search for a tour…"
 }

@@ -110,3 +110,100 @@ body {
   .anda-brinca, .anda-paseo__anda { animation: none; }
   .anda-paseo__anda { left: 62%; }
 }
+
+/* ---------------------------------------------------------------------------
+ * Tarjetas, navegación y buscador con carácter.
+ *
+ * La regla de la casa: borde de tinta y sombra amarilla desplazada, como algo
+ * impreso y recortado. Al pasar por encima la pieza se levanta y la sombra se
+ * separa; nada de degradados tímidos.
+ * ------------------------------------------------------------------------- */
+.anda-tarjeta {
+  border: 2px solid var(--anda-text);
+  background: var(--anda-surface);
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 var(--anda-border);
+  transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.anda-tarjeta:hover {
+  transform: translate(-2px, -3px);
+  box-shadow: 8px 9px 0 var(--anda-yellow);
+}
+.anda-tarjeta:has(:focus-visible) {
+  box-shadow: 8px 9px 0 var(--anda-yellow);
+}
+/* La carpeta se distingue por la línea discontinua, no por ser más apagada */
+.anda-tarjeta--carpeta { border-style: dashed; }
+.anda-tarjeta--carpeta:hover, .anda-tarjeta--soltando {
+  border-style: solid;
+  border-color: var(--anda-primary);
+  box-shadow: 8px 9px 0 var(--anda-yellow);
+}
+.anda-tarjeta--soltando { transform: translate(-2px, -3px) scale(1.01); }
+
+/* La portada respira al pasar por encima */
+.anda-portada img, .anda-portada span[data-fondo] { transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1); }
+.anda-tarjeta:hover .anda-portada img, .anda-tarjeta:hover .anda-portada span[data-fondo] { transform: scale(1.06); }
+
+/* Navegación lateral: el activo es una pastilla amarilla con su tope de tinta */
+.anda-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--anda-text-dim);
+  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.anda-nav:hover { background: var(--anda-surface-2); color: var(--anda-text); transform: translateX(2px); }
+.anda-nav.active {
+  background: var(--anda-yellow);
+  color: #33260f;
+  box-shadow: 2px 2px 0 var(--anda-text);
+}
+.anda-nav.active:hover { transform: translateX(2px); }
+.anda-nav__icono { display: flex; flex: 0 0 auto; }
+.anda-nav.active .anda-nav__icono { transform: scale(1.08); }
+
+/* Buscador: pastilla con tinta, lupa dentro y foco amarillo */
+.anda-buscador { position: relative; display: flex; align-items: center; }
+.anda-buscador svg { position: absolute; left: 14px; height: 17px; width: 17px; color: var(--anda-text-dim); pointer-events: none; }
+.anda-buscador input {
+  width: 100%;
+  border: 2px solid var(--anda-text);
+  border-radius: 999px;
+  background: var(--anda-surface);
+  padding: 9px 16px 9px 40px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--anda-text);
+  box-shadow: 3px 3px 0 var(--anda-border);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.anda-buscador input::placeholder { color: var(--anda-text-dim); font-weight: 500; }
+.anda-buscador input:focus {
+  outline: none;
+  box-shadow: 4px 5px 0 var(--anda-yellow);
+  transform: translate(-1px, -1px);
+}
+
+/* Segmentado (Proyectos / Plantillas / Papelera) */
+.anda-seg { display: flex; gap: 4px; border: 2px solid var(--anda-text); border-radius: 999px; padding: 3px; background: var(--anda-surface); }
+.anda-seg button {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--anda-text-dim);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.anda-seg button:hover { color: var(--anda-text); background: var(--anda-surface-2); }
+.anda-seg button[aria-pressed="true"] { background: var(--anda-text); color: var(--anda-bg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .anda-tarjeta, .anda-nav, .anda-buscador input, .anda-portada img, .anda-portada span[data-fondo] { transition: none; }
+  .anda-tarjeta:hover { transform: none; }
+}

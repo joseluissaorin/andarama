@@ -9,6 +9,15 @@ export interface R2StorageOptions {
   /** Secreto HMAC + URL publica para el modo pass-through si no hay S3. */
   hmacSecret: string;
   publicUrl: string;
+  /**
+   * Origen contra el que el navegador sube.
+   *
+   * No siempre es `publicUrl`: el Studio vive en app.andarama.com y la URL
+   * canónica es el apex, así que firmar contra `publicUrl` convertía cada
+   * subida en una petición entre orígenes que el navegador bloqueaba. Lo que
+   * hay que usar es el origen desde el que se pidió la subida.
+   */
+  uploadOrigin?: string;
 }
 
 const MULTIPART_PART_SIZE = 10 * 1024 * 1024;
@@ -107,13 +116,13 @@ export function createR2Storage(bucket: R2BucketLike, opts: R2StorageOptions): S
         const mp = await bucket.createMultipartUpload(key);
         return { kind: "multipart", key, uploadId: mp.uploadId, partSize: MULTIPART_PART_SIZE };
       }
-      const url = await signUploadUrl(opts.hmacSecret, opts.publicUrl, key);
+      const url = await signUploadUrl(opts.hmacSecret, opts.uploadOrigin ?? opts.publicUrl, key);
       return { kind: "simple", key, url };
     },
 
     async presignUploadPart(key, uploadId, partNumber) {
       if (presigner != null) return presigner.presignUploadPart(key, uploadId, partNumber);
-      return signUploadUrl(opts.hmacSecret, opts.publicUrl, key, { part: partNumber, uploadId });
+      return signUploadUrl(opts.hmacSecret, opts.uploadOrigin ?? opts.publicUrl, key, { part: partNumber, uploadId });
     },
 
     async completeMultipart(key, uploadId, parts) {

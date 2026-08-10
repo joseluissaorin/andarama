@@ -10,13 +10,13 @@
  * componer el directorio desplegable, que es quien sabe los nombres con hash.
  */
 
-const VERSION = "b7d6a294fe57";
+const VERSION = "370b7dd80725";
 const PRECACHE = [
   "/studio/",
   "/studio/index.html",
   "/studio/manifest.webmanifest",
-  "/studio/assets/index-B6hf75AR.js",
-  "/studio/assets/index-DEIHKkxI.css",
+  "/studio/assets/index-B0PUOnTJ.css",
+  "/studio/assets/index-CZFiuPwx.js",
   "/studio/fonts/Baloo2-Variable.woff2",
   "/studio/fonts/SpaceMono-Bold.woff2",
   "/studio/fonts/SpaceMono-Regular.woff2",

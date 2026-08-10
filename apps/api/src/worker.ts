@@ -61,7 +61,7 @@ interface Env {
   STREAM_API_TOKEN?: string;
 }
 
-function buildRuntime(env: Env, publicUrl: string, waitUntil: (p: Promise<unknown>) => void): PlatformRuntime {
+function buildRuntime(env: Env, publicUrl: string, waitUntil: (p: Promise<unknown>) => void, uploadOrigin?: string): PlatformRuntime {
   const db = drizzle(env.DB as never, { schema }) as unknown as Db;
   const kv = createCfKv(env.KV);
   const useAe = env.ANALYTICS != null && env.ANALYTICS_BACKEND !== "d1";
@@ -81,6 +81,8 @@ function buildRuntime(env: Env, publicUrl: string, waitUntil: (p: Promise<unknow
     storage: createR2Storage(env.BUCKET, {
       hmacSecret: env.APP_SECRET,
       publicUrl,
+      // El navegador sube al mismo host desde el que está hablando
+      uploadOrigin,
       s3:
         env.CF_ACCOUNT_ID != null && env.R2_ACCESS_KEY_ID != null && env.R2_SECRET_ACCESS_KEY != null && env.R2_BUCKET_NAME != null
           ? {
@@ -144,7 +146,7 @@ export default {
       return stub.fetch(request);
     }
 
-    const runtime = buildRuntime(env, publicUrl, (p) => ctx.waitUntil(p));
+    const runtime = buildRuntime(env, publicUrl, (p) => ctx.waitUntil(p), url.origin);
     const app = createApp({
       runtime,
       config: buildConfig(env, publicUrl),

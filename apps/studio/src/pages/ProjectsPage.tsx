@@ -7,6 +7,7 @@ import {
   Copy,
   ExternalLink,
   Folder,
+  Search,
   FolderPlus,
   LayoutTemplate,
   MoreVertical,
@@ -218,22 +219,20 @@ export function ProjectsPage(): React.ReactNode {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Input
-          placeholder={t("search")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-56"
-          aria-label={t("search")}
-        />
+        <div className="anda-buscador max-w-72 flex-1">
+          <Search aria-hidden="true" />
+          <input
+            type="search"
+            placeholder={t("search_tours")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label={t("search")}
+          />
+        </div>
         <div className="flex-1" />
-        <div className="flex gap-1 rounded-lg bg-[var(--anda-surface-2)] p-1 text-sm">
+        <div className="anda-seg" role="group" aria-label={t("projects")}>
           {(["active", "templates", "trash"] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setView(v)}
-              className={`rounded-md px-3 py-1.5 ${view === v ? "bg-[var(--anda-surface)] font-medium shadow-sm" : "text-[var(--anda-text-dim)]"}`}
-            >
+            <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}>
               {v === "active" ? t("projects") : v === "templates" ? t("templates") : t("trash")}
             </button>
           ))}
@@ -411,18 +410,16 @@ function FolderCard({ name, count, dragOver, onOpen, onDragOver, onDropProject, 
           onDropProject(id);
         }
       }}
-      className={`group flex items-center gap-3 rounded-2xl border-2 p-4 transition-all duration-200 hover:-translate-y-1 ${
-        dragOver
-          ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] shadow-[var(--anda-shadow-lg)]"
-          : "border-dashed border-[var(--anda-border)] bg-[var(--anda-surface)] hover:border-[var(--anda-primary)]"
+      className={`anda-tarjeta anda-tarjeta--carpeta anda-enter group flex h-fit items-center gap-3 self-start p-4 ${
+        dragOver ? "anda-tarjeta--soltando" : ""
       }`}
     >
       <button type="button" className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={onOpen}>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--anda-yellow)] text-[#33260f] transition-transform group-hover:scale-105">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[var(--anda-text)] bg-[var(--anda-yellow)] text-[#33260f] transition-transform duration-200 group-hover:-rotate-6 group-hover:scale-105">
           <Folder className="h-5 w-5" />
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-[15px] font-semibold">{name}</span>
+          <span className="block truncate text-[16px] font-bold">{name}</span>
           <span className="block text-xs text-[var(--anda-text-dim)]">{count === 1 ? t("one_tour") : t("n_tours", { n: String(count) })}</span>
         </span>
       </button>
@@ -507,36 +504,38 @@ function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
         e.dataTransfer.setData(PROJECT_DRAG, project.id);
         e.dataTransfer.effectAllowed = "move";
       }}
-      className="anda-enter group overflow-hidden rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-shadow)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--anda-shadow-lg)]"
+      className="anda-tarjeta anda-enter group overflow-hidden"
     >
       <button
         type="button"
-        className="relative block h-24 w-full overflow-hidden text-left"
+        className="anda-portada relative block h-32 w-full overflow-hidden border-b-2 border-[var(--anda-text)] text-left"
         aria-label={project.title}
         onClick={() => {
           if (!inTrash) void navigate({ to: "/p/$projectId", params: { projectId: project.id } });
         }}
       >
+        {/* Fondo plano de dos tintas: ni degradados tímidos ni fotos falsas */}
         <span
-          className="absolute inset-0 transition-transform duration-300 group-hover:scale-105"
-          style={{
-            background: `linear-gradient(130deg, hsl(${hue}, 42%, 38%), hsl(${(hue + 45) % 360}, 48%, 55%))`,
-          }}
+          data-fondo
+          className="absolute inset-0"
+          style={{ background: `hsl(${hue}, 62%, 52%)` }}
         />
         {/* Portada: la escena inicial vista como planeta, que es lo que
             distingue un tour de otro mucho mejor que una inicial */}
         {planet != null ? (
           <img src={planet} alt="" className="absolute inset-0 h-full w-full object-cover object-center" />
         ) : (
-          <svg className="absolute -right-7 -top-9 h-36 w-36 opacity-25" viewBox="0 0 100 100" aria-hidden="true">
+          <svg className="absolute -left-8 -top-8 h-36 w-36 opacity-25" viewBox="0 0 100 100" aria-hidden="true">
             <circle cx="50" cy="50" r="42" fill="none" stroke="white" strokeWidth="1.5" />
             <ellipse cx="50" cy="50" rx="42" ry="16" fill="none" stroke="white" strokeWidth="1" />
             <ellipse cx="50" cy="50" rx="16" ry="42" fill="none" stroke="white" strokeWidth="1" />
           </svg>
         )}
+        {/* Sin portada, la criatura asoma por abajo: el hueco deja de ser un
+            hueco y la tarjeta se reconoce como de Andarama */}
         {planet == null && (
-          <span className="absolute bottom-3 left-4 text-[19px] font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-            {project.title.slice(0, 1).toUpperCase()}
+          <span className="pointer-events-none absolute bottom-1 right-4 drop-shadow-[0_2px_0_rgba(51,38,15,0.25)] transition-transform duration-300 group-hover:-translate-y-1.5">
+            <Criatura size={58} />
           </span>
         )}
       </button>
@@ -549,8 +548,8 @@ function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
             if (!inTrash) void navigate({ to: "/p/$projectId", params: { projectId: project.id } });
           }}
         >
-          <h2 className="truncate text-[15px] font-semibold tracking-tight">{project.title}</h2>
-          <p className="mt-0.5 text-xs text-[var(--anda-text-dim)]">
+          <h2 className="truncate text-[16.5px] font-bold tracking-tight">{project.title}</h2>
+          <p className="mt-0.5 font-mono text-[11px] text-[var(--anda-text-dim)]">
             {project.folder != null && project.folder !== "" ? `${project.folder} · ` : ""}
             {new Date(project.updatedAt).toLocaleDateString()}
           </p>

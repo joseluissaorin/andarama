@@ -67,10 +67,16 @@ export function Shell(): React.ReactNode {
         }`}
       >
         <div className="flex items-center gap-3 px-4 pb-4 pt-5">
-          <img src={logoAndarama} alt="" width={40} height={40} className="rounded-xl shadow-[var(--anda-shadow)]" />
+          <img
+            src={logoAndarama}
+            alt=""
+            width={42}
+            height={42}
+            className="rounded-xl border-2 border-[var(--anda-text)] shadow-[3px_3px_0_var(--anda-yellow)]"
+          />
           <div className="leading-tight">
-            <span className="block text-[17px] font-bold tracking-tight">andarama</span>
-            <span className="block text-[11px] font-medium text-[var(--anda-text-dim)]">Studio</span>
+            <span className="block text-[18px] font-bold tracking-tight">andarama</span>
+            <span className="block font-mono text-[10.5px] text-[var(--anda-text-dim)]">Studio</span>
           </div>
         </div>
         {me.orgs.length > 0 && (
@@ -89,7 +95,7 @@ export function Shell(): React.ReactNode {
             </Select>
           </div>
         )}
-        <p className="px-5 pb-2 text-[10.5px] font-bold uppercase tracking-[0.09em] text-[var(--anda-text-dim)]">
+        <p className="px-5 pb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--anda-text-dim)]">
           {t("projects")}
         </p>
         <nav className="flex-1 space-y-0.5 px-3" aria-label="Principal">
@@ -126,7 +132,7 @@ export function Shell(): React.ReactNode {
             {t("install_app")}
           </button>
         )}
-        <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl bg-[var(--anda-surface-2)] p-1.5">
+        <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl border-2 border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-1.5">
           <Tooltip content={lang === "es" ? "English" : "Español"}>
             <Button variant="ghost" size="icon" aria-label="Idioma de la interfaz" onClick={() => setLang(lang === "es" ? "en" : "es")}>
               <Languages className="h-4 w-4" />
@@ -168,13 +174,8 @@ export function Shell(): React.ReactNode {
 
 function NavItem({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }): React.ReactNode {
   return (
-    <Link
-      to={to}
-      className="group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-[var(--anda-text-dim)] transition-colors hover:bg-[var(--anda-surface-2)] hover:text-[var(--anda-text)] [&.active]:bg-[var(--anda-primary-soft)] [&.active]:font-semibold [&.active]:text-[var(--anda-primary)] [&.active_.nav-accent]:opacity-100"
-      activeOptions={{ exact: to === "/" }}
-    >
-      <span className="nav-accent absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[var(--anda-primary)] opacity-0 transition-opacity" />
-      {icon}
+    <Link to={to} className="anda-nav" activeOptions={{ exact: to === "/" }}>
+      <span className="anda-nav__icono">{icon}</span>
       <span className="truncate">{label}</span>
     </Link>
   );

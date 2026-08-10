@@ -819,5 +819,6 @@
   "media_intro": "Panoramas, planos, vídeos y sonidos de tu organización.",
   "admin_intro": "Cuentas, organizaciones y ajustes de la instancia.",
   "one_tour": "1 recorrido",
-  "folder_intro_one": "1 recorrido en esta carpeta."
+  "folder_intro_one": "1 recorrido en esta carpeta.",
+  "search_tours": "Buscar un recorrido…"
 }
