@@ -126,7 +126,10 @@ export function createNavHotspot(
     contentJson: JSON.stringify({
       target: toScene,
       label: targetTitle,
-      entry: { mode: opts.entryMode ?? "relative" },
+      // «Seguir el camino»: se entra de espaldas a la puerta y se sigue de
+      // frente, que es lo natural de un recorrido a pie. Antes era «seguir
+      // mirando igual», que depende de hacia dónde mirara el visitante.
+      entry: { mode: opts.entryMode ?? "forward" },
       // Marca de «aún sin colocar»: el editor lo resalta hasta que se arrastra
       // sobre el panorama. El compilador la retira al publicar.
       ...(opts.unplaced === false ? {} : { unplaced: true }),

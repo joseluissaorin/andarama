@@ -90,22 +90,32 @@ test("las teselas del panorama tienen imagen, no salen en negro", async ({ page 
   await page.goto("/studio/");
   const analisis = await page.evaluate(
     async ({ id, ext }) => {
-      const res = await fetch(`/api/v1/media/${id}/tiles/0/f/0/0.${ext}`);
-      if (!res.ok) return { status: res.status, colores: 0 };
-      const bmp = await createImageBitmap(await res.blob());
-      const c = new OffscreenCanvas(bmp.width, bmp.height);
-      c.getContext("2d")!.drawImage(bmp, 0, 0);
-      const d = c.getContext("2d")!.getImageData(0, 0, bmp.width, bmp.height).data;
-      const colores = new Set<string>();
-      for (let i = 0; i < d.length; i += 4) colores.add(`${d[i]},${d[i + 1]},${d[i + 2]}`);
-      bmp.close();
-      return { status: res.status, colores: colores.size };
+      const leer = async (ruta: string): Promise<{ status: number; colores: number; luz: number }> => {
+        const res = await fetch(`/api/v1/media/${id}/tiles/${ruta}.${ext}`);
+        if (!res.ok) return { status: res.status, colores: 0, luz: 0 };
+        const bmp = await createImageBitmap(await res.blob());
+        const c = new OffscreenCanvas(bmp.width, bmp.height);
+        c.getContext("2d")!.drawImage(bmp, 0, 0);
+        const d = c.getContext("2d")!.getImageData(0, 0, bmp.width, bmp.height).data;
+        const colores = new Set<string>();
+        let suma = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          colores.add(`${d[i]},${d[i + 1]},${d[i + 2]}`);
+          suma += (d[i]! + d[i + 1]! + d[i + 2]!) / 3;
+        }
+        bmp.close();
+        return { status: res.status, colores: colores.size, luz: suma / (d.length / 4) };
+      };
+      return { frente: await leer("0/f/0/0"), arriba: await leer("0/u/0/0"), abajo: await leer("0/d/0/0") };
     },
     { id: pano.id, ext: tiles.manifest.extension ?? "webp" },
   );
-  expect(analisis.status).toBe(200);
+  expect(analisis.frente.status).toBe(200);
   // Una tesela real tiene cientos de colores; una rota, uno solo (negro)
-  expect(analisis.colores).toBeGreaterThan(20);
+  expect(analisis.frente.colores).toBeGreaterThan(20);
+  // El panorama de prueba tiene el degradado claro arriba y oscuro abajo: si el
+  // techo y el suelo se intercambian, esto lo caza.
+  expect(analisis.arriba.luz).toBeGreaterThan(analisis.abajo.luz + 20);
 });
 
 test("crear tour, escena, hotspot y publicar", async ({ page }) => {
@@ -201,6 +211,31 @@ test("un área es la categoría del menú de escenas", async ({ page }) => {
   await expect(dialog.locator('a[href*="/t/"]')).toBeVisible({ timeout: 30_000 });
   const tour = (await (await page.request.get("/t/tour-e2e/tour.json")).json()) as { scenes: { category?: string }[] };
   expect(tour.scenes[0]!.category).toBe("Planta baja");
+});
+
+test("la previsualizacion recorre el borrador y guarda la llegada", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  const projectUrl = page.url().split("?")[0]!;
+
+  await page.goto(`${projectUrl}?tab=preview`);
+  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 40_000 });
+  // La barra dice donde estas y por donde has entrado
+  await expect(page.getByText(/Estás en/)).toBeVisible({ timeout: 20_000 });
+
+  const antes = (await (await page.request.get(`/api/v1/projects/${projectUrl.split("/p/")[1]}/scenes`)).json()) as {
+    scenes: { id: string; initialViewJson: string | null }[];
+  };
+  await page.getByRole("button", { name: /Guardar como vista de inicio/ }).click();
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+  const despues = (await (await page.request.get(`/api/v1/projects/${projectUrl.split("/p/")[1]}/scenes`)).json()) as {
+    scenes: { id: string; initialViewJson: string | null }[];
+  };
+  // Guardar la llegada escribe la vista inicial de la escena de arranque
+  expect(despues.scenes[0]!.initialViewJson).not.toBe(antes.scenes[0]!.initialViewJson);
+  expect(JSON.parse(despues.scenes[0]!.initialViewJson!)).toHaveProperty("yaw");
 });
 
 test("visor publico: navegacion, panel y deep link", async ({ page }) => {

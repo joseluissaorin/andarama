@@ -32,7 +32,8 @@ import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
 import { areaOfScene, areasOf, assignScene, createArea } from "./areas";
-import { getCurrentEditorView, highlightHotspot, setPlacementMode } from "./ScenesView";
+import { getCurrentEditorView, highlightHotspot, setEditorView, setPlacementMode } from "./ScenesView";
+import { ArrivalsPanel } from "./ArrivalsPanel";
 import { HotspotPalette } from "./HotspotPalette";
 import { MediaPicker } from "./MediaPicker";
 import type { ProjectInfo } from "./EditorPage";
@@ -126,6 +127,13 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
     // El aside es una columna con altura fija: sin este contenedor propio, el
     // formulario de escena se salía por debajo del viewport en vez de rodar.
     <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
+      {/* Lo primero, porque es lo que se ajusta mirando el panorama. La vista
+          inicial es una llegada más: la de empezar aquí. */}
+      <Section title={t("arrivals")} hint={t("arrivals_hint")}>
+        <div id="panel-llegadas" />
+        <ArrivalsPanel sceneId={scene.id} canEdit={canEdit} onPreview={setEditorView} getCurrentView={getCurrentEditorView} />
+      </Section>
+
       <div>
         <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{scene.title}</h3>
         <div className="space-y-3">
@@ -213,19 +221,6 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         </div>
       </div>
 
-      <Section title={t("initial_view")}>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!canEdit}
-          onClick={() => patchScene((s) => { s.initialViewJson = JSON.stringify(getCurrentEditorView()); })}
-        >
-          <Crosshair className="h-4 w-4" /> {t("use_current_view")}
-        </Button>
-        {scene.initialViewJson != null && (
-          <p className="mt-1 text-xs text-[var(--ull-text-dim)]">{scene.initialViewJson}</p>
-        )}
-      </Section>
 
       <Section title={t("view_limits")}>
         <div className="grid grid-cols-2 gap-2">
@@ -635,21 +630,19 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 {sceneOptions}
               </Select>
             </Field>
-            <Field label={t("entry_mode")} htmlFor="hs-entry">
-              <Select
-                id="hs-entry"
-                value={String(content.entry?.mode ?? "relative")}
-                disabled={!canEdit}
-                onChange={(e) => setContent({ entry: { ...(content.entry ?? {}), mode: e.target.value } })}
+            {/* La orientación de llegada se decide **en el destino**: aquí no
+                se puede ver el panorama al que se llega, que era justo lo que
+                hacía inservible el botón de «usar la vista actual». */}
+            {typeof content.target === "string" && content.target !== "" && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  editor.select(content.target as string);
+                  requestAnimationFrame(() => document.getElementById("panel-llegadas")?.scrollIntoView({ block: "center" }));
+                }}
               >
-                <option value="fixed">{t("entry_fixed")}</option>
-                <option value="relative">{t("entry_relative")}</option>
-                <option value="lookBack">{t("entry_lookback")}</option>
-              </Select>
-            </Field>
-            {content.entry?.mode === "fixed" && (
-              <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setContent({ entry: { mode: "fixed", ...getCurrentEditorView() } })}>
-                <Crosshair className="h-4 w-4" /> {t("use_current_view")}
+                <ArrowUpRight className="h-4 w-4" /> {t("edit_arrival_there")}
               </Button>
             )}
             <Field label={t("transition")} htmlFor="hs-trans">
@@ -1164,7 +1157,7 @@ function AiAltButton({ mediaId, onSuggestion }: { mediaId: string; onSuggestion:
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }): React.ReactNode {
+function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }): React.ReactNode {
   return (
     <details open className="group rounded-xl border border-[var(--ull-border)] bg-[var(--ull-bg)] shadow-sm">
       <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--ull-text-dim)] transition-colors hover:text-[var(--ull-text)]">
@@ -1173,7 +1166,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </span>
       </summary>
-      <div className="space-y-3 px-3.5 pb-4 pt-1">{children}</div>
+      <div className="space-y-3 px-3.5 pb-4 pt-1">
+        {hint != null && <p className="text-xs text-[var(--ull-text-dim)]">{hint}</p>}
+        {children}
+      </div>
     </details>
   );
 }

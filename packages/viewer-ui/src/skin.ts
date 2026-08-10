@@ -312,7 +312,10 @@ export function mountViewer(options: SkinOptions): MountedSkin {
       if (!isSecureContext && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
         toast(container, t("vr_needs_https"));
       }
-      void viewer.enterVr();
+      // El permiso de movimiento de iOS se pide **aquí**, dentro del gesto del
+      // usuario: si se espera a montar el modo cartón, Safari ya lo ha
+      // consumido y rechaza la pregunta sin decir nada.
+      void viewer.requestMotionPermission().then(() => viewer.enterVr());
     });
     viewer.on("vrChange", (e) => {
       vrBtn.setAttribute("aria-pressed", String(e.active));

@@ -49,6 +49,24 @@ export function totalTileCount(faceSize: number, tileSize = 512): number {
 }
 
 /**
+ * Bases de cada cara del cubo: la direccion del centro (z) y los ejes que
+ * recorren la imagen hacia la derecha (x) y hacia **arriba** (y).
+ *
+ * Es la unica definicion de la geometria: la usan el troceador de Node y,
+ * inyectada en su codigo fuente, el del navegador. Tenerla dos veces escrita a
+ * mano acabo con el techo y el suelo intercambiados en todo lo que se subia
+ * desde el editor.
+ */
+export const FACE_BASES: Record<Face, { x: [number, number, number]; y: [number, number, number]; z: [number, number, number] }> = {
+  f: { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] },
+  b: { x: [-1, 0, 0], y: [0, 1, 0], z: [0, 0, -1] },
+  r: { x: [0, 0, -1], y: [0, 1, 0], z: [1, 0, 0] },
+  l: { x: [0, 0, 1], y: [0, 1, 0], z: [-1, 0, 0] },
+  u: { x: [1, 0, 0], y: [0, 0, -1], z: [0, 1, 0] },
+  d: { x: [1, 0, 0], y: [0, 0, 1], z: [0, -1, 0] },
+};
+
+/**
  * Direccion 3D del pixel (u, v) en [0,1] de una cara del cubo.
  * Sistema: +z hacia la cara f, +x derecha (cara r), +y arriba (cara u).
  */

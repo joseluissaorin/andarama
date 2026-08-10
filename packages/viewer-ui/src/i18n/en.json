@@ -110,5 +110,8 @@
   "hotspot_polygon": "Area",
   "hotspot_tooltip": "Label",
   "hotspot_link": "Link",
-  "hotspot_state": "Action"
+  "hotspot_state": "Action",
+  "vr_needs_motion": "Looking around by moving your phone needs your permission to read motion and orientation.",
+  "vr_allow_motion": "Allow motion",
+  "vr_motion_settings": "If no prompt appears, turn it on in Settings › Safari › Motion & Orientation Access and enter again."
 }

@@ -29,6 +29,23 @@ export class DeviceOrientationControlMethod {
     for (const fn of this.listeners[name] ?? []) fn(...args);
   }
 
+  /** ¿Este navegador exige pedir permiso para leer la orientación? (iOS 13+) */
+  static needsPermission(): boolean {
+    return (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof (DeviceOrientationEvent as unknown as { requestPermission?: unknown }).requestPermission === "function"
+    );
+  }
+
+  /**
+   * Pide el permiso de orientación.
+   *
+   * En iOS **solo** se concede si la llamada sale de un gesto del usuario y la
+   * página va por HTTPS. Si se pide después de esperar a otra cosa —abrir
+   * pantalla completa, cargar una textura— el gesto ya se ha consumido y
+   * Safari lo rechaza sin decir nada: el modo cartón se quedaba congelado
+   * mirando al frente. Por eso quien llama debe hacerlo lo primero.
+   */
   static async requestPermission(): Promise<boolean> {
     const anyDOE = DeviceOrientationEvent as unknown as {
       requestPermission?: () => Promise<"granted" | "denied">;

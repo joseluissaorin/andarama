@@ -556,6 +556,16 @@ export class TourViewer {
     if (opts.view != null) return opts.view;
     const entry = opts.entry ?? opts.fromHotspot?.entry;
     if (entry == null) return { ...initial };
+    /** Rumbo, visto desde el destino, de la puerta por la que se ha entrado. */
+    const puertaDeVuelta = (): number | null => {
+      if (previousId != null) {
+        const back = scene.hotspots.find((h): h is NavigationHotspot => h.type === "navigation" && h.target === previousId);
+        if (back != null) return back.yaw;
+      }
+      // Sin paso de vuelta: la puerta esta enfrente de por donde se salio
+      return opts.fromHotspot != null ? opts.fromHotspot.yaw + Math.PI : null;
+    };
+    const clampPitch = (p: number): number => Math.max(-0.4, Math.min(0.4, p));
     switch (entry.mode) {
       case "fixed":
         return {
@@ -563,21 +573,26 @@ export class TourViewer {
           pitch: entry.pitch ?? initial.pitch,
           fov: entry.fov ?? initial.fov,
         };
-      case "relative":
-        return { ...previousView, fov: entry.fov ?? previousView.fov };
+      case "relative": {
+        // Con el norte de las dos escenas calibrado sobre el plano se conserva
+        // el rumbo **real**; sin calibrar, el crudo, que solo vale si las dos
+        // fotos comparten el cero.
+        const northTo = scene.map?.north;
+        const northFrom = previousId != null ? this.tour.scenes.find((s) => s.id === previousId)?.map?.north : undefined;
+        const giro = northTo != null && northFrom != null ? northFrom - northTo : 0;
+        return { ...previousView, yaw: previousView.yaw + giro, fov: entry.fov ?? previousView.fov };
+      }
       case "lookBack": {
-        if (previousId != null) {
-          const back = scene.hotspots.find(
-            (h): h is NavigationHotspot => h.type === "navigation" && h.target === previousId,
-          );
-          if (back != null) {
-            return { yaw: back.yaw, pitch: Math.max(-0.4, Math.min(0.4, back.pitch)), fov: entry.fov ?? initial.fov };
-          }
-        }
-        if (opts.fromHotspot != null) {
-          return { yaw: opts.fromHotspot.yaw + Math.PI, pitch: 0, fov: entry.fov ?? initial.fov };
-        }
-        return { ...initial };
+        const puerta = puertaDeVuelta();
+        if (puerta == null) return { ...initial };
+        const back = scene.hotspots.find((h): h is NavigationHotspot => h.type === "navigation" && h.target === previousId);
+        return { yaw: puerta, pitch: clampPitch(back?.pitch ?? 0), fov: entry.fov ?? initial.fov };
+      }
+      case "forward": {
+        // Se entra por la puerta y se sigue de frente: de espaldas a ella
+        const puerta = puertaDeVuelta();
+        if (puerta == null) return { ...initial };
+        return { yaw: puerta + Math.PI, pitch: 0, fov: entry.fov ?? initial.fov };
       }
       default:
         return { ...initial };
@@ -980,6 +995,18 @@ export class TourViewer {
   // -----------------------------------------------------------------------
   // Giroscopio
   // -----------------------------------------------------------------------
+
+  /**
+   * Pide el permiso de movimiento y orientación sin activar nada más.
+   *
+   * Existe para poder pedirlo **dentro del gesto** que abre el modo cartón: en
+   * iOS el permiso solo se concede si la llamada nace de una pulsación, y
+   * montar antes la pantalla completa o la textura del entorno ya lo invalida.
+   */
+  async requestMotionPermission(): Promise<boolean> {
+    if (!DeviceOrientationControlMethod.needsPermission()) return true;
+    return DeviceOrientationControlMethod.requestPermission();
+  }
 
   async enableGyro(): Promise<boolean> {
     if (this.gyroEnabled) return true;

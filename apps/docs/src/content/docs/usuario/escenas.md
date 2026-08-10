@@ -2,6 +2,34 @@
 title: Escenas y hotspots
 ---
 
+## Cómo se llega a una escena
+
+La orientación con la que se entra en una sala **no es de la sala**: es de cada
+camino que lleva hasta ella. Entrar en el salón desde el pasillo y entrar desde
+la cocina son dos llegadas distintas y pueden mirar a sitios distintos.
+
+Por eso se deciden **estando en el destino**, en el panel «Cómo se llega aquí»,
+que es lo primero de las propiedades de la escena. Cada fila es una manera de
+llegar —la vista por defecto y una por cada paso que entra— con su brújula,
+que dice de un vistazo hacia dónde se entra. El botón de reproducir gira el
+panorama hasta esa llegada: la ves antes de decidir.
+
+Cada llegada elige entre cuatro:
+
+| Opción | Qué hace | Cuándo |
+|---|---|---|
+| **Seguir el camino** | Entras de espaldas a la puerta por la que has venido y sigues de frente | El natural de un recorrido a pie. Es el de por defecto |
+| **Esta vista** | El ángulo que elijas: gira el panorama y pulsa «Usar la vista actual» | Cuando hay algo concreto que enseñar al entrar |
+| **Mirar atrás** | Entras mirando la puerta por la que has venido | Para volver sobre tus pasos sin desorientarte |
+| **Seguir mirando igual** | Mantiene el rumbo del visitante; con el norte calibrado en el plano, el rumbo **real** | Si las fotos están alineadas |
+
+«Seguir el camino» y «mirar atrás» se calculan a partir del paso de vuelta: si
+falta, se avisa en la propia fila, porque sin él la orientación es una
+suposición.
+
+La fila **«Vista por defecto»** es la que se usa al arrancar el tour cuando esta
+es la escena inicial, y la que queda cuando una llegada no puede calcularse.
+
 ## Escenas
 
 Cada escena tiene: título, **texto alternativo obligatorio** (accesibilidad), descripción, **área** —que agrupa las escenas en el lienzo, da la categoría del menú y, si tiene plano, es la planta—, vista inicial ("usar vista actual"), límites de vista opcionales (esencial en panoramas parciales), audio (ambiente, narración con bloqueo opcional, fuentes espaciales) y su sitio en el plano o en el mapa, que se colocan desde el lienzo.

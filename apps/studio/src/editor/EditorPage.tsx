@@ -9,6 +9,7 @@ import {
   Map as MapIcon,
   MessageSquare,
   Package,
+  PlayCircle,
   Radio,
   Redo2,
   Settings2,
@@ -22,6 +23,7 @@ import { useT } from "../i18n";
 import { loadSnapshot, syncSnapshot } from "./editorApi";
 import { ScenesView } from "./ScenesView";
 import { GRAPH_MODES, GraphView, type GraphMode } from "./GraphView";
+import { PreviewView } from "./PreviewView";
 import { MediaDock } from "./MediaDock";
 import { TranslationsView } from "./TranslationsView";
 import { TourSettingsView } from "./TourSettingsView";
@@ -40,9 +42,9 @@ export interface ProjectInfo {
   publication: { slug: string; visibility: string; hasPassword: boolean } | null;
 }
 
-type EditorTab = "scenes" | "graph" | "translations" | "settings" | "analytics" | "comments" | "versions";
+type EditorTab = "scenes" | "graph" | "preview" | "translations" | "settings" | "analytics" | "comments" | "versions";
 
-const TAB_IDS: EditorTab[] = ["scenes", "graph", "translations", "settings", "analytics", "comments", "versions"];
+const TAB_IDS: EditorTab[] = ["scenes", "graph", "preview", "translations", "settings", "analytics", "comments", "versions"];
 
 export function EditorPage(): React.ReactNode {
   const t = useT();
@@ -218,6 +220,7 @@ export function EditorPage(): React.ReactNode {
   const TABS: { id: EditorTab; icon: React.ReactNode; label: string }[] = [
     { id: "scenes", icon: <MapIcon className="h-4 w-4" />, label: t("scenes") },
     { id: "graph", icon: <GitBranch className="h-4 w-4" />, label: t("graph") },
+    { id: "preview", icon: <PlayCircle className="h-4 w-4" />, label: t("preview") },
     { id: "translations", icon: <LanguagesIcon className="h-4 w-4" />, label: t("translations") },
     { id: "settings", icon: <Settings2 className="h-4 w-4" />, label: t("settings") },
     { id: "analytics", icon: <BarChart3 className="h-4 w-4" />, label: t("analytics") },
@@ -320,6 +323,7 @@ export function EditorPage(): React.ReactNode {
             }}
           />
         )}
+        {tab === "preview" && <PreviewView project={project} canEdit={canEdit} />}
         {tab === "translations" && <TranslationsView project={project} canEdit={canEdit} />}
         {tab === "settings" && <TourSettingsView project={project} canEdit={canEdit} />}
         {tab === "analytics" && <AnalyticsView project={project} />}

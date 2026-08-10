@@ -1,6 +1,19 @@
 ---
-title: Publicar y exportar
+title: Publicar y compartir
 ---
+
+## Previsualizar antes de publicar
+
+La pestaña **Previsualizar** recorre el borrador entero tal como lo verá el
+visitante: los mismos hotspots, el mismo minimapa, el mismo modo VR, sin
+publicar nada ni tocar lo ya publicado. La barra superior avisa de lo que
+impediría publicar.
+
+Es además donde se ajustan las llegadas sin esfuerzo: como la previsualización
+sabe de dónde vienes, cuando entras en una sala mirando a una pared basta girar
+hasta lo que quieres que se vea y pulsar **«Guardar como llegada desde…»**.
+Ajustar un recorrido de trece salas deja de ser rellenar formularios y pasa a
+ser un paseo.
 
 ## Publicar en la plataforma
 

@@ -247,10 +247,17 @@ export interface StateAction {
 
 export interface ConnectionEntry {
   /**
-   * fija: usa yaw/pitch/fov dados; relativa: mantiene el rumbo del usuario;
-   * lookBack: entra mirando hacia la escena de origen.
+   * Como se orienta la vista al llegar a la escena de destino:
+   *
+   * - `forward`: se entra de espaldas a la puerta por la que se ha venido y se
+   *   sigue de frente. Es lo natural de un recorrido a pie y se calcula solo a
+   *   partir del paso de vuelta, sin que el autor ajuste nada.
+   * - `fixed`: el angulo que decida el autor (yaw/pitch/fov).
+   * - `lookBack`: se entra mirando la puerta por la que se ha venido.
+   * - `relative`: mantiene el rumbo que llevaba el visitante. Con el norte de
+   *   cada escena calibrado en el plano, mantiene el rumbo **real**.
    */
-  mode: "fixed" | "relative" | "lookBack";
+  mode: "forward" | "fixed" | "relative" | "lookBack";
   yaw?: number;
   pitch?: number;
   fov?: number;

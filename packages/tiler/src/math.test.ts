@@ -4,6 +4,8 @@ import {
   computePyramid,
   directionToEquirect,
   enumerateTiles,
+  FACE_BASES,
+  FACES,
   faceDirection,
   rotationMatrix,
   tileKey,
@@ -77,5 +79,50 @@ describe("geometria de caras", () => {
 describe("tileKey", () => {
   it("genera el layout {base}/{z}/{f}/{y}/{x}.{ext}", () => {
     expect(tileKey("tiles/m1", { level: 2, face: "f", x: 3, y: 1 }, "webp")).toBe("tiles/m1/2/f/1/3.webp");
+  });
+});
+
+describe("orientación de las caras del cubo", () => {
+  it("mirar arriba cae en la primera fila de la equirectangular", () => {
+    expect(directionToEquirect(0, 1, 0)[1]).toBeCloseTo(0, 6);
+    expect(directionToEquirect(0, -1, 0)[1]).toBeCloseTo(1, 6);
+  });
+
+  it("la cara de arriba mira arriba y la de abajo, abajo", () => {
+    // Cualquier punto de la cara u apunta al cenit; el de la cara d, al nadir
+    for (const [u, v] of [[0.5, 0.5], [0.1, 0.9], [0.9, 0.1]]) {
+      expect(faceDirection("u", u!, v!)[1]).toBeGreaterThan(0);
+      expect(faceDirection("d", u!, v!)[1]).toBeLessThan(0);
+    }
+  });
+
+  it("las bases inyectadas en el troceador del navegador dan las mismas direcciones", () => {
+    // El worker calcula dir = z + a*x + b*y con a = 2u-1 y b = 1-2v
+    for (const face of FACES) {
+      for (const [u, v] of [[0.25, 0.25], [0.5, 0.5], [0.8, 0.3]]) {
+        const a = 2 * u! - 1;
+        const b = 1 - 2 * v!;
+        const base = FACE_BASES[face];
+        const conBases: [number, number, number] = [
+          base.z[0] + a * base.x[0] + b * base.y[0],
+          base.z[1] + a * base.x[1] + b * base.y[1],
+          base.z[2] + a * base.x[2] + b * base.y[2],
+        ];
+        // `+ 0` normaliza el cero negativo, que toEqual distingue
+        expect(conBases.map((n) => n + 0)).toEqual(faceDirection(face, u!, v!).map((n) => n + 0));
+      }
+    }
+  });
+
+  it("el techo de la equirectangular acaba en la cara de arriba", () => {
+    // Centro de la cara u -> cenit -> fila 0; centro de la d -> nadir -> fila 1
+    expect(directionToEquirect(...faceDirection("u", 0.5, 0.5))[1]).toBeCloseTo(0, 6);
+    expect(directionToEquirect(...faceDirection("d", 0.5, 0.5))[1]).toBeCloseTo(1, 6);
+  });
+
+  it("el frente queda derecho: arriba de la imagen es arriba del mundo", () => {
+    const arriba = directionToEquirect(...faceDirection("f", 0.5, 0.05))[1];
+    const abajo = directionToEquirect(...faceDirection("f", 0.5, 0.95))[1];
+    expect(arriba).toBeLessThan(abajo);
   });
 });

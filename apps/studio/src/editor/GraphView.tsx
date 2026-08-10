@@ -930,7 +930,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
     let created: string | null = null;
     editor.apply((draft) => {
       created = createNavHotspot(draft, from, to);
-      if (created != null && bothWays) createNavHotspot(draft, to, from, { entryMode: "lookBack" });
+      if (created != null && bothWays) createNavHotspot(draft, to, from, { entryMode: "forward" });
     });
     if (created != null) setSelectedEdges(new Set([created]));
     else toast.push(t("connect_exists"), "error");
@@ -1010,7 +1010,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
         if (edge == null) return null;
         return {
           label: t("add_return"),
-          run: () => editor.apply((draft) => createNavHotspot(draft, edge.to, edge.from, { entryMode: "lookBack" })),
+          run: () => editor.apply((draft) => createNavHotspot(draft, edge.to, edge.from, { entryMode: "forward" })),
         };
       }
       if (issue.kind === "no-target" || issue.kind === "broken-target") {
@@ -1420,7 +1420,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
 
                 {/* Aristas */}
                 {visibleEdges.map((e) => {
-                  const { d, mid } = edgePath(e, positions, visibleEdges, size);
+                  const { d, mid, midAngle, endAngle, sample } = edgePath(e, positions, visibleEdges, size);
+                  const fin = sample[sample.length - 1] ?? mid;
                   const selected = selectedEdges.has(e.id);
                   const step = (e as { step?: number }).step;
                   const fromScene = snapshot.scenes.find((s) => s.id === e.from);
@@ -1453,6 +1454,14 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                         strokeWidth={16 * k}
                         style={{ cursor: "pointer" }}
                       />
+                      {/* Punta en el destino: se lee el sentido aunque el
+                          centro de la curva quede fuera de la pantalla */}
+                      <path
+                        d={arrowPath(fin.x, fin.y, endAngle, 6 * k)}
+                        fill={color}
+                        fillOpacity={selected || mode === "autopilot" || crossArea ? 1 : 0.7}
+                        style={{ pointerEvents: "none" }}
+                      />
                       {step != null ? (
                         <>
                           <circle cx={mid.x} cy={mid.y} r={9 * k} fill="var(--ull-accent)" />
@@ -1480,7 +1489,13 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                               {(e as GraphEdge).oneWay === true ? " ›" : ""}
                             </text>
                           )}
-                          <circle cx={mid.x} cy={mid.y} r={(selected ? 4 : 3) * k} fill={color} fillOpacity={selected ? 1 : 0.6} />
+                          {/* Una flecha dice el sentido; un punto, no */}
+                          <path
+                            d={arrowPath(mid.x, mid.y, midAngle, (selected ? 8 : 6.5) * k)}
+                            fill={color}
+                            fillOpacity={selected ? 1 : 0.75}
+                            style={{ pointerEvents: "none" }}
+                          />
                         </>
                       )}
                       {selected && mode !== "autopilot" && canEdit && (
@@ -2015,18 +2030,23 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
             </Select>
           </label>
 
-          <label className="block text-[13px]">
-            <span className="mb-1 block font-medium">{t("entry_mode")}</span>
-            <Select
-              value={selectedContent.entry?.mode ?? "relative"}
-              disabled={!canEdit}
-              onChange={(e) => patchEdgeContent({ entry: { ...(selectedContent.entry ?? {}), mode: e.target.value } })}
+          {/* La orientación de llegada se decide en el destino, mirando el
+              panorama al que se entra; aquí solo se llega hasta allí. */}
+          <div className="rounded-xl bg-[var(--ull-surface-2)] p-2.5">
+            <p className="mb-1.5 text-xs text-[var(--ull-text-dim)]">
+              {t("entry_mode")}: <strong>{t(`entry_${selectedContent.entry?.mode ?? "forward"}` as never)}</strong>
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                if (selectedContent.target != null) onOpenScene?.(selectedContent.target);
+              }}
             >
-              <option value="fixed">{t("entry_fixed")}</option>
-              <option value="relative">{t("entry_relative")}</option>
-              <option value="lookBack">{t("entry_lookback")}</option>
-            </Select>
-          </label>
+              <LayoutGrid className="h-4 w-4" /> {t("edit_arrival_there")}
+            </Button>
+          </div>
 
           <label className="block text-[13px]">
             <span className="mb-1 block font-medium">{t("transition")}</span>
@@ -2070,7 +2090,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 onClick={() => {
                   const target = selectedContent.target;
                   if (target == null) return;
-                  editor.apply((draft) => createNavHotspot(draft, target, selectedHotspot.sceneId, { entryMode: "lookBack" }));
+                  editor.apply((draft) => createNavHotspot(draft, target, selectedHotspot.sceneId, { entryMode: "forward" }));
                 }}
               >
                 <Undo2 className="h-4 w-4" /> {t("add_return")}
@@ -2421,10 +2441,10 @@ function edgePath(
   positions: Record<string, NodePos>,
   all: { from: string; to: string }[],
   size: { w: number; h: number },
-): { d: string; mid: { x: number; y: number }; sample: { x: number; y: number }[] } {
+): { d: string; mid: { x: number; y: number }; sample: { x: number; y: number }[]; midAngle: number; endAngle: number } {
   const a = positions[e.from];
   const b = positions[e.to];
-  if (a == null || b == null) return { d: "", mid: { x: 0, y: 0 }, sample: [] };
+  if (a == null || b == null) return { d: "", mid: { x: 0, y: 0 }, sample: [], midAngle: 0, endAngle: 0 };
   const x0 = a.x + size.w;
   const y0 = a.y + size.h / 2;
   const x1 = b.x;
@@ -2447,7 +2467,25 @@ function edgePath(
       y: mt ** 3 * (y0 + offset) + 3 * mt ** 2 * t0 * (y0 + offset) + 3 * mt * t0 ** 2 * (y1 + offset) + t0 ** 3 * (y1 + offset),
     });
   }
-  return { d, mid: sample[5]!, sample };
+  const angulo = (a: { x: number; y: number }, b: { x: number; y: number }): number => Math.atan2(b.y - a.y, b.x - a.x);
+  return {
+    d,
+    mid: sample[5]!,
+    sample,
+    // Tangentes: en el centro para la flecha grande y al final para la punta
+    midAngle: angulo(sample[4]!, sample[6]!),
+    endAngle: angulo(sample[9]!, sample[10]!),
+  };
+}
+
+/** Triángulo apuntando en `angle`, centrado en (x, y). */
+function arrowPath(x: number, y: number, angle: number, size: number): string {
+  const p = (dx: number, dy: number): string => {
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+    return `${x + dx * c - dy * s} ${y + dx * s + dy * c}`;
+  };
+  return `M ${p(size, 0)} L ${p(-size * 0.75, size * 0.62)} L ${p(-size * 0.4, 0)} L ${p(-size * 0.75, -size * 0.62)} Z`;
 }
 
 function Minimap({ positions, edges, frames, size, view, svgRef, onMove }: {

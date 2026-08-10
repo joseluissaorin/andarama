@@ -60,7 +60,11 @@ pulsar dentro del panorama, y al revés.
 - El marcador nace en una **posición provisional**, delante de la vista inicial y
   algo por debajo del horizonte, y se dibuja con línea discontinua mientras siga
   ahí. Ábrelo en el panorama y arrástralo a su sitio.
-- La **etiqueta del paso** se ve sobre la flecha, sin tener que seleccionarla.
+- La **etiqueta del paso** se ve sobre la flecha, sin tener que seleccionarla, y
+  la flecha lleva punta: se lee de un vistazo en qué sentido va cada paso, y en
+  los pares de ida y vuelta las dos curvas se separan a lados opuestos.
+- La **orientación de llegada** se ajusta en la escena de destino: el inspector
+  de la flecha dice cuál es y lleva hasta allí.
 - Los pasos que **cruzan de área** se dibujan en ámbar: son las escaleras, los
   ascensores y las puertas de tu edificio.
 - **Sentido único a propósito**: si un paso no debe tener vuelta —una salida de

@@ -1,4 +1,4 @@
-import { computePyramid, snapFaceSize, totalTileCount, type Face, type TileManifest } from "./math.js";
+import { computePyramid, FACE_BASES, snapFaceSize, totalTileCount, type Face, type TileManifest } from "./math.js";
 
 /**
  * Tiler de navegador: genera la piramide de tiles en un WebWorker con
@@ -75,7 +75,8 @@ const FS = [
   "  vec3 dir = normalize(uAxisZ + a * uAxisX + b * uAxisY);",
   "  dir = uRot * dir;",
   "  float lon = atan(dir.x, dir.z); float lat = asin(clamp(dir.y, -1.0, 1.0));",
-  "  vec2 uv = vec2((lon + 3.14159265) / 6.2831853, (lat + 1.5707963) / 3.14159265);",
+  // Igual que directionToEquirect: la fila 0 de la imagen es el cenit
+  "  vec2 uv = vec2((lon + 3.14159265) / 6.2831853, 1.0 - (lat + 1.5707963) / 3.14159265);",
   "  vec4 c = texture2D(uTex, uv);",
   "  c.rgb = c.rgb * pow(2.0, uExposure);",
   "  float grey = dot(c.rgb, vec3(0.299, 0.587, 0.114));",
@@ -84,15 +85,10 @@ const FS = [
   "}",
 ].join("\n");
 
-// Bases por cara: Z apunta al centro de la cara; X e Y recorren u y v.
-const BASES = {
-  f: { x: [1, 0, 0], y: [0, -1, 0], z: [0, 0, 1] },
-  b: { x: [-1, 0, 0], y: [0, -1, 0], z: [0, 0, -1] },
-  r: { x: [0, 0, -1], y: [0, -1, 0], z: [1, 0, 0] },
-  l: { x: [0, 0, 1], y: [0, -1, 0], z: [-1, 0, 0] },
-  u: { x: [1, 0, 0], y: [0, 0, 1], z: [0, 1, 0] },
-  d: { x: [1, 0, 0], y: [0, 0, -1], z: [0, -1, 0] },
-};
+// Bases por cara: Z apunta al centro de la cara; X e Y recorren la imagen
+// hacia la derecha y hacia arriba. Se inyectan desde math.ts al construir el
+// worker: son la misma definicion que usa el troceador de Node.
+const BASES = __BASES__;
 
 function rotationMatrix(yaw, pitch, roll) {
   const cy = Math.cos(yaw), sy = Math.sin(yaw);
@@ -313,7 +309,8 @@ self.onmessage = async (e) => {
 let workerUrl: string | null = null;
 function getWorkerUrl(): string {
   if (workerUrl == null) {
-    workerUrl = URL.createObjectURL(new Blob([WORKER_SOURCE], { type: "text/javascript" }));
+    const source = WORKER_SOURCE.replace("__BASES__", JSON.stringify(FACE_BASES));
+    workerUrl = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
   }
   return workerUrl;
 }

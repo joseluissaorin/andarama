@@ -229,3 +229,12 @@ opcional para que la sesión arranque igualmente.
 
 **El rayo no llega a un hotspot.** Los hotspots se colocan por yaw y pitch a
 distancia fija; si dos quedan muy juntos, sepáralos en el editor.
+
+## Permiso de movimiento en iPhone y iPad
+
+Safari solo deja leer el giroscopio si la página va por **HTTPS** y si el
+permiso se pide dentro de una pulsación tuya, así que se pregunta al pulsar
+**Modo VR**. Si dices que no —o si el aviso no llega a aparecer—, el modo cartón
+enseña un botón **Permitir el movimiento** para volver a pedirlo. Si aun así no
+sale, actívalo en **Ajustes › Safari › Movimiento y orientación** y vuelve a
+entrar.

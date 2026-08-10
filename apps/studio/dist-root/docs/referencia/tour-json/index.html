@@ -87,6 +87,12 @@
 <li><strong><code dir="auto">connections</code> ya no existe.</strong> El grafo se deriva íntegramente de los
 hotspots de navegación. Los <code dir="auto">tour.json</code> antiguos que la traigan se siguen
 cargando: el visor simplemente la ignora.</li>
+<li><strong><code dir="auto">entry.mode</code> admite <code dir="auto">forward</code></strong> (nuevo): se entra de espaldas a la puerta
+por la que se ha venido y se sigue de frente, calculado a partir del paso de
+vuelta. Es el valor por defecto de los pasos nuevos. Un visor antiguo que no
+lo conozca cae en la vista inicial de la escena.</li>
+<li><strong><code dir="auto">entry.mode: "relative"</code> conserva el rumbo real</strong> cuando las dos escenas
+tienen <code dir="auto">map.north</code> calibrado, en vez del ángulo crudo.</li>
 <li><strong><code dir="auto">floorplans</code> se compila desde las áreas del borrador.</strong> En el editor, la
 planta, la zona y la categoría son una sola cosa —un <strong>área</strong>—; al publicar,
 las áreas con plano se escriben como <code dir="auto">floorplans</code> (mismo <code dir="auto">id</code>, así que

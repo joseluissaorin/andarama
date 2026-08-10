@@ -120,6 +120,8 @@ export class VRManager {
   private raf = 0;
   private cardboardYawPitch = { yaw: 0, pitch: 0 };
   private orientationHandler: ((e: DeviceOrientationEvent) => void) | null = null;
+  private orientationGranted = true;
+  private orientationGate: HTMLElement | null = null;
   private exitButton: HTMLButtonElement | null = null;
   private navigating = false;
 
@@ -301,8 +303,53 @@ export class VRManager {
   // Modo cardboard (móviles sin WebXR)
   // -----------------------------------------------------------------------
 
+  /**
+   * Aviso con botón para conceder el giroscopio.
+   *
+   * Si el permiso se ha denegado —o Safari lo rechazó por no venir de un
+   * gesto—, sin esto el visitante ve un panorama quieto y no entiende por qué.
+   * El botón vuelve a pedirlo, y esta vez sí sale de un gesto suyo.
+   */
+  private showOrientationGate(): void {
+    const gate = document.createElement("div");
+    gate.setAttribute("role", "alertdialog");
+    gate.style.cssText =
+      "position:absolute;inset:0;z-index:44;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;" +
+      "background:rgba(6,8,20,.94);color:#fff;font:15px/1.5 system-ui;text-align:center;padding:24px;";
+    const texto = document.createElement("p");
+    texto.textContent = this.callbacks.t("vr_needs_motion");
+    texto.style.cssText = "margin:0;max-width:30rem;";
+    const boton = document.createElement("button");
+    boton.textContent = this.callbacks.t("vr_allow_motion");
+    boton.style.cssText =
+      "background:#fff;color:#111;border:0;border-radius:10px;padding:12px 20px;font:600 15px system-ui;cursor:pointer;";
+    const ayuda = document.createElement("p");
+    ayuda.textContent = this.callbacks.t("vr_motion_settings");
+    ayuda.style.cssText = "margin:0;max-width:30rem;opacity:.7;font-size:13px;";
+    boton.addEventListener("click", () => {
+      void DeviceOrientationControlMethod.requestPermission().then((ok) => {
+        this.orientationGranted = ok;
+        if (ok) this.hideOrientationGate();
+        else ayuda.style.opacity = "1";
+      });
+    });
+    gate.append(texto, boton, ayuda);
+    this.container.appendChild(gate);
+    this.orientationGate = gate;
+  }
+
+  private hideOrientationGate(): void {
+    this.orientationGate?.remove();
+    this.orientationGate = null;
+  }
+
   private async enterCardboard(): Promise<void> {
     this.mode = "cardboard";
+    // Lo PRIMERO: en iOS el permiso de orientación solo se concede dentro del
+    // gesto del usuario. Pedirlo después de abrir la pantalla completa o de
+    // cargar la textura del entorno llegaba tarde y Safari lo rechazaba en
+    // silencio, así que el modo cartón se quedaba congelado.
+    this.orientationGranted = await DeviceOrientationControlMethod.requestPermission().catch(() => false);
     const gl = this.setupGl(false);
     await this.refreshEnvironment();
     try {
@@ -338,10 +385,6 @@ export class VRManager {
     window.addEventListener("resize", this.resizeHandler);
     window.addEventListener("orientationchange", this.resizeHandler);
 
-    // iOS 13+ exige permiso explícito: sin pedirlo el evento no llega nunca y
-    // el modo cartón se queda congelado mirando al frente.
-    await DeviceOrientationControlMethod.requestPermission().catch(() => false);
-
     const initial = this.callbacks.getViewYawPitch();
     this.cardboardYawPitch = { ...initial };
     // Rumbo del dispositivo al entrar: se resta para que el tour empiece
@@ -359,6 +402,9 @@ export class VRManager {
       this.cardboardYawPitch = yawPitchFromQuat(q);
     };
     window.addEventListener("deviceorientation", this.orientationHandler);
+    if (!this.orientationGranted) this.showOrientationGate();
+
+    // (el aviso de permiso, si hace falta, se monta arriba)
 
     // Las gafas de cartón llevan un botón que toca la pantalla: tocar acciona
     // al instante lo que esté enfocado, sin esperar la permanencia.
@@ -968,6 +1014,8 @@ export class VRManager {
     }
     this.rotateHint?.remove();
     this.rotateHint = null;
+    this.hideOrientationGate();
+    this.orientationGranted = true;
     this.cardboardQuat = null;
     this.reticleTex.clear();
     this.renderer?.destroy();

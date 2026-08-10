@@ -57,6 +57,12 @@ El esquema está **versionado**: `@ull360/schema` incluye migradores automático
 - **`connections` ya no existe.** El grafo se deriva íntegramente de los
   hotspots de navegación. Los `tour.json` antiguos que la traigan se siguen
   cargando: el visor simplemente la ignora.
+- **`entry.mode` admite `forward`** (nuevo): se entra de espaldas a la puerta
+  por la que se ha venido y se sigue de frente, calculado a partir del paso de
+  vuelta. Es el valor por defecto de los pasos nuevos. Un visor antiguo que no
+  lo conozca cae en la vista inicial de la escena.
+- **`entry.mode: "relative"` conserva el rumbo real** cuando las dos escenas
+  tienen `map.north` calibrado, en vez del ángulo crudo.
 - **`floorplans` se compila desde las áreas del borrador.** En el editor, la
   planta, la zona y la categoría son una sola cosa —un **área**—; al publicar,
   las áreas con plano se escriben como `floorplans` (mismo `id`, así que

@@ -409,6 +409,17 @@ export function getCurrentEditorView(): { yaw: number; pitch: number; fov: numbe
   return { ...lastView };
 }
 
+/** Visor montado en el editor, para poder girarlo desde fuera. */
+let mountedViewer: MountedSkin | null = null;
+
+/**
+ * Gira el panorama del editor hasta una vista concreta. Lo usa el panel de
+ * llegadas: elegir una orientación de entrada sin verla no es editar.
+ */
+export function setEditorView(view: { yaw: number; pitch: number; fov?: number }): void {
+  mountedViewer?.viewer.setView({ yaw: view.yaw, pitch: view.pitch, fov: view.fov ?? lastView.fov });
+}
+
 function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; sceneId: string; canEdit: boolean }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -606,6 +617,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         analyticsEndpoint: null,
       });
       skinRef.current = mounted;
+      mountedViewer = mounted;
       mounted.viewer.on("viewChange", (v) => {
         lastView = v;
       });
@@ -647,6 +659,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
     return () => {
       skinRef.current?.destroy();
       skinRef.current = null;
+      mountedViewer = null;
     };
   }, [remount]);
   useEffect(() => {
