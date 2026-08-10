@@ -117,7 +117,7 @@ describe("flujo critico", () => {
     expect(res.status).toBe(403);
   });
 
-  it("crea proyecto, escenas, hotspots y conexiones", async () => {
+  it("crea proyecto, escenas y hotspots", async () => {
     const res = await call("/api/v1/projects", { method: "POST", body: { orgId, title: "Tour de prueba" } });
     expect(res.status).toBe(201);
     projectId = ((await res.json()) as { id: string }).id;
@@ -149,11 +149,16 @@ describe("flujo critico", () => {
       },
     });
     expect(h1.status).toBe(201);
-    const c1 = await call(`/api/v1/projects/${projectId}/connections`, {
+    // La vuelta es otro hotspot de navegación: el grafo no tiene datos propios
+    const h2 = await call(`/api/v1/projects/${projectId}/scenes/${sceneB}/hotspots`, {
       method: "POST",
-      body: { fromScene: sceneB, toScene: sceneA, entryMode: "lookBack" },
+      body: {
+        type: "navigation",
+        position: { yaw: Math.PI, pitch: -0.17 },
+        content: { target: sceneA, label: "Volver", altText: "Volver", entry: { mode: "lookBack" } },
+      },
     });
-    expect(c1.status).toBe(201);
+    expect(h2.status).toBe(201);
   });
 
   it("compila el borrador a tour.json valido", async () => {

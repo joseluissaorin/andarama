@@ -118,16 +118,7 @@ export function validateTour(input: unknown): ValidationResult {
     validateScene(scene, p, sceneIds, hotspotIds, referencedScenes, err, warn);
   }
 
-  if (Array.isArray(tour.connections)) {
-    for (const [i, conn] of tour.connections.entries()) {
-      const p = `$.connections[${i}]`;
-      if (!sceneIds.has(conn.from)) err("conn-from-missing", p, `Origen inexistente: ${conn.from}`);
-      if (!sceneIds.has(conn.to)) err("conn-to-missing", p, `Destino inexistente: ${conn.to}`);
-      if (sceneIds.has(conn.to)) referencedScenes.add(conn.to);
-    }
-  }
-
-  // Alcanzabilidad: BFS desde la escena inicial por hotspots de navegacion + conexiones.
+  // Alcanzabilidad: BFS desde la escena inicial por los hotspots que navegan.
   if (tour.start?.scene != null && sceneIds.has(tour.start.scene)) {
     const adj = new Map<string, Set<string>>();
     for (const scene of tour.scenes) {
@@ -143,9 +134,6 @@ export function validateTour(input: unknown): ValidationResult {
         }
       }
       adj.set(scene.id, targets);
-    }
-    for (const conn of tour.connections ?? []) {
-      adj.get(conn.from)?.add(conn.to);
     }
     const visited = new Set<string>([tour.start.scene]);
     const queue = [tour.start.scene];

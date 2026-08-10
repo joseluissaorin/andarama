@@ -30,7 +30,6 @@
       }
     },
     "scenes": { "type": "array", "items": { "$ref": "#/$defs/scene" }, "minItems": 1 },
-    "connections": { "type": "array", "items": { "$ref": "#/$defs/connection" } },
     "floorplans": { "type": "array", "items": { "$ref": "#/$defs/floorplan" } },
     "geoMap": {
       "type": "object",
@@ -398,17 +397,6 @@
         "autorotate": {
           "oneOf": [{ "$ref": "#/$defs/autorotate" }, { "const": false }]
         }
-      }
-    },
-    "connection": {
-      "type": "object",
-      "required": ["id", "from", "to"],
-      "properties": {
-        "id": { "type": "string" },
-        "from": { "type": "string" },
-        "to": { "type": "string" },
-        "entry": { "$ref": "#/$defs/entry" },
-        "transition": { "$ref": "#/$defs/transition" }
       }
     },
     "floorplan": {

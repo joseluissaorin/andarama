@@ -227,23 +227,6 @@ export const hotspots = sqliteTable(
   (t) => [index("hotspots_scene_idx").on(t.sceneId)],
 );
 
-export const connections = sqliteTable(
-  "connections",
-  {
-    id: text("id").primaryKey(),
-    projectId: text("project_id")
-      .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
-    fromScene: text("from_scene").notNull(),
-    toScene: text("to_scene").notNull(),
-    /** fixed | relative | lookBack */
-    entryMode: text("entry_mode").notNull().default("relative"),
-    entryViewJson: text("entry_view_json"),
-    transitionJson: text("transition_json"),
-  },
-  (t) => [index("connections_project_idx").on(t.projectId), index("connections_from_idx").on(t.fromScene)],
-);
-
 // ---------------------------------------------------------------------------
 // Medios
 // ---------------------------------------------------------------------------

@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Expand, LayoutGrid, Trash2, Wand2 } from "lucide-react";
-import { Button, Select, Tooltip } from "@ull360/ui";
+import { Expand, LayoutGrid, Plus, Trash2, Undo2, Wand2 } from "lucide-react";
+import { Button, Input, Select, Tooltip } from "@ull360/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
-import { clientId, readJson } from "./editorApi";
+import { readJson } from "./editorApi";
+import {
+  createNavHotspot,
+  deleteEdge,
+  graphEdges,
+  graphIssues,
+  readAutopilot,
+  writeAutopilot,
+  type AutopilotRouteDraft,
+} from "./graphModel";
+import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
 
 /**
  * Editor del grafo de escenas al estilo de un editor de nodos (Blender):
@@ -67,19 +77,41 @@ export function GraphView({ canEdit, onOpenScene }: {
     });
   }, [editor]);
 
-  // Aristas: conexiones explícitas + derivadas de hotspots de navegación
-  const edges = useMemo(() => {
-    const explicit = snapshot.connections.map((c) => ({ id: c.id, from: c.fromScene, to: c.toScene, explicit: true, entryMode: c.entryMode, hotspotId: null as string | null, sceneId: null as string | null }));
-    const derived: typeof explicit = [];
-    for (const h of snapshot.hotspots) {
-      if (h.type !== "navigation") continue;
-      const content = readJson<{ target?: string }>(h.contentJson, {});
-      if (content.target != null && content.target !== "") {
-        derived.push({ id: `hs-${h.id}`, from: h.sceneId, to: content.target, explicit: false, entryMode: "", hotspotId: h.id, sceneId: h.sceneId });
-      }
+  // Una arista es un hotspot de navegación: no hay datos de grafo aparte.
+  const edges = useMemo(
+    () => graphEdges(snapshot).filter((e) => positions[e.from] != null && positions[e.to] != null),
+    [snapshot, positions],
+  );
+
+  // Modo del lienzo, al estilo del editor de nodos de Blender: se dibuja el
+  // recorrido del visitante o el del autopilot, nunca los dos mezclados.
+  const [mode, setMode] = useState<"scenes" | "autopilot">("scenes");
+  const routes = useMemo(() => readAutopilot(snapshot.settings), [snapshot.settings]);
+  const [routeIndex, setRouteIndex] = useState(0);
+  const route: AutopilotRouteDraft | null = routes[routeIndex] ?? null;
+  const [mediaOver, setMediaOver] = useState(false);
+  // Crear el paso de vuelta al conectar: es lo habitual en un recorrido.
+  const [bothWays, setBothWays] = useState(true);
+
+  // En modo autopilot el lienzo dibuja el recorrido, no los pasos del visitante
+  const routeEdges = useMemo(() => {
+    if (route == null) return [];
+    const list: { id: string; from: string; to: string; unplaced: boolean; step: number }[] = [];
+    for (let i = 0; i < route.steps.length - 1; i++) {
+      const from = route.steps[i]!.scene;
+      const to = route.steps[i + 1]!.scene;
+      if (positions[from] == null || positions[to] == null) continue;
+      list.push({ id: `ap-${i}`, from, to, unplaced: false, step: i + 1 });
     }
-    return [...explicit, ...derived].filter((e) => positions[e.from] != null && positions[e.to] != null);
-  }, [snapshot.connections, snapshot.hotspots, positions]);
+    return list;
+  }, [route, positions]);
+  const visibleEdges = mode === "scenes" ? edges : routeEdges;
+
+  const patchRoutes = (fn: (list: AutopilotRouteDraft[]) => AutopilotRouteDraft[]): void => {
+    editor.apply((draft) => {
+      writeAutopilot(draft.settings, fn(readAutopilot(draft.settings)));
+    });
+  };
 
   // Escenas huérfanas (no alcanzables desde la inicial)
   const orphans = useMemo(() => {
@@ -180,10 +212,9 @@ export function GraphView({ canEdit, onOpenScene }: {
         setSelectedNodes(new Set());
         setSelectedEdge(null);
         setMenu(null);
-      } else if ((e.key === "Delete" || e.key === "Backspace") && canEdit && selectedEdge != null && !selectedEdge.startsWith("hs-")) {
-        editor.apply((draft) => {
-          draft.connections = draft.connections.filter((c) => c.id !== selectedEdge);
-        });
+      } else if ((e.key === "Delete" || e.key === "Backspace") && canEdit && selectedEdge != null) {
+        // Borrar la arista es borrar su hotspot: son la misma cosa.
+        editor.apply((draft) => deleteEdge(draft, selectedEdge));
         setSelectedEdge(null);
       }
     };
@@ -249,6 +280,7 @@ export function GraphView({ canEdit, onOpenScene }: {
   };
 
   const hitEdge = (x: number, y: number): string | null => {
+    if (mode !== "scenes") return null;
     for (const e of edges) {
       const pts = edgePath(e, positionsRef.current, edges).sample;
       for (const p of pts) {
@@ -295,25 +327,25 @@ export function GraphView({ canEdit, onOpenScene }: {
       const target = hitNode(x, y);
       setGhost(null);
       if (target != null && target !== st.from && canEdit) {
-        const dup = snapshot.connections.some((c) => c.fromScene === st.from && c.toScene === target);
-        if (!dup) {
-          const id = clientId();
-          editor.apply((draft) => {
-            draft.connections.push({
-              id,
-              projectId: draft.scenes[0]?.projectId ?? "",
-              fromScene: st.from,
-              toScene: target,
-              entryMode: "relative",
-              entryViewJson: null,
-              transitionJson: null,
-            });
-          });
-          setSelectedEdge(id);
-        }
+        let created: string | null = null;
+        editor.apply((draft) => {
+          created = createNavHotspot(draft, st.from, target);
+          // La vuelta es lo que casi siempre se quiere, y además es lo que
+          // hace funcionar el modo de entrada «mirar atrás».
+          if (created != null && bothWays) createNavHotspot(draft, target, st.from, { entryMode: "lookBack" });
+        });
+        if (created != null) setSelectedEdge(created);
       }
     } else if (st.kind === "nodes") {
       if (st.moved && canEdit) persistLayout();
+      else if (!st.moved && mode === "autopilot" && canEdit && route != null) {
+        const clicked = [...selectedNodes][0];
+        if (clicked != null) {
+          patchRoutes((list) =>
+            list.map((r, i) => (i === routeIndex ? { ...r, steps: [...r.steps, { scene: clicked, seconds: 6 }] } : r)),
+          );
+        }
+      }
     } else if (st.kind === "marquee" && marquee != null) {
       const x0 = Math.min(marquee.x0, marquee.x1);
       const x1 = Math.max(marquee.x0, marquee.x1);
@@ -345,10 +377,27 @@ export function GraphView({ canEdit, onOpenScene }: {
     }
   };
 
-  const selectedConn = snapshot.connections.find((c) => c.id === selectedEdge) ?? null;
-  const selectedDerived = selectedEdge?.startsWith("hs-") === true
-    ? snapshot.hotspots.find((h) => `hs-${h.id}` === selectedEdge) ?? null
-    : null;
+  const selectedHotspot = selectedEdge != null ? (snapshot.hotspots.find((h) => h.id === selectedEdge) ?? null) : null;
+  const selectedContent = readJson<{ target?: string; label?: string; unplaced?: boolean; entry?: { mode?: string }; transition?: { kind?: string } }>(
+    selectedHotspot?.contentJson ?? null,
+    {},
+  );
+  const issues = useMemo(() => graphIssues(snapshot, edges, orphans), [snapshot, edges, orphans]);
+
+  /** Editar la arista es editar su hotspot. */
+  const patchEdgeContent = (patch: Record<string, unknown>): void => {
+    if (selectedHotspot == null) return;
+    editor.apply((draft) => {
+      const target = draft.hotspots.find((h) => h.id === selectedHotspot.id);
+      if (target == null) return;
+      const content = readJson<Record<string, unknown>>(target.contentJson, {});
+      for (const [k, v] of Object.entries(patch)) {
+        if (v === undefined) delete content[k];
+        else content[k] = v;
+      }
+      target.contentJson = JSON.stringify(content);
+    });
+  };
 
   const startScene = (snapshot.settings.startScene as string) ?? snapshot.scenes[0]?.id;
 
@@ -357,12 +406,38 @@ export function GraphView({ canEdit, onOpenScene }: {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Barra de herramientas del grafo */}
         <div className="flex items-center gap-2 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5">
-          <span className="text-[13px] text-[var(--ull-text-dim)]">{t("graph_help")}</span>
+          {/* Qué se está dibujando: los pasos del visitante o un recorrido guiado */}
+          <div className="flex rounded-lg bg-[var(--ull-surface-2)] p-0.5">
+            {(["scenes", "autopilot"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => {
+                  setMode(m);
+                  setSelectedEdge(null);
+                }}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  mode === m ? "bg-[var(--ull-surface)] text-[var(--ull-text)] shadow-sm" : "text-[var(--ull-text-dim)]"
+                }`}
+              >
+                {m === "scenes" ? t("graph_mode_scenes") : t("graph_mode_autopilot")}
+              </button>
+            ))}
+          </div>
+          <span className="text-[13px] text-[var(--ull-text-dim)]">{mode === "scenes" ? t("graph_help") : t("graph_help_autopilot")}</span>
           <div className="flex-1" />
-          {orphans.size > 0 ? (
-            <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-600">
-              {t("orphan_scenes", { count: String(orphans.size) })}
-            </span>
+          {mode === "scenes" && (
+            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--ull-text-dim)]">
+              <input type="checkbox" checked={bothWays} onChange={(e) => setBothWays(e.target.checked)} className="h-3.5 w-3.5 accent-[var(--ull-primary)]" />
+              {t("create_return")}
+            </label>
+          )}
+          {issues.length > 0 ? (
+            <Tooltip content={issues.slice(0, 6).map((i) => `${t(`graph_issue_${i.kind}`)}: ${i.label}`).join("\n")}>
+              <span className="cursor-help rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-600">
+                {t("graph_issues", { count: String(issues.length) })}
+              </span>
+            </Tooltip>
           ) : (
             <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600">{t("all_reachable")}</span>
           )}
@@ -382,9 +457,37 @@ export function GraphView({ canEdit, onOpenScene }: {
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <svg
             ref={svgRef}
-            className="h-full w-full touch-none select-none bg-[var(--ull-bg)]"
+            className={`h-full w-full touch-none select-none bg-[var(--ull-bg)] ${mediaOver ? "outline outline-2 -outline-offset-2 outline-[var(--ull-primary)]" : ""}`}
             role="application"
             aria-label={t("graph")}
+            onDragOver={(e) => {
+              if (!canEdit || !hasMediaDrag(e.dataTransfer)) return;
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "copy";
+              setMediaOver(true);
+            }}
+            onDragLeave={() => setMediaOver(false)}
+            onDrop={(e) => {
+              setMediaOver(false);
+              const items = canEdit ? readMediaDrag(e.dataTransfer) : null;
+              if (items == null) return;
+              e.preventDefault();
+              // Los nodos nacen donde se han soltado, en fila
+              const at = toWorld(e.clientX, e.clientY);
+              let ids: string[] = [];
+              editor.apply((draft) => {
+                ids = scenesFromMedia(draft, draft.scenes[0]?.projectId ?? "", items);
+              });
+              setPositions((prev) => {
+                const next = { ...prev };
+                ids.forEach((id, i) => {
+                  next[id] = { x: Math.round((at.x + (i % 4) * (NODE_W + 40)) / 10) * 10, y: Math.round((at.y + Math.floor(i / 4) * (NODE_H + 40)) / 10) * 10 };
+                });
+                positionsRef.current = next;
+                return next;
+              });
+              persistLayout();
+            }}
             onWheel={onWheel}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -402,21 +505,31 @@ export function GraphView({ canEdit, onOpenScene }: {
 
             <g transform={`translate(${view.ox} ${view.oy}) scale(${view.scale})`}>
               {/* Aristas */}
-              {edges.map((e) => {
-                const { d, mid } = edgePath(e, positions, edges);
+              {visibleEdges.map((e) => {
+                const { d, mid } = edgePath(e, positions, visibleEdges);
                 const selected = selectedEdge === e.id;
+                const step = (e as { step?: number }).step;
+                const color = mode === "autopilot" ? "var(--ull-accent)" : selected ? "var(--ull-primary)" : "var(--ull-text-dim)";
                 return (
                   <g key={e.id}>
                     <path
                       d={d}
                       fill="none"
-                      stroke={selected ? "var(--ull-primary)" : "var(--ull-text-dim)"}
-                      strokeOpacity={selected ? 1 : 0.55}
+                      stroke={color}
+                      strokeOpacity={selected || mode === "autopilot" ? 1 : 0.55}
                       strokeWidth={selected ? 2.5 : 1.8}
-                      strokeDasharray={e.explicit ? undefined : "6 4"}
+                      strokeDasharray={e.unplaced ? "6 4" : undefined}
                     />
-                    {/* Punta de flecha */}
-                    <circle cx={mid.x} cy={mid.y} r={selected ? 4 : 3} fill={selected ? "var(--ull-primary)" : "var(--ull-text-dim)"} fillOpacity={selected ? 1 : 0.6} />
+                    {step != null ? (
+                      <>
+                        <circle cx={mid.x} cy={mid.y} r={9} fill="var(--ull-accent)" />
+                        <text x={mid.x} y={mid.y + 3.5} textAnchor="middle" fontSize={10} fontWeight={700} fill="#fff">
+                          {step}
+                        </text>
+                      </>
+                    ) : (
+                      <circle cx={mid.x} cy={mid.y} r={selected ? 4 : 3} fill={color} fillOpacity={selected ? 1 : 0.6} />
+                    )}
                   </g>
                 );
               })}
@@ -529,53 +642,200 @@ export function GraphView({ canEdit, onOpenScene }: {
       </div>
 
       {/* Inspector lateral (nunca tapa el lienzo) */}
-      {(selectedConn != null || selectedDerived != null) && (
+      {mode === "scenes" && selectedHotspot != null && (
         <aside className="w-72 space-y-4 overflow-y-auto border-l border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
-          {selectedConn != null && (
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("nav_hotspot_edge")}</h3>
+          <p className="text-[13px]">
+            {snapshot.scenes.find((sc) => sc.id === selectedHotspot.sceneId)?.title} →{" "}
+            {snapshot.scenes.find((sc) => sc.id === selectedContent.target)?.title ?? "—"}
+          </p>
+          {selectedContent.unplaced === true && (
+            <p className="rounded-lg bg-amber-500/10 p-2 text-xs text-amber-600">{t("unplaced_hint")}</p>
+          )}
+
+          <label className="block text-[13px]">
+            <span className="mb-1 block font-medium">{t("label")}</span>
+            <Input
+              value={selectedContent.label ?? ""}
+              disabled={!canEdit}
+              onChange={(e) => patchEdgeContent({ label: e.target.value })}
+            />
+          </label>
+
+          <label className="block text-[13px]">
+            <span className="mb-1 block font-medium">{t("target_scene")}</span>
+            <Select value={selectedContent.target ?? ""} disabled={!canEdit} onChange={(e) => patchEdgeContent({ target: e.target.value })}>
+              {snapshot.scenes.map((sc) => (
+                <option key={sc.id} value={sc.id}>
+                  {sc.title}
+                </option>
+              ))}
+            </Select>
+          </label>
+
+          <label className="block text-[13px]">
+            <span className="mb-1 block font-medium">{t("entry_mode")}</span>
+            <Select
+              value={selectedContent.entry?.mode ?? "relative"}
+              disabled={!canEdit}
+              onChange={(e) => patchEdgeContent({ entry: { ...(selectedContent.entry ?? {}), mode: e.target.value } })}
+            >
+              <option value="fixed">{t("entry_fixed")}</option>
+              <option value="relative">{t("entry_relative")}</option>
+              <option value="lookBack">{t("entry_lookback")}</option>
+            </Select>
+          </label>
+
+          <label className="block text-[13px]">
+            <span className="mb-1 block font-medium">{t("transition")}</span>
+            <Select
+              value={selectedContent.transition?.kind ?? ""}
+              disabled={!canEdit}
+              onChange={(e) => patchEdgeContent({ transition: e.target.value === "" ? undefined : { kind: e.target.value } })}
+            >
+              <option value="">{t("transition_default")}</option>
+              <option value="fade">{t("transition_fade")}</option>
+              <option value="cut">{t("transition_cut")}</option>
+              <option value="crossRotate">{t("transition_crossrotate")}</option>
+              <option value="zoom">{t("transition_zoom")}</option>
+            </Select>
+          </label>
+
+          <div className="space-y-2 pt-1">
+            <Button size="sm" variant="outline" className="w-full" onClick={() => onOpenScene?.(selectedHotspot.sceneId, selectedHotspot.id)}>
+              <LayoutGrid className="h-4 w-4" /> {t("place_in_panorama")}
+            </Button>
+            {!edges.some((e) => e.from === selectedContent.target && e.to === selectedHotspot.sceneId) && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                disabled={!canEdit || selectedContent.target == null}
+                onClick={() => {
+                  const target = selectedContent.target;
+                  if (target == null) return;
+                  editor.apply((draft) => {
+                    createNavHotspot(draft, target, selectedHotspot.sceneId, { entryMode: "lookBack" });
+                  });
+                }}
+              >
+                <Undo2 className="h-4 w-4" /> {t("add_return")}
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              disabled={!canEdit}
+              onClick={() => {
+                editor.apply((draft) => deleteEdge(draft, selectedHotspot.id));
+                setSelectedEdge(null);
+              }}
+            >
+              <Trash2 className="h-4 w-4" /> {t("delete")}
+            </Button>
+          </div>
+          <p className="text-xs text-[var(--ull-text-dim)]">{t("delete_edge_hint")}</p>
+        </aside>
+      )}
+
+      {/* Recorridos del autopilot: el otro «material» que se dibuja aquí */}
+      {mode === "autopilot" && (
+        <aside className="w-72 space-y-4 overflow-y-auto border-l border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("autopilot_routes")}</h3>
+          {routes.length > 0 && (
+            <Select value={String(routeIndex)} onChange={(e) => setRouteIndex(Number(e.target.value))} aria-label={t("autopilot_routes")}>
+              {routes.map((r, i) => (
+                <option key={r.id} value={i}>
+                  {r.title}
+                </option>
+              ))}
+            </Select>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full"
+            disabled={!canEdit}
+            onClick={() => {
+              patchRoutes((list) => [...list, { id: `ruta-${list.length + 1}`, title: t("route_n", { n: String(list.length + 1) }), steps: [], loop: true }]);
+              setRouteIndex(routes.length);
+            }}
+          >
+            <Plus className="h-4 w-4" /> {t("new_route")}
+          </Button>
+
+          {route != null && (
             <>
-              <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("connection")}</h3>
-              <p className="text-[13px]">
-                {snapshot.scenes.find((s) => s.id === selectedConn.fromScene)?.title} → {snapshot.scenes.find((s) => s.id === selectedConn.toScene)?.title}
-              </p>
               <label className="block text-[13px]">
-                <span className="mb-1 block font-medium">{t("entry_mode")}</span>
-                <Select
-                  value={selectedConn.entryMode}
+                <span className="mb-1 block font-medium">{t("route_title")}</span>
+                <Input
+                  value={route.title}
                   disabled={!canEdit}
-                  onChange={(e) => {
-                    editor.apply((draft) => {
-                      const conn = draft.connections.find((c) => c.id === selectedConn.id);
-                      if (conn != null) conn.entryMode = e.target.value;
-                    });
-                  }}
-                >
-                  <option value="fixed">{t("entry_fixed")}</option>
-                  <option value="relative">{t("entry_relative")}</option>
-                  <option value="lookBack">{t("entry_lookback")}</option>
-                </Select>
+                  onChange={(e) => patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, title: e.target.value } : r)))}
+                />
+              </label>
+              <p className="text-xs text-[var(--ull-text-dim)]">{t("autopilot_click_hint")}</p>
+              <ol className="space-y-1">
+                {route.steps.map((step, i) => (
+                  <li key={`${step.scene}-${i}`} className="flex items-center gap-2 rounded-lg bg-[var(--ull-surface-2)] px-2 py-1.5 text-[13px]">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--ull-primary)] text-[11px] font-semibold text-white">
+                      {i + 1}
+                    </span>
+                    <span className="flex-1 truncate">{snapshot.scenes.find((sc) => sc.id === step.scene)?.title ?? step.scene}</span>
+                    <Input
+                      type="number"
+                      className="max-w-16"
+                      aria-label={t("seconds")}
+                      value={step.seconds != null ? String(step.seconds) : ""}
+                      disabled={!canEdit}
+                      onChange={(e) =>
+                        patchRoutes((list) =>
+                          list.map((r, ri) =>
+                            ri === routeIndex
+                              ? { ...r, steps: r.steps.map((st, si) => (si === i ? { ...st, seconds: e.target.value === "" ? undefined : Number(e.target.value) } : st)) }
+                              : r,
+                          ),
+                        )
+                      }
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6"
+                      aria-label={t("delete")}
+                      disabled={!canEdit}
+                      onClick={() =>
+                        patchRoutes((list) => list.map((r, ri) => (ri === routeIndex ? { ...r, steps: r.steps.filter((_, si) => si !== i) } : r)))
+                      }
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </li>
+                ))}
+              </ol>
+              {route.steps.length === 0 && <p className="text-xs text-[var(--ull-text-dim)]">{t("route_empty")}</p>}
+              <label className="flex cursor-pointer items-center gap-2 text-[13px]">
+                <input
+                  type="checkbox"
+                  checked={route.loop === true}
+                  disabled={!canEdit}
+                  className="h-4 w-4 accent-[var(--ull-primary)]"
+                  onChange={(e) => patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, loop: e.target.checked } : r)))}
+                />
+                {t("route_loop")}
               </label>
               <Button
                 size="sm"
                 variant="outline"
+                className="w-full"
                 disabled={!canEdit}
                 onClick={() => {
-                  editor.apply((draft) => {
-                    draft.connections = draft.connections.filter((c) => c.id !== selectedConn.id);
-                  });
-                  setSelectedEdge(null);
+                  patchRoutes((list) => list.filter((_, i) => i !== routeIndex));
+                  setRouteIndex(0);
                 }}
               >
-                <Trash2 className="h-4 w-4" /> {t("delete")}
-              </Button>
-              <p className="text-xs text-[var(--ull-text-dim)]">{t("delete_edge_hint")}</p>
-            </>
-          )}
-          {selectedDerived != null && (
-            <>
-              <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("nav_hotspot_edge")}</h3>
-              <p className="text-[13px] text-[var(--ull-text-dim)]">{t("nav_hotspot_edge_hint")}</p>
-              <Button size="sm" variant="outline" onClick={() => onOpenScene?.(selectedDerived.sceneId, selectedDerived.id)}>
-                <LayoutGrid className="h-4 w-4" /> {t("edit_hotspot")}
+                <Trash2 className="h-4 w-4" /> {t("delete_route")}
               </Button>
             </>
           )}

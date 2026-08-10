@@ -437,9 +437,6 @@ export class TourViewer {
       for (const hs of scene.hotspots) {
         if (hs.type === "navigation") targets.add(hs.target);
       }
-      for (const conn of this.tour.connections ?? []) {
-        if (conn.from === sceneId) targets.add(conn.to);
-      }
       let budget = 2;
       for (const t of targets) {
         if (budget <= 0) break;

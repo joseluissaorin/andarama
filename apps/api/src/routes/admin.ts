@@ -321,7 +321,7 @@ export function adminRoutes(): Hono<AppEnv> {
     const schema = await import("@ull360/db");
     const tables = [
       "users", "orgs", "orgMembers", "projects", "projectMembers", "scenes", "hotspots",
-      "connections", "media", "mediaDerivatives", "versions", "publications", "translations",
+      "media", "mediaDerivatives", "versions", "publications", "translations",
       "comments", "formSubmissions", "quizResults", "auditLog", "instanceSettings", "webhooks", "ltiRegistrations",
     ] as const;
     const dump: Record<string, unknown[]> = {};
@@ -346,7 +346,7 @@ export function adminRoutes(): Hono<AppEnv> {
     // Orden respetando claves foraneas
     const order = [
       "users", "orgs", "orgMembers", "projects", "projectMembers", "scenes", "hotspots",
-      "connections", "media", "mediaDerivatives", "versions", "publications", "translations",
+      "media", "mediaDerivatives", "versions", "publications", "translations",
       "comments", "formSubmissions", "quizResults", "instanceSettings", "webhooks", "ltiRegistrations",
     ];
     for (const name of order) {

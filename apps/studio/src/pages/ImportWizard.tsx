@@ -137,15 +137,22 @@ export function ImportWizard({ orgId, open, onClose }: {
         });
       }
       if (connectSequence) {
+        // Encadenar el recorrido crea hotspots de navegación de verdad: en el
+        // panorama se ven y se pueden pulsar, y en el grafo son las aristas.
+        const titles = new Map(items.map((it, i) => [sceneIds[i], it.name]));
+        const step = async (from: string, to: string, mode: string, yaw: number): Promise<void> => {
+          await api(`/projects/${projectId}/scenes/${from}/hotspots`, {
+            method: "POST",
+            body: {
+              type: "navigation",
+              position: { yaw, pitch: -0.17 },
+              content: { target: to, label: titles.get(to) ?? "", entry: { mode }, unplaced: true },
+            },
+          });
+        };
         for (let i = 0; i < sceneIds.length - 1; i++) {
-          await api(`/projects/${projectId}/connections`, {
-            method: "POST",
-            body: { fromScene: sceneIds[i], toScene: sceneIds[i + 1], entryMode: "relative" },
-          });
-          await api(`/projects/${projectId}/connections`, {
-            method: "POST",
-            body: { fromScene: sceneIds[i + 1], toScene: sceneIds[i], entryMode: "lookBack" },
-          });
+          await step(sceneIds[i]!, sceneIds[i + 1]!, "relative", 0);
+          await step(sceneIds[i + 1]!, sceneIds[i]!, "lookBack", Math.PI);
         }
       }
       setCreatedCount(sceneIds.length);

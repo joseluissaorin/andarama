@@ -1,6 +1,5 @@
 import { asc, eq, inArray } from "drizzle-orm";
 import {
-  connections as connectionsTable,
   hotspots as hotspotsTable,
   media as mediaTable,
   mediaDerivatives,
@@ -8,7 +7,7 @@ import {
   scenes as scenesTable,
   translations as translationsTable,
 } from "@ull360/db";
-import type { Connection, Hotspot, Scene, SceneSource, Tour } from "@ull360/schema";
+import type { Hotspot, Scene, SceneSource, Tour } from "@ull360/schema";
 import { TOUR_SCHEMA_URL, TOUR_SCHEMA_VERSION, validateTour } from "@ull360/schema";
 import type { Db } from "./lib/context.js";
 import { notFound } from "./lib/errors.js";
@@ -58,10 +57,6 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
           .where(inArray(hotspotsTable.sceneId, sceneIds))
           .orderBy(asc(hotspotsTable.sort))
       : [];
-  const connectionRows = await db
-    .select()
-    .from(connectionsTable)
-    .where(eq(connectionsTable.projectId, projectId));
   const translationRows = await db
     .select()
     .from(translationsTable)
@@ -222,6 +217,9 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
     const compiledHotspots: Hotspot[] = hs.map((h) => {
       const content = deepResolve(parseJson<Record<string, unknown>>(h.contentJson, {}));
       applyNestedTranslations(content, "hotspot", h.id);
+      // `unplaced` marca en el editor los pasos creados desde el grafo que
+      // aún no se han arrastrado al panorama: no pinta nada en el tour.
+      delete (content as Record<string, unknown>).unplaced;
       const position = parseJson<Record<string, unknown>>(h.positionJson, {});
       return {
         id: h.id,
@@ -256,16 +254,6 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
     compiledScenes.push(scene);
   }
 
-  const compiledConnections: Connection[] = connectionRows.map((row) => ({
-    id: row.id,
-    from: row.fromScene,
-    to: row.toScene,
-    entry: {
-      mode: row.entryMode as "fixed" | "relative" | "lookBack",
-      ...parseJson<Record<string, number>>(row.entryViewJson, {}),
-    },
-    transition: parseJson(row.transitionJson, undefined as never) ?? undefined,
-  }));
 
   const startScene = (settings.startScene as string) ?? compiledScenes[0]?.id ?? "";
 
@@ -286,7 +274,6 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
       intro: (settings.intro as Tour["start"]["intro"]) ?? "none",
     },
     scenes: compiledScenes,
-    connections: compiledConnections.length > 0 ? compiledConnections : undefined,
     floorplans: deepResolve(settings.floorplans as Tour["floorplans"]) ?? undefined,
     geoMap: (settings.geoMap as Tour["geoMap"]) ?? undefined,
     ui: deepResolve(settings.ui as Tour["ui"]) ?? undefined,

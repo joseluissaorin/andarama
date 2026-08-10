@@ -348,12 +348,11 @@ export function publishRoutes(): Hono<AppEnv> {
     const auth = requireAuth(c);
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
-    const { scenes, hotspots, connections, translations } = await import("@ull360/db");
+    const { scenes, hotspots, translations } = await import("@ull360/db");
     const { inArray } = await import("drizzle-orm");
     const sceneRows = await db.select().from(scenes).where(eq(scenes.projectId, access.project.id));
     const sceneIds = sceneRows.map((s) => s.id);
     const hotspotRows = sceneIds.length > 0 ? await db.select().from(hotspots).where(inArray(hotspots.sceneId, sceneIds)) : [];
-    const connectionRows = await db.select().from(connections).where(eq(connections.projectId, access.project.id));
     const translationRows = await db.select().from(translations).where(eq(translations.projectId, access.project.id));
     const doc = {
       format: "ull360-project",
@@ -367,7 +366,6 @@ export function publishRoutes(): Hono<AppEnv> {
       },
       scenes: sceneRows,
       hotspots: hotspotRows,
-      connections: connectionRows,
       translations: translationRows,
     };
     return new Response(JSON.stringify(doc, null, 2), {
@@ -392,7 +390,9 @@ export function publishRoutes(): Hono<AppEnv> {
         project: z.object({ title: z.string(), settingsJson: z.string(), tagsJson: z.string().optional() }),
         scenes: z.array(z.record(z.unknown())),
         hotspots: z.array(z.record(z.unknown())),
-        connections: z.array(z.record(z.unknown())),
+        // Los documentos anteriores a la unificacion del grafo traen
+        // conexiones sueltas: se aceptan y se ignoran.
+        connections: z.array(z.record(z.unknown())).optional(),
         translations: z.array(z.record(z.unknown())),
       })
       .parse(await c.req.json());
@@ -415,7 +415,7 @@ export function publishRoutes(): Hono<AppEnv> {
       createdAt: nowMs(),
       updatedAt: nowMs(),
     });
-    const { scenes, hotspots, connections, translations } = await import("@ull360/db");
+    const { scenes, hotspots, translations } = await import("@ull360/db");
     const sceneIdMap = new Map<string, string>();
     for (const s of doc.scenes) sceneIdMap.set(s.id as string, newId());
     for (const s of doc.scenes) {
@@ -429,15 +429,6 @@ export function publishRoutes(): Hono<AppEnv> {
       let content = String(h.contentJson ?? "{}");
       for (const [oldId, newSceneId] of sceneIdMap) content = content.replaceAll(`"${oldId}"`, `"${newSceneId}"`);
       await db.insert(hotspots).values({ ...(h as typeof hotspots.$inferInsert), id: hsIdMap.get(h.id as string)!, sceneId, contentJson: content });
-    }
-    for (const conn of doc.connections) {
-      await db.insert(connections).values({
-        ...(conn as typeof connections.$inferInsert),
-        id: newId(),
-        projectId,
-        fromScene: sceneIdMap.get(conn.fromScene as string) ?? (conn.fromScene as string),
-        toScene: sceneIdMap.get(conn.toScene as string) ?? (conn.toScene as string),
-      });
     }
     for (const t of doc.translations) {
       const entityId =

@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq, isNotNull, isNull, lt } from "drizzle-orm";
 import {
-  connections as connectionsTable,
   hotspots as hotspotsTable,
   projectMembers,
   projects,
@@ -382,7 +381,7 @@ export function guessContentType(key: string): string {
   return map[ext] ?? "application/octet-stream";
 }
 
-/** Copia escenas, hotspots, conexiones y traducciones a otro proyecto. */
+/** Copia escenas, hotspots y traducciones a otro proyecto. */
 async function duplicateContent(
   c: { get: (k: "db") => import("../lib/context.js").Db },
   fromId: string,
@@ -416,16 +415,6 @@ async function duplicateContent(
       if (entityId == null && t.entity !== "tour") continue;
       await db.insert(translationsTable).values({ ...t, id: newId(), projectId: toId, entityId: entityId ?? t.entityId });
     }
-  }
-  const connRows = await db.select().from(connectionsTable).where(eq(connectionsTable.projectId, fromId));
-  for (const conn of connRows) {
-    await db.insert(connectionsTable).values({
-      ...conn,
-      id: newId(),
-      projectId: toId,
-      fromScene: idMap.get(conn.fromScene) ?? conn.fromScene,
-      toScene: idMap.get(conn.toScene) ?? conn.toScene,
-    });
   }
   // Actualizar startScene en settings
   const proj = (await db.select().from(projects).where(eq(projects.id, toId)).limit(1))[0];

@@ -17,8 +17,9 @@ import { mountViewer, type MountedSkin } from "@ull360/viewer-ui";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
-import { clientId } from "./editorApi";
+import { clientId, readJson } from "./editorApi";
 import { MediaPicker } from "./MediaPicker";
+import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
 import { PropertiesPanel } from "./PropertiesPanel";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
@@ -31,6 +32,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
   myConnId: string | null;
 }): React.ReactNode {
   const t = useT();
+  const toast = useToast();
   const editor = useEditor();
   const [addOpen, setAddOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -46,6 +48,8 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
   const visible = filter.trim() === ""
     ? scenes
     : scenes.filter((s) => s.title.toLowerCase().includes(filter.trim().toLowerCase()));
+
+  const [mediaOver, setMediaOver] = useState(false);
 
   const addScene = (): void => {
     if (newTitle.trim() === "") return;
@@ -110,8 +114,11 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
     if (!confirm(t("confirm_delete_scene"))) return;
     editor.apply((draft) => {
       draft.scenes = draft.scenes.filter((s) => s.id !== sceneId);
-      draft.hotspots = draft.hotspots.filter((h) => h.sceneId !== sceneId);
-      draft.connections = draft.connections.filter((c) => c.fromScene !== sceneId && c.toScene !== sceneId);
+      // Se van los hotspots de la escena y también los que apuntaban a ella:
+      // un paso a una escena inexistente es un callejón sin salida.
+      draft.hotspots = draft.hotspots.filter(
+        (h) => h.sceneId !== sceneId && readJson<{ target?: string }>(h.contentJson, {}).target !== sceneId,
+      );
       if (draft.settings.startScene === sceneId) draft.settings.startScene = draft.scenes[0]?.id;
     });
     if (editor.selectedSceneId === sceneId) editor.select(scenes.find((s) => s.id !== sceneId)?.id ?? null);
@@ -119,7 +126,30 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
 
   return (
     <div className="flex h-full">
-      <aside className="flex w-64 flex-col border-r border-[var(--ull-border)] bg-[var(--ull-surface)]">
+      <aside
+        className={`flex w-64 flex-col border-r bg-[var(--ull-surface)] ${
+          mediaOver ? "border-[var(--ull-primary)] bg-[var(--ull-primary)]/5" : "border-[var(--ull-border)]"
+        }`}
+        onDragOver={(e) => {
+          if (!canEdit || !hasMediaDrag(e.dataTransfer)) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "copy";
+          setMediaOver(true);
+        }}
+        onDragLeave={() => setMediaOver(false)}
+        onDrop={(e) => {
+          setMediaOver(false);
+          const items = canEdit ? readMediaDrag(e.dataTransfer) : null;
+          if (items == null) return;
+          e.preventDefault();
+          let first: string | undefined;
+          editor.apply((draft) => {
+            first = scenesFromMedia(draft, project.id, items)[0];
+          });
+          if (first != null) editor.select(first);
+          toast.push(t("scenes_created", { count: String(items.length) }), "ok");
+        }}
+      >
         <div className="flex items-center justify-between px-3 py-2.5">
           <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("scenes")}</h2>
           {canEdit && (
@@ -470,6 +500,12 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
           if (h == null) return;
           const pos = h.positionJson != null ? (JSON.parse(h.positionJson) as Record<string, unknown>) : {};
           h.positionJson = JSON.stringify({ ...pos, yaw: e.yaw, pitch: e.pitch });
+          // Arrastrarlo es colocarlo: se retira el aviso de posición provisional
+          const content = readJson<Record<string, unknown>>(h.contentJson, {});
+          if (content.unplaced === true) {
+            delete content.unplaced;
+            h.contentJson = JSON.stringify(content);
+          }
         });
         editor.select(sceneId, e.hotspot.id);
       });

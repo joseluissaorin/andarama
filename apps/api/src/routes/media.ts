@@ -8,6 +8,7 @@ import { badRequest, conflict, forbidden, notFound, payloadTooLarge } from "../l
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
+import { guessContentType } from "./projects.js";
 import { audit, getSettings, mimeAllowedForKind, sanitizeSvgServer, sniffMime } from "../lib/helpers.js";
 
 const KINDS = ["panorama", "image", "video", "audio", "pdf", "model", "floorplan", "subtitle", "file"] as const;
@@ -334,6 +335,58 @@ export function mediaRoutes(): Hono<AppEnv> {
     return new Response(obj.body as unknown as BodyInit, {
       headers: { "content-type": "image/jpeg", "cache-control": "private, max-age=3600" },
     });
+  });
+
+  /**
+   * Tiles de un medio, para previsualizar un panorama en la biblioteca sin
+   * tenerlo asignado a ningun tour: {base}/{nivel}/{cara}/{y}/{x}.{ext}
+   */
+  r.get("/:mediaId/tiles/*", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const runtime = c.get("runtime");
+    const row = await ownedMedia(c, auth, c.req.param("mediaId"), "reader");
+    const rest = c.req.path.split(`/media/${row.id}/tiles/`)[1] ?? "";
+    // Ruta relativa saneada: nada de subir por el arbol del almacenamiento
+    if (rest === "" || rest.includes("..")) throw notFound();
+    const der = (await db
+      .select()
+      .from(mediaDerivatives)
+      .where(and(eq(mediaDerivatives.mediaId, row.id), eq(mediaDerivatives.kind, "tiles")))
+      .limit(1))[0];
+    if (der == null) throw notFound();
+    const obj = await runtime.storage.get(`${der.r2Prefix.replace(/\/$/, "")}/${rest}`);
+    if (obj == null) throw notFound();
+    return new Response(obj.body as unknown as BodyInit, {
+      headers: {
+        "content-type": obj.meta.contentType ?? guessContentType(rest),
+        "cache-control": "private, max-age=3600",
+      },
+    });
+  });
+
+  /** Carpetas existentes en la biblioteca, con cuantos medios tiene cada una. */
+  r.get("/folders", async (c) => {
+    const auth = requireAuth(c);
+    requireScope(auth, "media:read");
+    const db = c.get("db");
+    const orgId = c.req.query("org");
+    if (orgId == null) throw badRequest("Falta org");
+    await requireOrgRole(db, orgId, auth.user, "reader");
+    const rows = await db.select().from(media).where(and(eq(media.orgId, orgId), isNull(media.deletedAt)));
+    const counts = new Map<string, { total: number; panoramas: number }>();
+    for (const m of rows) {
+      const key = m.folder ?? "";
+      const cur = counts.get(key) ?? { total: 0, panoramas: 0 };
+      cur.total++;
+      if (m.kind === "panorama") cur.panoramas++;
+      counts.set(key, cur);
+    }
+    return c.json(
+      [...counts.entries()]
+        .map(([folder, n]) => ({ folder, ...n }))
+        .sort((a, b) => a.folder.localeCompare(b.folder, "es")),
+    );
   });
 
   /** Renombrar, mover de carpeta o asignar a un tour. */

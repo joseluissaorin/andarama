@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { connections as connectionsTable, hotspots as hotspotsTable, projects, scenes as scenesTable } from "@ull360/db";
+import { hotspots as hotspotsTable, projects, scenes as scenesTable } from "@ull360/db";
 import type { AppEnv } from "../lib/context.js";
-import { badRequest, forbidden, notFound } from "../lib/errors.js";
+import { forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
@@ -47,15 +47,6 @@ const hotspotSchema = z.object({
   sort: z.number().int().optional(),
 });
 
-const connectionSchema = z.object({
-  id: clientId.optional(),
-  fromScene: z.string(),
-  toScene: z.string(),
-  entryMode: z.enum(["fixed", "relative", "lookBack"]).default("relative"),
-  entryView: z.record(z.number()).nullable().optional(),
-  transition: z.record(z.unknown()).nullable().optional(),
-});
-
 async function editableProject(c: Parameters<typeof projectAccess>[0] extends never ? never : any, projectId: string): Promise<{ project: typeof projects.$inferSelect }> {
   const auth = requireAuth(c);
   requireScope(auth, "projects:write");
@@ -86,8 +77,7 @@ export function contentRoutes(): Hono<AppEnv> {
     const hs = sceneIds.length > 0
       ? await db.select().from(hotspotsTable).where(inArray(hotspotsTable.sceneId, sceneIds)).orderBy(asc(hotspotsTable.sort))
       : [];
-    const conns = await db.select().from(connectionsTable).where(eq(connectionsTable.projectId, access.project.id));
-    return c.json({ scenes: rows, hotspots: hs, connections: conns });
+    return c.json({ scenes: rows, hotspots: hs });
   });
 
   r.post("/:projectId/scenes", async (c) => {
@@ -153,12 +143,6 @@ export function contentRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const sceneId = c.req.param("sceneId");
     await db.delete(scenesTable).where(and(eq(scenesTable.id, sceneId), eq(scenesTable.projectId, project.id)));
-    await db.delete(connectionsTable).where(
-      and(eq(connectionsTable.projectId, project.id), eq(connectionsTable.fromScene, sceneId)),
-    );
-    await db.delete(connectionsTable).where(
-      and(eq(connectionsTable.projectId, project.id), eq(connectionsTable.toScene, sceneId)),
-    );
     await touchProject(c, project.id);
     await audit(c, "scene.delete", "scene", sceneId, {}, project.orgId);
     return c.json({ ok: true });
@@ -224,60 +208,6 @@ export function contentRoutes(): Hono<AppEnv> {
       .limit(1);
     if (rows[0] == null || rows[0].sceneProject !== project.id) throw notFound();
     await db.delete(hotspotsTable).where(eq(hotspotsTable.id, hotspotId));
-    await touchProject(c, project.id);
-    return c.json({ ok: true });
-  });
-
-  // ------- Conexiones (grafo) -------
-
-  r.post("/:projectId/connections", async (c) => {
-    const { project } = await editableProject(c, c.req.param("projectId"));
-    const db = c.get("db");
-    const body = connectionSchema.parse(await c.req.json());
-    const scenesInProject = await db
-      .select({ id: scenesTable.id })
-      .from(scenesTable)
-      .where(eq(scenesTable.projectId, project.id));
-    const validIds = new Set(scenesInProject.map((s) => s.id));
-    if (!validIds.has(body.fromScene) || !validIds.has(body.toScene)) {
-      throw badRequest("Las escenas de la conexión no pertenecen al proyecto");
-    }
-    const id = body.id ?? newId();
-    await db.insert(connectionsTable).values({
-      id,
-      projectId: project.id,
-      fromScene: body.fromScene,
-      toScene: body.toScene,
-      entryMode: body.entryMode,
-      entryViewJson: body.entryView != null ? JSON.stringify(body.entryView) : null,
-      transitionJson: body.transition != null ? JSON.stringify(body.transition) : null,
-    });
-    await touchProject(c, project.id);
-    return c.json({ id }, 201);
-  });
-
-  r.patch("/:projectId/connections/:connectionId", async (c) => {
-    const { project } = await editableProject(c, c.req.param("projectId"));
-    const db = c.get("db");
-    const body = connectionSchema.partial().parse(await c.req.json());
-    const patch: Record<string, unknown> = {};
-    if (body.entryMode != null) patch.entryMode = body.entryMode;
-    if (body.entryView !== undefined) patch.entryViewJson = body.entryView != null ? JSON.stringify(body.entryView) : null;
-    if (body.transition !== undefined) patch.transitionJson = body.transition != null ? JSON.stringify(body.transition) : null;
-    await db
-      .update(connectionsTable)
-      .set(patch)
-      .where(and(eq(connectionsTable.id, c.req.param("connectionId")), eq(connectionsTable.projectId, project.id)));
-    await touchProject(c, project.id);
-    return c.json({ ok: true });
-  });
-
-  r.delete("/:projectId/connections/:connectionId", async (c) => {
-    const { project } = await editableProject(c, c.req.param("projectId"));
-    const db = c.get("db");
-    await db
-      .delete(connectionsTable)
-      .where(and(eq(connectionsTable.id, c.req.param("connectionId")), eq(connectionsTable.projectId, project.id)));
     await touchProject(c, project.id);
     return c.json({ ok: true });
   });

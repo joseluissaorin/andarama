@@ -79,20 +79,9 @@ export interface HotspotRow {
   sort: number;
 }
 
-export interface ConnectionRow {
-  id: string;
-  projectId: string;
-  fromScene: string;
-  toScene: string;
-  entryMode: string;
-  entryViewJson: string | null;
-  transitionJson: string | null;
-}
-
 export interface EditorSnapshot {
   scenes: SceneRow[];
   hotspots: HotspotRow[];
-  connections: ConnectionRow[];
   settings: Record<string, unknown>;
 }
 

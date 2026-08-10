@@ -1,10 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, FileAudio, FileBox, FileImage, FileText, FileVideo, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
+import { Camera, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
 import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@ull360/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
+import { PlanetThumb, Pano360Dialog, isPano, previewEquirect } from "../media/PanoPreview";
+import { prefetchLittlePlanets } from "../media/littlePlanet";
+import { MEDIA_DRAG_TYPE, mediaDragPayload } from "../media/drag";
 import { uploadMedia, type MediaKind, type UploadProgress } from "../upload";
 import { ImportWizard } from "./ImportWizard";
 
@@ -62,6 +65,8 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
   const [order, setOrder] = useState("recent");
   const [uploads, setUploads] = useState<Record<string, UploadProgress & { name: string }>>({});
   const [detail, setDetail] = useState<MediaItem | null>(null);
+  const [folder, setFolder] = useState("");
+  const [preview, setPreview] = useState<MediaItem | null>(null);
   const [renaming, setRenaming] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -81,12 +86,26 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
   });
 
   const list = useQuery({
-    queryKey: ["media", orgId, kind, searchQ, project, order],
+    queryKey: ["media", orgId, kind, searchQ, project, order, folder],
     queryFn: () =>
       api<MediaItem[]>(
-        `/media?org=${orgId}${kind !== "" ? `&kind=${kind}` : ""}${searchQ !== "" ? `&q=${encodeURIComponent(searchQ)}` : ""}${project !== "" ? `&project=${project}` : ""}&order=${order}`,
+        `/media?org=${orgId}${kind !== "" ? `&kind=${kind}` : ""}${searchQ !== "" ? `&q=${encodeURIComponent(searchQ)}` : ""}${project !== "" ? `&project=${project}` : ""}${folder !== "" ? `&folder=${encodeURIComponent(folder === "root" ? "" : folder)}` : ""}&order=${order}`,
       ),
   });
+
+  const folders = useQuery({
+    queryKey: ["media-folders", orgId],
+    queryFn: () => api<{ folder: string; total: number; panoramas: number }[]>(`/media/folders?org=${orgId}`),
+  });
+
+  // Los planetas del hover se calculan en tiempo ocioso: al pasar el ratón ya
+  // están hechos y aparecen en el mismo fotograma.
+  useEffect(() => {
+    const items = (list.data ?? [])
+      .filter((m) => isPano(m))
+      .map((m) => ({ id: m.id, equirectUrl: previewEquirect(m) }));
+    if (items.length > 0) prefetchLittlePlanets(items);
+  }, [list.data]);
 
   const removeMedia = async (ids: string[]): Promise<void> => {
     if (!confirm(t("confirm_delete_media", { count: String(ids.length) }))) return;
@@ -163,6 +182,16 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             ))}
           </Select>
         )}
+        {(folders.data ?? []).length > 1 && (
+          <Select value={folder} onChange={(e) => setFolder(e.target.value)} className="max-w-44" aria-label={t("folder")}>
+            <option value="">{t("all_folders")}</option>
+            {(folders.data ?? []).map((f) => (
+              <option key={f.folder} value={f.folder === "" ? "root" : f.folder}>
+                {(f.folder === "" ? t("folder_root") : f.folder) + ` (${f.total})`}
+              </option>
+            ))}
+          </Select>
+        )}
         <Select value={order} onChange={(e) => setOrder(e.target.value)} className="max-w-36" aria-label={t("sort_by")}>
           <option value="recent">{t("sort_recent")}</option>
           <option value="name">{t("sort_name")}</option>
@@ -205,6 +234,25 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
         </div>
       ))}
 
+      {(folder !== "" || selected.size > 1) && (list.data ?? []).some((m) => isPano(m)) && (
+        <div
+          draggable
+          onDragStart={(e) => {
+            const source = selected.size > 1 ? (list.data ?? []).filter((m) => selected.has(m.id)) : (list.data ?? []);
+            e.dataTransfer.setData(MEDIA_DRAG_TYPE, JSON.stringify(source.filter((m) => isPano(m)).map(mediaDragPayload)));
+            e.dataTransfer.effectAllowed = "copy";
+          }}
+          className="mb-3 inline-flex cursor-grab items-center gap-2 rounded-xl border border-dashed border-[var(--ull-primary)] bg-[var(--ull-surface)] px-3 py-2 text-[13px]"
+        >
+          <FolderOpen className="h-4 w-4 text-[var(--ull-primary)]" />
+          {t("drag_group_hint", {
+            count: String(
+              (selected.size > 1 ? (list.data ?? []).filter((m) => selected.has(m.id)) : (list.data ?? [])).filter((m) => isPano(m)).length,
+            ),
+          })}
+        </div>
+      )}
+
       {list.isLoading ? (
         <div className="flex justify-center p-12">
           <Spinner />
@@ -218,6 +266,14 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
           {(list.data ?? []).map((m) => (
             <div
               key={m.id}
+              draggable
+              onDragStart={(e) => {
+                // Arrastrar un panorama al grafo o a la lista de escenas lo
+                // convierte en escena; el tipo propio evita confundirlo con
+                // una subida de ficheros.
+                e.dataTransfer.setData(MEDIA_DRAG_TYPE, JSON.stringify([mediaDragPayload(m)]));
+                e.dataTransfer.effectAllowed = "copy";
+              }}
               className={`group relative overflow-hidden rounded-xl border bg-[var(--ull-surface)] text-left shadow-sm transition-shadow hover:shadow-md ${
                 selected.has(m.id) ? "border-[var(--ull-primary)] ring-1 ring-[var(--ull-primary)]" : "border-[var(--ull-border)]"
               }`}
@@ -225,6 +281,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
               <button
                 type="button"
                 className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--ull-primary)]"
+                title={isPano(m) ? t("dblclick_to_preview") : undefined}
                 onClick={() => {
                   if (onSelect != null) onSelect(m);
                   else {
@@ -232,9 +289,18 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                     setRenaming(m.filename);
                   }
                 }}
+                onDoubleClick={(e) => {
+                  if (!isPano(m)) return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDetail(null);
+                  setPreview(m);
+                }}
               >
-                <div className="flex h-28 items-center justify-center bg-[var(--ull-surface-2)]">
-                  {m.derivatives.some((d) => d.kind === "thumb") ? (
+                <div className="flex h-28 items-center justify-center overflow-hidden bg-[var(--ull-surface-2)]">
+                  {isPano(m) ? (
+                    <PlanetThumb media={m} />
+                  ) : m.derivatives.some((d) => d.kind === "thumb") ? (
                     <img src={`/api/v1/media/${m.id}/derived/thumb`} alt="" className="h-full w-full object-cover" loading="lazy" />
                   ) : m.kind === "image" || m.kind === "floorplan" ? (
                     <img src={`/api/v1/media/${m.id}/file`} alt="" className="h-full w-full object-cover" loading="lazy" />
@@ -274,6 +340,8 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
           ))}
         </div>
       )}
+
+      <Pano360Dialog media={preview} onClose={() => setPreview(null)} />
 
       {/* Barra de acciones por lotes */}
       {fullPage && selected.size > 0 && (

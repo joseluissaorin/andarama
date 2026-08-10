@@ -1,5 +1,5 @@
 import { api } from "../api";
-import type { ConnectionRow, EditorSnapshot, HotspotRow, SceneRow } from "../stores";
+import type { EditorSnapshot, HotspotRow, SceneRow } from "../stores";
 
 /** ID aleatorio de cliente (mismo alfabeto no adivinable que el servidor). */
 export function clientId(): string {
@@ -12,14 +12,13 @@ export function clientId(): string {
 
 export async function loadSnapshot(projectId: string): Promise<{ snapshot: EditorSnapshot; project: Record<string, unknown> }> {
   const [content, project] = await Promise.all([
-    api<{ scenes: SceneRow[]; hotspots: HotspotRow[]; connections: ConnectionRow[] }>(`/projects/${projectId}/scenes`),
+    api<{ scenes: SceneRow[]; hotspots: HotspotRow[] }>(`/projects/${projectId}/scenes`),
     api<Record<string, unknown> & { settings: Record<string, unknown> }>(`/projects/${projectId}`),
   ]);
   return {
     snapshot: {
       scenes: content.scenes,
       hotspots: content.hotspots,
-      connections: content.connections,
       settings: project.settings ?? {},
     },
     project,
@@ -41,8 +40,6 @@ export async function syncSnapshot(
   const currentScenes = new Map(current.scenes.map((s) => [s.id, s]));
   const syncedHs = new Map(synced.hotspots.map((h) => [h.id, h]));
   const currentHs = new Map(current.hotspots.map((h) => [h.id, h]));
-  const syncedConns = new Map(synced.connections.map((c) => [c.id, c]));
-  const currentConns = new Map(current.connections.map((c) => [c.id, c]));
 
   // Escenas eliminadas (sus hotspots caen en cascada)
   for (const [id] of syncedScenes) {
@@ -111,38 +108,6 @@ export async function syncSnapshot(
           content: JSON.parse(hs.contentJson),
           conditions: hs.conditionsJson != null ? JSON.parse(hs.conditionsJson) : null,
           sort: hs.sort,
-        },
-      });
-    }
-  }
-
-  // Conexiones
-  for (const [id] of syncedConns) {
-    if (!currentConns.has(id)) {
-      await api(`/projects/${projectId}/connections/${id}`, { method: "DELETE" });
-    }
-  }
-  for (const conn of current.connections) {
-    const prev = syncedConns.get(conn.id);
-    if (prev == null) {
-      await api(`/projects/${projectId}/connections`, {
-        method: "POST",
-        body: {
-          id: conn.id,
-          fromScene: conn.fromScene,
-          toScene: conn.toScene,
-          entryMode: conn.entryMode,
-          entryView: conn.entryViewJson != null ? JSON.parse(conn.entryViewJson) : undefined,
-          transition: conn.transitionJson != null ? JSON.parse(conn.transitionJson) : undefined,
-        },
-      });
-    } else if (JSON.stringify(prev) !== JSON.stringify(conn)) {
-      await api(`/projects/${projectId}/connections/${conn.id}`, {
-        method: "PATCH",
-        body: {
-          entryMode: conn.entryMode,
-          entryView: conn.entryViewJson != null ? JSON.parse(conn.entryViewJson) : null,
-          transition: conn.transitionJson != null ? JSON.parse(conn.transitionJson) : null,
         },
       });
     }

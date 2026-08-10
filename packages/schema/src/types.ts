@@ -510,15 +510,6 @@ export interface Scene {
   autorotate?: AutorotateConfig | false;
 }
 
-/** Arista del grafo (ademas de las derivadas de hotspots de navegacion). */
-export interface Connection {
-  id: string;
-  from: string;
-  to: string;
-  entry?: ConnectionEntry;
-  transition?: TransitionSpec;
-}
-
 export interface Floorplan {
   id: string;
   title: L10n;
@@ -703,7 +694,6 @@ export interface Tour {
   meta: TourMeta;
   start: TourStart;
   scenes: Scene[];
-  connections?: Connection[];
   floorplans?: Floorplan[];
   geoMap?: GeoMapConfig;
   ui?: UIConfig;
