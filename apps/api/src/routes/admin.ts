@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { desc, eq, isNull, sql } from "drizzle-orm";
-import { auditLog, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@ull360/db";
+import { auditLog, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
-import { hmacSign } from "@ull360/adapters";
+import { hmacSign } from "@andarama/adapters";
 import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
 import { isInstanceAdmin } from "../lib/authz.js";
@@ -295,12 +295,12 @@ export function adminRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const hook = (await db.select().from(webhooks).where(eq(webhooks.id, c.req.param("id"))).limit(1))[0];
     if (hook == null) throw notFound();
-    const body = JSON.stringify({ event: "test", at: nowMs(), message: "Envío de prueba de ULL360" });
+    const body = JSON.stringify({ event: "test", at: nowMs(), message: "Envío de prueba de Andarama" });
     const signature = hook.secret != null ? await hmacSign(hook.secret, body) : undefined;
     try {
       const res = await fetch(hook.url, {
         method: "POST",
-        headers: { "content-type": "application/json", ...(signature != null ? { "x-ull360-signature": signature } : {}) },
+        headers: { "content-type": "application/json", ...(signature != null ? { "x-anda-signature": signature } : {}) },
         body,
       });
       return c.json({ ok: res.ok, status: res.status });
@@ -318,7 +318,7 @@ export function adminRoutes(): Hono<AppEnv> {
 
   r.get("/backup", async (c) => {
     const db = c.get("db");
-    const schema = await import("@ull360/db");
+    const schema = await import("@andarama/db");
     const tables = [
       "users", "orgs", "orgMembers", "projects", "projectMembers", "scenes", "hotspots",
       "media", "mediaDerivatives", "versions", "publications", "translations",
@@ -328,10 +328,10 @@ export function adminRoutes(): Hono<AppEnv> {
     for (const name of tables) {
       dump[name] = await db.select().from((schema as Record<string, any>)[name]);
     }
-    return new Response(JSON.stringify({ format: "ull360-backup", version: 1, exportedAt: nowMs(), tables: dump }), {
+    return new Response(JSON.stringify({ format: "anda-backup", version: 1, exportedAt: nowMs(), tables: dump }), {
       headers: {
         "content-type": "application/json",
-        "content-disposition": `attachment; filename="ull360-backup-${new Date().toISOString().slice(0, 10)}.json"`,
+        "content-disposition": `attachment; filename="anda-backup-${new Date().toISOString().slice(0, 10)}.json"`,
       },
     });
   });
@@ -339,9 +339,9 @@ export function adminRoutes(): Hono<AppEnv> {
   r.post("/backup/import", async (c) => {
     const db = c.get("db");
     const doc = z
-      .object({ format: z.literal("ull360-backup"), version: z.number(), tables: z.record(z.array(z.record(z.unknown()))) })
+      .object({ format: z.literal("anda-backup"), version: z.number(), tables: z.record(z.array(z.record(z.unknown()))) })
       .parse(await c.req.json());
-    const schema = await import("@ull360/db");
+    const schema = await import("@andarama/db");
     let imported = 0;
     // Orden respetando claves foraneas
     const order = [

@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { hotspots, jobs, media, mediaDerivatives, orgs, scenes } from "@ull360/db";
-import { verifyUploadUrl } from "@ull360/adapters";
+import { hotspots, jobs, media, mediaDerivatives, orgs, scenes } from "@andarama/db";
+import { verifyUploadUrl } from "@andarama/adapters";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound, payloadTooLarge } from "../lib/errors.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";

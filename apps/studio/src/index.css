@@ -1,38 +1,27 @@
-@import "@ull360/ui/theme.css";
+@import "@andarama/ui/theme.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Argentum Sans: tipografia corporativa oficial de la ULL (Open Font License) */
+/* Baloo 2 (variable): la voz redonda de Andarama. Space Mono: el susurro de
+   datos. Ambas bajo Open Font License. */
 @font-face {
-  font-family: "Argentum Sans";
-  font-weight: 300;
+  font-family: "Baloo 2";
+  font-weight: 400 800;
   font-display: swap;
-  src: url("/studio/fonts/ArgentumSans-Light.woff2") format("woff2");
+  src: url("/studio/fonts/Baloo2-Variable.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Argentum Sans";
+  font-family: "Space Mono";
   font-weight: 400;
   font-display: swap;
-  src: url("/studio/fonts/ArgentumSans-Regular.woff2") format("woff2");
+  src: url("/studio/fonts/SpaceMono-Regular.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Argentum Sans";
-  font-weight: 500;
-  font-display: swap;
-  src: url("/studio/fonts/ArgentumSans-Medium.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Argentum Sans";
-  font-weight: 600;
-  font-display: swap;
-  src: url("/studio/fonts/ArgentumSans-SemiBold.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Argentum Sans";
+  font-family: "Space Mono";
   font-weight: 700;
   font-display: swap;
-  src: url("/studio/fonts/ArgentumSans-Bold.woff2") format("woff2");
+  src: url("/studio/fonts/SpaceMono-Bold.woff2") format("woff2");
 }
 
 html, body, #root {
@@ -41,27 +30,27 @@ html, body, #root {
 
 body {
   margin: 0;
-  background: var(--ull-bg);
-  color: var(--ull-text);
-  font-family: var(--ull-font);
+  background: var(--anda-bg);
+  color: var(--anda-text);
+  font-family: var(--anda-font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(92, 6, 140, 0.22);
+  background: rgba(255, 179, 0, 0.35);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--ull-border) transparent;
+  scrollbar-color: var(--anda-border) transparent;
 }
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 *::-webkit-scrollbar-thumb {
-  background: var(--ull-border);
+  background: var(--anda-border);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;
@@ -71,13 +60,13 @@ body {
 }
 
 /* Entradas suaves para vistas del Studio */
-@keyframes ull-fade-up {
+@keyframes anda-fade-up {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
-.ull-enter {
-  animation: ull-fade-up 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+.anda-enter {
+  animation: anda-fade-up 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 @media (prefers-reduced-motion: reduce) {
-  .ull-enter { animation: none; }
+  .anda-enter { animation: none; }
 }

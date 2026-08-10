@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
-import { publications } from "@ull360/db";
+import { publications } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, notFound } from "../lib/errors.js";
 import { requireAuth, requireScope } from "../lib/session.js";

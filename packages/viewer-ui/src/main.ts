@@ -1,11 +1,11 @@
 import { mountViewer } from "./skin.js";
-import type { Tour } from "@ull360/schema";
+import type { Tour } from "@andarama/schema";
 import { baseFromTourUrl } from "./url.js";
 
 /**
  * Punto de entrada del bundle standalone: paginas de tour publicadas
  * (/t/{slug}) y paquetes exportados. Lee la configuracion de
- * window.ULL360_CONFIG o de atributos data-* del contenedor #ull360.
+ * window.Andarama_CONFIG o de atributos data-* del contenedor #andarama.
  */
 
 interface StandaloneConfig {
@@ -24,18 +24,18 @@ interface StandaloneConfig {
 
 declare global {
   interface Window {
-    ULL360_CONFIG?: StandaloneConfig;
-    ULL360?: { mount: typeof mountViewer; instance?: ReturnType<typeof mountViewer> };
+    Andarama_CONFIG?: StandaloneConfig;
+    Andarama?: { mount: typeof mountViewer; instance?: ReturnType<typeof mountViewer> };
   }
 }
 
-window.ULL360 = { mount: mountViewer };
+window.Andarama = { mount: mountViewer };
 
 
 async function boot(): Promise<void> {
-  const container = document.getElementById("ull360");
+  const container = document.getElementById("andarama");
   if (container == null) return;
-  const cfg: StandaloneConfig = window.ULL360_CONFIG ?? {};
+  const cfg: StandaloneConfig = window.Andarama_CONFIG ?? {};
   const tourUrl = cfg.tourUrl ?? container.dataset.tour;
   let tour = cfg.tour;
   if (tour == null && tourUrl != null) {
@@ -52,9 +52,9 @@ async function boot(): Promise<void> {
   }
   const params = new URLSearchParams(location.search);
   const liveRoom = params.get("live");
-  // La instancia queda accesible en window.ULL360.instance: los integradores
+  // La instancia queda accesible en window.Andarama.instance: los integradores
   // (y las pruebas) pueden pilotar el visor ya montado sin volver a montarlo.
-  window.ULL360!.instance = mountViewer({
+  window.Andarama!.instance = mountViewer({
     container,
     tour,
     baseUrl: cfg.baseUrl ?? container.dataset.base ?? baseFromTourUrl(tourUrl),

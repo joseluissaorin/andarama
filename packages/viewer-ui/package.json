@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/viewer-ui",
+  "name": "@andarama/viewer-ui",
   "version": "0.1.0",
-  "description": "Skin del visor ULL360: componentes de interfaz framework-agnostic",
+  "description": "Skin del visor Andarama: componentes de interfaz framework-agnostic",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -23,8 +23,8 @@
   },
   "dependencies": {
     "@google/model-viewer": "^4.0.0",
-    "@ull360/schema": "workspace:*",
-    "@ull360/viewer": "workspace:*",
+    "@andarama/schema": "workspace:*",
+    "@andarama/viewer": "workspace:*",
     "leaflet": "^1.9.4",
     "lucide": "^1.31.0",
     "pdfjs-dist": "^4.10.38",

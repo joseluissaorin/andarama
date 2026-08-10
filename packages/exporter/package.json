@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/exporter",
+  "name": "@andarama/exporter",
   "version": "0.1.0",
-  "description": "Generador de paquetes estaticos de ULL360: ZIP, single-file, SCORM, kiosko, PWA",
+  "description": "Generador de paquetes estaticos de Andarama: ZIP, single-file, SCORM, kiosko, PWA",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,7 +16,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ull360/schema": "workspace:*"
+    "@andarama/schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

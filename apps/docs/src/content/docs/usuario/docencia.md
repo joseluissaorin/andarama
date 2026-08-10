@@ -12,7 +12,7 @@ title: "Docencia: quiz, LTI y SCORM"
 
 ## LTI 1.3 (Aula Virtual / Moodle)
 
-ULL360 es una herramienta LTI 1.3 Advantage con **Deep Linking** (el docente elige el tour desde Moodle) y **Assignment and Grade Services** (la puntuación del quiz vuelve al libro de calificaciones).
+Andarama es una herramienta LTI 1.3 Advantage con **Deep Linking** (el docente elige el tour desde Moodle) y **Assignment and Grade Services** (la puntuación del quiz vuelve al libro de calificaciones).
 
 Configuración (administrador de la instancia, panel Administración, pestaña LTI):
 
@@ -21,7 +21,7 @@ Configuración (administrador de la instancia, panel Administración, pestaña L
    - **Redirection URI**: `https://tu-instancia/api/v1/lti/launch`
    - **JWKS URL**: `https://tu-instancia/api/v1/lti/jwks`
    - Servicios: activar IMS LTI Assignment and Grade Services y Deep Linking.
-2. En ULL360: registra la plataforma con el Issuer de Moodle, Client ID, Auth URL (`/mod/lti/auth.php`), Token URL (`/mod/lti/token.php`) y JWKS (`/mod/lti/certs.php`).
+2. En Andarama: registra la plataforma con el Issuer de Moodle, Client ID, Auth URL (`/mod/lti/auth.php`), Token URL (`/mod/lti/token.php`) y JWKS (`/mod/lti/certs.php`).
 3. El docente añade una actividad de herramienta externa y selecciona el tour vía Deep Linking (o fija `custom.tour = slug`).
 
 Cuando el alumnado completa el quiz dentro del tour lanzado desde Moodle, la puntuación se envía automáticamente vía AGS.

@@ -5,11 +5,11 @@ describe("cascada de valores por defecto", () => {
   it("la organización manda sobre la instancia", () => {
     const s = resolveNewTourSettings({
       instanceLangs: ["es", "en"],
-      org: { ui: { theme: { base: "ull", primaryColor: "#5c068c" } } },
+      org: { ui: { theme: { base: "anda", primaryColor: "#f59e00" } } },
       user: {},
       explicit: {},
     });
-    expect((s.ui as any).theme.primaryColor).toBe("#5c068c");
+    expect((s.ui as any).theme.primaryColor).toBe("#f59e00");
     expect(s.langs).toEqual(["es", "en"]);
   });
 
@@ -27,12 +27,12 @@ describe("cascada de valores por defecto", () => {
   it("la plantilla aporta su configuración sin perder la herencia previa", () => {
     const s = resolveNewTourSettings({
       instanceLangs: ["es"],
-      org: { ui: { theme: { base: "ull" }, compass: true } },
+      org: { ui: { theme: { base: "anda" }, compass: true } },
       user: {},
       template: { ui: { theme: { primaryColor: "#123456" } } },
       explicit: {},
     });
-    expect((s.ui as any).theme.base).toBe("ull");
+    expect((s.ui as any).theme.base).toBe("anda");
     expect((s.ui as any).theme.primaryColor).toBe("#123456");
     expect((s.ui as any).compass).toBe(true);
   });
@@ -42,7 +42,7 @@ describe("cascada de valores por defecto", () => {
   });
 
   it("un cambio de la organización llega a los borradores que no lo personalizaron", () => {
-    const tour: Record<string, unknown> = { ui: { theme: { base: "ull" } } };
+    const tour: Record<string, unknown> = { ui: { theme: { base: "anda" } } };
     const next = propagateOrgDefaults(tour, { ui: { theme: { base: "dark" } } }, ["ui"]);
     expect((next.ui as any).theme.base).toBe("dark");
   });

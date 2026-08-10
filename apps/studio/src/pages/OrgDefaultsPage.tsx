@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, Save } from "lucide-react";
-import { Button, Field, Input, Select, Spinner, Switch, useToast } from "@ull360/ui";
+import { Button, Field, Input, Select, Spinner, Switch, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
@@ -76,16 +76,16 @@ export function OrgDefaultsPage(): React.ReactNode {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ull-primary-soft)] text-[var(--ull-primary)]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]">
           <Building2 className="h-5 w-5" />
         </span>
         <div>
           <h1 className="text-xl font-bold">{t("org_defaults")}</h1>
-          <p className="text-[13px] text-[var(--ull-text-dim)]">{t("org_defaults_intro")}</p>
+          <p className="text-[13px] text-[var(--anda-text-dim)]">{t("org_defaults_intro")}</p>
         </div>
       </div>
 
-      <section className="space-y-4 rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="text-[15px] font-semibold">{t("languages")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t("default_lang")} htmlFor="od-lang">
@@ -114,16 +114,16 @@ export function OrgDefaultsPage(): React.ReactNode {
         </Field>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="text-[15px] font-semibold">{t("theme")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label={t("theme")} htmlFor="od-base">
             <Select
               id="od-base"
-              value={theme.base ?? "ull"}
+              value={theme.base === "ull" ? "anda" : theme.base ?? "anda"}
               onChange={(e) => patch((d) => { d.ui = { ...d.ui, theme: { ...d.ui?.theme, base: e.target.value } }; })}
             >
-              <option value="ull">ULL</option>
+              <option value="anda">Andarama</option>
               <option value="dark">Oscuro</option>
               <option value="light">Claro</option>
               <option value="auto">Auto</option>
@@ -133,7 +133,7 @@ export function OrgDefaultsPage(): React.ReactNode {
             <Input
               id="od-color"
               value={theme.primaryColor ?? ""}
-              placeholder="#5c068c"
+              placeholder="#f59e00"
               onChange={(e) => patch((d) => { d.ui = { ...d.ui, theme: { ...d.ui?.theme, primaryColor: e.target.value || undefined } }; })}
             />
           </Field>
@@ -141,7 +141,7 @@ export function OrgDefaultsPage(): React.ReactNode {
             <Input
               id="od-font"
               value={theme.fontFamily ?? ""}
-              placeholder="Argentum Sans"
+              placeholder="Baloo 2"
               onChange={(e) => patch((d) => { d.ui = { ...d.ui, theme: { ...d.ui?.theme, fontFamily: e.target.value || undefined } }; })}
             />
           </Field>
@@ -160,7 +160,7 @@ export function OrgDefaultsPage(): React.ReactNode {
         </Field>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="space-y-4 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="text-[15px] font-semibold">{t("vr_settings")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t("vr_hotspots_mode")} htmlFor="od-vr">
@@ -195,7 +195,7 @@ export function OrgDefaultsPage(): React.ReactNode {
         <Button onClick={() => void save()} loading={saving}>
           <Save className="h-4 w-4" /> {t("save")}
         </Button>
-        <p className="text-xs text-[var(--ull-text-dim)]">{t("defaults_propagation_note")}</p>
+        <p className="text-xs text-[var(--anda-text-dim)]">{t("defaults_propagation_note")}</p>
       </div>
     </div>
   );

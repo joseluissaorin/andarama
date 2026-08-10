@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { and, eq, gt } from "drizzle-orm";
-import { apiTokens, sessions, users } from "@ull360/db";
+import { apiTokens, sessions, users } from "@andarama/db";
 import type { AppEnv, AuthState, Db } from "./context.js";
 import { newToken, nowMs, parseJson, sha256Hex } from "./util.js";
 import { unauthorized, forbidden } from "./errors.js";
@@ -58,7 +58,7 @@ export async function destroySession(c: Context<AppEnv>): Promise<void> {
 export async function resolveAuth(c: Context<AppEnv>): Promise<AuthState | null> {
   const db = c.get("db");
   const bearer = c.req.header("authorization");
-  if (bearer != null && bearer.startsWith("Bearer ull360_")) {
+  if (bearer != null && bearer.startsWith("Bearer andarama_")) {
     const token = bearer.slice("Bearer ".length);
     const hash = await sha256Hex(token);
     const rows = await db.select().from(apiTokens).where(eq(apiTokens.hash, hash)).limit(1);

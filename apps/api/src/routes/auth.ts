@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
-import { emailTokens, orgMembers, orgs, users } from "@ull360/db";
+import { emailTokens, orgMembers, orgs, users } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound, unauthorized } from "../lib/errors.js";
 import { newId, newToken, nowMs, sha256Hex, slugify, dailyIpHash } from "../lib/util.js";
@@ -94,8 +94,8 @@ export function authRoutes(): Hono<AppEnv> {
       c.get("runtime").deferred(
         runtime.email.send({
           to: emailNorm,
-          subject: "Verifica tu cuenta de ULL360",
-          text: `Hola ${body.name}:\n\nConfirma tu cuenta de ULL360 abriendo este enlace:\n${url}\n\nSi no has creado esta cuenta, ignora este mensaje.`,
+          subject: "Verifica tu cuenta de Andarama",
+          text: `Hola ${body.name}:\n\nConfirma tu cuenta de Andarama abriendo este enlace:\n${url}\n\nSi no has creado esta cuenta, ignora este mensaje.`,
         }),
       );
     }
@@ -174,7 +174,7 @@ export function authRoutes(): Hono<AppEnv> {
       runtime.deferred(
         runtime.email.send({
           to: user.email,
-          subject: "Restablecer contraseña de ULL360",
+          subject: "Restablecer contraseña de Andarama",
           text: `Para restablecer tu contraseña abre este enlace (caduca en 2 horas):\n${url}`,
         }),
       );
@@ -326,7 +326,7 @@ export function authRoutes(): Hono<AppEnv> {
     const auth = requireAuth(c);
     const secret = generateTotpSecret();
     await c.get("runtime").kv.put(`totp-setup:${auth.user.id}`, secret, { ttlSeconds: 600 });
-    return c.json({ secret, uri: totpUri(secret, auth.user.email, "ULL360") });
+    return c.json({ secret, uri: totpUri(secret, auth.user.email, "Andarama") });
   });
 
   r.post("/totp/confirm", async (c) => {

@@ -1,9 +1,9 @@
-// Infraestructura como codigo del despliegue Cloudflare de ULL360 (§5.7).
+// Infraestructura como codigo del despliegue Cloudflare de Andarama (§5.7).
 // El script bootstrap (pnpm deploy:cloudflare) crea los recursos y rellena
 // los IDs marcados; actualizar la instancia = volver a ejecutarlo.
 {
   "$schema": "https://unpkg.com/wrangler/config-schema.json",
-  "name": "ull360",
+  "name": "andarama",
   "main": "../../apps/api/src/worker.ts",
   "compatibility_date": "2025-01-15",
   "compatibility_flags": ["nodejs_compat"],
@@ -11,9 +11,29 @@
   "assets": {
     "directory": "../../apps/studio/dist-root",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/t/*", "/ingest/*", "/rt/*", "/sitemap.xml", "/robots.txt", "/"]
+    // "/studio", "/studio/", "/docs" y "/docs/*" pasan por el worker para que
+    // los subdominios (app., docs.) puedan redirigir a sus URL limpias; el
+    // manifiesto pasa porque en app.andarama.com se sirve el gemelo con
+    // ambito raiz. Los assets con hash se sirven directos.
+    "run_worker_first": [
+      "/api/*", "/t/*", "/ingest/*", "/rt/*", "/sitemap.xml", "/robots.txt", "/",
+      "/studio", "/studio/", "/studio/manifest.webmanifest", "/docs", "/docs/*", "/embed.js"
+    ]
   },
 
+  // Dominios de la instancia de referencia: la landing en el apex, la app y
+  // la documentacion en sus subdominios. Requiere la zona andarama.com en la
+  // misma cuenta; wrangler los aprovisiona al desplegar.
+  "routes": [
+    { "pattern": "andarama.com", "custom_domain": true },
+    { "pattern": "www.andarama.com", "custom_domain": true },
+    { "pattern": "app.andarama.com", "custom_domain": true },
+    { "pattern": "docs.andarama.com", "custom_domain": true }
+  ],
+
+  // Los nombres de los recursos (D1, R2, dataset) conservan el nombre
+  // historico del proyecto, ull360: los datos de la instancia viven ahi y
+  // renombrarlos exigiria migrarlos. Solo son identificadores internos.
   "d1_databases": [
     {
       "binding": "DB",
@@ -63,8 +83,8 @@
   // este bloque si detecta que la cuenta lo soporta; sin Queues, los
   // trabajos quedan en la tabla `jobs` para el contenedor de procesado.
   // "queues": {
-  //   "producers": [{ "binding": "QUEUE", "queue": "ull360-jobs" }],
-  //   "consumers": [{ "queue": "ull360-jobs", "max_batch_size": 5 }]
+  //   "producers": [{ "binding": "QUEUE", "queue": "anda-jobs" }],
+  //   "consumers": [{ "queue": "anda-jobs", "max_batch_size": 5 }]
   // },
 
   "triggers": {
@@ -74,7 +94,7 @@
   "vars": {
     "ANALYTICS_BACKEND": "d1",
     "ANALYTICS_DATASET": "ull360_events",
-    "PUBLIC_URL": "https://ull360.jlsf2005.workers.dev"
+    "PUBLIC_URL": "https://andarama.com"
   },
 
   "observability": {

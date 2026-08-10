@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@ull360/ui";
-import type { Tour } from "@ull360/schema";
-import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@ull360/exporter";
+import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
+import type { Tour } from "@andarama/schema";
+import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -106,7 +106,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           )}
           {visibility === "domains" && (
             <Field label={t("domains_hint")} htmlFor="pb-domains">
-              <Textarea id="pb-domains" rows={3} value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="campus.ull.es" />
+              <Textarea id="pb-domains" rows={3} value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="tours.museodelaciudad.es" />
             </Field>
           )}
           <Field label={t("custom_domain")} htmlFor="pb-cdom" hint={t("custom_domain_hint")}>
@@ -127,7 +127,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
       ) : (
         <div className="space-y-3">
           <p className="text-sm">{t("publish_url")}:</p>
-          <a href={result.url} target="_blank" rel="noopener noreferrer" className="block break-all rounded-lg bg-[var(--ull-surface-2)] p-3 text-sm text-[var(--ull-primary)]">
+          <a href={result.url} target="_blank" rel="noopener noreferrer" className="block break-all rounded-lg bg-[var(--anda-surface-2)] p-3 text-sm text-[var(--anda-primary)]">
             {result.url}
           </a>
           {result.warnings.length > 0 && (
@@ -160,7 +160,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
   const embed = `<iframe src="${url}" style="width:100%;aspect-ratio:16/9;border:0;" allow="fullscreen; gyroscope; accelerometer; xr-spatial-tracking" allowfullscreen title="${project.title}"></iframe>`;
   const webComponent =
     project.publication != null
-      ? `<script src="${location.origin}/embed.js"></script>\n<ull360-tour slug="${project.publication.slug}" title="${project.title}"></ull360-tour>`
+      ? `<script src="${location.origin}/embed.js"></script>\n<anda-tour slug="${project.publication.slug}" title="${project.title}"></anda-tour>`
       : "";
 
   useEffect(() => {
@@ -203,7 +203,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
         {qr != null && (
           <Field label={t("qr_code")}>
             <div className="flex items-center gap-4">
-              <img src={qr} alt={`${t("qr_code")}: ${url}`} className="rounded-lg border border-[var(--ull-border)]" />
+              <img src={qr} alt={`${t("qr_code")}: ${url}`} className="rounded-lg border border-[var(--anda-border)]" />
               <a href={qr} download={`${project.slug}-qr.png`}>
                 <Button variant="outline">{t("export")}</Button>
               </a>
@@ -355,7 +355,7 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
           onCheckedChange={setSingle}
           label={t("export_single")}
         />
-        {hasMultires && <p className="-mt-2 pl-1 text-xs text-[var(--ull-text-dim)]">{t("export_single_multires")}</p>}
+        {hasMultires && <p className="-mt-2 pl-1 text-xs text-[var(--anda-text-dim)]">{t("export_single_multires")}</p>}
         <Field label={t("export_scorm")} htmlFor="ex-scorm">
           <Select id="ex-scorm" value={scorm} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
             <option value="">-</option>
@@ -364,8 +364,8 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
           </Select>
         </Field>
         <Switch id="ex-kiosk" checked={kiosk} onCheckedChange={setKiosk} label={t("export_kiosk")} />
-        <p className="rounded-lg bg-[var(--ull-surface-2)] p-3 text-xs text-[var(--ull-text-dim)]">{t("export_vr_note")}</p>
-        {progress != null && <p className="text-sm text-[var(--ull-text-dim)]">{progress}</p>}
+        <p className="rounded-lg bg-[var(--anda-surface-2)] p-3 text-xs text-[var(--anda-text-dim)]">{t("export_vr_note")}</p>
+        {progress != null && <p className="text-sm text-[var(--anda-text-dim)]">{progress}</p>}
       </div>
     </Dialog>
   );
@@ -393,9 +393,9 @@ export function LiveDialog({ open, onClose, project }: { open: boolean; onClose:
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()} title={t("live_tour")}>
       <div className="space-y-4">
-        <p className="text-sm text-[var(--ull-text-dim)]">{t("live_note")}</p>
+        <p className="text-sm text-[var(--anda-text-dim)]">{t("live_note")}</p>
         {base == null ? (
-          <p className="text-sm text-[var(--ull-danger)]">{t("publish")} primero.</p>
+          <p className="text-sm text-[var(--anda-danger)]">{t("publish")} primero.</p>
         ) : room == null ? (
           <Button onClick={() => void create()}>{t("live_create")}</Button>
         ) : (

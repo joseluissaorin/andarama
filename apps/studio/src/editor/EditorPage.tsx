@@ -17,7 +17,7 @@ import {
   Undo2,
   UploadCloud,
 } from "lucide-react";
-import { Badge, Button, Spinner, Tooltip, useToast } from "@ull360/ui";
+import { Badge, Button, Spinner, Tooltip, useToast } from "@andarama/ui";
 import { useAuth, useEditor, type EditorSnapshot } from "../stores";
 import { useT } from "../i18n";
 import { loadSnapshot, syncSnapshot } from "./editorApi";
@@ -229,22 +229,22 @@ export function EditorPage(): React.ReactNode {
   ];
 
   return (
-    <div className="flex h-full flex-col bg-[var(--ull-bg)]">
-      <header className="flex items-center gap-2 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-2">
+    <div className="flex h-full flex-col bg-[var(--anda-bg)]">
+      <header className="flex items-center gap-2 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-2">
         <Tooltip content={t("projects")}>
           <Button variant="ghost" size="icon" aria-label={t("projects")} onClick={() => void navigate({ to: "/" })}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Tooltip>
         <h1 className="max-w-64 truncate text-[15px] font-semibold">{project.title}</h1>
-        <span className="text-xs text-[var(--ull-text-dim)]">
+        <span className="text-xs text-[var(--anda-text-dim)]">
           {editor.saving === "saving" ? t("saving") : editor.saving === "error" ? t("error") : editor.dirty ? "..." : t("saved")}
         </span>
         {others.length > 0 && (
           <div className="flex items-center gap-1" aria-label="Personas editando">
             {others.map((u) => (
               <Tooltip key={u.connectionId} content={`${u.name} (${t("presence_editing")})`}>
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--ull-accent)] text-[11px] font-bold text-white">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--anda-accent)] text-[11px] font-bold text-white">
                   {u.name.slice(0, 1).toUpperCase()}
                 </span>
               </Tooltip>
@@ -289,7 +289,7 @@ export function EditorPage(): React.ReactNode {
         )}
       </header>
 
-      <nav className="flex gap-1 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5" aria-label="Vistas del editor">
+      <nav className="flex gap-1 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5" aria-label="Vistas del editor">
         {TABS.map(({ id, icon, label }) => (
           <button
             key={id}
@@ -297,8 +297,8 @@ export function EditorPage(): React.ReactNode {
             onClick={() => setTab(id)}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] transition-colors ${
               tab === id
-                ? "bg-[var(--ull-primary-soft)] font-semibold text-[var(--ull-primary)]"
-                : "text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)] hover:text-[var(--ull-text)]"
+                ? "bg-[var(--anda-primary-soft)] font-semibold text-[var(--anda-primary)]"
+                : "text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)] hover:text-[var(--anda-text)]"
             }`}
           >
             {icon}

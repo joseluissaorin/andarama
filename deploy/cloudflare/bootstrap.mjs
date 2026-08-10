@@ -128,7 +128,7 @@ rl.close();
 // ---------------------------------------------------------------------------
 log("Compilando paquetes y Studio");
 execFileSync("pnpm", ["build:packages"], { cwd: root, stdio: "inherit" });
-execFileSync("pnpm", ["--filter", "@ull360/studio", "build"], { cwd: root, stdio: "inherit" });
+execFileSync("pnpm", ["--filter", "@andarama/studio", "build"], { cwd: root, stdio: "inherit" });
 
 log("Desplegando Worker");
 wrangler(["deploy", "-c", configPath]);

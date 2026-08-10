@@ -1,7 +1,7 @@
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import type * as schema from "@ull360/db";
-import type { PlatformRuntime } from "@ull360/adapters";
-import type { users } from "@ull360/db";
+import type * as schema from "@andarama/db";
+import type { PlatformRuntime } from "@andarama/adapters";
+import type { users } from "@andarama/db";
 
 /**
  * Tipos del contexto de la aplicacion. La API es identica en Cloudflare y

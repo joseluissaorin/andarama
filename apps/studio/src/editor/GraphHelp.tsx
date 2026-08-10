@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Keyboard, X } from "lucide-react";
-import { Button } from "@ull360/ui";
+import { Button } from "@andarama/ui";
 import { useT } from "../i18n";
 
 /**
@@ -18,7 +18,7 @@ interface Shortcut {
 
 function Key({ children }: { children: React.ReactNode }): React.ReactNode {
   return (
-    <kbd className="rounded-md border border-[var(--ull-border)] bg-[var(--ull-surface-2)] px-1.5 py-0.5 font-mono text-[11px] font-semibold shadow-sm">
+    <kbd className="rounded-md border border-[var(--anda-border)] bg-[var(--anda-surface-2)] px-1.5 py-0.5 font-mono text-[11px] font-semibold shadow-sm">
       {children}
     </kbd>
   );
@@ -119,9 +119,9 @@ export function GraphHelp({ mode }: { mode: "scenes" | "plan" | "geo" | "autopil
       {open && (
         <>
           <button type="button" aria-label={t("close")} className="fixed inset-0 z-30 cursor-default" onClick={() => setOpen(false)} />
-          <div className="absolute right-3 top-11 z-40 max-h-[70vh] w-[min(34rem,92vw)] overflow-y-auto rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4 shadow-[var(--ull-shadow-lg)]">
+          <div className="absolute right-3 top-11 z-40 max-h-[70vh] w-[min(34rem,92vw)] overflow-y-auto rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4 shadow-[var(--anda-shadow-lg)]">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("shortcuts")}</h3>
+              <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("shortcuts")}</h3>
               <Button size="icon" variant="ghost" className="h-7 w-7" aria-label={t("close")} onClick={() => setOpen(false)}>
                 <X className="h-4 w-4" />
               </Button>
@@ -129,14 +129,14 @@ export function GraphHelp({ mode }: { mode: "scenes" | "plan" | "geo" | "autopil
             <div className="grid gap-4 sm:grid-cols-2">
               {groups.map((group) => (
                 <section key={group.title}>
-                  <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--ull-primary)]">{group.title}</h4>
+                  <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-primary)]">{group.title}</h4>
                   <ul className="space-y-1">
                     {group.items.map((item) => (
                       <li key={item.what} className="flex items-start gap-2 text-[13px]">
                         <span className="flex shrink-0 items-center gap-0.5 pt-0.5">
                           {item.keys.map((k, i) =>
                             k === "+" ? (
-                              <span key={i} className="text-[var(--ull-text-dim)]">
+                              <span key={i} className="text-[var(--anda-text-dim)]">
                                 +
                               </span>
                             ) : (
@@ -144,7 +144,7 @@ export function GraphHelp({ mode }: { mode: "scenes" | "plan" | "geo" | "autopil
                             ),
                           )}
                         </span>
-                        <span className="text-[var(--ull-text-dim)]">{item.what}</span>
+                        <span className="text-[var(--anda-text-dim)]">{item.what}</span>
                       </li>
                     ))}
                   </ul>

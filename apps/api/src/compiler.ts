@@ -6,9 +6,9 @@ import {
   projects,
   scenes as scenesTable,
   translations as translationsTable,
-} from "@ull360/db";
-import type { Hotspot, Scene, SceneSource, Tour } from "@ull360/schema";
-import { TOUR_SCHEMA_URL, TOUR_SCHEMA_VERSION, validateTour } from "@ull360/schema";
+} from "@andarama/db";
+import type { Hotspot, Scene, SceneSource, Tour } from "@andarama/schema";
+import { TOUR_SCHEMA_URL, TOUR_SCHEMA_VERSION, validateTour } from "@andarama/schema";
 import type { Db } from "./lib/context.js";
 import { notFound } from "./lib/errors.js";
 import { parseJson } from "./lib/util.js";

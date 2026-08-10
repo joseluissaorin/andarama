@@ -35,13 +35,13 @@ Tras publicar obtienes: URL pública con **deep links** (`#s=escena&y=120&p=-5&f
 
 ```js
 // controlar el visor desde la página que lo embebe
-iframe.contentWindow.postMessage({ ull360: "goTo", scene: "aula" }, "*");
-iframe.contentWindow.postMessage({ ull360: "setView", view: { yaw: 1.2 } }, "*");
-iframe.contentWindow.postMessage({ ull360: "setLang", lang: "en" }, "*");
-iframe.contentWindow.postMessage({ ull360: "getState" }, "*");
+iframe.contentWindow.postMessage({ andarama: "goTo", scene: "aula" }, "*");
+iframe.contentWindow.postMessage({ andarama: "setView", view: { yaw: 1.2 } }, "*");
+iframe.contentWindow.postMessage({ andarama: "setLang", lang: "en" }, "*");
+iframe.contentWindow.postMessage({ andarama: "getState" }, "*");
 // escuchar eventos
 addEventListener("message", (e) => {
-  if (e.data?.ull360 === "sceneChange") console.log(e.data.scene);
+  if (e.data?.andarama === "sceneChange") console.log(e.data.scene);
 });
 ```
 
@@ -55,7 +55,7 @@ con una vista previa de cómo quedará:
 | --- | --- |
 | Título de la tarjeta | Si se deja vacío, el título del tour |
 | Texto de la tarjeta | Dos líneas: las redes recortan |
-| Nombre del sitio | La institución («Universidad de La Laguna») |
+| Nombre del sitio | La organización («Museo de la Ciudad») |
 | Imagen | 1200 × 630 px. Sin ella, casi ninguna red muestra tarjeta grande |
 | Texto alternativo | Accesibilidad de esa imagen |
 | Tipo de tarjeta | Imagen grande o pequeña (X/Twitter) |

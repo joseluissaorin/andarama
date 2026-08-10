@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, ChevronDown, FolderOpen, Images, Search, UploadCloud } from "lucide-react";
-import { Button, Input, Select, Spinner, useToast } from "@ull360/ui";
+import { Button, Input, Select, Spinner, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useT } from "../i18n";
 import { uploadMedia, type UploadProgress } from "../upload";
@@ -32,7 +32,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   const toast = useToast();
   const queryClient = useQueryClient();
   // Abierto de serie: el panel existe justamente para no tener que buscarlo.
-  const [open, setOpen] = useState(() => localStorage.getItem("ull360.mediaDock") !== "off");
+  const [open, setOpen] = useState(() => localStorage.getItem("andarama.mediaDock") !== "off");
   const [scope, setScope] = useState<"tour" | "all">("tour");
   const [folder, setFolder] = useState("");
   const [search, setSearch] = useState("");
@@ -68,7 +68,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   }, [items]);
 
   useEffect(() => {
-    localStorage.setItem("ull360.mediaDock", open ? "on" : "off");
+    localStorage.setItem("andarama.mediaDock", open ? "on" : "off");
   }, [open]);
 
   /** Lo subido desde el editor pertenece a este tour: no hay que ir a buscarlo. */
@@ -96,7 +96,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 border-t border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5 text-[13px] font-medium text-[var(--ull-text-dim)] hover:text-[var(--ull-text)]"
+        className="flex items-center gap-2 border-t border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5 text-[13px] font-medium text-[var(--anda-text-dim)] hover:text-[var(--anda-text)]"
       >
         <Images className="h-4 w-4" />
         {t("media_dock")}
@@ -105,13 +105,13 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   }
 
   return (
-    <section className="flex h-56 flex-col border-t border-[var(--ull-border)] bg-[var(--ull-surface)]">
+    <section className="flex h-56 flex-col border-t border-[var(--anda-border)] bg-[var(--anda-surface)]">
       <header className="flex items-center gap-2 px-3 py-1.5">
-        <Images className="h-4 w-4 text-[var(--ull-primary)]" />
+        <Images className="h-4 w-4 text-[var(--anda-primary)]" />
         <h2 className="text-[13px] font-semibold">{t("media_dock")}</h2>
 
         {/* Por defecto, solo lo de este tour */}
-        <div className="ml-2 flex rounded-lg bg-[var(--ull-surface-2)] p-0.5">
+        <div className="ml-2 flex rounded-lg bg-[var(--anda-surface-2)] p-0.5">
           {(["tour", "all"] as const).map((s) => (
             <button
               key={s}
@@ -121,7 +121,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
                 setFolder("");
               }}
               className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${
-                scope === s ? "bg-[var(--ull-surface)] shadow-sm" : "text-[var(--ull-text-dim)]"
+                scope === s ? "bg-[var(--anda-surface)] shadow-sm" : "text-[var(--anda-text-dim)]"
               }`}
             >
               {s === "tour" ? t("dock_this_tour") : t("dock_all_media")}
@@ -141,7 +141,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
         )}
 
         <div className="relative max-w-44 flex-1">
-          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--ull-text-dim)]" />
+          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--anda-text-dim)]" />
           <Input
             className="h-8 pl-7 text-[13px]"
             placeholder={t("search")}
@@ -184,13 +184,13 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
           {Object.entries(uploads).map(([key, u]) => (
             <div key={key} className="mb-1 flex items-center gap-2 text-xs">
               <span className="max-w-40 truncate">{u.name}</span>
-              <div className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--ull-surface-2)]">
+              <div className="h-1 flex-1 overflow-hidden rounded-full bg-[var(--anda-surface-2)]">
                 <div
-                  className={`h-full rounded-full ${u.phase === "error" ? "bg-[var(--ull-danger)]" : "bg-[var(--ull-primary)]"}`}
+                  className={`h-full rounded-full ${u.phase === "error" ? "bg-[var(--anda-danger)]" : "bg-[var(--anda-primary)]"}`}
                   style={{ width: `${u.percent}%` }}
                 />
               </div>
-              <span className="text-[var(--ull-text-dim)]">{u.phase === "error" ? t("error") : t(u.phase === "done" ? "ready" : "uploading")}</span>
+              <span className="text-[var(--anda-text-dim)]">{u.phase === "error" ? t("error") : t(u.phase === "done" ? "ready" : "uploading")}</span>
             </div>
           ))}
         </div>
@@ -211,7 +211,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
             <Spinner />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-1 text-[13px] text-[var(--ull-text-dim)]">
+          <div className="flex h-full flex-col items-center justify-center gap-1 text-[13px] text-[var(--anda-text-dim)]">
             <FolderOpen className="h-5 w-5" />
             {scope === "tour" ? t("dock_empty_tour") : t("no_media")}
           </div>
@@ -229,7 +229,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
                   if (isPano(m)) setPreview(m);
                 }}
                 title={m.filename}
-                className="group relative flex w-36 shrink-0 cursor-grab flex-col overflow-hidden rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface-2)]"
+                className="group relative flex w-36 shrink-0 cursor-grab flex-col overflow-hidden rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)]"
               >
                 <div className="relative h-20 overflow-hidden">
                   {isPano(m) ? (
@@ -245,7 +245,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
         )}
       </div>
 
-      <p className="px-3 pb-2 text-[11px] text-[var(--ull-text-dim)]">{t("dock_hint")}</p>
+      <p className="px-3 pb-2 text-[11px] text-[var(--anda-text-dim)]">{t("dock_hint")}</p>
 
       <Pano360Dialog media={preview} onClose={() => setPreview(null)} />
       <ImportWizard

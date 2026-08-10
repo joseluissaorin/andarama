@@ -1,5 +1,5 @@
 /**
- * Referencia OpenAPI 3.1 de la API de ULL360 (§5.6). Resumen navegable de
+ * Referencia OpenAPI 3.1 de la API de Andarama (§5.6). Resumen navegable de
  * todas las rutas; el detalle de cada esquema vive en los validadores zod.
  */
 export function openApiSpec(publicUrl: string): Record<string, unknown> {
@@ -12,10 +12,10 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
   return {
     openapi: "3.1.0",
     info: {
-      title: "ULL360 API",
+      title: "Andarama API",
       version: "1.0.0",
       description:
-        "API REST de ULL360. Autenticación por sesión (cookie) o token personal `Authorization: Bearer ull360_...` con scopes. Errores en formato RFC 9457 (application/problem+json). Mutaciones con sesión requieren cabecera X-CSRF-Token (doble token).",
+        "API REST de Andarama. Autenticación por sesión (cookie) o token personal `Authorization: Bearer andarama_...` con scopes. Errores en formato RFC 9457 (application/problem+json). Mutaciones con sesión requieren cabecera X-CSRF-Token (doble token).",
       license: { name: "EUPL-1.2", url: "https://joinup.ec.europa.eu/collection/eupl" },
     },
     servers: [{ url: `${publicUrl}/api/v1` }],
@@ -69,8 +69,8 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/projects/{id}/versions/{n}/tour": { get: p("tour.json de una version (diff)", "publish") },
       "/projects/{id}/versions/{n}/restore": { post: p("Republicar version anterior", "publish") },
       "/projects/{id}/export": { post: p("Parámetros de export: tour compilado + lista de assets (el ZIP se arma en el navegador)", "publish") },
-      "/projects/{id}/export.ull360": { get: p("Exportar proyecto portable .ull360", "publish") },
-      "/projects/import.ull360": { post: p("Importar proyecto .ull360", "publish") },
+      "/projects/{id}/export.andarama": { get: p("Exportar proyecto portable .andarama", "publish") },
+      "/projects/import.andarama": { post: p("Importar proyecto .andarama", "publish") },
       "/projects/{id}/analytics": { get: p("Analítica agregada (embudo, hotspots, heatmap de orientaciones)", "analytics") },
       "/projects/{id}/submissions.csv": { get: p("Export CSV de formularios", "forms") },
       "/projects/{id}/quiz-results.csv": { get: p("Export CSV de resultados de quiz", "forms") },
@@ -110,7 +110,7 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       },
       securitySchemes: {
         session: { type: "apiKey", in: "cookie", name: "u3s" },
-        token: { type: "http", scheme: "bearer", description: "Token personal ull360_* con scopes" },
+        token: { type: "http", scheme: "bearer", description: "Token personal andarama_* con scopes" },
       },
     },
   };

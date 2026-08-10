@@ -9,8 +9,8 @@ import type {
   Tour,
   TransitionSpec,
   ViewParams,
-} from "@ull360/schema";
-import { DEFAULT_TRANSITION, DEFAULT_VIEW, migrateTour, resolveL10n } from "@ull360/schema";
+} from "@andarama/schema";
+import { DEFAULT_TRANSITION, DEFAULT_VIEW, migrateTour, resolveL10n } from "@andarama/schema";
 import type {
   QuizStateEvent,
   TourViewerOptions,
@@ -89,7 +89,7 @@ export class TourViewer {
     this.lang = options.lang ?? link.lang ?? this.tour.meta.defaultLang;
     if (!this.tour.meta.langs.includes(this.lang)) this.lang = this.tour.meta.defaultLang;
 
-    this.container.classList.add("ull360-viewer");
+    this.container.classList.add("anda-viewer");
     if (getComputedStyle(this.container).position === "static") this.container.style.position = "relative";
 
     this.viewer = new Marzipano.Viewer(this.container, {
@@ -253,7 +253,7 @@ export class TourViewer {
       try {
         (fn as (p: ViewerEventMap[K]) => void)(payload);
       } catch (err) {
-        console.error(`[ull360] listener de ${name} fallo:`, err);
+        console.error(`[andarama] listener de ${name} fallo:`, err);
       }
     }
   }
@@ -621,8 +621,8 @@ export class TourViewer {
     if (video == null) return;
     const src = entry.scene.source;
     if (src.kind !== "video") return;
-    if (video.dataset.ull360Init !== "1") {
-      video.dataset.ull360Init = "1";
+    if (video.dataset.andaramaInit !== "1") {
+      video.dataset.andaramaInit = "1";
       void this.attachVideoSource(video, src.hls, src.renditions);
       video.addEventListener("timeupdate", () => {
         entry.markers.updateVisibility(video.currentTime);
@@ -1046,7 +1046,7 @@ export class TourViewer {
     if (projection !== "rectilinear" && this.currentScene()?.source.kind === "flat") return;
     // Los hotspots se ocultan mientras la proyeccion esta activa (sus
     // posiciones de pantalla ya no corresponden a lo que se ve).
-    this.container.classList.toggle("ull360-projection-active", projection !== "rectilinear");
+    this.container.classList.toggle("anda-projection-active", projection !== "rectilinear");
     this.projectionPass.setProjection(projection, !this.reducedMotion);
   }
 
@@ -1177,10 +1177,10 @@ export class TourViewer {
       const avg = this.fpsWindow.reduce((a, b) => a + b, 0) / this.fpsWindow.length;
       if (avg < 40 && !this.degraded) {
         this.degraded = true;
-        this.container.classList.add("ull360-degraded");
+        this.container.classList.add("anda-degraded");
       } else if (avg > 55 && this.degraded) {
         this.degraded = false;
-        this.container.classList.remove("ull360-degraded");
+        this.container.classList.remove("anda-degraded");
       }
     }, 4000);
   }

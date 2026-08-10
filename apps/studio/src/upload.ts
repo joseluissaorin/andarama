@@ -1,4 +1,4 @@
-import { probeImage, tilePanorama, type DecodedSource } from "@ull360/tiler";
+import { probeImage, tilePanorama, type DecodedSource } from "@andarama/tiler";
 import { api, sha256Hex } from "./api";
 import { Pool, deviceConcurrency, pooled } from "./pool";
 

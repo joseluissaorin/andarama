@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Crosshair, DoorOpen, RotateCcw } from "lucide-react";
-import { Button, Spinner, Tooltip, useToast } from "@ull360/ui";
-import { mountViewer, type MountedSkin } from "@ull360/viewer-ui";
-import type { Tour } from "@ull360/schema";
+import { Button, Spinner, Tooltip, useToast } from "@andarama/ui";
+import { mountViewer, type MountedSkin } from "@andarama/viewer-ui";
+import type { Tour } from "@andarama/schema";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -100,9 +100,9 @@ export function PreviewView({ project, canEdit }: { project: ProjectInfo; canEdi
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5">
         <span className="text-[13px] font-semibold">{t("preview")}</span>
-        <span className="text-[13px] text-[var(--ull-text-dim)]">{t("preview_hint")}</span>
+        <span className="text-[13px] text-[var(--anda-text-dim)]">{t("preview_hint")}</span>
         <div className="flex-1" />
         {errores.length > 0 && (
           <Tooltip content={errores.map((i) => i.message).join(" · ")}>
@@ -121,7 +121,7 @@ export function PreviewView({ project, canEdit }: { project: ProjectInfo; canEdi
 
       <div className="relative min-h-0 flex-1">
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--ull-bg)]/70">
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-[var(--anda-bg)]/70">
             <Spinner />
           </div>
         )}
@@ -130,8 +130,8 @@ export function PreviewView({ project, canEdit }: { project: ProjectInfo; canEdi
 
       {/* La barra de llegada: se corrige lo que se acaba de ver mal */}
       {canEdit && llegada != null && (
-        <div className="flex flex-wrap items-center gap-2 border-t border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-2">
-          <DoorOpen className="h-4 w-4 shrink-0 text-[var(--ull-text-dim)]" />
+        <div className="flex flex-wrap items-center gap-2 border-t border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-2">
+          <DoorOpen className="h-4 w-4 shrink-0 text-[var(--anda-text-dim)]" />
           <span className="text-[13px]">
             {llegada.kind === "start"
               ? t("preview_here_start", { scene: tituloEscena })

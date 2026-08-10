@@ -1,4 +1,4 @@
-import type { AudioTrack, NarrationTrack, SceneAudio, SpatialAudioSource } from "@ull360/schema";
+import type { AudioTrack, NarrationTrack, SceneAudio, SpatialAudioSource } from "@andarama/schema";
 
 /**
  * Motor de audio del visor sobre Web Audio API:
@@ -29,7 +29,7 @@ export class AudioEngine {
     private resolveUrl: (base: string, url: string) => string,
     private langProvider: () => string,
   ) {
-    this.mutedFlag = typeof localStorage !== "undefined" && localStorage.getItem("ull360:muted") === "1";
+    this.mutedFlag = typeof localStorage !== "undefined" && localStorage.getItem("andarama:muted") === "1";
   }
 
   /** Debe llamarse en el primer gesto del usuario para desbloquear autoplay. */
@@ -53,7 +53,7 @@ export class AudioEngine {
   setMuted(muted: boolean): void {
     this.mutedFlag = muted;
     try {
-      localStorage.setItem("ull360:muted", muted ? "1" : "0");
+      localStorage.setItem("andarama:muted", muted ? "1" : "0");
     } catch {
       // almacenamiento no disponible (modo privado)
     }

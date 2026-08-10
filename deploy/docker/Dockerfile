@@ -1,4 +1,4 @@
-# Imagen unica de ULL360 self-host (§5.7): Node.js + SQLite + FS.
+# Imagen unica de Andarama self-host (§5.7): Node.js + SQLite + FS.
 # Un proceso, un volumen (/data), un puerto (8788).
 
 # ---------- build ----------
@@ -12,8 +12,8 @@ COPY apps ./apps
 COPY deploy ./deploy
 RUN pnpm install --frozen-lockfile=false
 RUN pnpm build:packages
-RUN pnpm --filter @ull360/studio build
-RUN pnpm --filter @ull360/api build:node
+RUN pnpm --filter @andarama/studio build
+RUN pnpm --filter @andarama/api build:node
 
 # ---------- runtime deps (solo modulos nativos/externos) ----------
 FROM node:22-bookworm-slim AS deps

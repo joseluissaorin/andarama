@@ -88,8 +88,11 @@ export function setupPwa(): void {
   if (import.meta.env.DEV) return;
 
   window.addEventListener("load", () => {
+    // En app.andarama.com el Studio vive en la raíz y el ámbito es "/";
+    // en /studio (workers.dev, self-host) se queda en su carpeta.
+    const enRaiz = !location.pathname.startsWith("/studio");
     void navigator.serviceWorker
-      .register("/studio/sw.js", { scope: "/studio/" })
+      .register("/studio/sw.js", { scope: enRaiz ? "/" : "/studio/" })
       .then((registration) => {
         const track = (worker: ServiceWorker | null): void => {
           if (worker == null) return;

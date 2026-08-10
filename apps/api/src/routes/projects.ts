@@ -9,7 +9,7 @@ import {
   scenes as scenesTable,
   translations as translationsTable,
   users,
-} from "@ull360/db";
+} from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
@@ -85,7 +85,7 @@ export function projectRoutes(): Hono<AppEnv> {
       .where(and(eq(projects.orgId, body.orgId), isNull(projects.deletedAt)));
     const org = await requireOrgRole(db, body.orgId, auth.user, "editor");
     void org;
-    const orgRow = (await db.select().from((await import("@ull360/db")).orgs).where(eq((await import("@ull360/db")).orgs.id, body.orgId)).limit(1))[0];
+    const orgRow = (await db.select().from((await import("@andarama/db")).orgs).where(eq((await import("@andarama/db")).orgs.id, body.orgId)).limit(1))[0];
     if (orgRow != null && count.length >= orgRow.quotaTours) {
       throw forbidden(`La organización ha alcanzado su cuota de ${orgRow.quotaTours} tours`);
     }

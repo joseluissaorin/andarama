@@ -1,5 +1,5 @@
 import { and, eq, gte, lte, sql } from "drizzle-orm";
-import { analyticsEvents } from "@ull360/db";
+import { analyticsEvents } from "@andarama/db";
 import type { AnalyticsAdapter, AnalyticsEvent, AnalyticsSummary } from "../types.js";
 
 /**

@@ -70,7 +70,7 @@ ${fileTags}
 }
 
 export function renderScormAdapter(version: ScormVersion, passingScore: number | null): string {
-  return `// Adaptador SCORM ${version} de ULL360: reporta finalizacion y puntuacion.
+  return `// Adaptador SCORM ${version} de Andarama: reporta finalizacion y puntuacion.
 (function () {
   "use strict";
   var IS_2004 = ${version === "2004" ? "true" : "false"};
@@ -119,7 +119,7 @@ export function renderScormAdapter(version: ScormVersion, passingScore: number |
   }
 
   var lastReported = "";
-  window.addEventListener("ull360:state", function (e) {
+  window.addEventListener("andarama:state", function (e) {
     if (!initialized) return;
     var s = e.detail;
     var completed = s.scenesVisited >= s.scenesTotal || (s.quiz.total > 0 && s.quiz.answered === s.quiz.total);

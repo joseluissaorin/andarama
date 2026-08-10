@@ -13,9 +13,9 @@ interface I18nState {
 }
 
 export const useI18nStore = create<I18nState>((set) => ({
-  lang: localStorage.getItem("ull360:studio-lang") ?? (navigator.language.startsWith("en") ? "en" : "es"),
+  lang: localStorage.getItem("andarama:studio-lang") ?? (navigator.language.startsWith("en") ? "en" : "es"),
   setLang: (lang) => {
-    localStorage.setItem("ull360:studio-lang", lang);
+    localStorage.setItem("andarama:studio-lang", lang);
     set({ lang });
   },
 }));

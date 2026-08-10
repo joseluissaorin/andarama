@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
-import { apiTokens } from "@ull360/db";
+import { apiTokens } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { newId, newToken, nowMs, sha256Hex } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
@@ -24,7 +24,7 @@ export function tokenRoutes(): Hono<AppEnv> {
     const body = z
       .object({ name: z.string().min(1).max(80), scopes: z.array(z.enum(SCOPES)).min(1) })
       .parse(await c.req.json());
-    const token = `ull360_${newToken(24)}`;
+    const token = `andarama_${newToken(24)}`;
     const id = newId();
     await c.get("db").insert(apiTokens).values({
       id,

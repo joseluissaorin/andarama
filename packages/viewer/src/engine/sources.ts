@@ -1,10 +1,10 @@
 import Marzipano from "marzipano";
-import type { EquirectSource, MultiresSource, Scene, ViewLimits } from "@ull360/schema";
+import type { EquirectSource, MultiresSource, Scene, ViewLimits } from "@andarama/schema";
 
 /**
  * Construccion de geometry/source/view de Marzipano a partir de la fuente
  * declarada en tour.json. El troceado usa el layout {base}/{z}/{f}/{y}/{x}.{ext}
- * generado por @ull360/tiler.
+ * generado por @andarama/tiler.
  */
 
 export interface BuiltScene {

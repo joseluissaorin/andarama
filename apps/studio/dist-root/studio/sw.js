@@ -10,24 +10,22 @@
  * componer el directorio desplegable, que es quien sabe los nombres con hash.
  */
 
-const VERSION = "0140ab791c4e";
+const VERSION = "dc2f5d7b9279";
 const PRECACHE = [
   "/studio/",
   "/studio/index.html",
   "/studio/manifest.webmanifest",
-  "/studio/assets/index-BKSZ2Il3.css",
-  "/studio/assets/index-C_Uz35lO.js",
-  "/studio/fonts/ArgentumSans-Bold.woff2",
-  "/studio/fonts/ArgentumSans-Light.woff2",
-  "/studio/fonts/ArgentumSans-Medium.woff2",
-  "/studio/fonts/ArgentumSans-Regular.woff2",
-  "/studio/fonts/ArgentumSans-SemiBold.woff2",
+  "/studio/assets/index-BGVCdYAi.js",
+  "/studio/assets/index-Bmqlj0dn.css",
+  "/studio/fonts/Baloo2-Variable.woff2",
+  "/studio/fonts/SpaceMono-Bold.woff2",
+  "/studio/fonts/SpaceMono-Regular.woff2",
   "/studio/icons/icon-192.png",
   "/studio/icons/icon-512.png",
   "/studio/icons/apple-touch-icon.png",
-  "/studio/logo-ull360.svg"
+  "/studio/logo-andarama.svg"
 ];
-const CACHE = `ull360-studio-${VERSION}`;
+const CACHE = `anda-studio-${VERSION}`;
 const SHELL = "/studio/index.html";
 
 self.addEventListener("install", (event) => {
@@ -46,7 +44,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       const names = await caches.keys();
-      await Promise.all(names.filter((n) => n.startsWith("ull360-studio-") && n !== CACHE).map((n) => caches.delete(n)));
+      await Promise.all(names.filter((n) => n.startsWith("anda-studio-") && n !== CACHE).map((n) => caches.delete(n)));
       await self.clients.claim();
     })(),
   );
@@ -66,6 +64,17 @@ function isOffLimits(url) {
   );
 }
 
+/* En app.andarama.com el Studio vive en la raíz y el ámbito del registro es
+   "/"; en workers.dev y el self-host, "/studio/". El propio ámbito dice en
+   qué mundo estamos, y con él se decide qué navegaciones son nuestras. */
+const RAIZ = !new URL(self.registration.scope).pathname.startsWith("/studio");
+
+function esNavegacionPropia(url) {
+  if (!RAIZ) return url.pathname.startsWith("/studio");
+  // En la raíz, todo es Studio salvo las otras secciones del mismo host
+  return !url.pathname.startsWith("/docs") && !url.pathname.startsWith("/viewer") && !url.pathname.startsWith("/landing");
+}
+
 /** Inmutable: nombre con hash o icono de la marca. */
 function isImmutable(url) {
   return url.pathname.startsWith("/studio/assets/") || url.pathname.startsWith("/studio/icons/") || url.pathname.startsWith("/studio/fonts/");
@@ -80,7 +89,7 @@ self.addEventListener("fetch", (event) => {
 
   // Navegación: primero la red, y si no hay, el armazón guardado
   if (request.mode === "navigate") {
-    if (!url.pathname.startsWith("/studio")) return;
+    if (!esNavegacionPropia(url)) return;
     event.respondWith(
       (async () => {
         try {

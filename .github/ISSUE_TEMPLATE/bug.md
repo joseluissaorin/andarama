@@ -20,7 +20,7 @@ labels: bug
 
 - Despliegue: Cloudflare / self-host (Docker) / desarrollo local
 - Navegador y versión:
-- Commit o versión de ULL360:
+- Commit o versión de Andarama:
 
 ## Capturas o registros
 

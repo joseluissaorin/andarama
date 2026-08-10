@@ -1,4 +1,4 @@
--- ULL360 esquema inicial. Dialecto SQLite (D1 y better-sqlite3).
+-- Andarama esquema inicial. Dialecto SQLite (D1 y better-sqlite3).
 
 CREATE TABLE users (
   id TEXT PRIMARY KEY,

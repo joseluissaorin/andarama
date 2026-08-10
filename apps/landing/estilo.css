@@ -1,0 +1,306 @@
+/*
+ * La portada de andarama.
+ *
+ * LocoRoco pasado por la estética Saorín: papel hueso (nunca blanco puro),
+ * dos tintas —amarillo y naranja— más la tinta de escribir, una sola cosa
+ * gigante y el resto en letra pequeña monoespaciada. La retícula es estricta;
+ * la transgresión son las criaturas que pasan andando por debajo del titular.
+ */
+
+@font-face {
+  font-family: "Baloo 2";
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/studio/fonts/Baloo2-Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Mono";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/studio/fonts/SpaceMono-Regular.woff2") format("woff2");
+}
+
+:root {
+  --papel: #f7f2e7;
+  --papel-2: #f5edda;
+  --tinta: #33260f;
+  --tinta-suave: #85764f;
+  --amarillo: #ffd900;
+  --naranja: #ff8a00;
+  --naranja-tinta: #e8501a;
+  --ambar: #f59e00;
+  --borde: #e8ddc4;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: "Baloo 2", system-ui, sans-serif;
+  line-height: 1.5;
+  /* Grano de papel: la huella del proceso, aunque sea en pantalla */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.06 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+.susurro {
+  font-family: "Space Mono", ui-monospace, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  color: var(--tinta-suave);
+}
+.susurro a { color: inherit; }
+
+.salto {
+  position: absolute;
+  left: -9999px;
+  background: var(--tinta);
+  color: var(--papel);
+  padding: 10px 16px;
+  border-radius: 10px;
+  z-index: 50;
+}
+.salto:focus { left: 16px; top: 12px; }
+
+/* ---------- cabecera ---------- */
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 22px 24px 0;
+}
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--tinta);
+  font-weight: 700;
+  font-size: 20px;
+}
+.marca img { border-radius: 9px; }
+.cabecera__nav { display: flex; align-items: center; gap: 18px; }
+.cabecera__nav > a:not(.btn) {
+  font-family: "Space Mono", monospace;
+  font-size: 13px;
+  color: var(--tinta);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.cabecera__nav > a:not(.btn):hover { border-bottom-color: var(--naranja); }
+
+/* ---------- botones ---------- */
+.btn {
+  display: inline-block;
+  background: var(--ambar);
+  color: var(--tinta);
+  font-weight: 700;
+  font-size: 17px;
+  text-decoration: none;
+  padding: 13px 26px;
+  border-radius: 999px;
+  box-shadow: 0 2px 0 var(--naranja-tinta);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 0 var(--naranja-tinta); }
+.btn:active { transform: translateY(0); box-shadow: 0 1px 0 var(--naranja-tinta); }
+.btn--chico { font-size: 14px; padding: 8px 18px; }
+.btn--fantasma {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--tinta);
+  color: var(--tinta);
+}
+.btn--fantasma:hover { box-shadow: inset 0 0 0 2px var(--tinta), 0 4px 0 var(--borde); }
+a:focus-visible, button:focus-visible {
+  outline: 3px solid var(--naranja);
+  outline-offset: 2px;
+}
+
+/* ---------- portada ---------- */
+.portada {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 60px 24px 0;
+  text-align: center;
+}
+.grito {
+  margin: 0;
+  font-size: clamp(88px, 17vw, 230px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  transform: rotate(-2deg);
+  /* Desregistro de imprenta: la misma palabra, una tinta detrás */
+  text-shadow: 5px 5px 0 var(--amarillo), 10px 10px 0 rgba(232, 80, 26, 0.35);
+}
+.subtitulo {
+  margin: 26px auto 0;
+  font-size: clamp(21px, 3.4vw, 32px);
+  font-weight: 700;
+  max-width: 720px;
+}
+.subtitulo em {
+  font-style: normal;
+  background: var(--amarillo);
+  border-radius: 8px;
+  padding: 0 8px;
+}
+.explica {
+  margin: 14px auto 0;
+  max-width: 560px;
+  font-size: 17px;
+  color: var(--tinta-suave);
+}
+.acciones {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+.portada .susurro { margin-top: 18px; }
+
+/* Las criaturas: andan de verdad, de un lado a otro */
+.paseo {
+  position: relative;
+  height: 150px;
+  margin-top: 40px;
+  overflow: hidden;
+}
+.suelo {
+  position: absolute;
+  bottom: 26px;
+  left: 0;
+  right: 0;
+  border-bottom: 3px solid var(--tinta);
+  opacity: 0.85;
+}
+.criatura {
+  position: absolute;
+  bottom: 24px;
+  left: -140px;
+  animation: pasear 26s linear infinite;
+}
+.criatura svg { display: block; width: 96px; height: 96px; animation: brincar 0.6s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+.criatura--1 { animation-delay: 0s; }
+.criatura--2 { animation-delay: -9s; }
+.criatura--2 svg { width: 64px; height: 64px; animation-duration: 0.5s; }
+.criatura--3 { animation-delay: -18s; }
+.criatura--3 svg { width: 78px; height: 78px; animation-duration: 0.55s; }
+@keyframes pasear {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 280px)); }
+}
+@keyframes brincar {
+  from { transform: scaleY(0.96) scaleX(1.02); }
+  to { transform: scaleY(1.04) scaleX(0.98) translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .criatura, .criatura svg { animation: none; }
+  .criatura--1 { left: 18%; }
+  .criatura--2 { left: 48%; }
+  .criatura--3 { left: 74%; }
+}
+
+/* ---------- secciones ---------- */
+main h2 {
+  font-size: clamp(30px, 4.5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+}
+
+.demo {
+  max-width: 1080px;
+  margin: 90px auto 0;
+  padding: 0 24px;
+  text-align: center;
+}
+.demo > p { max-width: 560px; margin: 0 auto; color: var(--tinta-suave); }
+.demo__marco {
+  margin-top: 26px;
+  border: 3px solid var(--tinta);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 10px 10px 0 var(--amarillo);
+  background: #201808;
+}
+.demo__marco iframe {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+.demo .susurro { margin-top: 14px; }
+
+.rasgos {
+  max-width: 1080px;
+  margin: 100px auto 0;
+  padding: 0 24px;
+}
+.rasgos__malla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.rasgos article {
+  background: var(--papel-2);
+  border: 2px solid var(--borde);
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+}
+.rasgos article:hover { border-color: var(--ambar); }
+.rasgos h3 { margin: 12px 0 6px; font-size: 19px; }
+.rasgos p { margin: 0; font-size: 14.5px; color: var(--tinta-suave); }
+.icono {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: var(--naranja-tinta);
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nombre {
+  max-width: 1080px;
+  margin: 100px auto 0;
+  padding: 0 24px;
+}
+.nombre__caja {
+  background: var(--naranja);
+  color: #fff8ec;
+  border-radius: 26px;
+  padding: 42px clamp(24px, 6vw, 64px);
+  transform: rotate(-0.6deg);
+}
+.nombre__caja h2 { color: #fff8ec; }
+.nombre__caja p { max-width: 640px; font-size: 17px; margin: 10px 0 0; }
+.nombre__caja em { font-style: italic; }
+.nombre__caja strong { background: var(--amarillo); color: var(--tinta); border-radius: 6px; padding: 0 6px; font-weight: 700; }
+.nombre__caja .susurro { color: rgba(255, 248, 236, 0.75); margin-top: 18px; }
+
+/* ---------- pie ---------- */
+.pie {
+  max-width: 1080px;
+  margin: 110px auto 0;
+  padding: 0 24px 46px;
+  text-align: center;
+}
+.pie__linea {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 17px;
+  border-top: 3px solid var(--tinta);
+  padding-top: 26px;
+}
+.pie__linea img { border-radius: 7px; }
+.pie .susurro { margin: 8px 0 0; }

@@ -1,4 +1,4 @@
-import type { ViewParams } from "@ull360/schema";
+import type { ViewParams } from "@andarama/schema";
 
 /**
  * Deep links: la URL refleja escena y orientacion

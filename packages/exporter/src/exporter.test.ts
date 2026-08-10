@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Tour } from "@ull360/schema";
+import type { Tour } from "@andarama/schema";
 import {
   buildZip,
   filterTourLangs,
@@ -44,7 +44,7 @@ describe("ZipWriter", () => {
       { name: "index.html", data: new TextEncoder().encode("<html>hola</html>") },
       { name: "dir/tour.json", data: new TextEncoder().encode('{"version":1}') },
     ]);
-    const dir = mkdtempSync(join(tmpdir(), "ull360-zip-"));
+    const dir = mkdtempSync(join(tmpdir(), "anda-zip-"));
     const zipPath = join(dir, "test.zip");
     writeFileSync(zipPath, zip);
     const listing = execFileSync("unzip", ["-l", zipPath]).toString();
@@ -113,7 +113,7 @@ describe("runExport", () => {
       writer,
     );
     expect(result.files).toBeGreaterThan(5);
-    const dir = mkdtempSync(join(tmpdir(), "ull360-export-"));
+    const dir = mkdtempSync(join(tmpdir(), "anda-export-"));
     const zipPath = join(dir, "export.zip");
     const total = chunks.reduce((a, c) => a + c.length, 0);
     const buf = new Uint8Array(total);

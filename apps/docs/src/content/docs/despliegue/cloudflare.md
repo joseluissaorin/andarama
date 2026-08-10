@@ -12,7 +12,7 @@ Objetivo: **de cero a instancia funcionando en menos de 10 minutos** con una cue
 ## Un comando
 
 ```bash
-git clone https://github.com/joseluissaorin/ull360 && cd ull360
+git clone https://github.com/joseluissaorin/andarama && cd andarama
 pnpm install
 pnpm deploy:cloudflare
 ```
@@ -20,8 +20,8 @@ pnpm deploy:cloudflare
 El script bootstrap (interactivo e idempotente):
 
 1. Comprueba la autenticación de wrangler (abre `wrangler login` si hace falta).
-2. Crea la base **D1** `ull360` y aplica las migraciones.
-3. Crea el bucket **R2** `ull360` y el namespace **KV**.
+2. Crea la base **D1** `andarama` y aplica las migraciones.
+3. Crea el bucket **R2** `andarama` y el namespace **KV**.
 4. Genera y guarda el secreto **APP_SECRET**; pregunta por los opcionales (email, Turnstile, SSO).
 5. Compila los paquetes, el visor y el Studio, y **despliega el Worker** con los assets.
 
@@ -48,5 +48,5 @@ Tras el primer despliegue: abre la URL `*.workers.dev` mostrada, registra el pri
 - **Subidas prefirmadas S3**: crea un token R2 (Panel R2, Manage API Tokens) y define los secretos `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` y `CF_ACCOUNT_ID`. Sin ellos, las subidas pasan por el Worker en streaming (funciona igualmente).
 - **Analytics Engine con consultas**: define `ANALYTICS_BACKEND=ae` y los secretos `CF_ACCOUNT_ID` + `CF_ANALYTICS_TOKEN` (token con permiso Account Analytics Read).
 - **Cloudflare Stream** para vídeo: `STREAM_ACCOUNT_ID` + `STREAM_API_TOKEN`.
-- **Contenedor de procesado** (imágenes más allá de la capacidad del navegador): ejecuta el runner en cualquier máquina con acceso a la API usando la CLI `ull360-tile`, o despliega la imagen Docker como Cloudflare Container asociado a la cola.
+- **Contenedor de procesado** (imágenes más allá de la capacidad del navegador): ejecuta el runner en cualquier máquina con acceso a la API usando la CLI `anda-tile`, o despliega la imagen Docker como Cloudflare Container asociado a la cola.
 - **Email transaccional**: `EMAIL_WEBHOOK_URL`/`EMAIL_WEBHOOK_KEY` compatibles con la API de Resend.

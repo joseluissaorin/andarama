@@ -2,15 +2,15 @@
 title: Formato tour.json
 ---
 
-`tour.json` es el contrato central entre editor, visor, exportador y API. El **JSON Schema** completo se publica en el paquete `@ull360/schema` (`schema/tour-1.json`) con `$id` `https://ull360.dev/schema/tour-1.json`.
+`tour.json` es el contrato central entre editor, visor, exportador y API. El **JSON Schema** completo se publica en el paquete `@andarama/schema` (`schema/tour-1.json`) con `$id` `https://andarama.com/schema/tour-1.json`.
 
-El esquema está **versionado**: `@ull360/schema` incluye migradores automáticos entre versiones, de modo que los tours antiguos siempre abren.
+El esquema está **versionado**: `@andarama/schema` incluye migradores automáticos entre versiones, de modo que los tours antiguos siempre abren.
 
 ## Extracto ilustrativo
 
 ```jsonc
 {
-  "$schema": "https://ull360.dev/schema/tour-1.json",
+  "$schema": "https://andarama.com/schema/tour-1.json",
   "version": 1,
   "meta": {
     "title": { "es": "Campus de Guajara", "en": "Guajara Campus" },
@@ -38,7 +38,7 @@ El esquema está **versionado**: `@ull360/schema` incluye migradores automático
   }],
   "ui": {
     "sceneMenu": true, "thumbnails": true, "compass": true, "vr": true, "share": true,
-    "watermark": { "image": "a/media/logo-ull.svg", "link": "https://www.ull.es" }
+    "watermark": { "image": "a/media/logotipo.svg", "link": "https://andarama.com" }
   }
 }
 ```

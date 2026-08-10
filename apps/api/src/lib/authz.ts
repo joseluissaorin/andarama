@@ -1,5 +1,5 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { orgMembers, projectMembers, projects } from "@ull360/db";
+import { orgMembers, projectMembers, projects } from "@andarama/db";
 import type { Db, UserRow } from "./context.js";
 import { forbidden, notFound } from "./errors.js";
 

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Download } from "lucide-react";
-import { Button, Spinner } from "@ull360/ui";
+import { Button, Spinner } from "@andarama/ui";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -46,10 +46,10 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
   }
   const data = q.data;
   if (data == null || q.isError) {
-    return <p className="p-6 text-sm text-[var(--ull-text-dim)]">{(q.error as Error | null)?.message ?? t("no_data")}</p>;
+    return <p className="p-6 text-sm text-[var(--anda-text-dim)]">{(q.error as Error | null)?.message ?? t("no_data")}</p>;
   }
   if (data.unavailable === true) {
-    return <p className="p-6 text-sm text-[var(--ull-text-dim)]">{data.reason}</p>;
+    return <p className="p-6 text-sm text-[var(--anda-text-dim)]">{data.reason}</p>;
   }
 
   const maxViews = Math.max(1, ...data.sceneViews.map((s) => s.views));
@@ -67,7 +67,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
             key={d}
             type="button"
             onClick={() => setDays(d)}
-            className={`rounded-lg px-3 py-1.5 text-sm ${days === d ? "bg-[var(--ull-primary)] text-white" : "bg-[var(--ull-surface-2)]"}`}
+            className={`rounded-lg px-3 py-1.5 text-sm ${days === d ? "bg-[var(--anda-primary)] text-white" : "bg-[var(--anda-surface-2)]"}`}
           >
             {t(`period_${d}`)}
           </button>
@@ -93,15 +93,15 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
       </div>
 
       {/* Serie temporal */}
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("visits")}</h2>
         {data.timeseries.length === 0 ? (
-          <p className="text-sm text-[var(--ull-text-dim)]">{t("no_data")}</p>
+          <p className="text-sm text-[var(--anda-text-dim)]">{t("no_data")}</p>
         ) : (
           <svg viewBox={`0 0 ${Math.max(1, data.timeseries.length) * 20} 120`} className="h-28 w-full" role="img" aria-label={t("visits")}>
             {data.timeseries.map((d, i) => (
               <g key={d.day}>
-                <rect x={i * 20 + 2} y={110 - (d.visits / maxTs) * 100} width={16} height={(d.visits / maxTs) * 100} rx={3} fill="var(--ull-primary)">
+                <rect x={i * 20 + 2} y={110 - (d.visits / maxTs) * 100} width={16} height={(d.visits / maxTs) * 100} rx={3} fill="var(--anda-primary)">
                   <title>{`${d.day}: ${d.visits}`}</title>
                 </rect>
               </g>
@@ -111,7 +111,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
       </section>
 
       {/* Embudo de escenas */}
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("scene_funnel")}</h2>
         <div className="space-y-2">
           {[...data.sceneViews]
@@ -119,20 +119,20 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
             .map((s) => (
               <div key={s.sceneId} className="flex items-center gap-3 text-sm">
                 <span className="w-40 truncate">{sceneTitle(s.sceneId)}</span>
-                <div className="h-5 flex-1 overflow-hidden rounded bg-[var(--ull-surface-2)]">
-                  <div className="flex h-full items-center rounded bg-[var(--ull-primary)] px-2 text-[11px] text-white" style={{ width: `${(s.views / maxViews) * 100}%` }}>
+                <div className="h-5 flex-1 overflow-hidden rounded bg-[var(--anda-surface-2)]">
+                  <div className="flex h-full items-center rounded bg-[var(--anda-primary)] px-2 text-[11px] text-white" style={{ width: `${(s.views / maxViews) * 100}%` }}>
                     {s.views}
                   </div>
                 </div>
-                <span className="w-16 text-right text-xs text-[var(--ull-text-dim)]">{(s.avgDurationMs / 1000).toFixed(0)}s</span>
+                <span className="w-16 text-right text-xs text-[var(--anda-text-dim)]">{(s.avgDurationMs / 1000).toFixed(0)}s</span>
               </div>
             ))}
-          {data.sceneViews.length === 0 && <p className="text-sm text-[var(--ull-text-dim)]">{t("no_data")}</p>}
+          {data.sceneViews.length === 0 && <p className="text-sm text-[var(--anda-text-dim)]">{t("no_data")}</p>}
         </div>
       </section>
 
       {/* Hotspots mas usados */}
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("top_hotspots")}</h2>
         <div className="space-y-1.5 text-sm">
           {[...data.hotspotClicks]
@@ -146,12 +146,12 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
                 <span className="font-medium">{h.clicks}</span>
               </div>
             ))}
-          {data.hotspotClicks.length === 0 && <p className="text-[var(--ull-text-dim)]">{t("no_data")}</p>}
+          {data.hotspotClicks.length === 0 && <p className="text-[var(--anda-text-dim)]">{t("no_data")}</p>}
         </div>
       </section>
 
       {/* Mapa de calor de orientaciones (a donde mira la gente §2.14) */}
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-3 text-[15px] font-semibold">{t("orientation_heatmap")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[...heatByScene.entries()].map(([sceneId, cells]) => {
@@ -159,14 +159,14 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
             return (
               <div key={sceneId}>
                 <p className="mb-1 truncate text-sm font-medium">{sceneTitle(sceneId)}</p>
-                <svg viewBox="0 0 160 80" className="w-full rounded-lg border border-[var(--ull-border)]" role="img" aria-label={`${t("orientation_heatmap")}: ${sceneTitle(sceneId)}`}>
-                  <rect width="160" height="80" fill="var(--ull-surface-2)" />
+                <svg viewBox="0 0 160 80" className="w-full rounded-lg border border-[var(--anda-border)]" role="img" aria-label={`${t("orientation_heatmap")}: ${sceneTitle(sceneId)}`}>
+                  <rect width="160" height="80" fill="var(--anda-surface-2)" />
                   {Array.from({ length: 16 }, (_, yaw) =>
                     Array.from({ length: 8 }, (_, pitch) => {
                       const cell = cells.find((c) => c.yawBucket === yaw && c.pitchBucket === pitch);
                       const alpha = cell != null ? cell.count / maxCount : 0;
                       return (
-                        <rect key={`${yaw}-${pitch}`} x={yaw * 10} y={(7 - pitch) * 10} width={10} height={10} fill="var(--ull-primary)" opacity={alpha * 0.95}>
+                        <rect key={`${yaw}-${pitch}`} x={yaw * 10} y={(7 - pitch) * 10} width={10} height={10} fill="var(--anda-primary)" opacity={alpha * 0.95}>
                           {cell != null && <title>{`yaw ${yaw}, pitch ${pitch}: ${cell.count}`}</title>}
                         </rect>
                       );
@@ -176,7 +176,7 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
               </div>
             );
           })}
-          {heatByScene.size === 0 && <p className="text-sm text-[var(--ull-text-dim)]">{t("no_data")}</p>}
+          {heatByScene.size === 0 && <p className="text-sm text-[var(--anda-text-dim)]">{t("no_data")}</p>}
         </div>
       </section>
 
@@ -192,9 +192,9 @@ export function AnalyticsView({ project }: { project: ProjectInfo }): React.Reac
 
 function Stat({ label, value }: { label: string; value: number | string }): React.ReactNode {
   return (
-    <div className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
+    <div className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
       <p className="text-2xl font-bold">{value}</p>
-      <p className="text-xs text-[var(--ull-text-dim)]">{label}</p>
+      <p className="text-xs text-[var(--anda-text-dim)]">{label}</p>
     </div>
   );
 }
@@ -202,10 +202,10 @@ function Stat({ label, value }: { label: string; value: number | string }): Reac
 function ListCard({ title, items }: { title: string; items: [string, number][] }): React.ReactNode {
   const t = useT();
   return (
-    <div className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
+    <div className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
       <h3 className="mb-2 text-sm font-semibold">{title}</h3>
       {items.length === 0 ? (
-        <p className="text-xs text-[var(--ull-text-dim)]">{t("no_data")}</p>
+        <p className="text-xs text-[var(--anda-text-dim)]">{t("no_data")}</p>
       ) : (
         <div className="space-y-1 text-sm">
           {items

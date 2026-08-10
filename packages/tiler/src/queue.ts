@@ -11,7 +11,7 @@ export interface PendingTile {
   createdAt: number;
 }
 
-const DB_NAME = "ull360-tiler";
+const DB_NAME = "anda-tiler";
 const STORE = "pending";
 
 function openDb(): Promise<IDBDatabase> {

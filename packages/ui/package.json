@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/ui",
+  "name": "@andarama/ui",
   "version": "0.1.0",
-  "description": "Design system del Studio de ULL360 (Radix + Tailwind, tema ULL)",
+  "description": "Design system del Studio de Andarama (Radix + Tailwind, tema ULL)",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./src/index.tsx",

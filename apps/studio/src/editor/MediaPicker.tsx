@@ -1,4 +1,4 @@
-import { Dialog } from "@ull360/ui";
+import { Dialog } from "@andarama/ui";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { MediaLibrary, type MediaItem } from "../pages/MediaPage";

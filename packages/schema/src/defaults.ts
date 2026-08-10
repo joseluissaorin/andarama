@@ -70,7 +70,7 @@ export function createEmptyTour(title: string, lang = "es"): Tour {
     meta: { title, defaultLang: lang, langs: [lang] },
     start: { scene: "", intro: "none" },
     scenes: [],
-    ui: { ...DEFAULT_UI, theme: { base: "ull" } },
+    ui: { ...DEFAULT_UI, theme: { base: "anda" } },
     transition: { ...DEFAULT_TRANSITION },
     controls: { ...DEFAULT_CONTROLS },
   };

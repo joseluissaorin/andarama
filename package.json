@@ -1,31 +1,31 @@
 {
-  "name": "ull360",
+  "name": "andarama",
   "version": "0.1.0",
   "private": true,
-  "description": "ULL360 - Plataforma de tours virtuales 360 de codigo abierto de la Universidad de La Laguna",
+  "description": "Andarama - Recorridos virtuales 360 de codigo abierto: anda por panoramas",
   "license": "EUPL-1.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joseluissaorin/ull360.git"
+    "url": "https://github.com/joseluissaorin/andarama.git"
   },
   "engines": {
     "node": ">=20"
   },
   "packageManager": "pnpm@10.5.2",
   "scripts": {
-    "build": "pnpm -r --filter './packages/**' build && pnpm --filter @ull360/docs build && pnpm --filter @ull360/studio build && pnpm --filter @ull360/api build",
+    "build": "pnpm -r --filter './packages/**' build && pnpm --filter @andarama/docs build && pnpm --filter @andarama/studio build && pnpm --filter @andarama/api build",
     "build:packages": "pnpm -r --filter './packages/**' build",
-    "dev": "pnpm --filter @ull360/api dev",
-    "dev:studio": "pnpm --filter @ull360/studio dev",
-    "dev:node": "pnpm --filter @ull360/api dev:node",
+    "dev": "pnpm --filter @andarama/api dev",
+    "dev:studio": "pnpm --filter @andarama/studio dev",
+    "dev:node": "pnpm --filter @andarama/api dev:node",
     "test": "pnpm -r test",
     "test:e2e": "playwright test -c tooling/playwright.config.ts",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
     "typecheck": "pnpm -r typecheck",
     "deploy:cloudflare": "node deploy/cloudflare/bootstrap.mjs",
-    "docker:build": "docker build -f deploy/docker/Dockerfile -t ull360 .",
+    "docker:build": "docker build -f deploy/docker/Dockerfile -t andarama .",
     "docker:up": "docker compose -f deploy/docker/docker-compose.yml up -d",
-    "build:docs": "pnpm --filter @ull360/docs build"
+    "build:docs": "pnpm --filter @andarama/docs build"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
@@ -37,8 +37,8 @@
     "vitest": "^3.0.5",
     "@playwright/test": "^1.50.1"
   },
-  "homepage": "https://ull360.jlsf2005.workers.dev",
+  "homepage": "https://andarama.com",
   "bugs": {
-    "url": "https://github.com/joseluissaorin/ull360/issues"
+    "url": "https://github.com/joseluissaorin/andarama/issues"
   }
 }

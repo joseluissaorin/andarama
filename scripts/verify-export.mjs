@@ -19,7 +19,7 @@ import { runExport, ZipWriter } from "../packages/exporter/dist/index.js";
 const exec = promisify(execFile);
 const BASE = process.argv[2] ?? "http://localhost:8788";
 const SLUG = process.argv[3] ?? "campus-de-guajara";
-const OUT = "/tmp/ull360-export-check";
+const OUT = "/tmp/anda-export-check";
 
 const MIME = {
   ".html": "text/html; charset=utf-8",

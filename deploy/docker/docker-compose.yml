@@ -1,8 +1,8 @@
-# Self-hosting de ULL360 (§5.7): docker compose up -d
+# Self-hosting de Andarama (§5.7): docker compose up -d
 # Requisitos minimos: 1 vCPU / 1 GB RAM.
 services:
-  ull360:
-    image: ghcr.io/ull/ull360:latest
+  andarama:
+    image: ghcr.io/joseluissaorin/andarama:latest
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile
@@ -10,7 +10,7 @@ services:
     ports:
       - "8788:8788"
     volumes:
-      - ull360-data:/data
+      - anda-data:/data
     environment:
       # URL publica de la instancia (obligatoria detras de proxy/TLS)
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8788}
@@ -21,7 +21,7 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
-      EMAIL_FROM: ${EMAIL_FROM:-ull360@localhost}
+      EMAIL_FROM: ${EMAIL_FROM:-andarama@localhost}
       # SSO OIDC opcional
       OIDC_ISSUER: ${OIDC_ISSUER:-}
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
@@ -44,8 +44,8 @@ services:
   #   volumes:
   #     - ./Caddyfile:/etc/caddy/Caddyfile:ro
   #     - caddy-data:/data
-  #   depends_on: [ull360]
+  #   depends_on: [andarama]
 
 volumes:
-  ull360-data:
+  anda-data:
   # caddy-data:

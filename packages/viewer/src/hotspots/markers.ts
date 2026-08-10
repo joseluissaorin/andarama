@@ -1,5 +1,5 @@
-import type { Hotspot, PolygonHotspot, Scene } from "@ull360/schema";
-import { resolveL10n } from "@ull360/schema";
+import type { Hotspot, PolygonHotspot, Scene } from "@andarama/schema";
+import { resolveL10n } from "@andarama/schema";
 import { createIconSvg, DEFAULT_ICON_BY_TYPE, sanitizeSvg } from "./icons.js";
 import { evalConditions, type VariableStore } from "../engine/state.js";
 import { resolveUrl } from "../engine/sources.js";
@@ -88,7 +88,7 @@ export class SceneMarkers {
         continue;
       }
       const anchor = document.createElement("div");
-      anchor.className = "ull360-hotspot-anchor";
+      anchor.className = "anda-hotspot-anchor";
       const el = this.buildMarkerElement(hotspot);
       anchor.appendChild(el);
       const marz = hotspotContainer.createHotspot(anchor, { yaw: hotspot.yaw, pitch: hotspot.pitch });
@@ -114,7 +114,7 @@ export class SceneMarkers {
     video.autoplay = hs.autoplay ?? true;
     video.playsInline = true;
     video.setAttribute("aria-label", this.label(hotspot));
-    video.className = "ull360-projected-video";
+    video.className = "anda-projected-video";
     video.style.cssText = `position:absolute;left:0;top:0;width:${PROJECTED_BASE}px;height:${Math.round(PROJECTED_BASE * 9 / 16)}px;transform-origin:0 0;pointer-events:auto;cursor:pointer;z-index:2;`;
     video.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -153,26 +153,26 @@ export class SceneMarkers {
   private buildMarkerElement(hotspot: Hotspot): HTMLElement {
     const el = document.createElement("button");
     el.type = "button";
-    el.className = `ull360-hotspot ull360-hotspot--${hotspot.type}`;
+    el.className = `anda-hotspot anda-hotspot--${hotspot.type}`;
     el.setAttribute("aria-label", this.label(hotspot));
     el.dataset.hotspotId = hotspot.id;
     const style = hotspot.style;
     const size = style?.icon?.size ?? this.callbacks.defaultSize ?? 44;
     const color = style?.icon?.color ?? "#ffffff";
     if (style?.className != null) el.classList.add(...style.className.split(/\s+/));
-    if (style?.pulse === true) el.classList.add("ull360-hotspot--pulse");
+    if (style?.pulse === true) el.classList.add("anda-hotspot--pulse");
     if ((hotspot as { variant?: string }).variant === "floorArrow") {
-      el.classList.add("ull360-hotspot--floor-arrow");
+      el.classList.add("anda-hotspot--floor-arrow");
     }
 
     // Envoltorio de escala: recibe la propiedad CSS `scale` (no `transform`),
     // de modo que compone con el hover del chip y con la flecha de suelo.
     const scaleWrap = document.createElement("span");
-    scaleWrap.className = "ull360-hotspot__scale";
+    scaleWrap.className = "anda-hotspot__scale";
 
     const iconWrap = document.createElement("span");
-    iconWrap.className = "ull360-hotspot__icon";
-    if (style?.icon?.chip !== false) iconWrap.classList.add("ull360-hotspot__icon--chip");
+    iconWrap.className = "anda-hotspot__icon";
+    if (style?.icon?.chip !== false) iconWrap.classList.add("anda-hotspot__icon--chip");
     iconWrap.style.width = `${size}px`;
     iconWrap.style.height = `${size}px`;
     if (style?.icon?.size != null) iconWrap.style.minWidth = iconWrap.style.minHeight = `${size}px`;
@@ -200,8 +200,8 @@ export class SceneMarkers {
     const labelText = resolveL10n(hotspot.label, this.callbacks.lang(), this.callbacks.defaultLang);
     if (labelText !== "" && hotspot.labelVisibility !== "never") {
       const label = document.createElement("span");
-      label.className = "ull360-hotspot__label";
-      if ((hotspot.labelVisibility ?? "hover") === "hover") label.classList.add("ull360-hotspot__label--hover");
+      label.className = "anda-hotspot__label";
+      if ((hotspot.labelVisibility ?? "hover") === "hover") label.classList.add("anda-hotspot__label--hover");
       label.textContent = labelText;
       el.appendChild(label);
     }
@@ -242,7 +242,7 @@ export class SceneMarkers {
         if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) < 4) return;
         moved = true;
         el.dataset.dragged = "1";
-        el.classList.add("ull360-hotspot--dragging");
+        el.classList.add("anda-hotspot--dragging");
         const c = toCoords(e);
         if (c == null) return;
         m.hotspot.yaw = c.yaw;
@@ -257,7 +257,7 @@ export class SceneMarkers {
       const onUp = (e: PointerEvent): void => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
-        el.classList.remove("ull360-hotspot--dragging");
+        el.classList.remove("anda-hotspot--dragging");
         if (moved) {
           const c = toCoords(e);
           if (c != null) this.callbacks.onDrag?.(m.hotspot, c.yaw, c.pitch, "end");
@@ -271,7 +271,7 @@ export class SceneMarkers {
   private buildPolygon(hotspot: PolygonHotspot): void {
     if (this.polygonSvg == null) {
       this.polygonSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      this.polygonSvg.setAttribute("class", "ull360-polygons");
+      this.polygonSvg.setAttribute("class", "anda-polygons");
       this.polygonSvg.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;";
       this.container.appendChild(this.polygonSvg);
     }
@@ -353,7 +353,7 @@ export class SceneMarkers {
     const value = scale.toFixed(3);
     for (const m of this.markers) {
       if (m.hotspot.style?.distanceScale === false) continue;
-      const wrap = m.element.querySelector<HTMLElement>(".ull360-hotspot__scale");
+      const wrap = m.element.querySelector<HTMLElement>(".anda-hotspot__scale");
       if (wrap != null) wrap.style.scale = value;
     }
   }

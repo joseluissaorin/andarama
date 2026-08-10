@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { hotspots as hotspotsTable, projects, scenes as scenesTable } from "@ull360/db";
+import { hotspots as hotspotsTable, projects, scenes as scenesTable } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs } from "../lib/util.js";

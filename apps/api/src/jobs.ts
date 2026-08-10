@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { jobs, media, mediaDerivatives } from "@ull360/db";
-import type { PlatformRuntime } from "@ull360/adapters";
+import { jobs, media, mediaDerivatives } from "@andarama/db";
+import type { PlatformRuntime } from "@andarama/adapters";
 import type { Db } from "./lib/context.js";
 import { newId, nowMs, parseJson } from "./lib/util.js";
 
@@ -69,7 +69,7 @@ async function tileJob(ctx: JobContext, mediaId: string): Promise<void> {
   if (row == null) throw new Error("Medio no encontrado");
   const original = await runtime.storage.getBytes(row.r2Key);
   if (original == null) throw new Error("Original no disponible en almacenamiento");
-  const { tilePanoramaNode } = await importNodeOnly<typeof import("@ull360/tiler/node")>("@ull360/tiler/node");
+  const { tilePanoramaNode } = await importNodeOnly<typeof import("@andarama/tiler/node")>("@andarama/tiler/node");
   const buffer = Buffer.from(original);
   const result = await tilePanoramaNode(buffer, { format: "webp" }, async (tile) => {
     await runtime.storage.put(`tiles/${mediaId}/${tile.key}`, tile.data, {
@@ -133,7 +133,7 @@ async function transcodeJob(ctx: JobContext, mediaId: string): Promise<void> {
   }
   const original = await runtime.storage.getBytes(row.r2Key);
   if (original == null) throw new Error("Original no disponible");
-  const dir = await mkdtemp(join(tmpdir(), "ull360-transcode-"));
+  const dir = await mkdtemp(join(tmpdir(), "anda-transcode-"));
   const inPath = join(dir, "in");
   const outPath = join(dir, "out.mp4");
   try {

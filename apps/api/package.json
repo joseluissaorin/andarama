@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/api",
+  "name": "@andarama/api",
   "version": "0.1.0",
-  "description": "API de ULL360: Worker Hono (Cloudflare) y servidor Node (self-host)",
+  "description": "API de Andarama: Worker Hono (Cloudflare) y servidor Node (self-host)",
   "license": "EUPL-1.2",
   "type": "module",
   "scripts": {
@@ -15,12 +15,12 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
-    "@ull360/adapters": "workspace:*",
-    "@ull360/db": "workspace:*",
-    "@ull360/exporter": "workspace:*",
-    "@ull360/realtime": "workspace:*",
-    "@ull360/schema": "workspace:*",
-    "@ull360/tiler": "workspace:*",
+    "@andarama/adapters": "workspace:*",
+    "@andarama/db": "workspace:*",
+    "@andarama/exporter": "workspace:*",
+    "@andarama/realtime": "workspace:*",
+    "@andarama/schema": "workspace:*",
+    "@andarama/tiler": "workspace:*",
     "drizzle-orm": "^0.39.3",
     "hono": "^4.7.2",
     "jose": "^5.9.6",

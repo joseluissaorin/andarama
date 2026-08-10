@@ -30,10 +30,10 @@ export class AnalyticsClient {
 
   private ensureSessionId(): string {
     try {
-      let id = sessionStorage.getItem("ull360:sid");
+      let id = sessionStorage.getItem("andarama:sid");
       if (id == null) {
         id = crypto.randomUUID();
-        sessionStorage.setItem("ull360:sid", id);
+        sessionStorage.setItem("andarama:sid", id);
       }
       return id;
     } catch {

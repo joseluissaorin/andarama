@@ -1,0 +1,98 @@
+/*
+ * Tema Andarama para la documentación: amarillo-anaranjado sobre papel hueso,
+ * tipografía Baloo 2 (SIL Open Font License 1.1) y Space Mono para el código.
+ * El fondo nunca es blanco puro: el papel es parte de la marca.
+ */
+
+@font-face {
+  font-family: "Baloo 2";
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/docs/fonts/Baloo2-Variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Mono";
+  font-weight: 400;
+  font-display: swap;
+  src: url("/docs/fonts/SpaceMono-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Space Mono";
+  font-weight: 700;
+  font-display: swap;
+  src: url("/docs/fonts/SpaceMono-Bold.woff2") format("woff2");
+}
+
+:root {
+  --sl-font: "Baloo 2", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sl-font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Tema claro: tinta cálida sobre papel hueso, con el ámbar de la marca */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #fdefd2;
+  --sl-color-accent: #c26a00;
+  --sl-color-accent-high: #8a4a00;
+  --sl-color-white: #33260f;
+  --sl-color-gray-1: #45351a;
+  --sl-color-gray-2: #5f4d2c;
+  --sl-color-gray-3: #85764f;
+  --sl-color-gray-4: #b3a582;
+  --sl-color-gray-5: #e8ddc4;
+  --sl-color-gray-6: #f5edda;
+  --sl-color-gray-7: #f7f2e7;
+  --sl-color-black: #fffdf7;
+}
+
+/* Tema oscuro: ámbar aclarado para mantener el contraste AA */
+:root[data-theme="dark"] {
+  --sl-color-accent-low: #4a3608;
+  --sl-color-accent: #ffb300;
+  --sl-color-accent-high: #ffd98a;
+  --sl-color-white: #f7efdd;
+  --sl-color-gray-1: #efe5cd;
+  --sl-color-gray-2: #d3c4a1;
+  --sl-color-gray-3: #bda87a;
+  --sl-color-gray-4: #7d6b45;
+  --sl-color-gray-5: #4d3d1d;
+  --sl-color-gray-6: #382c15;
+  --sl-color-black: #201808;
+}
+
+/* Cabecera naranja con la criatura y el nombre en blanco */
+.header {
+  background: #ff8a00;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+:root[data-theme="dark"] .header {
+  background: #6b3400;
+}
+.header a,
+.header button,
+.header .site-title {
+  color: #fff8ec;
+}
+.site-title img {
+  height: 2.4rem;
+  width: auto;
+  object-fit: contain;
+}
+/* El buscador sobre el naranja necesita su propio contraste */
+.header site-search button {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #fff8ec;
+}
+.header site-search button kbd {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff8ec;
+}
+
+/* Detalles editoriales */
+.sl-markdown-content h1,
+.sl-markdown-content h2 {
+  letter-spacing: -0.015em;
+}
+.sl-markdown-content a:not(:where(.not-content *)) {
+  text-underline-offset: 0.2em;
+}

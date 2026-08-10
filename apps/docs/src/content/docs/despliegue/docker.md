@@ -7,7 +7,7 @@ Una única imagen (Node.js + SQLite + sistema de ficheros), un volumen (`/data`)
 ## Arranque
 
 ```bash
-curl -O https://raw.githubusercontent.com/ull/ull360/main/deploy/docker/docker-compose.yml
+curl -O https://raw.githubusercontent.com/ull/andarama/main/deploy/docker/docker-compose.yml
 echo "APP_SECRET=$(openssl rand -hex 32)" > .env
 echo "PUBLIC_URL=http://localhost:8788" >> .env
 docker compose up -d

@@ -5,21 +5,19 @@ export default defineConfig({
   base: "/docs",
   integrations: [
     starlight({
-      title: "ULL360",
-      description: "Plataforma de tours virtuales 360 de código abierto",
+      title: "andarama",
+      description: "¡anda! andarama me deja andar por panoramas — recorridos 360 de código abierto",
       defaultLocale: "root",
       locales: {
         root: { label: "Español", lang: "es" },
       },
-      // Identidad corporativa de la Universidad de La Laguna
-      customCss: ["./src/styles/ull.css"],
+      customCss: ["./src/styles/andarama.css"],
       logo: {
-        src: "./public/marca-ull-negativo.svg",
-        alt: "Universidad de La Laguna",
-        replacesTitle: true,
+        src: "./public/anda-criatura.svg",
+        alt: "Andarama",
       },
       social: {
-        github: "https://github.com/joseluissaorin/ull360",
+        github: "https://github.com/joseluissaorin/andarama",
       },
       sidebar: [
         { label: "Introducción", slug: "index" },

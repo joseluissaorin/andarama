@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import QRCode from "qrcode";
 import { KeyRound, Plus, ShieldCheck, Trash2, Users } from "lucide-react";
-import { Badge, Button, Dialog, Field, Input, Select, useToast } from "@ull360/ui";
+import { Badge, Button, Dialog, Field, Input, Select, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
@@ -84,10 +84,10 @@ export function AccountPage(): React.ReactNode {
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       <div>
         <h1 className="text-xl font-bold">{me?.user?.name}</h1>
-        <p className="text-sm text-[var(--ull-text-dim)]">{me?.user?.email}</p>
+        <p className="text-sm text-[var(--anda-text-dim)]">{me?.user?.email}</p>
       </div>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold">
           <ShieldCheck className="h-4 w-4" /> {t("security")}
         </h2>
@@ -107,8 +107,8 @@ export function AccountPage(): React.ReactNode {
           <Button onClick={() => void startTotp()}>{t("enable_2fa")}</Button>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-[var(--ull-text-dim)]">{t("totp_scan")}</p>
-            <img src={totpSetup.qr} alt="Código QR TOTP" className="rounded-lg border border-[var(--ull-border)]" />
+            <p className="text-sm text-[var(--anda-text-dim)]">{t("totp_scan")}</p>
+            <img src={totpSetup.qr} alt="Código QR TOTP" className="rounded-lg border border-[var(--anda-border)]" />
             <p className="font-mono text-xs">{totpSetup.secret}</p>
             <div className="flex gap-2">
               <Input value={totpCode} onChange={(e) => setTotpCode(e.target.value)} placeholder="123456" className="max-w-36" aria-label={t("totp_code")} />
@@ -118,7 +118,7 @@ export function AccountPage(): React.ReactNode {
         )}
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-[15px] font-semibold">
             <Users className="h-4 w-4" /> {t("members")}
@@ -128,13 +128,13 @@ export function AccountPage(): React.ReactNode {
           {(members.data?.members ?? []).map((m) => (
             <div key={m.userId} className="flex items-center gap-3 text-sm">
               <span className="flex-1 truncate">
-                {m.name} <span className="text-[var(--ull-text-dim)]">({m.email})</span>
+                {m.name} <span className="text-[var(--anda-text-dim)]">({m.email})</span>
               </span>
               <Badge>{t(`role_${m.role}`)}</Badge>
             </div>
           ))}
           {(members.data?.invites ?? []).map((i) => (
-            <div key={i.id} className="flex items-center gap-3 text-sm text-[var(--ull-text-dim)]">
+            <div key={i.id} className="flex items-center gap-3 text-sm text-[var(--anda-text-dim)]">
               <span className="flex-1 truncate">{i.email}</span>
               <Badge tone="warn">{t("invite")}</Badge>
             </div>
@@ -162,7 +162,7 @@ export function AccountPage(): React.ReactNode {
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-[15px] font-semibold">
             <KeyRound className="h-4 w-4" /> {t("api_tokens")}
@@ -175,7 +175,7 @@ export function AccountPage(): React.ReactNode {
           {(tokens.data ?? []).map((tok) => (
             <div key={tok.id} className="flex items-center gap-3 text-sm">
               <span className="flex-1 truncate font-medium">{tok.name}</span>
-              <span className="text-xs text-[var(--ull-text-dim)]">{tok.scopes.join(", ")}</span>
+              <span className="text-xs text-[var(--anda-text-dim)]">{tok.scopes.join(", ")}</span>
               <Button
                 variant="ghost"
                 size="icon"
@@ -232,8 +232,8 @@ export function AccountPage(): React.ReactNode {
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-[var(--ull-text-dim)]">{t("token_created_note")}</p>
-            <code className="block break-all rounded-lg bg-[var(--ull-surface-2)] p-3 text-xs">{createdToken}</code>
+            <p className="text-sm text-[var(--anda-text-dim)]">{t("token_created_note")}</p>
+            <code className="block break-all rounded-lg bg-[var(--anda-surface-2)] p-3 text-xs">{createdToken}</code>
             <Button
               variant="secondary"
               onClick={() => {

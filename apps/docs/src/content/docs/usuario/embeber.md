@@ -11,7 +11,7 @@ Pega estas dos líneas en cualquier HTML:
 
 ```html
 <script src="https://TU-INSTANCIA/embed.js"></script>
-<ull360-tour slug="mi-tour" title="Mi tour virtual"></ull360-tour>
+<anda-tour slug="mi-tour" title="Mi tour virtual"></anda-tour>
 ```
 
 El componente crea el iframe por ti (con pantalla completa, giroscopio y WebXR permitidos) y ocupa el ancho disponible con proporción 16/9. Atributos:
@@ -48,16 +48,16 @@ El tour embebido acepta y emite mensajes para integraciones avanzadas:
 
 ```js
 // Controlar el tour
-iframe.contentWindow.postMessage({ ull360: "goTo", scene: "sala-2" }, "*");
-iframe.contentWindow.postMessage({ ull360: "setView", view: { yaw: 1.2, pitch: 0 } }, "*");
-iframe.contentWindow.postMessage({ ull360: "setLang", lang: "en" }, "*");
-iframe.contentWindow.postMessage({ ull360: "getState" }, "*");
+iframe.contentWindow.postMessage({ andarama: "goTo", scene: "sala-2" }, "*");
+iframe.contentWindow.postMessage({ andarama: "setView", view: { yaw: 1.2, pitch: 0 } }, "*");
+iframe.contentWindow.postMessage({ andarama: "setLang", lang: "en" }, "*");
+iframe.contentWindow.postMessage({ andarama: "getState" }, "*");
 
 // Escuchar sus eventos
 window.addEventListener("message", (e) => {
-  if (e.data?.ull360 === "sceneChange") console.log("Escena:", e.data.scene);
-  if (e.data?.ull360 === "viewChange") console.log("Vista:", e.data.view);
-  if (e.data?.ull360 === "quizChange") console.log("Quiz:", e.data.state);
+  if (e.data?.andarama === "sceneChange") console.log("Escena:", e.data.scene);
+  if (e.data?.andarama === "viewChange") console.log("Vista:", e.data.view);
+  if (e.data?.andarama === "quizChange") console.log("Quiz:", e.data.state);
 });
 ```
 
@@ -67,15 +67,15 @@ Si el tour se publica con visibilidad **Dominios**, solo podrá embeberse desde 
 
 ## Pilotar el visor ya montado
 
-La página del tour deja la instancia accesible en `window.ULL360.instance`, de
+La página del tour deja la instancia accesible en `window.Andarama.instance`, de
 modo que un integrador puede actuar sobre el visor sin volver a montarlo:
 
 ```js
-const { viewer } = window.ULL360.instance;
+const { viewer } = window.Andarama.instance;
 viewer.setView({ yaw: 1.2, pitch: 0 });
 await viewer.goTo("sala-2");
 viewer.vrState();   // { active, mode, hands, openHotspotId, hotspots }
 ```
 
-Desde fuera de un iframe usa `postMessage` (arriba); `window.ULL360` solo está
+Desde fuera de un iframe usa `postMessage` (arriba); `window.Andarama` solo está
 disponible dentro del documento del visor.

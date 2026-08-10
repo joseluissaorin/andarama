@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { eq, isNull, and } from "drizzle-orm";
-import { publications } from "@ull360/db";
-import { renderAccessibleHtml, renderIndexHtml } from "@ull360/exporter";
-import type { Tour } from "@ull360/schema";
-import { resolveL10n } from "@ull360/schema";
+import { publications } from "@andarama/db";
+import { renderAccessibleHtml, renderIndexHtml } from "@andarama/exporter";
+import type { Tour } from "@andarama/schema";
+import { resolveL10n } from "@andarama/schema";
 import type { AppEnv } from "../lib/context.js";
 import { notFound } from "../lib/errors.js";
 import { parseJson, sha256Hex } from "../lib/util.js";
@@ -17,10 +17,10 @@ import type { PublicationPointer } from "./publish.js";
  * publico, no listado, contrasena, organizacion, dominios de embebido.
  */
 
-/** Web component embebible: <script src=".../embed.js"></script> + <ull360-tour slug="..."> */
+/** Web component embebible: <script src=".../embed.js"></script> + <anda-tour slug="..."> */
 const EMBED_JS = `(() => {
   const scriptOrigin = (() => { try { return new URL(document.currentScript.src).origin; } catch { return ""; } })();
-  class Ull360Tour extends HTMLElement {
+  class AndaramaTour extends HTMLElement {
     connectedCallback() {
       if (this.shadowRoot != null) return;
       const slug = this.getAttribute("slug");
@@ -40,7 +40,7 @@ const EMBED_JS = `(() => {
       root.append(style, iframe);
     }
   }
-  if (customElements.get("ull360-tour") == null) customElements.define("ull360-tour", Ull360Tour);
+  if (customElements.get("anda-tour") == null) customElements.define("anda-tour", AndaramaTour);
 })();
 `;
 

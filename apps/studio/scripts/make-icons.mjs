@@ -27,10 +27,10 @@ const root = resolve(here, "..");
 const out = join(root, "public", "icons");
 await mkdir(out, { recursive: true });
 
-const svg = await readFile(join(root, "public", "logo-ull360.svg"));
-const svgMaskable = await readFile(join(root, "public", "logo-ull360-maskable.svg"));
-/** Violeta institucional de la ULL, el mismo del tema del Studio. */
-const VIOLETA = { r: 0x5c, g: 0x06, b: 0x8c, alpha: 1 };
+const svg = await readFile(join(root, "public", "logo-andarama.svg"));
+const svgMaskable = await readFile(join(root, "public", "logo-andarama-maskable.svg"));
+/** Naranja de la marca Andarama, el mismo del icono. */
+const NARANJA = { r: 0xff, g: 0x8a, b: 0x00, alpha: 1 };
 
 /** Icono normal: la marca ocupa todo el lienzo. */
 async function icono(size) {
@@ -50,9 +50,9 @@ async function enmascarable(size) {
 /** iOS: cuadrado y opaco; el redondeo lo pone el sistema. */
 async function apple(size) {
   const marca = await sharp(svg, { density: Math.ceil((size / 64) * 72) }).resize(size, size, { fit: "contain" }).png().toBuffer();
-  const png = await sharp({ create: { width: size, height: size, channels: 4, background: VIOLETA } })
+  const png = await sharp({ create: { width: size, height: size, channels: 4, background: NARANJA } })
     .composite([{ input: marca, gravity: "centre" }])
-    .flatten({ background: VIOLETA })
+    .flatten({ background: NARANJA })
     .png()
     .toBuffer();
   await writeFile(join(out, "apple-touch-icon.png"), png);

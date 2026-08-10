@@ -23,7 +23,7 @@ La instancia resuelve la cabecera `Host` de cada petición: si el host no es el 
 
    ```caddyfile
    tour.midominio.es {
-     reverse_proxy ull360:8788
+     reverse_proxy andarama:8788
    }
    ```
 

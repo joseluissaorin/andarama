@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/viewer",
+  "name": "@andarama/viewer",
   "version": "0.1.0",
-  "description": "Motor de visualizacion 360 de ULL360 (WebGL, base Marzipano con capas propias)",
+  "description": "Motor de visualizacion 360 de Andarama (WebGL, base Marzipano con capas propias)",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -21,7 +21,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@ull360/schema": "workspace:*",
+    "@andarama/schema": "workspace:*",
     "lucide": "^1.31.0",
     "marzipano": "0.10.2",
     "hls.js": "^1.6.17"

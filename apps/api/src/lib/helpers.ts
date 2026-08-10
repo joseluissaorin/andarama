@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
-import { auditLog, instanceSettings } from "@ull360/db";
+import { auditLog, instanceSettings } from "@andarama/db";
 import type { Context } from "hono";
 import type { AppEnv, Db } from "./context.js";
 import { newId, nowMs, parseJson } from "./util.js";
 import { tooMany } from "./errors.js";
-import type { KVAdapter } from "@ull360/adapters";
+import type { KVAdapter } from "@andarama/adapters";
 
 // ---------------------------------------------------------------------------
 // Ajustes de instancia
@@ -25,7 +25,7 @@ export interface InstanceSettingsData {
 }
 
 export const DEFAULT_SETTINGS: InstanceSettingsData = {
-  name: "ULL360",
+  name: "Andarama",
   defaultLangs: ["es", "en"],
   registration: "open",
   allowedDomains: [],

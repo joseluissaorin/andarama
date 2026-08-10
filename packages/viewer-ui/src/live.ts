@@ -1,5 +1,5 @@
-import type { TourViewer } from "@ull360/viewer";
-import { createIconSvg } from "@ull360/viewer";
+import type { TourViewer } from "@andarama/viewer";
+import { createIconSvg } from "@andarama/viewer";
 import { el } from "./dom.js";
 import type { Translator } from "./i18n.js";
 
@@ -135,13 +135,13 @@ export class LiveClient {
   }
 
   private mountUi(): void {
-    const head = el("div", { className: "ull360-live__head" });
+    const head = el("div", { className: "anda-live__head" });
     head.appendChild(createIconSvg("eye", 16));
     const headText = el("span", { text: this.t("live_connected"), style: "flex:1;" });
     head.appendChild(headText);
-    this.msgs = el("div", { className: "ull360-live__msgs", "aria-live": "polite" });
+    this.msgs = el("div", { className: "anda-live__msgs", "aria-live": "polite" });
     const input = el("input", { type: "text", "aria-label": this.t("live_chat"), placeholder: this.t("live_chat") });
-    const sendBtn = el("button", { className: "ull360-btn", "aria-label": this.t("live_send"), style: "width:38px;height:38px;" });
+    const sendBtn = el("button", { className: "anda-btn", "aria-label": this.t("live_send"), style: "width:38px;height:38px;" });
     sendBtn.appendChild(createIconSvg("send", 16));
     const sendChat = (): void => {
       if (input.value.trim() === "") return;
@@ -152,12 +152,12 @@ export class LiveClient {
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendChat();
     });
-    const inputRow = el("div", { className: "ull360-live__input" }, input, sendBtn);
-    this.panel = el("div", { className: "ull360-live" }, head, this.msgs, inputRow);
+    const inputRow = el("div", { className: "anda-live__input" }, input, sendBtn);
+    this.panel = el("div", { className: "anda-live" }, head, this.msgs, inputRow);
 
     if (this.opts.role === "attendee") {
       this.followBtn = el("button", {
-        className: "ull360-primary-btn",
+        className: "anda-primary-btn",
         type: "button",
         text: this.t("live_free"),
         style: "margin:0 10px 10px;",
@@ -184,7 +184,7 @@ export class LiveClient {
   }
 
   private updateHead(): void {
-    const headText = this.panel?.querySelector(".ull360-live__head span");
+    const headText = this.panel?.querySelector(".anda-live__head span");
     if (headText != null) headText.textContent = this.t("live_participants", { count: this.participants });
   }
 
@@ -198,7 +198,7 @@ export class LiveClient {
       return;
     }
     if (this.pointerEl == null) {
-      this.pointerEl = el("div", { className: "ull360-live-pointer", "aria-hidden": "true" });
+      this.pointerEl = el("div", { className: "anda-live-pointer", "aria-hidden": "true" });
       this.container.appendChild(this.pointerEl);
     }
     this.repositionPointer();

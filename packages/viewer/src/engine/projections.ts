@@ -1,4 +1,4 @@
-import type { Projection } from "@ull360/schema";
+import type { Projection } from "@andarama/schema";
 
 /**
  * Proyecciones de salida (little planet estereográfica, ojo de pez, Panini,

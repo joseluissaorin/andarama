@@ -127,7 +127,7 @@ Descargados los recursos oficiales (obligatorios según el manual): marca y sím
 
 ## 8. Publicación: dominios propios y embed
 
-Hoy solo existe un snippet iframe en «Compartir». Se añade: campo **dominio propio** por publicación (resolución por cabecera `Host` en el worker y en el self-host, con instrucciones DNS/CNAME y guía para `custom domains` de Cloudflare); **web component** `<ull360-tour>` (script único embebible en cualquier HTML, sin iframe manual); ambos snippets en el diálogo de publicación y documentados.
+Hoy solo existe un snippet iframe en «Compartir». Se añade: campo **dominio propio** por publicación (resolución por cabecera `Host` en el worker y en el self-host, con instrucciones DNS/CNAME y guía para `custom domains` de Cloudflare); **web component** `<anda-tour>` (script único embebible en cualquier HTML, sin iframe manual); ambos snippets en el diálogo de publicación y documentados.
 
 ## 9. Ortografía: la deuda completa
 

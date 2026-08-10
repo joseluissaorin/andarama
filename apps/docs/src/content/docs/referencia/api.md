@@ -13,14 +13,14 @@ Puedes explorarla con cualquier visor OpenAPI (Swagger UI, Scalar, Redocly).
 ## Autenticación
 
 - **Sesión** (Studio): cookie HttpOnly + cabecera `X-CSRF-Token` en mutaciones.
-- **Token personal** (automatización/CI): `Authorization: Bearer ull360_...` con scopes (`projects:read`, `projects:write`, `media:read`, `media:write`, `publish`, `orgs:write`, `admin`). Se crean en Studio, cuenta, Tokens de API.
+- **Token personal** (automatización/CI): `Authorization: Bearer andarama_...` con scopes (`projects:read`, `projects:write`, `media:read`, `media:write`, `publish`, `orgs:write`, `admin`). Se crean en Studio, cuenta, Tokens de API.
 
 Los errores siguen **RFC 9457** (`application/problem+json`). La API está versionada por prefijo (`/api/v1`).
 
 ## Publicar desde CI
 
 ```bash
-TOKEN="ull360_..."
+TOKEN="andarama_..."
 BASE="https://tu-instancia"
 PROJECT="id-del-proyecto"
 

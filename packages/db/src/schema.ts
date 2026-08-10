@@ -1,7 +1,7 @@
 import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /**
- * Esquema de base de datos de ULL360. Dialecto SQLite, compartido entre
+ * Esquema de base de datos de Andarama. Dialecto SQLite, compartido entre
  * Cloudflare D1 y better-sqlite3 (self-host). Los timestamps son epoch ms.
  * Los IDs son nanoid/uuidv7 no adivinables generados en la capa de API.
  */

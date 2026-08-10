@@ -8,7 +8,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { ToastProvider } from "@ull360/ui";
+import { ToastProvider } from "@andarama/ui";
 import "./index.css";
 import { Shell } from "./components/Shell";
 import { setupPwa } from "./pwa";
@@ -107,7 +107,10 @@ const routeTree = rootRoute.addChildren([
   inviteRoute,
 ]);
 
-const router = createRouter({ routeTree, basepath: "/studio" });
+// En app.andarama.com el Studio vive en la raíz; en workers.dev y en el
+// self-host, bajo /studio. El propio URL de entrada dice cuál de los dos es.
+const basepath = location.pathname === "/studio" || location.pathname.startsWith("/studio/") ? "/studio" : "/";
+const router = createRouter({ routeTree, basepath });
 
 declare module "@tanstack/react-router" {
   interface Register {

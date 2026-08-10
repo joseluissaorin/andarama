@@ -1,5 +1,5 @@
 /**
- * Interfaces de plataforma de ULL360.
+ * Interfaces de plataforma de Andarama.
  *
  * Regla de arquitectura (§5.1): ningun modulo de dominio importa APIs de
  * Cloudflare ni de Node directamente; todo pasa por estas interfaces.
@@ -168,7 +168,7 @@ export interface PlatformRuntime {
   analytics: AnalyticsAdapter;
   passwords: PasswordHasher;
   email: EmailAdapter;
-  /** Instancia drizzle tipada con el esquema de @ull360/db. */
+  /** Instancia drizzle tipada con el esquema de @andarama/db. */
   db: unknown;
   /** "cloudflare" | "node" */
   platform: "cloudflare" | "node";

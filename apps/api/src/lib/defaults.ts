@@ -69,7 +69,7 @@ export function resolveNewTourSettings(input: {
   const instanceLevel: Record<string, unknown> = {
     langs: input.instanceLangs.length > 0 ? [...input.instanceLangs] : ["es"],
     defaultLang: input.instanceLangs[0] ?? "es",
-    ui: { theme: { base: "ull" } },
+    ui: { theme: { base: "anda" } },
   };
 
   let settings = mergeDefaults(instanceLevel, pick(input.org as Record<string, unknown>, INHERITED_KEYS));

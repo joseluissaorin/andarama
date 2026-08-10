@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * CLI del tiler para el contenedor de procesado y automatizacion:
- *   ull360-tile <imagen> <directorio-salida> [--tile-size 512] [--format webp]
+ *   anda-tile <imagen> <directorio-salida> [--tile-size 512] [--format webp]
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   const input = positional[0];
   const outDir = positional[1];
   if (input == null || outDir == null) {
-    console.error("Uso: ull360-tile <imagen-equirect> <directorio-salida> [--tile-size N] [--format webp|jpeg|avif]");
+    console.error("Uso: anda-tile <imagen-equirect> <directorio-salida> [--tile-size N] [--format webp|jpeg|avif]");
     process.exit(2);
   }
   const opt = (name: string): string | undefined => {

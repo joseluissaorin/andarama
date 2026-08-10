@@ -1,9 +1,9 @@
 ---
 title: Realidad virtual (WebXR)
-description: Ver los tours de ULL360 con gafas Meta Quest, Pico, Vive o Vision Pro, con las manos como mando.
+description: Ver los tours de Andarama con gafas Meta Quest, Pico, Vive o Vision Pro, con las manos como mando.
 ---
 
-Cualquier tour de ULL360 se ve en gafas de realidad virtual sin instalar nada: se
+Cualquier tour de Andarama se ve en gafas de realidad virtual sin instalar nada: se
 abre la dirección del tour en el navegador de las gafas y se pulsa el botón
 **Modo VR**. No hace falta una aplicación, ni una tienda, ni una versión distinta
 del tour. Es el mismo `tour.json` que ya está publicado.
@@ -24,7 +24,7 @@ móvil sin WebXR.
 
 ## Las manos
 
-ULL360 usa el módulo de seguimiento de manos de WebXR. Cuando las gafas lo
+Andarama usa el módulo de seguimiento de manos de WebXR. Cuando las gafas lo
 tienen activado, las dos manos aparecen dentro del tour dibujadas con sus **25
 articulaciones** (la misma jerarquía que define la especificación: muñeca y cinco
 dedos con metacarpo, falanges y yema). No hay que configurar nada: si el visor
@@ -38,7 +38,7 @@ publica las manos, se ven; si no, se ven los mandos.
 - **Tocar**: con un panel abierto se puede pulsar directamente con la yema del
   índice, sin rayo, acercando el dedo a menos de 45 mm de la superficie.
 - La pinza de la mano izquierda contra la palma está reservada por el sistema
-  para el menú de las gafas: ULL360 no la usa.
+  para el menú de las gafas: Andarama no la usa.
 
 Las articulaciones se leen con `XRFrame.fillPoses` y `fillJointRadii`, que
 resuelven las 25 poses de una mano en una sola llamada; si el navegador no las
@@ -175,7 +175,7 @@ El código que genera el Studio ya incluye los permisos necesarios:
 
 ```html
 <iframe
-  src="https://tours.ull.es/t/mi-tour"
+  src="https://andarama.com/t/mi-tour"
   style="width:100%;aspect-ratio:16/9;border:0"
   allow="fullscreen; gyroscope; accelerometer; xr-spatial-tracking"
   allowfullscreen
@@ -222,7 +222,7 @@ súbelo a un alojamiento.
 WebXR o la sesión fue rechazada: es el modo cardboard de respaldo.
 
 **Se ven los mandos pero no las manos.** El seguimiento de manos está desactivado
-en los ajustes de las gafas. ULL360 pide `hand-tracking` como característica
+en los ajustes de las gafas. Andarama pide `hand-tracking` como característica
 opcional para que la sesión arranque igualmente.
 
 **Dentro de un iframe no entra en VR.** Falta `allow="xr-spatial-tracking"`.

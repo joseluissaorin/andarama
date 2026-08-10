@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
-import { ltiRegistrations, publications } from "@ull360/db";
+import { ltiRegistrations, publications } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, forbidden, notFound } from "../lib/errors.js";
 import { newId, newToken, nowMs, parseJson } from "../lib/util.js";

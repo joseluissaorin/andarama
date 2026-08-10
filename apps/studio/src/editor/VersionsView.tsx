@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Camera, Eye, RotateCcw } from "lucide-react";
-import { Badge, Button, Dialog, Input, useToast } from "@ull360/ui";
-import type { Tour } from "@ull360/schema";
+import { Badge, Button, Dialog, Input, useToast } from "@andarama/ui";
+import type { Tour } from "@andarama/schema";
 import { api } from "../api";
 import { useT } from "../i18n";
 import type { ProjectInfo } from "./EditorPage";
@@ -65,11 +65,11 @@ export function VersionsView({ project }: { project: ProjectInfo }): React.React
       </div>
       <div className="space-y-2">
         {versions.map((v, i) => (
-          <div key={v.id} className="flex items-center gap-3 rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-3 text-sm">
+          <div key={v.id} className="flex items-center gap-3 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-3 text-sm">
             <span className="font-mono font-bold">v{v.number}</span>
             <Badge tone={v.kind === "publish" ? "ok" : "default"}>{v.kind === "publish" ? t("published") : v.kind}</Badge>
             <span className="flex-1 truncate">{v.note ?? ""}</span>
-            <span className="text-xs text-[var(--ull-text-dim)]">{new Date(v.createdAt).toLocaleString()}</span>
+            <span className="text-xs text-[var(--anda-text-dim)]">{new Date(v.createdAt).toLocaleString()}</span>
             {i < versions.length - 1 && (
               <Button size="sm" variant="ghost" onClick={() => void compare(versions[i + 1]!.number, v.number)}>
                 <Eye className="h-4 w-4" /> {t("view_diff")}
@@ -82,7 +82,7 @@ export function VersionsView({ project }: { project: ProjectInfo }): React.React
             )}
           </div>
         ))}
-        {versions.length === 0 && <p className="text-sm text-[var(--ull-text-dim)]">{t("no_data")}</p>}
+        {versions.length === 0 && <p className="text-sm text-[var(--anda-text-dim)]">{t("no_data")}</p>}
       </div>
 
       <Dialog open={diff != null} onOpenChange={(o) => !o && setDiff(null)} title={`v${diff?.a} vs v${diff?.b}`} wide>
@@ -97,7 +97,7 @@ export function VersionsView({ project }: { project: ProjectInfo }): React.React
                     ? "text-red-500"
                     : line.startsWith("~")
                       ? "text-amber-600"
-                      : "text-[var(--ull-text-dim)]"
+                      : "text-[var(--anda-text-dim)]"
               }
             >
               {line}

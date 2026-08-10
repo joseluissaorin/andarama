@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Orbit } from "lucide-react";
-import { Dialog } from "@ull360/ui";
-import { mountViewer, type MountedSkin } from "@ull360/viewer-ui";
-import type { Tour } from "@ull360/schema";
+import { Dialog } from "@andarama/ui";
+import { mountViewer, type MountedSkin } from "@andarama/viewer-ui";
+import type { Tour } from "@andarama/schema";
 import { useT } from "../i18n";
 import { littlePlanetFor } from "./littlePlanet";
 import type { MediaItem } from "../pages/MediaPage";
@@ -68,7 +68,7 @@ export function PlanetThumb({ media, className, onOpen360 }: {
       {planet != null && (
         <span
           aria-hidden
-          className={`absolute inset-0 flex items-center justify-center bg-[var(--ull-surface-2)] transition-opacity duration-150 ${
+          className={`absolute inset-0 flex items-center justify-center bg-[var(--anda-surface-2)] transition-opacity duration-150 ${
             hover ? "opacity-100" : "opacity-0"
           }`}
         >
@@ -173,7 +173,7 @@ export function Pano360Dialog({ media, onClose }: { media: MediaItem | null; onC
           </div>
         )}
       </div>
-      <p className="mt-2 text-xs text-[var(--ull-text-dim)]">{t("pano_preview_hint")}</p>
+      <p className="mt-2 text-xs text-[var(--anda-text-dim)]">{t("pano_preview_hint")}</p>
     </Dialog>
   );
 }

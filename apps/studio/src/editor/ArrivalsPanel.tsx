@@ -1,5 +1,5 @@
 import { AlertTriangle, Crosshair, DoorOpen, Play } from "lucide-react";
-import { Button, Tooltip } from "@ull360/ui";
+import { Button, Tooltip } from "@andarama/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import {
@@ -37,7 +37,7 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
 
   if (arrivals.length === 0) {
     return (
-      <p className="rounded-xl bg-[var(--ull-surface-2)] px-3 py-2 text-xs text-[var(--ull-text-dim)]">{t("arrivals_none")}</p>
+      <p className="rounded-xl bg-[var(--anda-surface-2)] px-3 py-2 text-xs text-[var(--anda-text-dim)]">{t("arrivals_none")}</p>
     );
   }
 
@@ -50,12 +50,12 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
         const view = resolveArrivalView(snapshot, sceneId, a);
         const falta = arrivalNeedsReturn(snapshot, sceneId, a);
         return (
-          <li key={a.id} className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-2">
+          <li key={a.id} className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-2">
             <div className="flex items-center gap-2">
               {/* La brújula dice de un vistazo hacia dónde se entra */}
               <Compass yaw={view.yaw} muted={a.mode === "relative"} />
               <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
-                {a.kind === "start" ? null : <DoorOpen className="mr-1 inline h-3.5 w-3.5 text-[var(--ull-text-dim)]" />}
+                {a.kind === "start" ? null : <DoorOpen className="mr-1 inline h-3.5 w-3.5 text-[var(--anda-text-dim)]" />}
                 {label(a)}
               </span>
               <Tooltip content={t("arrival_preview")}>
@@ -75,8 +75,8 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
                   onClick={() => editor.apply((draft) => setArrivalMode(draft, sceneId, a, m))}
                   className={`rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                     a.mode === m
-                      ? "bg-[var(--ull-primary-soft)] text-[var(--ull-primary)]"
-                      : "text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)]"
+                      ? "bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                      : "text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
                   } disabled:opacity-60`}
                 >
                   {t(`entry_${m}` as never)}
@@ -114,12 +114,12 @@ function Compass({ yaw, muted }: { yaw: number; muted: boolean }): React.ReactNo
   const grados = (yaw * 180) / Math.PI;
   return (
     <span
-      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--ull-border)]"
+      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--anda-border)]"
       aria-hidden="true"
       style={{ opacity: muted ? 0.4 : 1 }}
     >
       <svg width="14" height="14" viewBox="0 0 14 14" style={{ transform: `rotate(${grados}deg)` }}>
-        <path d="M7 1 L10 12 L7 9.4 L4 12 Z" fill="var(--ull-primary)" />
+        <path d="M7 1 L10 12 L7 9.4 L4 12 Z" fill="var(--anda-primary)" />
       </svg>
     </span>
   );

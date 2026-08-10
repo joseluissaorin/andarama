@@ -26,8 +26,8 @@ jobs:
         run: pnpm test
       - name: Compilar Studio + visor + docs
         run: |
-          pnpm --filter @ull360/docs build
-          pnpm --filter @ull360/studio build
+          pnpm --filter @andarama/docs build
+          pnpm --filter @andarama/studio build
       - name: Tests E2E (Playwright)
         run: |
           pnpm exec playwright install chromium --with-deps
@@ -65,15 +65,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Construir imagen self-host
-        run: docker build -f deploy/docker/Dockerfile -t ull360:ci .
+        run: docker build -f deploy/docker/Dockerfile -t andarama:ci .
       - name: Humo de la imagen
         run: |
-          docker run -d --name ull360 -p 8788:8788 -e APP_SECRET=ci-secret ull360:ci
+          docker run -d --name andarama -p 8788:8788 -e APP_SECRET=ci-secret andarama:ci
           for i in $(seq 1 30); do
             if curl -sf http://localhost:8788/api/v1/health > /dev/null; then exit 0; fi
             sleep 2
           done
-          docker logs ull360
+          docker logs andarama
           exit 1
 
   # Despliegue de preview por PR (requiere secretos CLOUDFLARE_API_TOKEN y
@@ -92,7 +92,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build:packages && pnpm --filter @ull360/studio build
+      - run: pnpm build:packages && pnpm --filter @andarama/studio build
       - name: Deploy preview (workers.dev con sufijo de PR)
         if: env.CLOUDFLARE_API_TOKEN != ''
         env:

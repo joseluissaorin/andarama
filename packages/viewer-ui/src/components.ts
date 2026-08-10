@@ -1,5 +1,5 @@
-import type { Floorplan, Scene } from "@ull360/schema";
-import { createIconSvg, resolveUrl, type TourViewer } from "@ull360/viewer";
+import type { Floorplan, Scene } from "@andarama/schema";
+import { createIconSvg, resolveUrl, type TourViewer } from "@andarama/viewer";
 import { el, toast } from "./dom.js";
 import type { Translator } from "./i18n.js";
 
@@ -16,14 +16,14 @@ export function buildSceneMenu(viewer: TourViewer, t: Translator, baseUrl: strin
   refresh: () => void;
 } {
   const tour = viewer.tour;
-  const root = el("nav", { className: "ull360-scenemenu", "data-open": "false", "aria-label": t("scenes") });
-  const closeBtn = el("button", { className: "ull360-btn", "aria-label": t("close") });
+  const root = el("nav", { className: "anda-scenemenu", "data-open": "false", "aria-label": t("scenes") });
+  const closeBtn = el("button", { className: "anda-btn", "aria-label": t("close") });
   closeBtn.appendChild(createIconSvg("x", 18));
-  const head = el("div", { className: "ull360-scenemenu__head" }, el("h2", { text: t("scenes") }), closeBtn);
-  const searchWrap = el("div", { className: "ull360-scenemenu__search" });
+  const head = el("div", { className: "anda-scenemenu__head" }, el("h2", { text: t("scenes") }), closeBtn);
+  const searchWrap = el("div", { className: "anda-scenemenu__search" });
   const search = el("input", { type: "search", placeholder: t("search_scenes"), "aria-label": t("search_scenes") });
   searchWrap.appendChild(search);
-  const list = el("div", { className: "ull360-scenemenu__list" });
+  const list = el("div", { className: "anda-scenemenu__list" });
   root.append(head, searchWrap, list);
 
   const render = (filter: string): void => {
@@ -43,10 +43,10 @@ export function buildSceneMenu(viewer: TourViewer, t: Translator, baseUrl: strin
       return;
     }
     for (const [cat, scenes] of groups) {
-      if (cat !== "") list.appendChild(el("div", { className: "ull360-scenemenu__cat", text: cat }));
+      if (cat !== "") list.appendChild(el("div", { className: "anda-scenemenu__cat", text: cat }));
       for (const scene of scenes) {
         const item = el("button", {
-          className: "ull360-scenemenu__item",
+          className: "anda-scenemenu__item",
           type: "button",
           "aria-current": viewer.currentSceneId() === scene.id ? "true" : "false",
         });
@@ -86,7 +86,7 @@ export function buildSceneMenu(viewer: TourViewer, t: Translator, baseUrl: strin
 }
 
 export function buildThumbnails(viewer: TourViewer, t: Translator, baseUrl: string): HTMLElement {
-  const root = el("div", { className: "ull360-thumbs", role: "tablist", "aria-label": t("scenes") });
+  const root = el("div", { className: "anda-thumbs", role: "tablist", "aria-label": t("scenes") });
   for (const scene of viewer.tour.scenes) {
     if (scene.hidden === true || scene.thumbnail == null) continue;
     const btn = el("button", {
@@ -111,19 +111,19 @@ export function buildThumbnails(viewer: TourViewer, t: Translator, baseUrl: stri
 }
 
 export function buildCompass(viewer: TourViewer, t: Translator): HTMLElement {
-  const root = el("div", { className: "ull360-compass", role: "img", "aria-label": t("compass"), title: t("compass") });
+  const root = el("div", { className: "anda-compass", role: "img", "aria-label": t("compass"), title: t("compass") });
   // Aguja simetrica dibujada sobre el centro exacto del viewBox: la rotacion
   // ocurre sobre si misma, sin orbitar. El aro y la "N" quedan fijos.
   root.innerHTML =
     '<svg viewBox="0 0 44 44" width="30" height="30" aria-hidden="true">' +
     '<circle cx="22" cy="22" r="19" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.5"/>' +
     '<text x="22" y="10.5" text-anchor="middle" font-size="8" font-weight="700" fill="currentColor" fill-opacity="0.8">N</text>' +
-    '<g class="ull360-compass__needle">' +
+    '<g class="anda-compass__needle">' +
     '<path d="M22 9 L25.4 22 L22 25 L18.6 22 Z" fill="var(--u3-accent, #e05252)"/>' +
     '<path d="M22 35 L18.6 22 L22 19 L25.4 22 Z" fill="currentColor" fill-opacity="0.85"/>' +
     '<circle cx="22" cy="22" r="2" fill="currentColor"/>' +
     "</g></svg>";
-  const needle = root.querySelector<SVGGElement>(".ull360-compass__needle")!;
+  const needle = root.querySelector<SVGGElement>(".anda-compass__needle")!;
   const sceneNorth = (): number => viewer.currentScene()?.map?.north ?? 0;
   // Angulo desenrollado: al cruzar +-180 no se anima la vuelta entera.
   let acc = 0;
@@ -166,13 +166,13 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
   const floorplans = tour.floorplans ?? [];
   const hasGeo = tour.geoMap?.enabled === true && tour.scenes.some((s) => s.map?.lat != null);
   const available = floorplans.length > 0 || hasGeo;
-  const root = el("div", { className: "ull360-mappanel", hidden: true });
+  const root = el("div", { className: "anda-mappanel", hidden: true });
   if (!available) return { root, toggle: () => {}, available };
 
-  const closeBtn = el("button", { className: "ull360-btn", "aria-label": t("close"), style: "width:36px;height:36px;" });
+  const closeBtn = el("button", { className: "anda-btn", "aria-label": t("close"), style: "width:36px;height:36px;" });
   closeBtn.appendChild(createIconSvg("x", 16));
   const title = el("span", { text: floorplans.length > 0 ? t("floorplan") : t("map") });
-  root.appendChild(el("div", { className: "ull360-mappanel__head" }, title, closeBtn));
+  root.appendChild(el("div", { className: "anda-mappanel__head" }, title, closeBtn));
   closeBtn.addEventListener("click", () => {
     root.hidden = true;
   });
@@ -183,11 +183,11 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
 
   const renderFloorplan = (fp: Floorplan): void => {
     currentFloor = fp.id;
-    const wrap = el("div", { className: "ull360-floorplan" });
+    const wrap = el("div", { className: "anda-floorplan" });
     const img = el("img", { src: resolveUrl(baseUrl, fp.url), alt: viewer.text(fp.title) });
     wrap.appendChild(img);
     // Radar de orientacion (cono SVG que gira con la vista)
-    const radar = el("div", { className: "ull360-floorplan__radar", hidden: true });
+    const radar = el("div", { className: "anda-floorplan__radar", hidden: true });
     radar.innerHTML =
       '<svg viewBox="0 0 90 90" width="90" height="90" aria-hidden="true"><defs><linearGradient id="u3cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--u3-primary)" stop-opacity=".65"/><stop offset="1" stop-color="var(--u3-primary)" stop-opacity="0"/></linearGradient></defs><path d="M45 45 L27 8 A41 41 0 0 1 63 8 Z" fill="url(#u3cone)"/></svg>';
     wrap.appendChild(radar);
@@ -195,7 +195,7 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
       const m = scene.map;
       if (m?.floorplan !== fp.id || m.x == null || m.y == null) continue;
       const marker = el("button", {
-        className: "ull360-floorplan__marker",
+        className: "anda-floorplan__marker",
         type: "button",
         "aria-label": viewer.text(scene.title),
         title: viewer.text(scene.title),
@@ -208,7 +208,7 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
     const update = (): void => {
       const sceneId = viewer.currentSceneId();
       const scene = viewer.tour.scenes.find((s) => s.id === sceneId);
-      wrap.querySelectorAll(".ull360-floorplan__marker").forEach((mk) => {
+      wrap.querySelectorAll(".anda-floorplan__marker").forEach((mk) => {
         mk.setAttribute("aria-current", (mk as HTMLElement).dataset.scene === sceneId ? "true" : "false");
       });
       const m = scene?.map;
@@ -241,7 +241,7 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
   const renderAll = (fp: Floorplan): void => {
     renderFloorplan(fp);
     if (floorplans.length > 1) {
-      const levels = el("div", { className: "ull360-floorplan__levels", role: "tablist" });
+      const levels = el("div", { className: "anda-floorplan__levels", role: "tablist" });
       for (const f of [...floorplans].sort((a, b) => (b.level ?? 0) - (a.level ?? 0))) {
         const b = el("button", {
           type: "button",
@@ -256,14 +256,14 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
   };
 
   const renderGeo = (): void => {
-    const mapDiv = el("div", { className: "ull360-geomap" });
+    const mapDiv = el("div", { className: "anda-geomap" });
     holder.replaceChildren(mapDiv);
     void (async () => {
       // CSS de Leaflet: servido junto al bundle (autocontenido, sin CDN).
-      if (document.getElementById("ull360-leaflet-css") == null) {
+      if (document.getElementById("anda-leaflet-css") == null) {
         try {
           const href = new URL("./leaflet.css", import.meta.url).toString();
-          const link = el("link", { id: "ull360-leaflet-css", rel: "stylesheet", href });
+          const link = el("link", { id: "anda-leaflet-css", rel: "stylesheet", href });
           document.head.appendChild(link);
         } catch {
           // entorno sin import.meta.url resoluble
@@ -310,7 +310,7 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
 
   // Alternar plano <-> mapa geografico si hay ambos
   if (floorplans.length > 0 && hasGeo) {
-    const swap = el("button", { className: "ull360-btn", "aria-label": t("map"), style: "width:36px;height:36px;" });
+    const swap = el("button", { className: "anda-btn", "aria-label": t("map"), style: "width:36px;height:36px;" });
     swap.appendChild(createIconSvg("map", 16));
     let geoMode = false;
     swap.addEventListener("click", () => {
@@ -323,7 +323,7 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
         renderAll(initialFloor!);
       }
     });
-    root.querySelector(".ull360-mappanel__head")!.insertBefore(swap, closeBtn);
+    root.querySelector(".anda-mappanel__head")!.insertBefore(swap, closeBtn);
   }
 
   return {
@@ -342,13 +342,13 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
 export function buildWelcomeScreen(viewer: TourViewer, t: Translator, baseUrl: string, onStart: () => void): HTMLElement | null {
   const cfg = viewer.tour.ui?.welcome;
   if (cfg?.enabled !== true) return null;
-  const card = el("div", { className: "ull360-screen__card" });
+  const card = el("div", { className: "anda-screen__card" });
   if (cfg.image != null) card.appendChild(el("img", { src: resolveUrl(baseUrl, cfg.image), alt: "" }));
   card.appendChild(el("h1", { text: viewer.text(cfg.title) || viewer.text(viewer.tour.meta.title) }));
   const bodyText = viewer.text(cfg.body);
   if (bodyText !== "") card.appendChild(el("p", { text: bodyText }));
   if (cfg.showControls !== false) {
-    const controls = el("div", { className: "ull360-screen__controls" });
+    const controls = el("div", { className: "anda-screen__controls" });
     const item = (icon: string, label: string): HTMLElement => {
       const div = el("div");
       div.appendChild(createIconSvg(icon, 26));
@@ -358,9 +358,9 @@ export function buildWelcomeScreen(viewer: TourViewer, t: Translator, baseUrl: s
     controls.append(item("rotate-cw", t("help_drag")), item("expand", t("help_zoom")), item("map-pin", t("help_dblclick")));
     card.appendChild(controls);
   }
-  const start = el("button", { className: "ull360-primary-btn", type: "button", text: viewer.text(cfg.startLabel) || t("start") });
+  const start = el("button", { className: "anda-primary-btn", type: "button", text: viewer.text(cfg.startLabel) || t("start") });
   card.appendChild(start);
-  const screen = el("div", { className: "ull360-screen", role: "dialog", "aria-modal": "true", "aria-label": viewer.text(viewer.tour.meta.title) }, card);
+  const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true", "aria-label": viewer.text(viewer.tour.meta.title) }, card);
   start.addEventListener("click", () => {
     screen.remove();
     onStart();
@@ -371,32 +371,32 @@ export function buildWelcomeScreen(viewer: TourViewer, t: Translator, baseUrl: s
 export function showFinalScreen(viewer: TourViewer, t: Translator, container: HTMLElement): void {
   const cfg = viewer.tour.ui?.final;
   if (cfg?.enabled !== true) return;
-  const card = el("div", { className: "ull360-screen__card" });
+  const card = el("div", { className: "anda-screen__card" });
   card.appendChild(el("h1", { text: viewer.text(cfg.title) }));
   const bodyText = viewer.text(cfg.body);
   if (bodyText !== "") card.appendChild(el("p", { text: bodyText }));
   if (cfg.cta != null) {
-    const a = el("a", { href: cfg.cta.url, className: "ull360-primary-btn", text: viewer.text(cfg.cta.label), style: "display:inline-block;text-decoration:none;" });
+    const a = el("a", { href: cfg.cta.url, className: "anda-primary-btn", text: viewer.text(cfg.cta.label), style: "display:inline-block;text-decoration:none;" });
     card.appendChild(a);
   }
-  const close = el("button", { className: "ull360-btn", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
+  const close = el("button", { className: "anda-btn", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
   close.appendChild(createIconSvg("x", 18));
-  const screen = el("div", { className: "ull360-screen", role: "dialog", "aria-modal": "true" }, card, close);
+  const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true" }, card, close);
   close.addEventListener("click", () => screen.remove());
   container.appendChild(screen);
 }
 
 export function showHelp(t: Translator, container: HTMLElement): void {
-  const card = el("div", { className: "ull360-screen__card" });
+  const card = el("div", { className: "anda-screen__card" });
   card.appendChild(el("h1", { text: t("help_title") }));
   const list = el("div", { style: "text-align:left;line-height:2;" });
   for (const key of ["help_drag", "help_zoom", "help_keys", "help_dblclick"]) {
     list.appendChild(el("p", { text: t(key), style: "margin:4px 0;color:var(--u3-fg-dim);" }));
   }
   card.appendChild(list);
-  const close = el("button", { className: "ull360-primary-btn", type: "button", text: t("close") });
+  const close = el("button", { className: "anda-primary-btn", type: "button", text: t("close") });
   card.appendChild(close);
-  const screen = el("div", { className: "ull360-screen", role: "dialog", "aria-modal": "true", "aria-label": t("help_title") }, card);
+  const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true", "aria-label": t("help_title") }, card);
   close.addEventListener("click", () => screen.remove());
   screen.addEventListener("click", (e) => {
     if (e.target === screen) screen.remove();
@@ -408,7 +408,7 @@ export function showHelp(t: Translator, container: HTMLElement): void {
 export function showShareDialog(viewer: TourViewer, t: Translator, container: HTMLElement): void {
   viewer.trackShare();
   const link = viewer.deepLink();
-  const card = el("div", { className: "ull360-screen__card" });
+  const card = el("div", { className: "anda-screen__card" });
   card.appendChild(el("h1", { text: t("share") }));
   const input = el("input", {
     value: link,
@@ -418,22 +418,22 @@ export function showShareDialog(viewer: TourViewer, t: Translator, container: HT
   });
   card.appendChild(input);
   const row = el("div", { style: "display:flex;gap:10px;justify-content:center;margin-top:14px;" });
-  const copy = el("button", { className: "ull360-primary-btn", type: "button", text: t("copy_link"), style: "margin-top:0;" });
+  const copy = el("button", { className: "anda-primary-btn", type: "button", text: t("copy_link"), style: "margin-top:0;" });
   copy.addEventListener("click", () => {
     void navigator.clipboard?.writeText(link).then(() => toast(container, t("link_copied")));
   });
   row.appendChild(copy);
   if (navigator.share != null) {
-    const native = el("button", { className: "ull360-primary-btn", type: "button", text: t("share"), style: "margin-top:0;" });
+    const native = el("button", { className: "anda-primary-btn", type: "button", text: t("share"), style: "margin-top:0;" });
     native.addEventListener("click", () => {
       void navigator.share({ url: link, title: viewer.text(viewer.tour.meta.title) }).catch(() => {});
     });
     row.appendChild(native);
   }
   card.appendChild(row);
-  const close = el("button", { className: "ull360-btn", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
+  const close = el("button", { className: "anda-btn", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
   close.appendChild(createIconSvg("x", 18));
-  const screen = el("div", { className: "ull360-screen", role: "dialog", "aria-modal": "true", "aria-label": t("share") }, card, close);
+  const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true", "aria-label": t("share") }, card, close);
   close.addEventListener("click", () => screen.remove());
   screen.addEventListener("click", (e) => {
     if (e.target === screen) screen.remove();

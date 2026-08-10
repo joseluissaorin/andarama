@@ -23,7 +23,7 @@ async function pano(name, hue, label) {
   <text x="${W/2}" y="180" font-size="96" text-anchor="middle" font-family="Helvetica" font-weight="bold" fill="rgba(255,255,255,0.85)">${label} - CENIT</text>
   <text x="${W/2}" y="${H-100}" font-size="96" text-anchor="middle" font-family="Helvetica" font-weight="bold" fill="rgba(255,255,255,0.6)">${label} - NADIR</text>
   </svg>`;
-  await sharp(Buffer.from(svg)).jpeg({ quality: 85 }).toFile(`/tmp/ull360-media/${name}.jpg`);
+  await sharp(Buffer.from(svg)).jpeg({ quality: 85 }).toFile(`/tmp/anda-media/${name}.jpg`);
   console.log(name, "ok");
 }
 (async () => {

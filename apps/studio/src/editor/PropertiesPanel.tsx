@@ -27,7 +27,7 @@ import {
   Trees,
   type LucideIcon,
 } from "lucide-react";
-import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@ull360/ui";
+import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@andarama/ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
@@ -135,7 +135,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
       </Section>
 
       <div>
-        <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{scene.title}</h3>
+        <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{scene.title}</h3>
         <div className="space-y-3">
           <Field label={t("scene_title")} htmlFor="sc-title">
             <Input id="sc-title" value={scene.title} disabled={!canEdit} onChange={(e) => patchScene((s) => { s.title = e.target.value; })} />
@@ -318,23 +318,23 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
               <button
                 key={h.id}
                 type="button"
-                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] hover:bg-[var(--ull-surface-2)]"
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] hover:bg-[var(--anda-surface-2)]"
                 onClick={() => useEditor.getState().select(scene.id, h.id)}
                 onMouseEnter={() => highlightHotspot(h.id)}
                 onMouseLeave={() => highlightHotspot(null)}
               >
-                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--ull-text-dim)]" />
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--anda-text-dim)]" />
                 <span className="min-w-0 flex-1 truncate">{label}</span>
                 {content.unplaced === true && (
                   <span className="shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600">
                     {t("unplaced_badge")}
                   </span>
                 )}
-                <span className="shrink-0 text-[11px] text-[var(--ull-text-dim)]">{t(`hotspot_${h.type}`)}</span>
+                <span className="shrink-0 text-[11px] text-[var(--anda-text-dim)]">{t(`hotspot_${h.type}`)}</span>
               </button>
             );
           })}
-          {hotspots.length === 0 && <p className="px-2 py-1.5 text-[13px] text-[var(--ull-text-dim)]">{t("no_hotspots_yet")}</p>}
+          {hotspots.length === 0 && <p className="px-2 py-1.5 text-[13px] text-[var(--anda-text-dim)]">{t("no_hotspots_yet")}</p>}
         </div>
       </Section>
 
@@ -376,7 +376,7 @@ function TimelinePanel({ scene: _scene, hotspots, canEdit }: { scene: SceneRow; 
   const editor = useEditor();
   return (
     <Section title={t("timeline")}>
-      <p className="mb-2 text-xs text-[var(--ull-text-dim)]">{t("timeline_hint")}</p>
+      <p className="mb-2 text-xs text-[var(--anda-text-dim)]">{t("timeline_hint")}</p>
       {hotspots.map((h) => {
         const cond = readJson<Record<string, any>>(h.conditionsJson, {});
         const range = cond.videoTime ?? {};
@@ -486,7 +486,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             type="button"
             title={t("expand_editor")}
             aria-label={t("expand_editor")}
-            className="absolute bottom-1.5 right-1.5 rounded-md p-1 text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)] hover:text-[var(--ull-text)]"
+            className="absolute bottom-1.5 right-1.5 rounded-md p-1 text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)] hover:text-[var(--anda-text)]"
             onClick={() => setExpand({ key, label })}
           >
             <Maximize2 className="h-3.5 w-3.5" />
@@ -515,11 +515,11 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
   return (
     <div className="flex h-full flex-col">
       {/* Cabecera fija: de dónde vengo, qué estoy tocando y cómo borrarlo */}
-      <div className="sticky top-0 z-10 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 pb-2 pt-3">
+      <div className="sticky top-0 z-10 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 pb-2 pt-3">
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            className="flex min-w-0 items-center gap-1 text-[13px] text-[var(--ull-primary)] hover:underline"
+            className="flex min-w-0 items-center gap-1 text-[13px] text-[var(--anda-primary)] hover:underline"
             onClick={() => editor.select(scene.id, null)}
           >
             <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
@@ -546,14 +546,14 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           <p className="mt-1.5 rounded-lg bg-amber-500/10 px-2 py-1 text-xs text-amber-600">{t("unplaced_hint")}</p>
         )}
         {/* Tres pestañas: lo que se viene a tocar está siempre en la primera */}
-        <div className="mt-2 flex rounded-lg bg-[var(--ull-surface-2)] p-0.5">
+        <div className="mt-2 flex rounded-lg bg-[var(--anda-surface-2)] p-0.5">
           {(["content", "style", "conditions"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setTab(tab)}
               className={`flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-                activeTab === tab ? "bg-[var(--ull-surface)] text-[var(--ull-text)] shadow-sm" : "text-[var(--ull-text-dim)]"
+                activeTab === tab ? "bg-[var(--anda-surface)] text-[var(--anda-text)] shadow-sm" : "text-[var(--anda-text-dim)]"
               }`}
             >
               {t(tab === "content" ? "content" : tab === "style" ? "style" : "conditions")}
@@ -581,7 +581,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
 
       {/* Posición: arrastrable en la vista previa y editable en grados */}
       <Section title={t("position")}>
-        <p className="mb-1 text-xs text-[var(--ull-text-dim)]">{t("position_drag_hint")}</p>
+        <p className="mb-1 text-xs text-[var(--anda-text-dim)]">{t("position_drag_hint")}</p>
         <div className="grid grid-cols-2 gap-2">
           <Field label={`${t("yaw")} (°)`} htmlFor="hs-yaw">
             <Input
@@ -698,7 +698,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 >
                   <Crosshair className="h-4 w-4" /> {t("define_corners")}
                 </Button>
-                <p className="text-xs text-[var(--ull-text-dim)]">
+                <p className="text-xs text-[var(--anda-text-dim)]">
                   {Array.isArray(content.corners) && content.corners.length === 4 ? t("corners_defined") : t("corners_hint")}
                 </p>
               </>
@@ -785,7 +785,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
               onCheckedChange={(v) => setContent({ sandbox: v ? undefined : "permissive" })}
               label={t("strict_sandbox")}
             />
-            <p className="text-xs text-[var(--ull-text-dim)]">{t("strict_sandbox_hint")}</p>
+            <p className="text-xs text-[var(--anda-text-dim)]">{t("strict_sandbox_hint")}</p>
           </>
         )}
         {hotspot.type === "form" && (
@@ -945,8 +945,8 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
               onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name: undefined } })}
               className={`flex h-8 items-center justify-center rounded-lg border text-[10px] font-semibold ${
                 style.icon?.name == null
-                  ? "border-[var(--ull-primary)] bg-[var(--ull-primary-soft)] text-[var(--ull-primary)]"
-                  : "border-[var(--ull-border)] text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)]"
+                  ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                  : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
               }`}
             >
               Auto
@@ -961,8 +961,8 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name } })}
                 className={`flex h-8 items-center justify-center rounded-lg border ${
                   style.icon?.name === name
-                    ? "border-[var(--ull-primary)] bg-[var(--ull-primary-soft)] text-[var(--ull-primary)]"
-                    : "border-[var(--ull-border)] text-[var(--ull-text-dim)] hover:bg-[var(--ull-surface-2)]"
+                    ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                    : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -982,7 +982,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
               step={2}
               value={hotspotSize}
               disabled={!canEdit}
-              className="h-1.5 flex-1 accent-[var(--ull-primary)]"
+              className="h-1.5 flex-1 accent-[var(--anda-primary)]"
               onChange={(e) => setStyle({ icon: { ...(style.icon ?? {}), size: num(e.target.value, 44) } })}
             />
             <Input
@@ -997,7 +997,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             />
             <span
               aria-hidden
-              className="shrink-0 rounded-full border border-[var(--ull-border)] bg-[var(--ull-primary)]"
+              className="shrink-0 rounded-full border border-[var(--anda-border)] bg-[var(--anda-primary)]"
               style={{ width: hotspotSize / 2, height: hotspotSize / 2 }}
             />
           </div>
@@ -1097,7 +1097,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
               disabled={!canEdit}
               onChange={(e) => setContent({ [expand.key]: e.target.value })}
             />
-            <p className="text-xs text-[var(--ull-text-dim)]">{t("markdown_hint")}</p>
+            <p className="text-xs text-[var(--anda-text-dim)]">{t("markdown_hint")}</p>
           </div>
         )}
       </Dialog>
@@ -1159,15 +1159,15 @@ function AiAltButton({ mediaId, onSuggestion }: { mediaId: string; onSuggestion:
 
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }): React.ReactNode {
   return (
-    <details open className="group rounded-xl border border-[var(--ull-border)] bg-[var(--ull-bg)] shadow-sm">
-      <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--ull-text-dim)] transition-colors hover:text-[var(--ull-text)]">
+    <details open className="group rounded-xl border border-[var(--anda-border)] bg-[var(--anda-bg)] shadow-sm">
+      <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--anda-text-dim)] transition-colors hover:text-[var(--anda-text)]">
         {title}
         <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </span>
       </summary>
       <div className="space-y-3 px-3.5 pb-4 pt-1">
-        {hint != null && <p className="text-xs text-[var(--ull-text-dim)]">{hint}</p>}
+        {hint != null && <p className="text-xs text-[var(--anda-text-dim)]">{hint}</p>}
         {children}
       </div>
     </details>
@@ -1184,7 +1184,7 @@ function GalleryEditor({ items, canEdit, onChange, onPick }: {
   return (
     <div className="space-y-2">
       {items.map((item, i) => (
-        <div key={i} className="rounded-lg border border-[var(--ull-border)] p-2 text-xs">
+        <div key={i} className="rounded-lg border border-[var(--anda-border)] p-2 text-xs">
           <div className="flex items-center justify-between">
             <span className="truncate font-mono">{item.url.slice(0, 24)}</span>
             <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("delete")} disabled={!canEdit}
@@ -1214,7 +1214,7 @@ function FormEditor({ fields, destination, turnstile, canEdit, onChange }: {
   return (
     <div className="space-y-2">
       {fields.map((f, i) => (
-        <div key={i} className="rounded-lg border border-[var(--ull-border)] p-2">
+        <div key={i} className="rounded-lg border border-[var(--anda-border)] p-2">
           <div className="flex gap-1.5">
             <Input value={f.label} placeholder={t("label")} disabled={!canEdit} aria-label={t("label")}
               onChange={(e) => onChange({ fields: fields.map((x, j) => (j === i ? { ...x, label: e.target.value, id: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "_") || x.id } : x)) })} />

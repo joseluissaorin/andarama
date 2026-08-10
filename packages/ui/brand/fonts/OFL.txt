@@ -1,6 +1,6 @@
-Argentum Sans — tipografía corporativa oficial de la Universidad de La Laguna,
-distribuida por la Universidad bajo la SIL Open Font License 1.1
-(https://www.ull.es/portal/marca/tipografia/).
+Baloo 2 — Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2)
+Space Mono — Copyright 2016 Google Inc. (diseñada por Colophon Foundry)
+Ambas se distribuyen bajo la SIL Open Font License 1.1.
 
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007

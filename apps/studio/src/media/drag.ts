@@ -7,7 +7,7 @@ import { clientId } from "../editor/editorApi";
  * distingue este arrastre del de ficheros del sistema, que sigue significando
  * «subir»: al soltar sobre el grafo o la lista de escenas se crean escenas.
  */
-export const MEDIA_DRAG_TYPE = "application/x-ull360-media";
+export const MEDIA_DRAG_TYPE = "application/x-anda-media";
 
 export interface MediaDragItem {
   id: string;

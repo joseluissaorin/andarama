@@ -1,4 +1,4 @@
-import type { Hotspot, Scene, Tour, ViewParams } from "@ull360/schema";
+import type { Hotspot, Scene, Tour, ViewParams } from "@andarama/schema";
 
 export interface TourViewerOptions {
   /** Contenedor DOM donde montar el visor. */

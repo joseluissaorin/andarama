@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
-import { projects, publications, versions, webhooks } from "@ull360/db";
+import { projects, publications, versions, webhooks } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
@@ -9,7 +9,7 @@ import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
 import { compileProject } from "../compiler.js";
-import { hmacSign } from "@ull360/adapters";
+import { hmacSign } from "@andarama/adapters";
 
 /**
  * Publicar = congelar una version inmutable en el almacenamiento (§5.4):
@@ -342,20 +342,20 @@ export function publishRoutes(): Hono<AppEnv> {
     });
   });
 
-  // ------- Portabilidad .ull360 (§3.7) -------
+  // ------- Portabilidad .andarama (§3.7) -------
 
-  r.get("/:projectId/export.ull360", async (c) => {
+  r.get("/:projectId/export.andarama", async (c) => {
     const auth = requireAuth(c);
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
-    const { scenes, hotspots, translations } = await import("@ull360/db");
+    const { scenes, hotspots, translations } = await import("@andarama/db");
     const { inArray } = await import("drizzle-orm");
     const sceneRows = await db.select().from(scenes).where(eq(scenes.projectId, access.project.id));
     const sceneIds = sceneRows.map((s) => s.id);
     const hotspotRows = sceneIds.length > 0 ? await db.select().from(hotspots).where(inArray(hotspots.sceneId, sceneIds)) : [];
     const translationRows = await db.select().from(translations).where(eq(translations.projectId, access.project.id));
     const doc = {
-      format: "ull360-project",
+      format: "anda-project",
       version: 1,
       exportedAt: nowMs(),
       project: {
@@ -371,12 +371,12 @@ export function publishRoutes(): Hono<AppEnv> {
     return new Response(JSON.stringify(doc, null, 2), {
       headers: {
         "content-type": "application/json",
-        "content-disposition": `attachment; filename="${access.project.slug}.ull360"`,
+        "content-disposition": `attachment; filename="${access.project.slug}.andarama"`,
       },
     });
   });
 
-  r.post("/import.ull360", async (c) => {
+  r.post("/import.andarama", async (c) => {
     const auth = requireAuth(c);
     const db = c.get("db");
     const orgId = c.req.query("org");
@@ -385,7 +385,7 @@ export function publishRoutes(): Hono<AppEnv> {
     await requireOrgRole(db, orgId, auth.user, "editor");
     const doc = z
       .object({
-        format: z.literal("ull360-project"),
+        format: z.literal("anda-project"),
         version: z.number(),
         project: z.object({ title: z.string(), settingsJson: z.string(), tagsJson: z.string().optional() }),
         scenes: z.array(z.record(z.unknown())),
@@ -415,7 +415,7 @@ export function publishRoutes(): Hono<AppEnv> {
       createdAt: nowMs(),
       updatedAt: nowMs(),
     });
-    const { scenes, hotspots, translations } = await import("@ull360/db");
+    const { scenes, hotspots, translations } = await import("@andarama/db");
     const sceneIdMap = new Map<string, string>();
     for (const s of doc.scenes) sceneIdMap.set(s.id as string, newId());
     for (const s of doc.scenes) {
@@ -441,7 +441,7 @@ export function publishRoutes(): Hono<AppEnv> {
       await db.insert(translations).values({ ...(t as typeof translations.$inferInsert), id: newId(), projectId, entityId });
     }
     await audit(c, "project.import", "project", projectId, {}, orgId);
-    return c.json({ id: projectId, slug, mediaNote: "Los medios no se incluyen en .ull360; vuelve a subirlos o sincroniza el almacenamiento" }, 201);
+    return c.json({ id: projectId, slug, mediaNote: "Los medios no se incluyen en .andarama; vuelve a subirlos o sincroniza el almacenamiento" }, 201);
   });
 
   return r;
@@ -472,7 +472,7 @@ async function fireWebhooks(
           method: "POST",
           headers: {
             "content-type": "application/json",
-            ...(signature != null ? { "x-ull360-signature": signature } : {}),
+            ...(signature != null ? { "x-anda-signature": signature } : {}),
           },
           body,
         }).catch((err) => console.error(`[webhook] ${hook.url} fallo:`, err));

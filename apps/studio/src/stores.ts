@@ -28,7 +28,7 @@ interface AuthState {
 export const useAuth = create<AuthState>((set, get) => ({
   me: null,
   loaded: false,
-  currentOrgId: localStorage.getItem("ull360:org"),
+  currentOrgId: localStorage.getItem("andarama:org"),
   refresh: async () => {
     try {
       const me = await api<Me>("/me");
@@ -40,7 +40,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     }
   },
   setOrg: (orgId) => {
-    localStorage.setItem("ull360:org", orgId);
+    localStorage.setItem("andarama:org", orgId);
     set({ currentOrgId: orgId });
   },
   logout: async () => {

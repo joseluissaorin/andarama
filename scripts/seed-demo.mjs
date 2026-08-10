@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Siembra el tour de demostracion "Recorrido real 360" en una instancia de
- * ULL360 usando la API publica y el tiler Node (el mismo camino que el
+ * Andarama usando la API publica y el tiler Node (el mismo camino que el
  * contenedor de procesado / automatizacion por CI).
  *
  * Uso:
@@ -67,7 +67,7 @@ try {
   await call("/api/v1/auth/login", { method: "POST", body: { email, password } });
 } catch {
   log("Login fallo; intentando registro");
-  await call("/api/v1/auth/register", { method: "POST", body: { email, name: "Demo ULL360", password } });
+  await call("/api/v1/auth/register", { method: "POST", body: { email, name: "Demo Andarama", password } });
 }
 const me = await call("/api/v1/me");
 const orgId = me.orgs[0].id;
@@ -248,7 +248,7 @@ await call(`/api/v1/projects/${projectId}/scenes/${sceneIds["catedral-geisenheim
       label: "Sobre este recorrido",
       altText: "Información y créditos del recorrido",
       title: "Recorrido real 360",
-      body: `## Cuatro lugares reales, un solo visor\n\nEste tour de demostración de **ULL360** usa fotografías esféricas reales de Wikimedia Commons:\n\n${creditos}\n\nMuévete con el ratón o el dedo, entra por las flechas y prueba el menú de escenas, la brújula, las proyecciones y el modo VR.`,
+      body: `## Cuatro lugares reales, un solo visor\n\nEste tour de demostración de **Andarama** usa fotografías esféricas reales de Wikimedia Commons:\n\n${creditos}\n\nMuévete con el ratón o el dedo, entra por las flechas y prueba el menú de escenas, la brújula, las proyecciones y el modo VR.`,
     },
     style: { pulse: true },
   },

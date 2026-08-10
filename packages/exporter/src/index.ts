@@ -1,5 +1,5 @@
-import type { MultiresSource, Tour } from "@ull360/schema";
-import { resolveL10n } from "@ull360/schema";
+import type { MultiresSource, Tour } from "@andarama/schema";
+import { resolveL10n } from "@andarama/schema";
 import { ZipWriter } from "./zip.js";
 import {
   renderAccessibleHtml,
@@ -333,7 +333,7 @@ export async function runExport(
       enc.encode(
         renderImsManifest({
           version: options.scorm,
-          identifier: `ull360-${slugify(title)}`,
+          identifier: `anda-${slugify(title)}`,
           title,
           files: [...packageFiles],
         }),

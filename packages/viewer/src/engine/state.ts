@@ -1,4 +1,4 @@
-import type { HotspotConditions, StateAction, VarCondition } from "@ull360/schema";
+import type { HotspotConditions, StateAction, VarCondition } from "@andarama/schema";
 
 export type VarValue = string | number | boolean;
 

@@ -19,7 +19,7 @@ import {
   Youtube,
   type LucideIcon,
 } from "lucide-react";
-import { Dialog, Input } from "@ull360/ui";
+import { Dialog, Input } from "@andarama/ui";
 import { useT } from "../i18n";
 import { FAMILY_ORDER, searchCatalog, type HotspotFamily, type HotspotKind } from "./hotspotCatalog";
 
@@ -109,7 +109,7 @@ export function HotspotPalette({ open, onClose, onPick }: {
       <div ref={listRef} className="mt-3 max-h-[55vh] space-y-4 overflow-y-auto pr-1">
         {grouped.map((group) => (
           <section key={group.family}>
-            <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">
+            <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">
               {t(`hotspot_family_${group.family}` as never)}
             </h3>
             <div className="grid gap-1.5 sm:grid-cols-2">
@@ -124,16 +124,16 @@ export function HotspotPalette({ open, onClose, onPick }: {
                     onClick={() => pick(kind.type)}
                     className={`flex w-full items-start gap-2.5 rounded-xl border p-2.5 text-left transition-colors ${
                       index === active
-                        ? "border-[var(--ull-primary)] bg-[var(--ull-primary)]/8"
-                        : "border-[var(--ull-border)] hover:bg-[var(--ull-surface-2)]"
+                        ? "border-[var(--anda-primary)] bg-[var(--anda-primary)]/8"
+                        : "border-[var(--anda-border)] hover:bg-[var(--anda-surface-2)]"
                     }`}
                   >
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--ull-surface-2)] text-[var(--ull-primary)]">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--anda-surface-2)] text-[var(--anda-primary)]">
                       <Icon className="h-4 w-4" />
                     </span>
                     <span className="min-w-0">
                       <span className="block text-[13px] font-medium leading-tight">{t(`hotspot_${kind.type}` as never)}</span>
-                      <span className="mt-0.5 block text-xs leading-snug text-[var(--ull-text-dim)]">
+                      <span className="mt-0.5 block text-xs leading-snug text-[var(--anda-text-dim)]">
                         {t(`hotspot_desc_${kind.type}` as never)}
                       </span>
                     </span>
@@ -143,9 +143,9 @@ export function HotspotPalette({ open, onClose, onPick }: {
             </div>
           </section>
         ))}
-        {flat.length === 0 && <p className="py-6 text-center text-sm text-[var(--ull-text-dim)]">{t("no_results")}</p>}
+        {flat.length === 0 && <p className="py-6 text-center text-sm text-[var(--anda-text-dim)]">{t("no_results")}</p>}
       </div>
-      <p className="mt-2 text-xs text-[var(--ull-text-dim)]">{t("hotspot_palette_hint")}</p>
+      <p className="mt-2 text-xs text-[var(--anda-text-dim)]">{t("hotspot_palette_hint")}</p>
     </Dialog>
   );
 }

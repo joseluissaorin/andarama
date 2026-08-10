@@ -1,4 +1,4 @@
-import type { Hotspot } from "@ull360/schema";
+import type { Hotspot } from "@andarama/schema";
 import { XrRenderer } from "./xr/render.js";
 import { XrInput, type XrPointer } from "./xr/input.js";
 import { cameraQuaternion, rotateAroundWorldY, screenAngle, viewMatrixFromQuat, yawPitchFromQuat, type Quat } from "./xr/orientation.js";

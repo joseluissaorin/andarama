@@ -7,7 +7,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
-const EMAIL = "e2e@ull360.test";
+const EMAIL = "e2e@andarama.test";
 const PASSWORD = "password-e2e-123";
 
 /** Genera un panorama equirect sintetico en el navegador y lo inyecta en el input de subida. */
@@ -136,7 +136,7 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await sceneDialog.getByRole("button", { name: "Crear", exact: true }).click();
 
   // La vista previa WYSIWYG monta el visor real
-  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
 
   // Texto alternativo de la escena (accesibilidad)
   await page.fill("#sc-alt", "Escena de prueba E2E");
@@ -146,7 +146,7 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
   await page.locator('[role="dialog"] input').first().fill("texto");
   await page.getByRole("button", { name: /^Texto/ }).first().click();
-  await page.locator(".ull360-viewer").first().click({ position: { x: 500, y: 350 } });
+  await page.locator(".anda-viewer").first().click({ position: { x: 500, y: 350 } });
   await page.fill("#hs-label", "Panel E2E");
   await page.fill("#hs-body", "Contenido **markdown** de prueba");
   await page.fill("#hs-alt", "Panel de prueba");
@@ -221,7 +221,7 @@ test("la previsualizacion recorre el borrador y guarda la llegada", async ({ pag
   const projectUrl = page.url().split("?")[0]!;
 
   await page.goto(`${projectUrl}?tab=preview`);
-  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 40_000 });
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 40_000 });
   // La barra dice donde estas y por donde has entrado
   await expect(page.getByText(/Estás en/)).toBeVisible({ timeout: 20_000 });
 
@@ -240,17 +240,17 @@ test("la previsualizacion recorre el borrador y guarda la llegada", async ({ pag
 
 test("visor publico: navegacion, panel y deep link", async ({ page }) => {
   await page.goto("/t/tour-e2e");
-  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
-  await expect(page.locator(".ull360-title")).toHaveText("Tour E2E");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-title")).toHaveText("Tour E2E");
   // Abrir el panel de texto
-  await page.locator('.ull360-hotspot[aria-label*="Panel E2E"]').click();
-  await expect(page.locator(".ull360-panel")).toContainText("markdown");
+  await page.locator('.anda-hotspot[aria-label*="Panel E2E"]').click();
+  await expect(page.locator(".anda-panel")).toContainText("markdown");
   await page.keyboard.press("Escape");
   // Deep link presente en la URL
   await expect.poll(() => page.url()).toContain("#s=");
   // Modo accesible
   await page.locator('button[aria-label="Versión accesible"]').click();
-  await expect(page.locator(".ull360-accessible")).toContainText("Escena E2E");
+  await expect(page.locator(".anda-accessible")).toContainText("Escena E2E");
 });
 
 test("tour.json publicado es valido y estatico", async ({ request }) => {
@@ -266,7 +266,7 @@ test("web component embebible servido en /embed.js", async ({ request }) => {
   const res = await request.get("/embed.js");
   expect(res.ok()).toBeTruthy();
   const js = await res.text();
-  expect(js).toContain("ull360-tour");
+  expect(js).toContain("anda-tour");
   expect(js).toContain("customElements.define");
 });
 
@@ -298,12 +298,12 @@ test("admin: crear organizacion y usuario desde la API", async ({ page }) => {
   expect(org.status()).toBe(201);
   const { id: orgId } = (await org.json()) as { id: string };
   const user = await page.request.post("/api/v1/admin/users", {
-    data: { email: "docente@ull360.test", name: "Docente E2E", password: "password-e2e-456", orgId },
+    data: { email: "docente@andarama.test", name: "Docente E2E", password: "password-e2e-456", orgId },
     headers: { "x-csrf-token": token },
   });
   expect(user.status()).toBe(201);
   const list = (await (await page.request.get("/api/v1/admin/users")).json()) as { email: string }[];
-  expect(list.some((u) => u.email === "docente@ull360.test")).toBeTruthy();
+  expect(list.some((u) => u.email === "docente@andarama.test")).toBeTruthy();
 });
 
 /** Token CSRF de la cookie u3c de la sesion actual. */

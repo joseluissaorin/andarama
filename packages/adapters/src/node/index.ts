@@ -25,7 +25,7 @@ export interface NodeDb {
 export async function createSqliteDb(path: string): Promise<NodeDb> {
   const { default: Database } = await import("better-sqlite3");
   const { drizzle } = await import("drizzle-orm/better-sqlite3");
-  const schema = await import("@ull360/db");
+  const schema = await import("@andarama/db");
   const sqlite = new Database(path);
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");

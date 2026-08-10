@@ -1,4 +1,4 @@
-# Trazabilidad de requisitos (ULL360-especificacion-v2)
+# Trazabilidad de requisitos (Andarama-especificacion-v2)
 
 Mapa de cada requisito de la especificación a su implementación. Estado:
 **C** = completo · **C\*** = completo con matiz documentado.
@@ -75,7 +75,7 @@ Teclado completo con focus visible y trampa de foco en diálogos, ARIA + anuncio
 
 ## §2.12 Compartición, SEO y embebido
 
-`/t/{slug}` con deep links, **bloque `social` completo y traducible** (título, texto, imagen con alternativo, nombre del sitio, `og:type`, `og:locale`, `og:url`, canonical, tarjeta de X con cuenta y autor, `noindex`) editable en el Studio con vista previa de la tarjeta y aplicado igual al tour publicado y al paquete exportado; embed iframe con generador en el Studio + **API postMessage** (goTo/setView/setLang/getState + eventos) y acceso a la instancia montada en `window.ULL360.instance`; QR por tour (Studio, qrcode), sitemap.xml + robots.txt + HTML accesible pre-renderizado. **C**
+`/t/{slug}` con deep links, **bloque `social` completo y traducible** (título, texto, imagen con alternativo, nombre del sitio, `og:type`, `og:locale`, `og:url`, canonical, tarjeta de X con cuenta y autor, `noindex`) editable en el Studio con vista previa de la tarjeta y aplicado igual al tour publicado y al paquete exportado; embed iframe con generador en el Studio + **API postMessage** (goTo/setView/setLang/getState + eventos) y acceso a la instancia montada en `window.Andarama.instance`; QR por tour (Studio, qrcode), sitemap.xml + robots.txt + HTML accesible pre-renderizado. **C**
 
 ## §2.13 Protección de acceso
 
@@ -97,11 +97,11 @@ Variables de estado evaluables en condiciones y acciones, quizzes con puntuació
 
 - **Proyectos**: orgs->proyectos->escenas, carpetas y etiquetas, roles org (admin/editor/colaborador/lector) + compartición por proyecto, duplicar, plantillas (heredan la configuración y exigen acceso a la plantilla), papelera 30 días, cuotas con panel de uso, y **valores por defecto en cascada** instancia→organización→usuario→plantilla→tour con propagación a los borradores que no personalizaron la clave (`api/lib/defaults.ts`). **C** (compartición por grupo: vía rol de organización; la directa es por usuario)
 - **Biblioteca**: **previsualización 360 al vuelo** (little planet al pasar el ratón, calculado con Canvas 2D desde el preview del manifiesto y sin red; doble clic abre el panorama completo servido por `GET /media/:id/tiles/*`) y **arrastre al editor** de un medio, una selección o una carpeta entera; carpetas/búsqueda/filtros/detalles, drag&drop múltiple, multiparte reanudable directa (S3 prefirmado o pass-through streaming), dedup sha256, detección GPano/aspecto, EXIF con GPS, magic bytes, límites configurables, saneado SVG. **C**
-- **Pipeline**: tiling en navegador (WebWorker+GPU) con cola IndexedDB reanudable, ruta servidor (CLI `ull360-tile` + cola jobs), preview/miniatura/OG, nivelado/yaw offset/nadir/exposición-saturación como opciones no destructivas del tiler, transcodificación Stream/ffmpeg/validación. **C**
+- **Pipeline**: tiling en navegador (WebWorker+GPU) con cola IndexedDB reanudable, ruta servidor (CLI `anda-tile` + cola jobs), preview/miniatura/OG, nivelado/yaw offset/nadir/exposición-saturación como opciones no destructivas del tiler, transcodificación Stream/ffmpeg/validación. **C**
 - **Edición**: vista previa = visor real en modo edición (WYSIWYG), colocación por clic y polígonos vértice a vértice, paneles por tipo, "usar vista actual" (vista inicial y entradas), editor de grafo canvas con minimapa/huérfanas/arrastrar-conectar, editor de plano (subir, arrastrar escenas, norte del radar, multi-planta), timeline de video, traducciones lado a lado con completitud + XLIFF/CSV. **C**
 - **Productividad**: undo/redo ilimitado por sesión, autosave con indicador, historial de versiones (auto al publicar + manuales) con diff por escena/hotspot y restauración, presencia + bloqueo blando por escena (DO/ws), comentarios anclados con hilos y resolución, atajos + paleta Cmd+K, Studio es/en. **C**
 - **Publicación**: `/t/{slug}` desde almacenamiento con caché, publicar=congelar versión, despublicar/republicar; export ZIP en navegador con todas las opciones (idiomas, resolución, descargas, analítica propia, service worker PWA, HTML único, SCORM, kiosko); webhooks de publicación y API para CI. **C**
-- **Administración**: panel global (usuarios, orgs/cuotas, publicados, uso, cola de trabajos, auditoría), email+contraseña con verificación + OIDC SSO con JIT por dominio (SAML vía puente OIDC documentado) + 2FA TOTP, ajustes de instancia completos, backup export/import + `.ull360` portable. **C\*** (SAML nativo no incluido; patrón puente documentado)
+- **Administración**: panel global (usuarios, orgs/cuotas, publicados, uso, cola de trabajos, auditoría), email+contraseña con verificación + OIDC SSO con JIT por dominio (SAML vía puente OIDC documentado) + 2FA TOTP, ajustes de instancia completos, backup export/import + `.andarama` portable. **C\*** (SAML nativo no incluido; patrón puente documentado)
 
 ## §4 No funcionales
 
@@ -118,7 +118,7 @@ Adaptadores (`packages/adapters`) sin imports de plataforma en dominio; cómputo
 ## §8 Entregables
 
 1. Código fuente completo con historial git y CI. **C**
-2. Despliegue de referencia: https://ull360.jlsf2005.workers.dev (demo) + Dockerfile multi-etapa (multi-arch vía buildx en CI). **C**
+2. Despliegue de referencia: https://andarama.com (demo) + Dockerfile multi-etapa (multi-arch vía buildx en CI). **C**
 3. Documentación: manual ES, administración, despliegues, OpenAPI, JSON Schema, contribución, tutorial con medios CC BY (`examples/`). **C**
 4. Formación: material digital reutilizable = documentación + tutorial guiado (las sesiones presenciales son actividad, no código). **C\***
 5. Paquete de pruebas de flujos críticos. **C**
@@ -142,6 +142,6 @@ EUPL-1.2 (texto oficial en `LICENSE`), titularidad ULL, medios CC BY 4.0, `AUTHO
 | Administración | Alta de usuarios y organizaciones, despublicación, webhooks con conmutador y prueba firmada, dashboard (almacenamiento por org, publicaciones, actividad), errores visibles | `apps/studio/src/pages/AdminPage.tsx`, `apps/api/src/routes/admin.ts` |
 | Motor | Proyecciones correctas por cubemap/entorno 360 (little planet, ojo de pez, Panini, arquitectónica) con retorno intacto; anclaje de hotspots reescrito (sin desbordes de etiqueta, visibilidad condicional funcional); brújula centrada con norte real; precarga del nivel base y LRU de escenas | `packages/viewer/src/engine/projections.ts`, `hotspots/markers.ts`, `packages/viewer-ui/src/components.ts` |
 | Widgets | Paridad HTML5Widgets: tooltip anclado, sandbox web estricto, audio espacial HRTF, OBJ/STL (three.js), comparador de panoramas sincronizado, vídeo proyectado con homografía | `packages/viewer-ui/src/panels.ts`, `packages/viewer/src/engine/audio.ts` |
-| Publicación | Dominio propio por publicación (CNAME + resolución por Host, worker y self-host) y web component `<ull360-tour>` en `/embed.js` | `apps/api/src/routes/publish.ts`, `tours.ts`, `worker.ts`, `node.ts`, migración `0003` |
+| Publicación | Dominio propio por publicación (CNAME + resolución por Host, worker y self-host) y web component `<anda-tour>` en `/embed.js` | `apps/api/src/routes/publish.ts`, `tours.ts`, `worker.ts`, `node.ts`, migración `0003` |
 | Identidad | Branding oficial ULL: Violeta Pantone 2597 C, Argentum Sans (OFL), marca y símbolo del manual sin alteración | `packages/ui/src/theme.css`, `packages/ui/brand/`, `apps/studio/src/brand/` |
 | Ortografía | Interfaz, documentación, OpenAPI, errores, emails y páginas públicas con tildes y eñes correctas | barrido integral (≈560 correcciones) |

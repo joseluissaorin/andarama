@@ -1,5 +1,5 @@
-import type { Tour } from "@ull360/schema";
-import { resolveL10n } from "@ull360/schema";
+import type { Tour } from "@andarama/schema";
+import { resolveL10n } from "@andarama/schema";
 
 /** Plantillas HTML de los paquetes exportados y del servido /t/{slug}. */
 
@@ -86,8 +86,8 @@ export function renderIndexHtml(opts: IndexHtmlOptions): string {
   };
   const configJs =
     opts.inlineConfig != null
-      ? `window.ULL360_CONFIG = ${opts.inlineConfig};`
-      : `window.ULL360_CONFIG = ${JSON.stringify(config)};`;
+      ? `window.Andarama_CONFIG = ${opts.inlineConfig};`
+      : `window.Andarama_CONFIG = ${JSON.stringify(config)};`;
 
   return `<!doctype html>
 <html lang="${esc(opts.lang)}">
@@ -97,11 +97,11 @@ export function renderIndexHtml(opts: IndexHtmlOptions): string {
 <title>${esc(opts.title)}</title>
 ${opts.description != null ? `<meta name="description" content="${esc(opts.description)}">` : ""}
 ${renderSocialTags(opts)}
-<style${nonceAttr}>html,body{margin:0;height:100%;background:#0b1020;}#ull360{position:fixed;inset:0;}</style>
+<style${nonceAttr}>html,body{margin:0;height:100%;background:#0b1020;}#andarama{position:fixed;inset:0;}</style>
 ${opts.serviceWorker === true ? `<link rel="manifest" href="manifest.webmanifest">` : ""}
 </head>
 <body>
-<div id="ull360"></div>
+<div id="andarama"></div>
 ${opts.accessibleHtml != null ? `<noscript>${opts.accessibleHtml}</noscript>` : ""}
 <script${nonceAttr}>${configJs}</script>
 ${
@@ -177,8 +177,8 @@ export function renderWebManifest(tour: Tour, lang: string): string {
 
 /** Service worker de precache para uso offline (museos/kioscos sin red). */
 export function renderServiceWorker(files: string[], version: string): string {
-  return `// ULL360 service worker (precache offline)
-const CACHE = "ull360-${version}";
+  return `// Andarama service worker (precache offline)
+const CACHE = "anda-${version}";
 const FILES = ${JSON.stringify(files)};
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -200,7 +200,7 @@ self.addEventListener("fetch", (e) => {
  * hosting que ya sirva bien estos tipos, el fichero simplemente se ignora.
  */
 export function renderHtaccess(): string {
-  return `# ULL360 — tour exportado. Fichero opcional para servidores Apache.
+  return `# Andarama — tour exportado. Fichero opcional para servidores Apache.
 AddType image/webp .webp
 AddType image/avif .avif
 AddType application/manifest+json .webmanifest
@@ -233,7 +233,7 @@ AddType model/gltf+json .gltf
 export function renderReadme(title: string): string {
   return `# ${title}
 
-Tour virtual 360 autocontenido, generado con ULL360.
+Tour virtual 360 autocontenido, generado con Andarama.
 
 ## Cómo publicarlo
 
@@ -263,7 +263,7 @@ equirectangulares, sin teselar).
 
 El modo inmersivo (Meta Quest, Pico y visores compatibles, con manos o mandos)
 usa WebXR, y **WebXR solo funciona sobre HTTPS**. Es un requisito del
-navegador, no de ULL360:
+navegador, no de Andarama:
 
 - Sirve el tour por \`https://\` (hoy casi todos los alojamientos ofrecen
   certificado gratuito con Let's Encrypt; en cPanel suele llamarse «SSL/TLS»).

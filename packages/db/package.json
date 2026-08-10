@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/db",
+  "name": "@andarama/db",
   "version": "0.1.0",
-  "description": "Esquema Drizzle ORM y migraciones de ULL360 (D1 y SQLite comparten dialecto)",
+  "description": "Esquema Drizzle ORM y migraciones de Andarama (D1 y SQLite comparten dialecto)",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./dist/index.js",

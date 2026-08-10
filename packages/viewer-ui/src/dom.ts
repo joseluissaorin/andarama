@@ -1,4 +1,4 @@
-import { createIconSvg } from "@ull360/viewer";
+import { createIconSvg } from "@andarama/viewer";
 
 /** Utilidades DOM compactas para construir la skin sin framework. */
 
@@ -23,7 +23,7 @@ export function el<K extends keyof HTMLElementTagNameMap>(
 }
 
 export function iconButton(iconName: string, label: string, onClick: () => void): HTMLButtonElement {
-  const btn = el("button", { className: "ull360-btn", type: "button", "aria-label": label, title: label });
+  const btn = el("button", { className: "anda-btn", type: "button", "aria-label": label, title: label });
   btn.appendChild(createIconSvg(iconName, 20));
   btn.addEventListener("click", onClick);
   return btn;
@@ -31,8 +31,8 @@ export function iconButton(iconName: string, label: string, onClick: () => void)
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 export function toast(container: HTMLElement, message: string): void {
-  container.querySelector(".ull360-toast")?.remove();
-  const t = el("div", { className: "ull360-toast", role: "status", text: message });
+  container.querySelector(".anda-toast")?.remove();
+  const t = el("div", { className: "anda-toast", role: "status", text: message });
   container.appendChild(t);
   if (toastTimer != null) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.remove(), 2600);

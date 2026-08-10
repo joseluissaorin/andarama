@@ -4,7 +4,7 @@ Este proyecto adopta el [Contributor Covenant](https://www.contributor-covenant.
 
 ## Compromiso
 
-Como participantes, contribuidores y responsables, nos comprometemos a hacer de la participación en ULL360 una experiencia libre de acoso para todo el mundo, con independencia de edad, cuerpo, discapacidad visible o invisible, etnia, características sexuales, identidad y expresión de género, nivel de experiencia, educación, situación socioeconómica, nacionalidad, apariencia, raza, religión u orientación sexual.
+Como participantes, contribuidores y responsables, nos comprometemos a hacer de la participación en Andarama una experiencia libre de acoso para todo el mundo, con independencia de edad, cuerpo, discapacidad visible o invisible, etnia, características sexuales, identidad y expresión de género, nivel de experiencia, educación, situación socioeconómica, nacionalidad, apariencia, raza, religión u orientación sexual.
 
 ## Normas básicas
 
@@ -14,4 +14,4 @@ Como participantes, contribuidores y responsables, nos comprometemos a hacer de 
 
 ## Aplicación
 
-Los comportamientos abusivos pueden comunicarse de forma confidencial siguiendo el procedimiento de [SECURITY.md](SECURITY.md) o abriendo contacto con las personas responsables del proyecto en la Universidad de La Laguna. Todas las quejas se revisarán e investigarán con prontitud y de forma justa.
+Los comportamientos abusivos pueden comunicarse de forma confidencial siguiendo el procedimiento de [SECURITY.md](SECURITY.md) o abriendo contacto con las personas responsables del proyecto. Todas las quejas se revisarán e investigarán con prontitud y de forma justa.

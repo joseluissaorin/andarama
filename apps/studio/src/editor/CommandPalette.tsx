@@ -64,9 +64,9 @@ export function CommandPalette({ open, onClose, onAction }: {
 
   return (
     <div className="fixed inset-0 z-[90] flex items-start justify-center bg-black/40 pt-24" onClick={onClose} role="dialog" aria-modal="true" aria-label={t("command_palette")}>
-      <div className="w-full max-w-md overflow-hidden rounded-xl bg-[var(--ull-surface)] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-2 border-b border-[var(--ull-border)] px-4 py-3">
-          <Command className="h-4 w-4 text-[var(--ull-text-dim)]" />
+      <div className="w-full max-w-md overflow-hidden rounded-xl bg-[var(--anda-surface)] shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-2 border-b border-[var(--anda-border)] px-4 py-3">
+          <Command className="h-4 w-4 text-[var(--anda-text-dim)]" />
           <input
             ref={inputRef}
             value={query}
@@ -90,15 +90,15 @@ export function CommandPalette({ open, onClose, onAction }: {
             <button
               key={item.label}
               type="button"
-              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${i === index ? "bg-[var(--ull-surface-2)]" : ""}`}
+              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${i === index ? "bg-[var(--anda-surface-2)]" : ""}`}
               onMouseEnter={() => setIndex(i)}
               onClick={() => onAction(item.action)}
             >
               <span className="flex-1 truncate">{item.label}</span>
-              {i === index && <CornerDownLeft className="h-3.5 w-3.5 text-[var(--ull-text-dim)]" />}
+              {i === index && <CornerDownLeft className="h-3.5 w-3.5 text-[var(--anda-text-dim)]" />}
             </button>
           ))}
-          {items.length === 0 && <p className="p-3 text-sm text-[var(--ull-text-dim)]">{t("no_data")}</p>}
+          {items.length === 0 && <p className="p-3 text-sm text-[var(--anda-text-dim)]">{t("no_data")}</p>}
         </div>
       </div>
     </div>

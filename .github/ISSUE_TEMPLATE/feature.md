@@ -1,6 +1,6 @@
 ---
 name: Propuesta de mejora
-about: Una idea para mejorar ULL360
+about: Una idea para mejorar Andarama
 labels: enhancement
 ---
 

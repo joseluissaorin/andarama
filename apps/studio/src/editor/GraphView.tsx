@@ -20,7 +20,7 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { Button, Dialog, Input, Select, Tooltip, useToast } from "@ull360/ui";
+import { Button, Dialog, Input, Select, Tooltip, useToast } from "@andarama/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import { readJson } from "./editorApi";
@@ -360,18 +360,18 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
   const [routeIndex, setRouteIndex] = useState(0);
   const route: AutopilotRouteDraft | null = routes[routeIndex] ?? null;
   const [mediaOver, setMediaOver] = useState(false);
-  const [bothWays, setBothWays] = useState(() => localStorage.getItem("ull360.graphBothWays") !== "off");
+  const [bothWays, setBothWays] = useState(() => localStorage.getItem("andarama.graphBothWays") !== "off");
   const [snap, setSnap] = useState(true);
   const snapRef = useRef(snap);
   snapRef.current = snap;
 
   useEffect(() => {
-    localStorage.setItem("ull360.graphBothWays", bothWays ? "on" : "off");
+    localStorage.setItem("andarama.graphBothWays", bothWays ? "on" : "off");
   }, [bothWays]);
 
   // Encuadre por proyecto y modo: volver a entrar no te devuelve a la esquina
   useEffect(() => {
-    const raw = localStorage.getItem(`ull360.graphView.${projectId}`);
+    const raw = localStorage.getItem(`andarama.graphView.${projectId}`);
     if (raw == null) return;
     try {
       const saved = JSON.parse(raw) as Partial<Record<Mode, View>>;
@@ -382,7 +382,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
   }, [projectId]);
   useEffect(() => {
     if (projectId === "") return;
-    const id = setTimeout(() => localStorage.setItem(`ull360.graphView.${projectId}`, JSON.stringify(views)), 400);
+    const id = setTimeout(() => localStorage.setItem(`andarama.graphView.${projectId}`, JSON.stringify(views)), 400);
     return () => clearTimeout(id);
   }, [views, projectId]);
 
@@ -1093,8 +1093,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
     <div className="flex h-full">
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Barra de herramientas */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5">
-          <div className="flex rounded-lg bg-[var(--ull-surface-2)] p-0.5" role="group" aria-label={t("canvas_mode")}>
+        <div className="flex flex-wrap items-center gap-2 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5">
+          <div className="flex rounded-lg bg-[var(--anda-surface-2)] p-0.5" role="group" aria-label={t("canvas_mode")}>
             {GRAPH_MODES.map((m) => (
               <button
                 key={m}
@@ -1102,7 +1102,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 onClick={() => setMode(m)}
                 aria-pressed={mode === m}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  mode === m ? "bg-[var(--ull-surface)] text-[var(--ull-text)] shadow-sm" : "text-[var(--ull-text-dim)]"
+                  mode === m ? "bg-[var(--anda-surface)] text-[var(--anda-text)] shadow-sm" : "text-[var(--anda-text-dim)]"
                 }`}
               >
                 {t(`graph_mode_${m}`)}
@@ -1122,7 +1122,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           )}
 
           {selectedNodes.size >= 2 && canEdit && (
-            <div className="flex items-center gap-0.5 rounded-lg bg-[var(--ull-surface-2)] p-0.5">
+            <div className="flex items-center gap-0.5 rounded-lg bg-[var(--anda-surface-2)] p-0.5">
               {(
                 [
                   ["left", AlignStartVertical, t("align_left")],
@@ -1155,8 +1155,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           <div className="flex-1" />
 
           {mode !== "autopilot" && (
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--ull-text-dim)]">
-              <input type="checkbox" checked={bothWays} onChange={(e) => setBothWays(e.target.checked)} className="h-3.5 w-3.5 accent-[var(--ull-primary)]" />
+            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--anda-text-dim)]">
+              <input type="checkbox" checked={bothWays} onChange={(e) => setBothWays(e.target.checked)} className="h-3.5 w-3.5 accent-[var(--anda-primary)]" />
               {t("create_return")}
             </label>
           )}
@@ -1177,7 +1177,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
               variant="ghost"
               aria-label={t("snap_grid")}
               aria-pressed={snap}
-              className={snap ? "text-[var(--ull-primary)]" : ""}
+              className={snap ? "text-[var(--anda-primary)]" : ""}
               onClick={() => setSnap((v) => !v)}
             >
               <Magnet className="h-4 w-4" />
@@ -1198,15 +1198,15 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           )}
           {/* En el mapa el porcentaje no dice nada: lo que se entiende es el
               nivel de zoom, el mismo que usa OpenStreetMap */}
-          <span className="w-14 text-right text-xs tabular-nums text-[var(--ull-text-dim)]">
+          <span className="w-14 text-right text-xs tabular-nums text-[var(--anda-text-dim)]">
             {mode === "geo" ? `z${tileZoomFor(view.scale)}` : `${Math.round(view.scale * 100)}%`}
           </span>
         </div>
 
         <div className="relative min-h-0 flex-1 overflow-hidden">
           {search != null && (
-            <div className="absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] px-2 py-1.5 shadow-[var(--ull-shadow-lg)]">
-              <Search className="h-4 w-4 text-[var(--ull-text-dim)]" />
+            <div className="absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] px-2 py-1.5 shadow-[var(--anda-shadow-lg)]">
+              <Search className="h-4 w-4 text-[var(--anda-text-dim)]" />
               <Input
                 autoFocus
                 className="h-8 w-56 text-[13px]"
@@ -1224,7 +1224,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   } else if (e.key === "Escape") setSearch(null);
                 }}
               />
-              <span className="text-xs tabular-nums text-[var(--ull-text-dim)]">{matches.size}</span>
+              <span className="text-xs tabular-nums text-[var(--anda-text-dim)]">{matches.size}</span>
               <Button size="icon" variant="ghost" className="h-7 w-7" aria-label={t("close")} onClick={() => setSearch(null)}>
                 <X className="h-4 w-4" />
               </Button>
@@ -1232,26 +1232,26 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           )}
 
           {connecting != null && (
-            <div className="pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-[var(--ull-primary)] px-3 py-1.5 text-xs font-medium text-white shadow-lg">
+            <div className="pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-[var(--anda-primary)] px-3 py-1.5 text-xs font-medium text-white shadow-lg">
               {hoverNode != null
                 ? t("connect_release_on", { name: snapshot.scenes.find((sc) => sc.id === hoverNode)?.title ?? "" })
                 : t("connect_drag_hint")}
             </div>
           )}
           {keyboardConnect != null && (
-            <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-[var(--ull-primary)] px-3 py-1.5 text-xs font-medium text-white shadow-lg">
+            <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-[var(--anda-primary)] px-3 py-1.5 text-xs font-medium text-white shadow-lg">
               {t("keyboard_connect_from", { name: snapshot.scenes.find((s) => s.id === keyboardConnect)?.title ?? "" })}
             </div>
           )}
           {calibrating != null && (
-            <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-xl bg-[var(--ull-surface)] px-3 py-2 text-[13px] shadow-[var(--ull-shadow-lg)]">
+            <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-xl bg-[var(--anda-surface)] px-3 py-2 text-[13px] shadow-[var(--anda-shadow-lg)]">
               {calibrating.a == null ? t("calibrate_click_first") : calibrating.b == null ? t("calibrate_click_second") : t("calibrate_type_meters")}
             </div>
           )}
 
           {mode === "plan" && currentPlan == null ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--ull-bg)] text-center">
-              <p className="max-w-sm text-[13px] text-[var(--ull-text-dim)]">{t("no_plan_yet")}</p>
+            <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--anda-bg)] text-center">
+              <p className="max-w-sm text-[13px] text-[var(--anda-text-dim)]">{t("no_plan_yet")}</p>
               {/* El plano es de un área concreta: preguntarlo aquí evita
                   colgárselo a la primera de la lista y tener que deshacerlo */}
               <div className="flex items-center gap-2">
@@ -1286,7 +1286,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           ) : (
             <svg
               ref={svgRef}
-              className={`h-full w-full touch-none select-none bg-[var(--ull-bg)] ${mediaOver ? "outline outline-2 -outline-offset-2 outline-[var(--ull-primary)]" : ""}`}
+              className={`h-full w-full touch-none select-none bg-[var(--anda-bg)] ${mediaOver ? "outline outline-2 -outline-offset-2 outline-[var(--anda-primary)]" : ""}`}
               role="application"
               aria-label={t("graph")}
               onDragOver={(e) => {
@@ -1345,7 +1345,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   x={view.ox % (24 * view.scale)}
                   y={view.oy % (24 * view.scale)}
                 >
-                  <circle cx="1" cy="1" r="1" fill="var(--ull-border)" />
+                  <circle cx="1" cy="1" r="1" fill="var(--anda-border)" />
                 </pattern>
               </defs>
               {mode !== "geo" && <rect width="100%" height="100%" fill="url(#graph-dots)" />}
@@ -1368,7 +1368,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 {/* Plano de planta: aquí la posición del nodo es la del marcador */}
                 {mode === "plan" && planUrl != null && (
                   <>
-                    <rect x={0} y={0} width={PLAN_W} height={planH} fill="#fff" stroke="var(--ull-border)" strokeWidth={k} />
+                    <rect x={0} y={0} width={PLAN_W} height={planH} fill="#fff" stroke="var(--anda-border)" strokeWidth={k} />
                     <image
                       href={planUrl}
                       x={0}
@@ -1386,11 +1386,11 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                           y1={calibrating.a.y * planH}
                           x2={(calibrating.b ?? calibrating.a).x * PLAN_W}
                           y2={(calibrating.b ?? calibrating.a).y * planH}
-                          stroke="var(--ull-primary)"
+                          stroke="var(--anda-primary)"
                           strokeWidth={3 * k}
                         />
-                        <circle cx={calibrating.a.x * PLAN_W} cy={calibrating.a.y * planH} r={5 * k} fill="var(--ull-primary)" />
-                        {calibrating.b != null && <circle cx={calibrating.b.x * PLAN_W} cy={calibrating.b.y * planH} r={5 * k} fill="var(--ull-primary)" />}
+                        <circle cx={calibrating.a.x * PLAN_W} cy={calibrating.a.y * planH} r={5 * k} fill="var(--anda-primary)" />
+                        {calibrating.b != null && <circle cx={calibrating.b.x * PLAN_W} cy={calibrating.b.y * planH} r={5 * k} fill="var(--anda-primary)" />}
                       </g>
                     )}
                   </>
@@ -1427,7 +1427,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   const fromScene = snapshot.scenes.find((s) => s.id === e.from);
                   const toScene = snapshot.scenes.find((s) => s.id === e.to);
                   const crossArea = mode !== "autopilot" && fromScene != null && toScene != null && areaOfScene(fromScene) !== areaOfScene(toScene);
-                  const color = mode === "autopilot" ? "var(--ull-accent)" : selected ? "var(--ull-primary)" : crossArea ? "#d97706" : "var(--ull-text-dim)";
+                  const color = mode === "autopilot" ? "var(--anda-accent)" : selected ? "var(--anda-primary)" : crossArea ? "#d97706" : "var(--anda-text-dim)";
                   const label = (e as GraphEdge).label ?? "";
                   return (
                     <g key={e.id}>
@@ -1464,7 +1464,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                       />
                       {step != null ? (
                         <>
-                          <circle cx={mid.x} cy={mid.y} r={9 * k} fill="var(--ull-accent)" />
+                          <circle cx={mid.x} cy={mid.y} r={9 * k} fill="var(--anda-accent)" />
                           <text x={mid.x} y={mid.y + 3.5 * k} textAnchor="middle" fontSize={10 * k} fontWeight={700} fill="#fff">
                             {step}
                           </text>
@@ -1480,7 +1480,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                               textAnchor="middle"
                               fontSize={10 * k}
                               fill={color}
-                              stroke="var(--ull-bg)"
+                              stroke="var(--anda-bg)"
                               strokeWidth={3 * k}
                               paintOrder="stroke"
                               style={{ pointerEvents: "none" }}
@@ -1508,7 +1508,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                           }}
                         >
                           <title>{t("unlink_scenes")}</title>
-                          <circle cx={mid.x} cy={mid.y - 18 * k} r={10 * k} fill="var(--ull-danger, #dc2626)" />
+                          <circle cx={mid.x} cy={mid.y - 18 * k} r={10 * k} fill="var(--anda-danger, #dc2626)" />
                           <path
                             d={`M ${mid.x - 4 * k} ${mid.y - 22 * k} L ${mid.x + 4 * k} ${mid.y - 14 * k} M ${mid.x + 4 * k} ${mid.y - 22 * k} L ${mid.x - 4 * k} ${mid.y - 14 * k}`}
                             stroke="#fff"
@@ -1524,7 +1524,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 <path
                   ref={ghostPathRef}
                   fill="none"
-                  stroke="var(--ull-primary)"
+                  stroke="var(--anda-primary)"
                   strokeWidth={2.5 * k}
                   strokeLinecap="round"
                   style={{ display: "none", pointerEvents: "none" }}
@@ -1534,9 +1534,9 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   width={size.w}
                   height={size.h}
                   rx={8 * k}
-                  fill="var(--ull-primary)"
+                  fill="var(--anda-primary)"
                   fillOpacity={0.25}
-                  stroke="var(--ull-primary)"
+                  stroke="var(--anda-primary)"
                   strokeWidth={k}
                   style={{ display: "none", pointerEvents: "none" }}
                 />
@@ -1589,9 +1589,9 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                           width={nw + 10}
                           height={nh + 10}
                           rx={16}
-                          fill="var(--ull-primary)"
+                          fill="var(--anda-primary)"
                           fillOpacity={isDropTarget ? 0.14 : 0}
-                          stroke="var(--ull-primary)"
+                          stroke="var(--anda-primary)"
                           strokeWidth={2}
                           strokeDasharray={focusedNode === scene.id && !isDropTarget ? "4 3" : undefined}
                           style={{ pointerEvents: "none" }}
@@ -1604,8 +1604,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                         width={nw}
                         height={nh}
                         rx={compact ? 10 : 12}
-                        fill="var(--ull-surface)"
-                        stroke={isDropTarget || selected ? "var(--ull-primary)" : orphan ? "#d97706" : (area?.color ?? "var(--ull-border)")}
+                        fill="var(--anda-surface)"
+                        stroke={isDropTarget || selected ? "var(--anda-primary)" : orphan ? "#d97706" : (area?.color ?? "var(--anda-border)")}
                         strokeWidth={isDropTarget || selected ? 2.5 : 1.5}
                       />
                       {area != null && <rect x={0} y={0} width={4} height={nh} rx={2} fill={area.color ?? "#7c3aed"} style={{ pointerEvents: "none" }} />}
@@ -1626,14 +1626,14 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                         y={compact ? nh / 2 + 4 : nh - 22}
                         fontSize={compact ? 11 : 12}
                         fontWeight={600}
-                        fill="var(--ull-text)"
+                        fill="var(--anda-text)"
                         style={{ pointerEvents: "none" }}
                       >
                         {shorten(scene.title, compact ? 15 : 20)}
                       </text>
                       {!compact && (
                         <>
-                          <text x={10} y={NODE_H - 8} fontSize={10} fill="var(--ull-text-dim)" style={{ pointerEvents: "none" }}>
+                          <text x={10} y={NODE_H - 8} fontSize={10} fill="var(--anda-text-dim)" style={{ pointerEvents: "none" }}>
                             {isStart ? `★ ${t("start_scene_badge")}` : `${status.exits} →`}
                           </text>
                           {/* Estado del nodo de un vistazo */}
@@ -1643,7 +1643,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                               status.noAlt ? { color: "#d97706", title: t("badge_no_alt") } : null,
                               status.unplaced > 0 ? { color: "#f59e0b", title: t("badge_unplaced") } : null,
                               status.hidden ? { color: "#64748b", title: t("badge_hidden") } : null,
-                              status.extras > 0 ? { color: "var(--ull-accent)", title: t("badge_extras") } : null,
+                              status.extras > 0 ? { color: "var(--anda-accent)", title: t("badge_extras") } : null,
                               status.audio ? { color: "#0891b2", title: t("badge_audio") } : null,
                             ]
                               .filter((b): b is { color: string; title: string } => b != null)
@@ -1665,18 +1665,18 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                         </g>
                       )}
                       {compact && isStart && (
-                        <text x={nw - 36} y={nh / 2 + 4} fontSize={11} fill="var(--ull-primary)" style={{ pointerEvents: "none" }}>
+                        <text x={nw - 36} y={nh / 2 + 4} fontSize={11} fill="var(--anda-primary)" style={{ pointerEvents: "none" }}>
                           ★
                         </text>
                       )}
-                      <circle cx={0} cy={nh / 2} r={PORT_R} fill="var(--ull-surface)" stroke="var(--ull-text-dim)" strokeWidth={1.5} />
+                      <circle cx={0} cy={nh / 2} r={PORT_R} fill="var(--anda-surface)" stroke="var(--anda-text-dim)" strokeWidth={1.5} />
                       {canEdit && mode !== "autopilot" && <rect x={nw - 14} y={6} width={26} height={nh - 12} fill="transparent" style={{ cursor: "crosshair" }} />}
                       <circle
                         cx={nw}
                         cy={nh / 2}
                         r={connecting === scene.id ? PORT_R + 3 : PORT_R}
-                        fill={canEdit ? "var(--ull-primary)" : "var(--ull-surface)"}
-                        stroke="var(--ull-primary)"
+                        fill={canEdit ? "var(--anda-primary)" : "var(--anda-surface)"}
+                        stroke="var(--anda-primary)"
                         strokeWidth={connecting === scene.id ? 3 : 1.5}
                         style={{ cursor: canEdit ? "crosshair" : "default", pointerEvents: "none" }}
                       />
@@ -1703,14 +1703,14 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                             cy={cy}
                             r={r}
                             fill="none"
-                            stroke="var(--ull-primary)"
+                            stroke="var(--anda-primary)"
                             strokeOpacity={0.35}
                             strokeDasharray={`${4 * k} ${4 * k}`}
                             strokeWidth={k}
                           />
                           <path
                             d={`M ${cx} ${cy} L ${cx + Math.sin(north - 0.35) * r} ${cy - Math.cos(north - 0.35) * r} A ${r} ${r} 0 0 1 ${cx + Math.sin(north + 0.35) * r} ${cy - Math.cos(north + 0.35) * r} Z`}
-                            fill="var(--ull-primary)"
+                            fill="var(--anda-primary)"
                             fillOpacity={0.25}
                             style={{ pointerEvents: "none" }}
                           />
@@ -1718,8 +1718,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                             cx={handle.x}
                             cy={handle.y}
                             r={9 * k}
-                            fill="var(--ull-surface)"
-                            stroke="var(--ull-primary)"
+                            fill="var(--anda-surface)"
+                            stroke="var(--anda-primary)"
                             strokeWidth={3 * k}
                             style={{ cursor: "grab" }}
                             onPointerDown={(ev) => {
@@ -1764,8 +1764,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                             }}
                           >
                             <title>{h.hint}</title>
-                            <circle cx={h.x} cy={h.y} r={11 * k} fill="var(--ull-primary)" fillOpacity={0.15} />
-                            <circle cx={h.x} cy={h.y} r={6.5 * k} fill="var(--ull-surface)" stroke="var(--ull-primary)" strokeWidth={3 * k} />
+                            <circle cx={h.x} cy={h.y} r={11 * k} fill="var(--anda-primary)" fillOpacity={0.15} />
+                            <circle cx={h.x} cy={h.y} r={6.5 * k} fill="var(--anda-surface)" stroke="var(--anda-primary)" strokeWidth={3 * k} />
                           </g>
                         ))}
                       </g>
@@ -1786,9 +1786,9 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                     y={Math.min(marquee.y0, marquee.y1)}
                     width={Math.abs(marquee.x1 - marquee.x0)}
                     height={Math.abs(marquee.y1 - marquee.y0)}
-                    fill="var(--ull-primary)"
+                    fill="var(--anda-primary)"
                     fillOpacity={0.08}
-                    stroke="var(--ull-primary)"
+                    stroke="var(--anda-primary)"
                     strokeWidth={k}
                     strokeDasharray={`${4 * k} ${3 * k}`}
                   />
@@ -1801,7 +1801,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           {renaming != null && positions[renaming] != null && (
             <input
               autoFocus
-              className="absolute z-30 rounded-md border border-[var(--ull-primary)] bg-[var(--ull-surface)] px-1 text-[13px] shadow"
+              className="absolute z-30 rounded-md border border-[var(--anda-primary)] bg-[var(--anda-surface)] px-1 text-[13px] shadow"
               style={{
                 left: positions[renaming]!.x * view.scale + view.ox + 6,
                 top: positions[renaming]!.y * view.scale + view.oy + (compactNodes ? 4 : 52),
@@ -1829,7 +1829,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           {/* Menú contextual */}
           {menu != null && (
             <div
-              className="absolute z-20 w-56 rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-1 text-[13px] shadow-[var(--ull-shadow-lg)]"
+              className="absolute z-20 w-56 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-1 text-[13px] shadow-[var(--anda-shadow-lg)]"
               style={{ left: Math.min(menu.x, (svgRef.current?.clientWidth ?? 400) - 230), top: menu.y }}
             >
               <MenuItem
@@ -1876,8 +1876,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
               >
                 <Copy className="h-3.5 w-3.5" /> {t("duplicate")}
               </MenuItem>
-              <div className="my-1 border-t border-[var(--ull-border)]" />
-              <p className="px-3 py-1 text-[11px] uppercase tracking-wide text-[var(--ull-text-dim)]">{t("area")}</p>
+              <div className="my-1 border-t border-[var(--anda-border)]" />
+              <p className="px-3 py-1 text-[11px] uppercase tracking-wide text-[var(--anda-text-dim)]">{t("area")}</p>
               <div className="max-h-40 overflow-y-auto">
                 <MenuItem
                   disabled={!canEdit}
@@ -1914,7 +1914,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   <Plus className="h-3.5 w-3.5" /> {t("new_area")}
                 </MenuItem>
               </div>
-              <div className="my-1 border-t border-[var(--ull-border)]" />
+              <div className="my-1 border-t border-[var(--anda-border)]" />
               <MenuItem
                 danger
                 disabled={!canEdit}
@@ -1930,8 +1930,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
 
           {/* Escenas sin colocar: se arrastran al plano o al mapa */}
           {((mode === "plan" && currentPlan != null) || mode === "geo") && unplaced.length > 0 && (
-            <div className="absolute bottom-3 left-3 z-20 max-h-56 w-56 overflow-y-auto rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-2 shadow-[var(--ull-shadow-lg)]">
-              <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">
+            <div className="absolute bottom-3 left-3 z-20 max-h-56 w-56 overflow-y-auto rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-2 shadow-[var(--anda-shadow-lg)]">
+              <p className="mb-1 px-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">
                 {t("unplaced_scenes", { n: String(unplaced.length) })}
               </p>
               <ul>
@@ -1940,7 +1940,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                     <button
                       type="button"
                       disabled={!canEdit}
-                      className="w-full cursor-grab truncate rounded-lg px-2 py-1 text-left text-[13px] hover:bg-[var(--ull-surface-2)] disabled:cursor-default"
+                      className="w-full cursor-grab truncate rounded-lg px-2 py-1 text-left text-[13px] hover:bg-[var(--anda-surface-2)] disabled:cursor-default"
                       onPointerDown={(e) => {
                         if (!canEdit) return;
                         e.preventDefault();
@@ -1953,7 +1953,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   </li>
                 ))}
               </ul>
-              <p className="px-1 pt-1 text-[11px] text-[var(--ull-text-dim)]">{t("unplaced_hint_drag")}</p>
+              <p className="px-1 pt-1 text-[11px] text-[var(--anda-text-dim)]">{t("unplaced_hint_drag")}</p>
             </div>
           )}
 
@@ -2006,8 +2006,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
 
       {/* Columna derecha: el inspector manda si hay algo seleccionado */}
       {mode !== "autopilot" && selectedHotspot != null ? (
-        <aside className="w-72 shrink-0 space-y-4 overflow-y-auto border-l border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
-          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("nav_hotspot_edge")}</h3>
+        <aside className="w-72 shrink-0 space-y-4 overflow-y-auto border-l border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("nav_hotspot_edge")}</h3>
           <p className="text-[13px]">
             {snapshot.scenes.find((sc) => sc.id === selectedHotspot.sceneId)?.title} →{" "}
             {snapshot.scenes.find((sc) => sc.id === selectedContent.target)?.title ?? "—"}
@@ -2032,8 +2032,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
 
           {/* La orientación de llegada se decide en el destino, mirando el
               panorama al que se entra; aquí solo se llega hasta allí. */}
-          <div className="rounded-xl bg-[var(--ull-surface-2)] p-2.5">
-            <p className="mb-1.5 text-xs text-[var(--ull-text-dim)]">
+          <div className="rounded-xl bg-[var(--anda-surface-2)] p-2.5">
+            <p className="mb-1.5 text-xs text-[var(--anda-text-dim)]">
               {t("entry_mode")}: <strong>{t(`entry_${selectedContent.entry?.mode ?? "forward"}` as never)}</strong>
             </p>
             <Button
@@ -2066,14 +2066,14 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           <label className="flex cursor-pointer items-start gap-2 text-[13px]">
             <input
               type="checkbox"
-              className="mt-0.5 h-4 w-4 accent-[var(--ull-primary)]"
+              className="mt-0.5 h-4 w-4 accent-[var(--anda-primary)]"
               checked={selectedContent.oneWay === true}
               disabled={!canEdit}
               onChange={(e) => editor.apply((draft) => setOneWay(draft, selectedHotspot.id, e.target.checked))}
             />
             <span>
               {t("one_way")}
-              <span className="block text-xs text-[var(--ull-text-dim)]">{t("one_way_hint")}</span>
+              <span className="block text-xs text-[var(--anda-text-dim)]">{t("one_way_hint")}</span>
             </span>
           </label>
 
@@ -2109,11 +2109,11 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
               <Trash2 className="h-4 w-4" /> {t("delete")}
             </Button>
           </div>
-          <p className="text-xs text-[var(--ull-text-dim)]">{t("delete_edge_hint")}</p>
+          <p className="text-xs text-[var(--anda-text-dim)]">{t("delete_edge_hint")}</p>
         </aside>
       ) : mode !== "autopilot" && selectedEdges.size > 1 ? (
-        <aside className="w-72 shrink-0 space-y-3 overflow-y-auto border-l border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
-          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("edges_selected", { n: String(selectedEdges.size) })}</h3>
+        <aside className="w-72 shrink-0 space-y-3 overflow-y-auto border-l border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("edges_selected", { n: String(selectedEdges.size) })}</h3>
           <Select
             aria-label={t("transition")}
             disabled={!canEdit}
@@ -2196,8 +2196,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
 
       {/* Recorridos del autopilot */}
       {mode === "autopilot" && (
-        <aside className="w-72 shrink-0 space-y-4 overflow-y-auto border-l border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
-          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("autopilot_routes")}</h3>
+        <aside className="w-72 shrink-0 space-y-4 overflow-y-auto border-l border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+          <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("autopilot_routes")}</h3>
           {routes.length > 0 && (
             <Select value={String(routeIndex)} onChange={(e) => setRouteIndex(Number(e.target.value))} aria-label={t("autopilot_routes")}>
               {routes.map((r, i) => (
@@ -2230,12 +2230,12 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   onChange={(e) => patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, title: e.target.value } : r)))}
                 />
               </label>
-              <p className="text-xs text-[var(--ull-text-dim)]">{t("autopilot_click_hint")}</p>
+              <p className="text-xs text-[var(--anda-text-dim)]">{t("autopilot_click_hint")}</p>
               <ol className="space-y-1">
                 {route.steps.map((step, i) => (
                   <li
                     key={`${step.scene}-${i}`}
-                    className="flex items-center gap-2 rounded-lg bg-[var(--ull-surface-2)] px-2 py-1.5 text-[13px]"
+                    className="flex items-center gap-2 rounded-lg bg-[var(--anda-surface-2)] px-2 py-1.5 text-[13px]"
                     draggable={canEdit}
                     onDragStart={(e) => e.dataTransfer.setData("text/route-step", String(i))}
                     onDragOver={(e) => e.preventDefault()}
@@ -2254,7 +2254,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                       );
                     }}
                   >
-                    <span className="flex h-5 w-5 cursor-grab items-center justify-center rounded-full bg-[var(--ull-primary)] text-[11px] font-semibold text-white">
+                    <span className="flex h-5 w-5 cursor-grab items-center justify-center rounded-full bg-[var(--anda-primary)] text-[11px] font-semibold text-white">
                       {i + 1}
                     </span>
                     <span className="flex-1 truncate">{snapshot.scenes.find((sc) => sc.id === step.scene)?.title ?? step.scene}</span>
@@ -2287,13 +2287,13 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   </li>
                 ))}
               </ol>
-              {route.steps.length === 0 && <p className="text-xs text-[var(--ull-text-dim)]">{t("route_empty")}</p>}
+              {route.steps.length === 0 && <p className="text-xs text-[var(--anda-text-dim)]">{t("route_empty")}</p>}
               <label className="flex cursor-pointer items-center gap-2 text-[13px]">
                 <input
                   type="checkbox"
                   checked={route.loop === true}
                   disabled={!canEdit}
-                  className="h-4 w-4 accent-[var(--ull-primary)]"
+                  className="h-4 w-4 accent-[var(--anda-primary)]"
                   onChange={(e) => patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, loop: e.target.checked } : r)))}
                 />
                 {t("route_loop")}
@@ -2417,8 +2417,8 @@ function MenuItem({ children, onClick, disabled, danger }: {
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left hover:bg-[var(--ull-surface-2)] disabled:opacity-50 ${
-        danger === true ? "text-[var(--ull-danger,#dc2626)]" : ""
+      className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left hover:bg-[var(--anda-surface-2)] disabled:opacity-50 ${
+        danger === true ? "text-[var(--anda-danger,#dc2626)]" : ""
       }`}
     >
       {children}
@@ -2521,7 +2521,7 @@ function Minimap({ positions, edges, frames, size, view, svgRef, onMove }: {
     <svg
       width={W}
       height={H}
-      className="absolute bottom-3 right-3 hidden cursor-pointer rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)]/90 shadow-sm sm:block"
+      className="absolute bottom-3 right-3 hidden cursor-pointer rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)]/90 shadow-sm sm:block"
       aria-hidden="true"
       onPointerDown={(e) => {
         e.stopPropagation();
@@ -2556,15 +2556,15 @@ function Minimap({ positions, edges, frames, size, view, svgRef, onMove }: {
             y1={(a.y + size.h / 2 - minY) * scale}
             x2={(b.x + size.w / 2 - minX) * scale}
             y2={(b.y + size.h / 2 - minY) * scale}
-            stroke="var(--ull-text-dim)"
+            stroke="var(--anda-text-dim)"
             strokeOpacity={0.4}
           />
         );
       })}
       {Object.entries(positions).map(([id, p]) => (
-        <rect key={id} x={(p.x - minX) * scale} y={(p.y - minY) * scale} width={size.w * scale} height={size.h * scale} rx={2} fill="var(--ull-text-dim)" fillOpacity={0.6} />
+        <rect key={id} x={(p.x - minX) * scale} y={(p.y - minY) * scale} width={size.w * scale} height={size.h * scale} rx={2} fill="var(--anda-text-dim)" fillOpacity={0.6} />
       ))}
-      <rect x={vx} y={vy} width={vw} height={vh} fill="none" stroke="var(--ull-primary)" strokeWidth={1.5} />
+      <rect x={vx} y={vy} width={vw} height={vh} fill="none" stroke="var(--anda-primary)" strokeWidth={1.5} />
     </svg>
   );
 }

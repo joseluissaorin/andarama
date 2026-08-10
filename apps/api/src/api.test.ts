@@ -13,8 +13,8 @@ import {
   createSqliteKv,
   createSqlAnalytics,
   migrateSqlite,
-} from "@ull360/adapters/node";
-import type { PlatformRuntime } from "@ull360/adapters";
+} from "@andarama/adapters/node";
+import type { PlatformRuntime } from "@andarama/adapters";
 import { createApp } from "./app.js";
 import type { AppEnv } from "./lib/context.js";
 
@@ -59,7 +59,7 @@ async function call(path: string, opts: { method?: string; body?: unknown; auth?
 }
 
 beforeAll(async () => {
-  const dataDir = mkdtempSync(join(tmpdir(), "ull360-test-"));
+  const dataDir = mkdtempSync(join(tmpdir(), "anda-test-"));
   const { db, sqlite } = await createSqliteDb(":memory:");
   await migrateSqlite(sqlite, migrationsDir);
   const runtime: PlatformRuntime = {
@@ -306,7 +306,7 @@ describe("flujo critico", () => {
     const created = (await (
       await call("/api/v1/tokens", { method: "POST", body: { name: "ci", scopes: ["projects:read"] } })
     ).json()) as { token: string };
-    expect(created.token.startsWith("ull360_")).toBe(true);
+    expect(created.token.startsWith("andarama_")).toBe(true);
     // lectura permitida
     const ok = await app.request(`http://localhost/api/v1/projects/${projectId}`, {
       headers: { authorization: `Bearer ${created.token}` },
@@ -340,7 +340,7 @@ describe("flujo critico", () => {
     // Marcar el proyecto como plantilla y darle una configuracion propia
     await call(`/api/v1/projects/${projectId}`, {
       method: "PATCH",
-      body: { isTemplate: true, settings: { langs: ["es", "en"], ui: { theme: { base: "ull", primaryColor: "#5c068c" } } } },
+      body: { isTemplate: true, settings: { langs: ["es", "en"], ui: { theme: { base: "anda", primaryColor: "#f59e00" } } } },
     });
     const creado = await call("/api/v1/projects", {
       method: "POST",
@@ -353,7 +353,7 @@ describe("flujo critico", () => {
     };
     // La plantilla vale por su configuracion, no solo por sus escenas
     expect(detalle.settings.langs).toEqual(["es", "en"]);
-    expect(detalle.settings.ui.theme.primaryColor).toBe("#5c068c");
+    expect(detalle.settings.ui.theme.primaryColor).toBe("#f59e00");
     const contenido = (await (await call(`/api/v1/projects/${nuevoId}/scenes`)).json()) as {
       scenes: unknown[];
       hotspots: unknown[];
@@ -394,7 +394,7 @@ describe("flujo critico", () => {
   it("admin: resumen, ajustes y auditoria", async () => {
     const overview = (await (await call("/api/v1/admin/overview")).json()) as { users: number };
     expect(overview.users).toBe(2);
-    const settings = await call("/api/v1/admin/settings", { method: "PUT", body: { registration: "domain", allowedDomains: ["ull.edu.es"] } });
+    const settings = await call("/api/v1/admin/settings", { method: "PUT", body: { registration: "domain", allowedDomains: ["andarama.com"] } });
     expect(settings.status).toBe(200);
     // registro bloqueado por dominio
     cookies = "";

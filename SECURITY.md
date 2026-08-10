@@ -2,9 +2,9 @@
 
 ## Divulgación responsable
 
-Si encuentras una vulnerabilidad en ULL360, por favor no abras un issue público. Escribe a:
+Si encuentras una vulnerabilidad en Andarama, por favor no abras un issue público. Escribe a:
 
-- **seguridad@ull360.dev** (canal preferente)
+- **seguridad@andarama.dev** (canal preferente)
 - o utiliza los avisos de seguridad privados de GitHub ("Report a vulnerability") en el repositorio.
 
 Nos comprometemos a:

@@ -26,7 +26,7 @@ import {
   Select,
   Spinner,
   useToast,
-} from "@ull360/ui";
+} from "@andarama/ui";
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
@@ -130,7 +130,7 @@ export function ProjectsPage(): React.ReactNode {
         <h1 className="text-xl font-bold">{t("projects")}</h1>
         <div className="flex-1" />
         {usage.data != null && (
-          <div className="text-xs text-[var(--ull-text-dim)]">
+          <div className="text-xs text-[var(--anda-text-dim)]">
             <span className="mr-3">
               {t("storage")}: {gb(usage.data.usedBytes)} {t("of")} {gb(usage.data.quotaBytes)} GB
             </span>
@@ -161,13 +161,13 @@ export function ProjectsPage(): React.ReactNode {
           ))}
         </Select>
         <div className="flex-1" />
-        <div className="flex gap-1 rounded-lg bg-[var(--ull-surface-2)] p-1 text-sm">
+        <div className="flex gap-1 rounded-lg bg-[var(--anda-surface-2)] p-1 text-sm">
           {(["active", "templates", "trash"] as const).map((v) => (
             <button
               key={v}
               type="button"
               onClick={() => setView(v)}
-              className={`rounded-md px-3 py-1.5 ${view === v ? "bg-[var(--ull-surface)] font-medium shadow-sm" : "text-[var(--ull-text-dim)]"}`}
+              className={`rounded-md px-3 py-1.5 ${view === v ? "bg-[var(--anda-surface)] font-medium shadow-sm" : "text-[var(--anda-text-dim)]"}`}
             >
               {v === "active" ? t("projects") : v === "templates" ? t("templates") : t("trash")}
             </button>
@@ -175,7 +175,7 @@ export function ProjectsPage(): React.ReactNode {
         </div>
       </div>
 
-      {view === "trash" && <p className="mb-4 text-[13px] text-[var(--ull-text-dim)]">{t("trash_note")}</p>}
+      {view === "trash" && <p className="mb-4 text-[13px] text-[var(--anda-text-dim)]">{t("trash_note")}</p>}
 
       {projects.isLoading ? (
         <div className="flex justify-center p-16">
@@ -286,7 +286,7 @@ function ProjectCard({ project, inTrash, onChanged }: {
   }, [project.coverMediaId]);
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] shadow-[var(--ull-shadow)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--ull-shadow-lg)]">
+    <div className="group overflow-hidden rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-shadow)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--anda-shadow-lg)]">
       <button
         type="button"
         className="relative block h-24 w-full overflow-hidden text-left"
@@ -328,7 +328,7 @@ function ProjectCard({ project, inTrash, onChanged }: {
           }}
         >
           <h2 className="truncate text-[15px] font-semibold tracking-tight">{project.title}</h2>
-          <p className="mt-0.5 text-xs text-[var(--ull-text-dim)]">
+          <p className="mt-0.5 text-xs text-[var(--anda-text-dim)]">
             {project.folder != null && project.folder !== "" ? `${project.folder} - ` : ""}
             {new Date(project.updatedAt).toLocaleDateString()}
           </p>

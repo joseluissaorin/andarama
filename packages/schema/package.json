@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/schema",
+  "name": "@andarama/schema",
   "version": "0.1.0",
-  "description": "Formato tour.json de ULL360: tipos, JSON Schema, validador y migradores",
+  "description": "Formato tour.json de Andarama: tipos, JSON Schema, validador y migradores",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./dist/index.js",

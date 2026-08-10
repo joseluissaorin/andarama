@@ -1,14 +1,21 @@
 # Avisos de terceros
 
-El código de ULL360 se distribuye bajo la licencia [EUPL-1.2](LICENSE). Este fichero recoge los materiales de terceros incluidos en el repositorio y sus condiciones propias.
+El código de Andarama se distribuye bajo la licencia [EUPL-1.2](LICENSE). Este fichero recoge los materiales de terceros incluidos en el repositorio y sus condiciones propias.
 
-## Marca de la Universidad de La Laguna
+## Origen del proyecto
 
-Los ficheros de `packages/ui/brand/*.svg` y `apps/studio/src/brand/*.svg` (marca y símbolo de la Universidad de La Laguna) proceden de los recursos oficiales del [manual de identidad corporativa de la ULL](https://www.ull.es/portal/marca/) y se incluyen sin alteración para el despliegue institucional de esta plataforma. **Son signos distintivos de la Universidad de La Laguna y NO quedan cubiertos por la EUPL-1.2**: cualquier otro uso debe respetar el manual de identidad y la normativa de la ULL. Si despliegas ULL360 para otra organización, sustituye estos ficheros por tu propia marca.
+Andarama nació como **ULL360**, un proyecto desarrollado para la Universidad de
+La Laguna. La marca y la tipografía institucionales de la ULL que acompañaban a
+aquella versión se han retirado del repositorio; la identidad actual (la
+criatura, el logotipo y la paleta de Andarama) es propia del proyecto y se
+distribuye con él.
 
-## Tipografía Argentum Sans
+## Tipografías
 
-Los ficheros `packages/ui/brand/fonts/ArgentumSans-*.woff2` y `apps/studio/public/fonts/ArgentumSans-*.woff2` corresponden a la tipografía corporativa oficial de la ULL, distribuida por la Universidad bajo la **SIL Open Font License 1.1** (véase [packages/ui/brand/fonts/OFL.txt](packages/ui/brand/fonts/OFL.txt)).
+Los ficheros `*/fonts/Baloo2-Variable.woff2` y `*/fonts/SpaceMono-*.woff2`
+corresponden a las tipografías **Baloo 2** (Ek Type) y **Space Mono** (Colophon
+Foundry), ambas bajo la **SIL Open Font License 1.1** (véase
+[packages/ui/brand/fonts/OFL.txt](packages/ui/brand/fonts/OFL.txt)).
 
 ## Dependencias destacadas
 

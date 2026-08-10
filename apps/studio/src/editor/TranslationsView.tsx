@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { Download, Plus, Upload } from "lucide-react";
-import { Button, Input, Select, useToast } from "@ull360/ui";
+import { Button, Input, Select, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -129,7 +129,7 @@ export function TranslationsView({ project, canEdit }: { project: ProjectInfo; c
   return (
     <div className="mx-auto max-w-5xl p-6">
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <span className="text-sm text-[var(--ull-text-dim)]">
+        <span className="text-sm text-[var(--anda-text-dim)]">
           {t("source_lang")}: <strong>{defaultLang}</strong>
         </span>
         <Select value={lang} onChange={(e) => setLang(e.target.value)} className="max-w-32" aria-label="Idioma destino">
@@ -154,8 +154,8 @@ export function TranslationsView({ project, canEdit }: { project: ProjectInfo; c
             <span className="text-sm">
               {t("completeness")}: <strong>{completeness}%</strong>
             </span>
-            <div className="h-2 w-24 overflow-hidden rounded-full bg-[var(--ull-surface-2)]">
-              <div className="h-full bg-[var(--ull-primary)]" style={{ width: `${completeness}%` }} />
+            <div className="h-2 w-24 overflow-hidden rounded-full bg-[var(--anda-surface-2)]">
+              <div className="h-full bg-[var(--anda-primary)]" style={{ width: `${completeness}%` }} />
             </div>
             <a href={`/api/v1/projects/${project.id}/translations/${lang}/xliff`} download>
               <Button size="sm" variant="outline">
@@ -208,29 +208,29 @@ export function TranslationsView({ project, canEdit }: { project: ProjectInfo; c
       </div>
 
       {lang === "" ? (
-        <p className="text-sm text-[var(--ull-text-dim)]">{t("add_language")}</p>
+        <p className="text-sm text-[var(--anda-text-dim)]">{t("add_language")}</p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[var(--ull-border)]">
+        <div className="overflow-hidden rounded-xl border border-[var(--anda-border)]">
           <table className="w-full text-sm">
-            <thead className="bg-[var(--ull-surface-2)] text-left text-xs text-[var(--ull-text-dim)]">
+            <thead className="bg-[var(--anda-surface-2)] text-left text-xs text-[var(--anda-text-dim)]">
               <tr>
                 <th className="w-1/2 px-4 py-2">{defaultLang}</th>
                 <th className="px-4 py-2">{lang}</th>
               </tr>
             </thead>
-            <tbody className="bg-[var(--ull-surface)]">
+            <tbody className="bg-[var(--anda-surface)]">
               {(sources.data ?? []).map((s) => {
                 const key = `${s.entity}:${s.entityId}:${s.field}`;
                 const value = drafts[key] ?? trMap.get(key) ?? "";
                 return (
-                  <tr key={key} className="border-t border-[var(--ull-border)] align-top">
+                  <tr key={key} className="border-t border-[var(--anda-border)] align-top">
                     <td className="px-4 py-2">
-                      <p className="text-[11px] text-[var(--ull-text-dim)]">{s.label}</p>
+                      <p className="text-[11px] text-[var(--anda-text-dim)]">{s.label}</p>
                       <p className="whitespace-pre-wrap">{s.value}</p>
                     </td>
                     <td className="px-4 py-2">
                       <textarea
-                        className={`w-full resize-y rounded-lg border bg-transparent p-2 text-sm ${value === "" ? "border-amber-300" : "border-[var(--ull-border)]"}`}
+                        className={`w-full resize-y rounded-lg border bg-transparent p-2 text-sm ${value === "" ? "border-amber-300" : "border-[var(--anda-border)]"}`}
                         rows={Math.min(4, Math.max(1, Math.ceil(s.value.length / 60)))}
                         value={value}
                         disabled={!canEdit}

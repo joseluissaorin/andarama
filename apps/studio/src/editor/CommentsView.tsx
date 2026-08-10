@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Check, CornerDownRight, RotateCcw, Trash2 } from "lucide-react";
-import { Badge, Button, Select, Textarea } from "@ull360/ui";
+import { Badge, Button, Select, Textarea } from "@andarama/ui";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -57,10 +57,10 @@ export function CommentsView({ project }: { project: ProjectInfo }): React.React
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-6">
       {roots.map((c) => (
-        <div key={c.id} className={`rounded-xl border p-4 ${c.resolved ? "border-[var(--ull-border)] opacity-60" : "border-[var(--ull-border)] bg-[var(--ull-surface)]"}`}>
+        <div key={c.id} className={`rounded-xl border p-4 ${c.resolved ? "border-[var(--anda-border)] opacity-60" : "border-[var(--anda-border)] bg-[var(--anda-surface)]"}`}>
           <div className="flex items-center gap-2 text-sm">
             <span className="font-semibold">{c.authorName}</span>
-            <span className="text-xs text-[var(--ull-text-dim)]">{new Date(c.createdAt).toLocaleString()}</span>
+            <span className="text-xs text-[var(--anda-text-dim)]">{new Date(c.createdAt).toLocaleString()}</span>
             {sceneTitle(c.sceneId) != null && (
               <button type="button" onClick={() => editor.select(c.sceneId)}>
                 <Badge>{sceneTitle(c.sceneId)}</Badge>
@@ -87,23 +87,23 @@ export function CommentsView({ project }: { project: ProjectInfo }): React.React
           </div>
           <p className="mt-2 whitespace-pre-wrap text-sm">{c.body}</p>
           {childrenOf(c.id).map((reply) => (
-            <div key={reply.id} className="ml-6 mt-3 border-l-2 border-[var(--ull-border)] pl-3">
+            <div key={reply.id} className="ml-6 mt-3 border-l-2 border-[var(--anda-border)] pl-3">
               <p className="text-sm">
                 <span className="font-semibold">{reply.authorName}</span>{" "}
-                <span className="text-xs text-[var(--ull-text-dim)]">{new Date(reply.createdAt).toLocaleString()}</span>
+                <span className="text-xs text-[var(--anda-text-dim)]">{new Date(reply.createdAt).toLocaleString()}</span>
               </p>
               <p className="mt-1 whitespace-pre-wrap text-sm">{reply.body}</p>
             </div>
           ))}
-          <button type="button" className="mt-2 flex items-center gap-1 text-xs text-[var(--ull-primary)] hover:underline" onClick={() => setReplyTo(c.id)}>
+          <button type="button" className="mt-2 flex items-center gap-1 text-xs text-[var(--anda-primary)] hover:underline" onClick={() => setReplyTo(c.id)}>
             <CornerDownRight className="h-3 w-3" /> {t("reply")}
           </button>
         </div>
       ))}
 
-      <div className="rounded-xl border border-dashed border-[var(--ull-border)] p-4">
+      <div className="rounded-xl border border-dashed border-[var(--anda-border)] p-4">
         {replyTo != null && (
-          <p className="mb-2 text-xs text-[var(--ull-text-dim)]">
+          <p className="mb-2 text-xs text-[var(--anda-text-dim)]">
             {t("reply")}...{" "}
             <button type="button" className="underline" onClick={() => setReplyTo(null)}>
               {t("cancel")}

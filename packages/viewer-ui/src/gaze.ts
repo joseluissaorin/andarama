@@ -41,7 +41,7 @@ const PIXELS_PER_RADIAN = 900;
  * cualquier botón: con un panel abierto, hacerlo todo accionable dispararía
  * cosas sin querer.
  */
-export const GAZE_SELECTOR = ".ull360-hotspot, [data-gaze]";
+export const GAZE_SELECTOR = ".anda-hotspot, [data-gaze]";
 
 /** Diferencia angular mínima entre dos yaw, en (-PI, PI]. */
 export function angleDiff(a: number, b: number): number {
@@ -90,22 +90,22 @@ export function startGaze(container: HTMLElement, options: GazeOptions): GazeHan
   const tolerance = ((options.toleranceDeg ?? 6) * Math.PI) / 180;
 
   const host = document.createElement("div");
-  host.className = "ull360-gaze";
+  host.className = "anda-gaze";
   host.setAttribute("aria-hidden", "true");
   host.innerHTML = `<svg viewBox="0 0 ${SIZE} ${SIZE}" width="${SIZE}" height="${SIZE}">
-      <circle class="ull360-gaze-track" cx="${SIZE / 2}" cy="${SIZE / 2}" r="30" />
-      <circle class="ull360-gaze-ring" cx="${SIZE / 2}" cy="${SIZE / 2}" r="30" />
-      <circle class="ull360-gaze-dot" cx="${SIZE / 2}" cy="${SIZE / 2}" r="4" />
+      <circle class="anda-gaze-track" cx="${SIZE / 2}" cy="${SIZE / 2}" r="30" />
+      <circle class="anda-gaze-ring" cx="${SIZE / 2}" cy="${SIZE / 2}" r="30" />
+      <circle class="anda-gaze-dot" cx="${SIZE / 2}" cy="${SIZE / 2}" r="4" />
     </svg>`;
   container.appendChild(host);
 
   // Rótulo de lo enfocado: sin saber qué es, uno espera dos segundos y medio
   // a ver qué pasa. Con el nombre delante se decide antes de que sea tarde.
   const tip = document.createElement("div");
-  tip.className = "ull360-gaze-tip";
+  tip.className = "anda-gaze-tip";
   host.appendChild(tip);
 
-  const ring = host.querySelector<SVGCircleElement>(".ull360-gaze-ring")!;
+  const ring = host.querySelector<SVGCircleElement>(".anda-gaze-ring")!;
   const circumference = 2 * Math.PI * 30;
   ring.style.strokeDasharray = String(circumference);
   ring.style.strokeDashoffset = String(circumference);
@@ -129,7 +129,7 @@ export function startGaze(container: HTMLElement, options: GazeOptions): GazeHan
     raf = requestAnimationFrame(frame);
     const view = options.getView();
     const rect = container.getBoundingClientRect();
-    const panelOpen = container.querySelector(".ull360-panel") != null;
+    const panelOpen = container.querySelector(".anda-panel") != null;
 
     // Al abrirse o cerrarse un panel se cambia de modo y se recentra el cursor
     if (panelOpen && cursorAnchor == null) {

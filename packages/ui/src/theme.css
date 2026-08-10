@@ -1,42 +1,47 @@
 /*
- * Tokens del tema con la identidad corporativa oficial de la Universidad de
- * La Laguna: Violeta ULL (Pantone 2597 C, #5c068c) + blanco, tipografia
- * Argentum Sans (OFL; Montserrat como equivalente autorizado por el manual).
+ * Tokens del tema Andarama: amarillo LocoRoco y naranja sobre papel hueso.
+ *
+ * La regla es de la estética Saorín: la intensidad —el amarillo que canta—
+ * necesita un sustrato cálido que la haga legible, así que el fondo nunca es
+ * blanco puro ni el texto negro puro. Tipografía: Baloo 2 (la voz redonda de
+ * la marca) y Space Mono para el susurro de datos.
  */
 :root {
-  --ull-primary: #5c068c;
-  --ull-primary-dark: #43045f;
-  --ull-primary-light: #7d2fa8;
-  --ull-primary-soft: #f3e9fa;
-  --ull-accent: #d9a521;
-  --ull-grad: linear-gradient(135deg, #5c068c 0%, #7d2fa8 55%, #9a55c2 100%);
-  --ull-grad-deep: linear-gradient(160deg, #2e0347 0%, #4a0572 50%, #5c068c 100%);
-  --ull-bg: #f7f4fa;
-  --ull-surface: #ffffff;
-  --ull-surface-2: #f1eaf7;
-  --ull-border: #e4dbee;
-  --ull-text: #251632;
-  --ull-text-dim: #6f6182;
-  --ull-danger: #c2453a;
-  --ull-ok: #2e8b57;
-  --ull-radius: 10px;
-  --ull-font: "Argentum Sans", "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --ull-shadow: 0 1px 2px rgba(37, 22, 50, 0.06), 0 4px 14px rgba(37, 22, 50, 0.06);
-  --ull-shadow-lg: 0 2px 6px rgba(37, 22, 50, 0.07), 0 18px 44px rgba(37, 22, 50, 0.12);
-  --ull-ring: 0 0 0 3px rgba(92, 6, 140, 0.18);
+  --anda-primary: #f59e00;
+  --anda-primary-dark: #d97c00;
+  --anda-primary-light: #ffc233;
+  --anda-primary-soft: #fdefd2;
+  --anda-accent: #ff6b1a;
+  --anda-yellow: #ffd900;
+  --anda-grad: linear-gradient(135deg, #ffd900 0%, #ffb300 55%, #ff8a00 100%);
+  --anda-grad-deep: linear-gradient(160deg, #6b3400 0%, #a84e00 55%, #d97c00 100%);
+  --anda-bg: #f7f2e7;
+  --anda-surface: #fffdf7;
+  --anda-surface-2: #f5edda;
+  --anda-border: #e8ddc4;
+  --anda-text: #33260f;
+  --anda-text-dim: #85764f;
+  --anda-danger: #d64533;
+  --anda-ok: #3d8b40;
+  --anda-radius: 12px;
+  --anda-font: "Baloo 2", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --anda-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --anda-shadow: 0 1px 2px rgba(72, 52, 8, 0.06), 0 4px 14px rgba(72, 52, 8, 0.07);
+  --anda-shadow-lg: 0 2px 6px rgba(72, 52, 8, 0.08), 0 18px 44px rgba(72, 52, 8, 0.14);
+  --anda-ring: 0 0 0 3px rgba(245, 158, 0, 0.28);
 }
 
 .dark {
-  --ull-primary: #a35fd1;
-  --ull-primary-dark: #7d2fa8;
-  --ull-primary-light: #bd85e3;
-  --ull-primary-soft: #3a1552;
-  --ull-bg: #150a1e;
-  --ull-surface: #1f1229;
-  --ull-surface-2: #2b1a3a;
-  --ull-border: #3d2951;
-  --ull-text: #f0e9f6;
-  --ull-text-dim: #a894bc;
-  --ull-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
-  --ull-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.4);
+  --anda-primary: #ffb300;
+  --anda-primary-dark: #e69500;
+  --anda-primary-light: #ffcf4d;
+  --anda-primary-soft: #4a3608;
+  --anda-bg: #201808;
+  --anda-surface: #2b2110;
+  --anda-surface-2: #382c15;
+  --anda-border: #4d3d1d;
+  --anda-text: #f7efdd;
+  --anda-text-dim: #bda87a;
+  --anda-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  --anda-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45), 0 18px 44px rgba(0, 0, 0, 0.4);
 }

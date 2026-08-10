@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertTriangle, CheckCircle2, Wrench, X } from "lucide-react";
-import { Button } from "@ull360/ui";
+import { Button } from "@andarama/ui";
 import { useT } from "../i18n";
 import type { GraphIssue } from "./graphModel";
 
@@ -52,14 +52,14 @@ export function GraphIssues({
       {open && (
         <>
           <button type="button" aria-label={t("close")} className="fixed inset-0 z-30 cursor-default" onClick={() => setOpen(false)} />
-          <div className="absolute right-3 top-11 z-40 w-[min(32rem,92vw)] overflow-hidden rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] shadow-[var(--ull-shadow-lg)]">
-            <div className="flex items-center justify-between border-b border-[var(--ull-border)] px-4 py-2.5">
+          <div className="absolute right-3 top-11 z-40 w-[min(32rem,92vw)] overflow-hidden rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-shadow-lg)]">
+            <div className="flex items-center justify-between border-b border-[var(--anda-border)] px-4 py-2.5">
               <h3 className="text-[13px] font-semibold">{t("graph_issues_title")}</h3>
               <Button size="icon" variant="ghost" className="h-7 w-7" aria-label={t("close")} onClick={() => setOpen(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <ul className="max-h-[60vh] divide-y divide-[var(--ull-border)] overflow-y-auto">
+            <ul className="max-h-[60vh] divide-y divide-[var(--anda-border)] overflow-y-auto">
               {issues.map((issue, i) => {
                 const action = actionFor(issue);
                 return (
@@ -70,8 +70,8 @@ export function GraphIssues({
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-[13px] font-medium">{t(`graph_issue_${issue.kind}` as never)}</p>
-                        <p className="truncate text-xs text-[var(--ull-text-dim)]">{issue.label}</p>
-                        <p className="mt-0.5 text-xs text-[var(--ull-text-dim)]">{t(`graph_fix_${issue.kind}` as never)}</p>
+                        <p className="truncate text-xs text-[var(--anda-text-dim)]">{issue.label}</p>
+                        <p className="mt-0.5 text-xs text-[var(--anda-text-dim)]">{t(`graph_fix_${issue.kind}` as never)}</p>
                       </div>
                     </div>
                     <div className="mt-1.5 flex gap-1.5 pl-6">

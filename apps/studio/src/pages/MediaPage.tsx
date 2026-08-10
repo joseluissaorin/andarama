@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, RefreshCw, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
-import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@ull360/ui";
+import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
@@ -199,7 +199,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
       {fullPage && (
         <nav className="w-52 shrink-0 space-y-4 text-[13px]">
           <div>
-            <h2 className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("tours")}</h2>
+            <h2 className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("tours")}</h2>
             <ul className="space-y-0.5">
               {[
                 { id: "", label: t("all_tours") },
@@ -211,7 +211,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                     type="button"
                     onClick={() => setProject(item.id)}
                     className={`flex w-full items-center gap-2 truncate rounded-lg px-2 py-1.5 text-left ${
-                      project === item.id ? "bg-[var(--ull-primary-soft)] font-medium text-[var(--ull-primary)]" : "hover:bg-[var(--ull-surface-2)]"
+                      project === item.id ? "bg-[var(--anda-primary-soft)] font-medium text-[var(--anda-primary)]" : "hover:bg-[var(--anda-surface-2)]"
                     }`}
                   >
                     <FolderKanban className="h-3.5 w-3.5 shrink-0 opacity-70" />
@@ -223,7 +223,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
           </div>
           {(folders.data ?? []).length > 0 && (
             <div>
-              <h2 className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("folders")}</h2>
+              <h2 className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("folders")}</h2>
               <ul className="space-y-0.5">
                 {[{ folder: "", total: 0, panoramas: 0 }, ...(folders.data ?? [])]
                   .filter((f, i) => i === 0 || f.folder !== "")
@@ -236,12 +236,12 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                           type="button"
                           onClick={() => setFolder(value)}
                           className={`flex w-full items-center gap-2 truncate rounded-lg px-2 py-1.5 text-left ${
-                            folder === value ? "bg-[var(--ull-primary-soft)] font-medium text-[var(--ull-primary)]" : "hover:bg-[var(--ull-surface-2)]"
+                            folder === value ? "bg-[var(--anda-primary-soft)] font-medium text-[var(--anda-primary)]" : "hover:bg-[var(--anda-surface-2)]"
                           }`}
                         >
                           <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-70" />
                           <span className="truncate">{label}</span>
-                          {i > 0 && <span className="ml-auto text-[11px] text-[var(--ull-text-dim)]">{f.total}</span>}
+                          {i > 0 && <span className="ml-auto text-[11px] text-[var(--anda-text-dim)]">{f.total}</span>}
                         </button>
                       </li>
                     );
@@ -312,16 +312,16 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
       </div>
 
       {Object.entries(uploads).map(([key, u]) => (
-        <div key={key} className="mb-2 rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5">
+        <div key={key} className="mb-2 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5">
           <div className="flex items-center justify-between text-sm">
             <span className="truncate">{u.name}</span>
-            <span className="text-xs text-[var(--ull-text-dim)]">
+            <span className="text-xs text-[var(--anda-text-dim)]">
               {u.phase === "error" ? `${t("error")}: ${u.detail ?? ""}` : u.phase === "tiling" ? `${t("tiling")} ${u.detail ?? ""}` : t(u.phase === "done" ? "ready" : "uploading")}
             </span>
           </div>
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--ull-surface-2)]">
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--anda-surface-2)]">
             <div
-              className={`h-full rounded-full transition-all ${u.phase === "error" ? "bg-[var(--ull-danger)]" : "bg-[var(--ull-primary)]"}`}
+              className={`h-full rounded-full transition-all ${u.phase === "error" ? "bg-[var(--anda-danger)]" : "bg-[var(--anda-primary)]"}`}
               style={{ width: `${u.percent}%` }}
             />
           </div>
@@ -336,9 +336,9 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             e.dataTransfer.setData(MEDIA_DRAG_TYPE, JSON.stringify(source.filter((m) => isPano(m)).map(mediaDragPayload)));
             e.dataTransfer.effectAllowed = "copy";
           }}
-          className="mb-3 inline-flex cursor-grab items-center gap-2 rounded-xl border border-dashed border-[var(--ull-primary)] bg-[var(--ull-surface)] px-3 py-2 text-[13px]"
+          className="mb-3 inline-flex cursor-grab items-center gap-2 rounded-xl border border-dashed border-[var(--anda-primary)] bg-[var(--anda-surface)] px-3 py-2 text-[13px]"
         >
-          <FolderOpen className="h-4 w-4 text-[var(--ull-primary)]" />
+          <FolderOpen className="h-4 w-4 text-[var(--anda-primary)]" />
           {t("drag_group_hint", {
             count: String(
               (selected.size > 1 ? (list.data ?? []).filter((m) => selected.has(m.id)) : (list.data ?? [])).filter((m) => isPano(m)).length,
@@ -368,13 +368,13 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                 e.dataTransfer.setData(MEDIA_DRAG_TYPE, JSON.stringify([mediaDragPayload(m)]));
                 e.dataTransfer.effectAllowed = "copy";
               }}
-              className={`group relative overflow-hidden rounded-xl border bg-[var(--ull-surface)] text-left shadow-sm transition-shadow hover:shadow-md ${
-                selected.has(m.id) ? "border-[var(--ull-primary)] ring-1 ring-[var(--ull-primary)]" : "border-[var(--ull-border)]"
+              className={`group relative overflow-hidden rounded-xl border bg-[var(--anda-surface)] text-left shadow-sm transition-shadow hover:shadow-md ${
+                selected.has(m.id) ? "border-[var(--anda-primary)] ring-1 ring-[var(--anda-primary)]" : "border-[var(--anda-border)]"
               }`}
             >
               <button
                 type="button"
-                className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--ull-primary)]"
+                className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--anda-primary)]"
                 title={isPano(m) ? t("dblclick_to_preview") : undefined}
                 onClick={() => {
                   if (onSelect != null) {
@@ -407,7 +407,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                   setPreview(m);
                 }}
               >
-                <div className="flex h-28 items-center justify-center overflow-hidden bg-[var(--ull-surface-2)]">
+                <div className="flex h-28 items-center justify-center overflow-hidden bg-[var(--anda-surface-2)]">
                   {isPano(m) ? (
                     <PlanetThumb media={m} onOpen360={() => { setDetail(null); setPreview(m); }} />
                   ) : m.derivatives.some((d) => d.kind === "thumb") ? (
@@ -415,7 +415,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                   ) : m.kind === "image" || m.kind === "floorplan" ? (
                     <img src={`/api/v1/media/${m.id}/file`} alt="" className="h-full w-full object-cover" loading="lazy" />
                   ) : (
-                    <span className="text-[var(--ull-text-dim)]">{KIND_ICONS[m.kind] ?? <FileText className="h-5 w-5" />}</span>
+                    <span className="text-[var(--anda-text-dim)]">{KIND_ICONS[m.kind] ?? <FileText className="h-5 w-5" />}</span>
                   )}
                 </div>
                 <div className="p-2.5">
@@ -443,7 +443,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                       return next;
                     });
                   }}
-                  className={`absolute left-2 top-2 h-4 w-4 accent-[var(--ull-primary)] ${selected.size > 0 ? "" : "opacity-0 transition-opacity focus:opacity-100 group-hover:opacity-100"}`}
+                  className={`absolute left-2 top-2 h-4 w-4 accent-[var(--anda-primary)] ${selected.size > 0 ? "" : "opacity-0 transition-opacity focus:opacity-100 group-hover:opacity-100"}`}
                 />
               )}
             </div>
@@ -455,7 +455,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
 
       {/* Barra de acciones por lotes */}
       {fullPage && selected.size > 0 && (
-        <div className="sticky bottom-4 mt-4 flex items-center gap-3 rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5 shadow-[var(--ull-shadow-lg)]">
+        <div className="sticky bottom-4 mt-4 flex items-center gap-3 rounded-2xl border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 shadow-[var(--anda-shadow-lg)]">
           <span className="text-sm font-medium">{t("n_selected", { count: String(selected.size) })}</span>
           <Select
             value=""
@@ -552,24 +552,24 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
               </Select>
             </Field>
             <p>
-              <span className="text-[var(--ull-text-dim)]">{t("type")}:</span> {t(`media_kind_${detail.kind}`)} ({detail.mime})
+              <span className="text-[var(--anda-text-dim)]">{t("type")}:</span> {t(`media_kind_${detail.kind}`)} ({detail.mime})
             </p>
             {detail.width != null && (
               <p>
-                <span className="text-[var(--ull-text-dim)]">{t("dimensions")}:</span> {detail.width} x {detail.height}
+                <span className="text-[var(--anda-text-dim)]">{t("dimensions")}:</span> {detail.width} x {detail.height}
               </p>
             )}
             <p>
-              <span className="text-[var(--ull-text-dim)]">{t("size")}:</span> {(detail.bytes / (1024 * 1024)).toFixed(2)} MB
+              <span className="text-[var(--anda-text-dim)]">{t("size")}:</span> {(detail.bytes / (1024 * 1024)).toFixed(2)} MB
             </p>
             {detail.duration != null && (
               <p>
-                <span className="text-[var(--ull-text-dim)]">{t("duration")}:</span> {Math.round(detail.duration)} s
+                <span className="text-[var(--anda-text-dim)]">{t("duration")}:</span> {Math.round(detail.duration)} s
               </p>
             )}
             {detail.exif?.gps != null && (
               <p>
-                <span className="text-[var(--ull-text-dim)]">GPS:</span> {detail.exif.gps.lat.toFixed(5)}, {detail.exif.gps.lng.toFixed(5)}
+                <span className="text-[var(--anda-text-dim)]">GPS:</span> {detail.exif.gps.lat.toFixed(5)}, {detail.exif.gps.lng.toFixed(5)}
               </p>
             )}
           </div>

@@ -12,4 +12,4 @@ Generados con `generador.cjs` (Node + sharp):
 node generador.cjs
 ```
 
-Licencia de estos medios: **CC BY 4.0** (atribución: proyecto ULL360).
+Licencia de estos medios: **CC BY 4.0** (atribución: proyecto Andarama).

@@ -7,7 +7,7 @@ El primer usuario registrado es **administrador de la instancia** y ve la secci�
 ## Ajustes de instancia
 
 - **Nombre y logo** de la instancia.
-- **Política de registro**: abierto, solo por invitación, o por dominio de email (p. ej. `ull.edu.es`).
+- **Política de registro**: abierto, solo por invitación, o por dominio de email (p. ej. `museodelaciudad.es`).
 - **Límite de subida** (MB) y **retención de la papelera** (días; 30 por defecto).
 - **Cuotas por defecto** de nuevas organizaciones (almacenamiento y número de tours) y ajuste individual por organización.
 - **Textos legales**: privacidad, cookies, términos.
@@ -24,7 +24,7 @@ Listado de usuarios (rol global admin/user, 2FA, SSO), cuotas por organización 
 
 ## Cola de trabajos
 
-Los trabajos pesados (tiles de imágenes gigantes, transcodificación) aparecen en **Cola de trabajos** con reintento manual. En self-host los procesa el propio proceso; en Cloudflare los procesa el contenedor de procesado opcional (la CLI `ull360-tile` del paquete `@ull360/tiler`).
+Los trabajos pesados (tiles de imágenes gigantes, transcodificación) aparecen en **Cola de trabajos** con reintento manual. En self-host los procesa el propio proceso; en Cloudflare los procesa el contenedor de procesado opcional (la CLI `anda-tile` del paquete `@andarama/tiler`).
 
 ## Auditoría
 
@@ -32,7 +32,7 @@ Registro de auditoría de acciones sensibles: quién publicó, despublicó, borr
 
 ## Webhooks
 
-Suscripción de sistemas externos a eventos `publish`, `unpublish` y `form_submission`, con firma HMAC opcional (`X-ULL360-Signature`).
+Suscripción de sistemas externos a eventos `publish`, `unpublish` y `form_submission`, con firma HMAC opcional (`X-Andarama-Signature`).
 
 ## Valores por defecto de la organización
 
@@ -81,4 +81,4 @@ todos los tours. Lo único que la condiciona es el alojamiento.
 
 - **Cloudflare**: D1 tiene Time Travel de 30 días. Además, descarga la copia completa desde Administración, Copia de seguridad (JSON con todas las tablas) y sincroniza el bucket R2 con `rclone`/`aws s3 sync`.
 - **Self-host**: `deploy/docker/backup.sh` hace una copia consistente de SQLite (VACUUM INTO) y de los medios; prográmalo con cron. Para replicación continua, considera litestream.
-- **Portabilidad de un tour**: cada proyecto puede exportarse como fichero `.ull360` (estructura completa sin binarios) e importarse en otra instancia.
+- **Portabilidad de un tour**: cada proyecto puede exportarse como fichero `.andarama` (estructura completa sin binarios) e importarse en otra instancia.

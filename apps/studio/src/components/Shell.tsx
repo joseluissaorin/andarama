@@ -1,13 +1,12 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Download, FolderKanban, Image, Languages, LogOut, RefreshCw, ShieldCheck, Share, UserCircle, Building2 } from "lucide-react";
-import { Button, Dialog, Select, Spinner, Tooltip } from "@ull360/ui";
+import { Button, Dialog, Select, Spinner, Tooltip } from "@andarama/ui";
 import { useAuth } from "../stores";
 import { useI18nStore, useT } from "../i18n";
 import { usePwa } from "../pwa";
-import logoUll360 from "../brand/logo-ull360.svg";
-import iconoUll from "../brand/icono-ull.svg";
-import iconoUllBlanco from "../brand/icono-ull-blanco.svg";
+import logoAndarama from "../brand/logo-andarama.svg";
+import andaCriatura from "../brand/anda-criatura.svg";
 
 /** Marco de navegacion del Studio. */
 export function Shell(): React.ReactNode {
@@ -38,13 +37,12 @@ export function Shell(): React.ReactNode {
 
   return (
     <div className="flex h-full">
-      <aside className="flex w-60 flex-col border-r border-[var(--ull-border)] bg-[var(--ull-surface)]">
+      <aside className="flex w-60 flex-col border-r border-[var(--anda-border)] bg-[var(--anda-surface)]">
         <div className="flex items-center gap-3 px-4 pb-4 pt-5">
-          {/* Marca de producto de ULL360 (propia); la institucional va aparte */}
-          <img src={logoUll360} alt="" width={40} height={40} className="rounded-xl shadow-[var(--ull-shadow)]" />
+          <img src={logoAndarama} alt="" width={40} height={40} className="rounded-xl shadow-[var(--anda-shadow)]" />
           <div className="leading-tight">
-            <span className="block text-[15px] font-bold tracking-tight">ULL360</span>
-            <span className="block text-[11px] font-medium text-[var(--ull-text-dim)]">Universidad de La Laguna</span>
+            <span className="block text-[17px] font-bold tracking-tight">andarama</span>
+            <span className="block text-[11px] font-medium text-[var(--anda-text-dim)]">Studio</span>
           </div>
         </div>
         {me.orgs.length > 0 && (
@@ -53,7 +51,7 @@ export function Shell(): React.ReactNode {
               aria-label="Organización"
               value={currentOrgId ?? ""}
               onChange={(e) => setOrg(e.target.value)}
-              className="bg-[var(--ull-surface-2)] text-[13px] font-medium"
+              className="bg-[var(--anda-surface-2)] text-[13px] font-medium"
             >
               {me.orgs.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -63,7 +61,7 @@ export function Shell(): React.ReactNode {
             </Select>
           </div>
         )}
-        <p className="px-5 pb-2 text-[10.5px] font-bold uppercase tracking-[0.09em] text-[var(--ull-text-dim)]">
+        <p className="px-5 pb-2 text-[10.5px] font-bold uppercase tracking-[0.09em] text-[var(--anda-text-dim)]">
           {t("projects")}
         </p>
         <nav className="flex-1 space-y-0.5 px-3" aria-label="Principal">
@@ -81,7 +79,7 @@ export function Shell(): React.ReactNode {
           <button
             type="button"
             onClick={pwa.applyUpdate}
-            className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-[var(--ull-primary-soft)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--ull-primary)]"
+            className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-[var(--anda-primary-soft)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--anda-primary)]"
           >
             <RefreshCw className="h-4 w-4 shrink-0" />
             {t("update_ready")}
@@ -94,19 +92,19 @@ export function Shell(): React.ReactNode {
               if (pwa.installable) void pwa.install();
               else setIosHelp(true);
             }}
-            className="mx-3 mb-2 flex items-center gap-2 rounded-xl border border-dashed border-[var(--ull-border)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--ull-text-dim)] hover:border-[var(--ull-primary)] hover:text-[var(--ull-primary)]"
+            className="mx-3 mb-2 flex items-center gap-2 rounded-xl border border-dashed border-[var(--anda-border)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--anda-text-dim)] hover:border-[var(--anda-primary)] hover:text-[var(--anda-primary)]"
           >
             <Download className="h-4 w-4 shrink-0" />
             {t("install_app")}
           </button>
         )}
-        <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl bg-[var(--ull-surface-2)] p-1.5">
+        <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl bg-[var(--anda-surface-2)] p-1.5">
           <Tooltip content={lang === "es" ? "English" : "Español"}>
             <Button variant="ghost" size="icon" aria-label="Idioma de la interfaz" onClick={() => setLang(lang === "es" ? "en" : "es")}>
               <Languages className="h-4 w-4" />
             </Button>
           </Tooltip>
-          <span className="flex-1 truncate px-1 text-xs font-medium text-[var(--ull-text-dim)]">{me.user.email}</span>
+          <span className="flex-1 truncate px-1 text-xs font-medium text-[var(--anda-text-dim)]">{me.user.email}</span>
           <Tooltip content={t("logout")}>
             <Button
               variant="ghost"
@@ -122,7 +120,7 @@ export function Shell(): React.ReactNode {
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto">
-        <div className="ull-enter h-full">
+        <div className="anda-enter h-full">
           <Outlet />
         </div>
       </main>
@@ -130,7 +128,7 @@ export function Shell(): React.ReactNode {
       <Dialog open={iosHelp} onOpenChange={setIosHelp} title={t("install_app")} description={t("install_ios_hint")}>
         <ol className="list-decimal space-y-1.5 pl-5 text-[13px]">
           <li className="flex items-center gap-1.5">
-            <Share className="h-4 w-4 text-[var(--ull-primary)]" /> {t("install_ios_step_share")}
+            <Share className="h-4 w-4 text-[var(--anda-primary)]" /> {t("install_ios_step_share")}
           </li>
           <li>{t("install_ios_step_add")}</li>
           <li>{t("install_ios_step_confirm")}</li>
@@ -144,17 +142,17 @@ function NavItem({ to, icon, label }: { to: string; icon: React.ReactNode; label
   return (
     <Link
       to={to}
-      className="group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-[var(--ull-text-dim)] transition-colors hover:bg-[var(--ull-surface-2)] hover:text-[var(--ull-text)] [&.active]:bg-[var(--ull-primary-soft)] [&.active]:font-semibold [&.active]:text-[var(--ull-primary)] [&.active_.nav-accent]:opacity-100"
+      className="group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-[var(--anda-text-dim)] transition-colors hover:bg-[var(--anda-surface-2)] hover:text-[var(--anda-text)] [&.active]:bg-[var(--anda-primary-soft)] [&.active]:font-semibold [&.active]:text-[var(--anda-primary)] [&.active_.nav-accent]:opacity-100"
       activeOptions={{ exact: to === "/" }}
     >
-      <span className="nav-accent absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[var(--ull-primary)] opacity-0 transition-opacity" />
+      <span className="nav-accent absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-[var(--anda-primary)] opacity-0 transition-opacity" />
       {icon}
       <span className="truncate">{label}</span>
     </Link>
   );
 }
 
-/** Símbolo oficial de la Universidad de La Laguna (ficheros del manual, sin alteración). */
-export function UllLogo({ size = 26, light = false }: { size?: number; light?: boolean }): React.ReactNode {
-  return <img src={light ? iconoUllBlanco : iconoUll} alt="" width={size} height={size} aria-hidden="true" style={{ display: "block" }} />;
+/** La criatura de Andarama, sin fondo: para cabeceras compactas. */
+export function AndaLogo({ size = 26 }: { size?: number }): React.ReactNode {
+  return <img src={andaCriatura} alt="" width={size} height={size} aria-hidden="true" style={{ display: "block" }} />;
 }

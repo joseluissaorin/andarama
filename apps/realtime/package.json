@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/realtime",
+  "name": "@andarama/realtime",
   "version": "0.1.0",
-  "description": "Tiempo real de ULL360: Durable Objects (Cloudflare) y salas WS (self-host)",
+  "description": "Tiempo real de Andarama: Durable Objects (Cloudflare) y salas WS (self-host)",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./src/index.ts",

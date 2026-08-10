@@ -1,13 +1,13 @@
 ---
-title: ULL360
-description: Plataforma de tours virtuales 360 de código abierto de la Universidad de La Laguna
+title: Andarama
+description: Recorridos virtuales 360 de código abierto — ¡anda! andarama me deja andar por panoramas
 ---
 
-ULL360 es una plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360 interactivos. Se compone de tres piezas:
+Andarama es una plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360 interactivos. Se compone de tres piezas:
 
-1. **ULL360 Studio**: editor visual en el navegador para construir tours sin conocimientos técnicos.
-2. **ULL360 Viewer**: motor de visualización WebGL embebible y exportable como paquete HTML estático autocontenido.
-3. **ULL360 API**: backend ligero (proyectos, usuarios, medios, procesado, analítica, colaboración en tiempo real).
+1. **Andarama Studio**: editor visual en el navegador para construir tours sin conocimientos técnicos.
+2. **Andarama Viewer**: motor de visualización WebGL embebible y exportable como paquete HTML estático autocontenido.
+3. **Andarama API**: backend ligero (proyectos, usuarios, medios, procesado, analítica, colaboración en tiempo real).
 
 ## Dos formas de desplegar
 
@@ -34,4 +34,4 @@ ULL360 es una plataforma web de código abierto para crear, publicar y distribui
 
 ## Licencia
 
-Código bajo [EUPL-1.2](https://joinup.ec.europa.eu/collection/eupl). Titularidad: Universidad de La Laguna. Medios de ejemplo bajo CC BY 4.0.
+Código bajo [EUPL-1.2](https://joinup.ec.europa.eu/collection/eupl). Nacido como ULL360 en la Universidad de La Laguna; hoy se llama Andarama. Medios de ejemplo bajo CC BY 4.0.

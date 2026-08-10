@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/adapters",
+  "name": "@andarama/adapters",
   "version": "0.1.0",
-  "description": "Interfaces de plataforma de ULL360 e implementaciones Cloudflare y Node",
+  "description": "Interfaces de plataforma de Andarama e implementaciones Cloudflare y Node",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -18,7 +18,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@ull360/db": "workspace:*",
+    "@andarama/db": "workspace:*",
     "aws4fetch": "^1.0.20",
     "drizzle-orm": "^0.39.3"
   },

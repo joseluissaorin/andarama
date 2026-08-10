@@ -1,4 +1,4 @@
-import type { AutopilotRoute, AutorotateConfig } from "@ull360/schema";
+import type { AutopilotRoute, AutorotateConfig } from "@andarama/schema";
 
 /**
  * Visita automatica (autopilot): recorrido autonomo por una ruta definida

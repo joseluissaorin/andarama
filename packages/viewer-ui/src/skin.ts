@@ -1,5 +1,5 @@
-import type { Projection, Tour } from "@ull360/schema";
-import { createIconSvg, resolveUrl, TourViewer } from "@ull360/viewer";
+import type { Projection, Tour } from "@andarama/schema";
+import { createIconSvg, resolveUrl, TourViewer } from "@andarama/viewer";
 import { injectStyles } from "./styles.js";
 import { createTranslator, type Translator } from "./i18n.js";
 import { registerUiIcons } from "./icons.js";
@@ -55,11 +55,11 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   injectStyles(theme?.customCss);
 
   const container = options.container;
-  // Las variables CSS del tema viven en .ull360-viewer: debe estar tambien
+  // Las variables CSS del tema viven en .anda-viewer: debe estar tambien
   // en el contenedor exterior, donde cuelga el cromo de la skin.
-  container.classList.add("ull360-viewer");
+  container.classList.add("anda-viewer");
   if (getComputedStyle(container).position === "static") container.style.position = "relative";
-  container.dataset.theme = theme?.base ?? "ull";
+  container.dataset.theme = theme?.base ?? "anda";
   if (theme?.primaryColor != null) container.style.setProperty("--u3-primary", theme.primaryColor);
   if (theme?.fontFamily != null) container.style.setProperty("--u3-font", theme.fontFamily);
   if (theme?.borderRadius != null) container.style.setProperty("--u3-radius", theme.borderRadius);
@@ -121,27 +121,27 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   viewer.on("hotspotDeactivate", () => panelHost.close());
 
   // Skip link accesible
-  const skip = el("a", { className: "ull360-skiplink", href: "#", text: t("accessible_mode") });
+  const skip = el("a", { className: "anda-skiplink", href: "#", text: t("accessible_mode") });
   container.appendChild(skip);
 
   // ------- Barra superior flotante -------
-  const topbar = el("div", { className: "ull360-topbar" });
-  const topPill = el("div", { className: "ull360-topbar__pill" });
+  const topbar = el("div", { className: "anda-topbar" });
+  const topPill = el("div", { className: "anda-topbar__pill" });
   if (ui.sceneMenu !== false) {
     const menu = buildSceneMenu(viewer, t, baseUrl);
     container.appendChild(menu.root);
     topPill.appendChild(iconButton("menu", t("menu"), menu.toggle));
   }
   if (ui.titleBar !== false) {
-    topPill.appendChild(el("h1", { className: "ull360-title", text: viewer.text(tour.meta.title) }));
+    topPill.appendChild(el("h1", { className: "anda-title", text: viewer.text(tour.meta.title) }));
   }
   if (topPill.childElementCount > 0) topbar.appendChild(topPill);
   if (ui.logo != null) {
     const img = el("img", { src: resolveUrl(baseUrl, ui.logo.image), alt: "" });
     const logo =
       ui.logo.link != null
-        ? el("a", { className: "ull360-logo", href: ui.logo.link, target: "_blank", rel: "noopener" }, img)
-        : el("div", { className: "ull360-logo" }, img);
+        ? el("a", { className: "anda-logo", href: ui.logo.link, target: "_blank", rel: "noopener" }, img)
+        : el("div", { className: "anda-logo" }, img);
     topbar.appendChild(logo);
   }
   if (topbar.childElementCount > 0) container.appendChild(topbar);
@@ -150,8 +150,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     const img = el("img", { src: resolveUrl(baseUrl, ui.watermark.image), alt: "" });
     const wm =
       ui.watermark.link != null
-        ? el("a", { className: "ull360-watermark", href: ui.watermark.link, target: "_blank", rel: "noopener" }, img)
-        : el("div", { className: "ull360-watermark" }, img);
+        ? el("a", { className: "anda-watermark", href: ui.watermark.link, target: "_blank", rel: "noopener" }, img)
+        : el("div", { className: "anda-watermark" }, img);
     container.appendChild(wm);
   }
 
@@ -181,7 +181,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // ------- Miniaturas -------
   // Las miniaturas las decide el tour, pero también quien mira: en un móvil
   // ocupan un tercio de la pantalla y a veces se quieren fuera.
-  const THUMBS_KEY = "ull360.thumbs";
+  const THUMBS_KEY = "andarama.thumbs";
   let thumbsEl: HTMLElement | null = null;
   const thumbsAllowed = ui.thumbnails !== false;
   let thumbsOn = thumbsAllowed && localStorage.getItem(THUMBS_KEY) !== "off";
@@ -204,18 +204,18 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
   // ------- Indicador de carga -------
   if (ui.loadingIndicator !== false) {
-    const loading = el("div", { className: "ull360-loading", role: "status", "aria-label": t("loading") },
-      el("div", { className: "ull360-loading__spinner" }));
+    const loading = el("div", { className: "anda-loading", role: "status", "aria-label": t("loading") },
+      el("div", { className: "anda-loading__spinner" }));
     container.appendChild(loading);
     viewer.on("ready", () => loading.remove());
     setTimeout(() => loading.remove(), 15000);
   }
 
   // ------- Controles laterales -------
-  const controls = el("div", { className: "ull360-controls" });
+  const controls = el("div", { className: "anda-controls" });
   // Dique plegable: en un móvil, ocho botones se comen la escena. Se recuerda
   // la decisión, y en pantallas pequeñas empieza plegado.
-  const COMPACT_KEY = "ull360.compactControls";
+  const COMPACT_KEY = "andarama.compactControls";
   const saved = localStorage.getItem(COMPACT_KEY);
   let compact = saved != null ? saved === "on" : window.matchMedia("(max-width: 640px)").matches;
   const applyCompact = (): void => {
@@ -229,8 +229,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     localStorage.setItem(COMPACT_KEY, compact ? "on" : "off");
     applyCompact();
   });
-  compactBtn.classList.add("ull360-controls__toggle");
-  const controlsLeft = el("div", { className: "ull360-controls-left" });
+  compactBtn.classList.add("anda-controls__toggle");
+  const controlsLeft = el("div", { className: "anda-controls-left" });
 
   if (mapPanel.available) {
     controlsLeft.appendChild(iconButton("map", t("map"), mapPanel.toggle));
@@ -367,12 +367,12 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // Selector de idioma
   if (ui.langSelector !== false && tour.meta.langs.length > 1) {
     const langBtn = iconButton("languages", t("language"), () => {
-      const existing = container.querySelector(".ull360-menu-pop");
+      const existing = container.querySelector(".anda-menu-pop");
       if (existing != null) {
         existing.remove();
         return;
       }
-      const pop = el("div", { className: "ull360-menu-pop", role: "menu", style: `bottom:${controls.offsetHeight - (langBtn.offsetTop + 44)}px;` });
+      const pop = el("div", { className: "anda-menu-pop", role: "menu", style: `bottom:${controls.offsetHeight - (langBtn.offsetTop + 44)}px;` });
       pop.style.bottom = "auto";
       pop.style.top = `${langBtn.getBoundingClientRect().top - container.getBoundingClientRect().top}px`;
       for (const lang of tour.meta.langs) {
@@ -391,12 +391,12 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // Selector de proyeccion
   if (!edit) {
   const projBtn = iconButton("globe", t("projection"), () => {
-    const existing = container.querySelector(".ull360-menu-pop");
+    const existing = container.querySelector(".anda-menu-pop");
     if (existing != null) {
       existing.remove();
       return;
     }
-    const pop = el("div", { className: "ull360-menu-pop", role: "menu" });
+    const pop = el("div", { className: "anda-menu-pop", role: "menu" });
     pop.style.top = `${projBtn.getBoundingClientRect().top - container.getBoundingClientRect().top}px`;
     const projections: Projection[] = ["rectilinear", "littlePlanet", "fisheye", "pannini", "architectural"];
     for (const p of projections) {
@@ -445,7 +445,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   if (controlsLeft.childElementCount > 0) container.appendChild(controlsLeft);
 
   // ------- Video 360: barra de controles -------
-  const videoBar = el("div", { className: "ull360-videobar", hidden: true });
+  const videoBar = el("div", { className: "anda-videobar", hidden: true });
   container.appendChild(videoBar);
   const refreshVideoBar = (): void => {
     const video = viewer.videoElement();
@@ -494,7 +494,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // ------- Busqueda del tesoro -------
   if (tour.treasureHunt?.enabled === true && !edit) {
     const hud = el("div", {
-      className: "ull360-toast ull360-toast--hud",
+      className: "anda-toast anda-toast--hud",
       role: "status",
     });
     const refresh = (found: number, total: number): void => {
@@ -515,7 +515,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     if (edit) return;
     if (state.total > 0 && state.answered === state.total && tour.quiz?.finalReport !== false) {
       panelHost.close();
-      const card = el("div", { className: "ull360-screen__card" });
+      const card = el("div", { className: "anda-screen__card" });
       card.appendChild(el("h1", { text: t("quiz_report") }));
       card.appendChild(el("p", { text: `${t("quiz_score")}: ${state.score} / ${state.maxScore}` }));
       if (state.passed != null) {
@@ -528,7 +528,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
           "aria-label": t("quiz_your_name"),
           style: "width:100%;padding:10px;border-radius:8px;border:1px solid rgba(128,128,160,.4);background:transparent;color:inherit;margin-top:10px;",
         });
-        const dl = el("button", { className: "ull360-primary-btn", type: "button", text: t("quiz_certificate") });
+        const dl = el("button", { className: "anda-primary-btn", type: "button", text: t("quiz_certificate") });
         dl.addEventListener("click", () => {
           if (nameInput.value.trim() === "") {
             nameInput.focus();
@@ -545,8 +545,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         });
         card.append(nameInput, dl);
       }
-      const close = el("button", { className: "ull360-primary-btn", type: "button", text: t("close"), style: "margin-left:10px;" });
-      const screen = el("div", { className: "ull360-screen", role: "dialog", "aria-modal": "true" }, card);
+      const close = el("button", { className: "anda-primary-btn", type: "button", text: t("close"), style: "margin-left:10px;" });
+      const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true" }, card);
       card.appendChild(close);
       close.addEventListener("click", () => {
         screen.remove();
@@ -573,7 +573,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     t = createTranslator(e.lang);
     // Los componentes leen textos en su proximo render; para textos fijos
     // basta actualizar el titulo.
-    const title = topbar.querySelector(".ull360-title");
+    const title = topbar.querySelector(".anda-title");
     if (title != null) title.textContent = viewer.text(tour.meta.title);
   });
 
@@ -617,9 +617,9 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
   // ------- postMessage API para embeds (necesaria para LTI e integraciones) -------
   const onMessage = (e: MessageEvent): void => {
-    const data = e.data as { ull360?: string; [k: string]: unknown };
-    if (data == null || typeof data !== "object" || typeof data.ull360 !== "string") return;
-    switch (data.ull360) {
+    const data = e.data as { andarama?: string; [k: string]: unknown };
+    if (data == null || typeof data !== "object" || typeof data.andarama !== "string") return;
+    switch (data.andarama) {
       case "goTo":
         if (typeof data.scene === "string") void viewer.goTo(data.scene, { force: true });
         break;
@@ -631,7 +631,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         break;
       case "getState":
         (e.source as WindowProxy | null)?.postMessage(
-          { ull360: "state", scene: viewer.currentSceneId(), view: viewer.view(), lang: viewer.currentLang(), quiz: viewer.quizState() },
+          { andarama: "state", scene: viewer.currentSceneId(), view: viewer.view(), lang: viewer.currentLang(), quiz: viewer.quizState() },
           "*",
         );
         break;
@@ -644,16 +644,16 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     // Emitir eventos hacia el padre si estamos embebidos
     if (window.parent !== window) {
       viewer.on("sceneChange", (e) =>
-        window.parent.postMessage({ ull360: "sceneChange", scene: e.scene.id }, "*"),
+        window.parent.postMessage({ andarama: "sceneChange", scene: e.scene.id }, "*"),
       );
-      viewer.on("quizChange", (state) => window.parent.postMessage({ ull360: "quizChange", state }, "*"));
+      viewer.on("quizChange", (state) => window.parent.postMessage({ andarama: "quizChange", state }, "*"));
       // Vista actual (limitada): permite sincronizar visores (comparador dividido)
       let lastViewEmit = 0;
       viewer.on("viewChange", (v) => {
         const now = Date.now();
         if (now - lastViewEmit < 80) return;
         lastViewEmit = now;
-        window.parent.postMessage({ ull360: "viewChange", view: { yaw: v.yaw, pitch: v.pitch, fov: v.fov } }, "*");
+        window.parent.postMessage({ andarama: "viewChange", view: { yaw: v.yaw, pitch: v.pitch, fov: v.fov } }, "*");
       });
     }
 
@@ -668,8 +668,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         quiz: viewer.quizState(),
         treasure: viewer.treasureState(),
       };
-      (window as unknown as Record<string, unknown>).__ULL360_STATE__ = state;
-      window.dispatchEvent(new CustomEvent("ull360:state", { detail: state }));
+      (window as unknown as Record<string, unknown>).__Andarama_STATE__ = state;
+      window.dispatchEvent(new CustomEvent("andarama:state", { detail: state }));
     };
     viewer.on("sceneChange", publishState);
     viewer.on("quizChange", publishState);

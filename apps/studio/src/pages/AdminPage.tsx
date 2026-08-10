@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Activity, Download, ExternalLink, Globe, Plus, RefreshCcw, Send, Trash2, Upload, UserPlus } from "lucide-react";
-import { Badge, Button, Dialog, Field, Input, Select, Spinner, Switch, Tabs, TabList, TabTrigger, Textarea, useToast } from "@ull360/ui";
+import { Badge, Button, Dialog, Field, Input, Select, Spinner, Switch, Tabs, TabList, TabTrigger, Textarea, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useT } from "../i18n";
 
@@ -122,12 +122,12 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
             key={key}
             type="button"
             onClick={() => onNavigate(tab)}
-            className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4 text-left transition-shadow hover:shadow-md"
+            className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4 text-left transition-shadow hover:shadow-md"
           >
             <p className="text-2xl font-bold tabular-nums">
               {q.data?.[key] != null ? (format != null ? format(q.data[key]!) : q.data[key]) : "—"}
             </p>
-            <p className="text-xs text-[var(--ull-text-dim)]">{label}</p>
+            <p className="text-xs text-[var(--anda-text-dim)]">{label}</p>
           </button>
         ))}
       </div>
@@ -144,8 +144,8 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Almacenamiento por organización */}
-        <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
-          <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("storage_by_org")}</h2>
+        <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+          <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("storage_by_org")}</h2>
           <div className="space-y-3">
             {(orgsQ.data ?? []).map((o) => {
               const pct = Math.min(100, Math.round((o.usedBytes / Math.max(1, o.quotaBytes)) * 100));
@@ -153,26 +153,26 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
                 <div key={o.id}>
                   <div className="mb-1 flex justify-between text-[13px]">
                     <span className="font-medium">{o.name}</span>
-                    <span className="tabular-nums text-[var(--ull-text-dim)]">
+                    <span className="tabular-nums text-[var(--anda-text-dim)]">
                       {(o.usedBytes / 1024 / 1024 / 1024).toFixed(2)} / {(o.quotaBytes / 1024 / 1024 / 1024).toFixed(0)} GB
                     </span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-[var(--ull-surface-2)]">
+                  <div className="h-2 overflow-hidden rounded-full bg-[var(--anda-surface-2)]">
                     <div
-                      className={`h-full rounded-full ${pct > 90 ? "bg-red-500" : pct > 70 ? "bg-amber-500" : "bg-[var(--ull-primary)]"}`}
+                      className={`h-full rounded-full ${pct > 90 ? "bg-red-500" : pct > 70 ? "bg-amber-500" : "bg-[var(--anda-primary)]"}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
                 </div>
               );
             })}
-            {orgsQ.data?.length === 0 && <p className="text-sm text-[var(--ull-text-dim)]">—</p>}
+            {orgsQ.data?.length === 0 && <p className="text-sm text-[var(--anda-text-dim)]">—</p>}
           </div>
         </section>
 
         {/* Últimas publicaciones */}
-        <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
-          <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("latest_publications")}</h2>
+        <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+          <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("latest_publications")}</h2>
           <div className="space-y-1.5">
             {(pubsQ.data ?? [])
               .slice()
@@ -184,26 +184,26 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
                   href={`/t/${p.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--ull-surface-2)]"
+                  className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--anda-surface-2)]"
                 >
-                  <span className="truncate font-medium text-[var(--ull-primary)]">{p.title}</span>
-                  <span className="shrink-0 text-xs text-[var(--ull-text-dim)]">{new Date(p.publishedAt).toLocaleDateString()}</span>
+                  <span className="truncate font-medium text-[var(--anda-primary)]">{p.title}</span>
+                  <span className="shrink-0 text-xs text-[var(--anda-text-dim)]">{new Date(p.publishedAt).toLocaleDateString()}</span>
                 </a>
               ))}
-            {pubsQ.data?.length === 0 && <p className="text-sm text-[var(--ull-text-dim)]">—</p>}
+            {pubsQ.data?.length === 0 && <p className="text-sm text-[var(--anda-text-dim)]">—</p>}
           </div>
         </section>
       </div>
 
       {/* Actividad reciente */}
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4">
-        <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("recent_activity")}</h2>
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4">
+        <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("recent_activity")}</h2>
         <div className="space-y-1 text-xs">
           {(auditQ.data ?? []).slice(0, 10).map((a) => (
-            <div key={a.id} className="flex gap-3 border-b border-[var(--ull-border)] py-1.5 last:border-0">
-              <span className="w-36 shrink-0 text-[var(--ull-text-dim)]">{new Date(a.at).toLocaleString()}</span>
+            <div key={a.id} className="flex gap-3 border-b border-[var(--anda-border)] py-1.5 last:border-0">
+              <span className="w-36 shrink-0 text-[var(--anda-text-dim)]">{new Date(a.at).toLocaleString()}</span>
               <span className="font-mono">{a.action}</span>
-              <span className="truncate text-[var(--ull-text-dim)]">{a.entity}</span>
+              <span className="truncate text-[var(--anda-text-dim)]">{a.entity}</span>
             </div>
           ))}
         </div>
@@ -237,7 +237,7 @@ function InstanceSettings(): React.ReactNode {
           <option value="domain">{t("reg_domain")}</option>
         </Select>
       </Field>
-      <Field label={t("allowed_domains")} htmlFor="in-domains" hint="ull.edu.es, ull.es">
+      <Field label={t("allowed_domains")} htmlFor="in-domains" hint="museodelaciudad.es, ayuntamiento.es">
         <Input
           id="in-domains"
           value={((data.allowedDomains as string[]) ?? []).join(", ")}
@@ -331,7 +331,7 @@ function UsersTable(): React.ReactNode {
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-[var(--ull-border)] text-left text-xs text-[var(--ull-text-dim)]">
+          <tr className="border-b border-[var(--anda-border)] text-left text-xs text-[var(--anda-text-dim)]">
             <th className="py-2">{t("name")}</th>
             <th>{t("email")}</th>
             <th>{t("role")}</th>
@@ -341,7 +341,7 @@ function UsersTable(): React.ReactNode {
         </thead>
         <tbody>
           {rows.map((u) => (
-            <tr key={u.id} className="border-b border-[var(--ull-border)]">
+            <tr key={u.id} className="border-b border-[var(--anda-border)]">
               <td className="py-2">{u.name}</td>
               <td>{u.email}</td>
               <td>
@@ -474,7 +474,7 @@ function OrgsTable(): React.ReactNode {
       </div>
       <div className="space-y-2">
         {(q.data ?? []).map((o) => (
-          <div key={o.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5 text-sm">
+          <div key={o.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 text-sm">
             <Input
               defaultValue={o.name}
               className="max-w-56 font-medium"
@@ -488,7 +488,7 @@ function OrgsTable(): React.ReactNode {
               }}
             />
             <span className="flex-1" />
-            <span className="text-xs tabular-nums text-[var(--ull-text-dim)]">
+            <span className="text-xs tabular-nums text-[var(--anda-text-dim)]">
               {(o.usedBytes / 1024 / 1024 / 1024).toFixed(2)} GB {t("of")}
             </span>
             <Input
@@ -503,7 +503,7 @@ function OrgsTable(): React.ReactNode {
                 )
               }
             />
-            <span className="text-xs text-[var(--ull-text-dim)]">GB</span>
+            <span className="text-xs text-[var(--anda-text-dim)]">GB</span>
             <Input
               type="number"
               className="max-w-20"
@@ -516,7 +516,7 @@ function OrgsTable(): React.ReactNode {
                 )
               }
             />
-            <span className="text-xs text-[var(--ull-text-dim)]">{t("tours")}</span>
+            <span className="text-xs text-[var(--anda-text-dim)]">{t("tours")}</span>
           </div>
         ))}
       </div>
@@ -578,14 +578,14 @@ function PubsTable(): React.ReactNode {
       <Input placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-64" aria-label={t("search")} />
       <div className="space-y-2 text-sm">
         {rows.map((p) => (
-          <div key={p.projectId} className="flex items-center gap-3 rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5">
-            <a href={`/t/${p.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 font-medium text-[var(--ull-primary)] hover:underline">
+          <div key={p.projectId} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5">
+            <a href={`/t/${p.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 font-medium text-[var(--anda-primary)] hover:underline">
               {p.title} <ExternalLink className="h-3.5 w-3.5" />
             </a>
-            <span className="font-mono text-xs text-[var(--ull-text-dim)]">/t/{p.slug}</span>
+            <span className="font-mono text-xs text-[var(--anda-text-dim)]">/t/{p.slug}</span>
             <div className="flex-1" />
             <Badge>{p.visibility}</Badge>
-            <span className="text-xs text-[var(--ull-text-dim)]">{new Date(p.publishedAt).toLocaleString()}</span>
+            <span className="text-xs text-[var(--anda-text-dim)]">{new Date(p.publishedAt).toLocaleString()}</span>
             <Button
               variant="ghost"
               size="sm"
@@ -633,11 +633,11 @@ function JobsTable(): React.ReactNode {
       </Select>
       <div className="space-y-2 text-sm">
         {rows.map((j) => (
-          <div key={j.id} className="flex items-center gap-3 rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5">
+          <div key={j.id} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5">
             <span className="font-mono text-xs">{j.kind}</span>
             <Badge tone={j.status === "done" ? "ok" : j.status === "error" ? "danger" : "warn"}>{j.status}</Badge>
-            <span className="flex-1 truncate text-xs text-[var(--ull-text-dim)]">{j.error ?? ""}</span>
-            <span className="text-xs text-[var(--ull-text-dim)]">{new Date(j.createdAt).toLocaleTimeString()}</span>
+            <span className="flex-1 truncate text-xs text-[var(--anda-text-dim)]">{j.error ?? ""}</span>
+            <span className="text-xs text-[var(--anda-text-dim)]">{new Date(j.createdAt).toLocaleTimeString()}</span>
             {j.status === "error" && (
               <Button
                 variant="ghost"
@@ -655,7 +655,7 @@ function JobsTable(): React.ReactNode {
             )}
           </div>
         ))}
-        {rows.length === 0 && <p className="text-sm text-[var(--ull-text-dim)]">—</p>}
+        {rows.length === 0 && <p className="text-sm text-[var(--anda-text-dim)]">—</p>}
       </div>
     </div>
   );
@@ -680,10 +680,10 @@ function AuditTable(): React.ReactNode {
       <Input placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-64" aria-label={t("search")} />
       <div className="max-h-[60vh] space-y-1 overflow-y-auto text-xs">
         {rows.map((a) => (
-          <div key={a.id} className="flex gap-3 border-b border-[var(--ull-border)] py-1.5">
-            <span className="w-40 shrink-0 text-[var(--ull-text-dim)]">{new Date(a.at).toLocaleString()}</span>
+          <div key={a.id} className="flex gap-3 border-b border-[var(--anda-border)] py-1.5">
+            <span className="w-40 shrink-0 text-[var(--anda-text-dim)]">{new Date(a.at).toLocaleString()}</span>
             <span className="font-mono">{a.action}</span>
-            <span className="truncate text-[var(--ull-text-dim)]">
+            <span className="truncate text-[var(--anda-text-dim)]">
               {a.entity} {a.entityId ?? ""}
             </span>
           </div>
@@ -719,10 +719,10 @@ function WebhooksPanel(): React.ReactNode {
   return (
     <div className="max-w-2xl space-y-4">
       {(q.data ?? []).map((h) => (
-        <div key={h.id} className="flex items-center gap-3 rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5 text-sm">
-          <Globe className={`h-4 w-4 shrink-0 ${h.active ? "text-emerald-500" : "text-[var(--ull-text-dim)]"}`} />
+        <div key={h.id} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 text-sm">
+          <Globe className={`h-4 w-4 shrink-0 ${h.active ? "text-emerald-500" : "text-[var(--anda-text-dim)]"}`} />
           <span className="flex-1 truncate font-mono text-xs">{h.url}</span>
-          <span className="text-xs text-[var(--ull-text-dim)]">{parseEvents(h.eventsJson).join(", ")}</span>
+          <span className="text-xs text-[var(--anda-text-dim)]">{parseEvents(h.eventsJson).join(", ")}</span>
           <Switch
             id={`wh-active-${h.id}`}
             checked={h.active}
@@ -762,7 +762,7 @@ function WebhooksPanel(): React.ReactNode {
           </Button>
         </div>
       ))}
-      <div className="space-y-3 rounded-lg border border-dashed border-[var(--ull-border)] p-4">
+      <div className="space-y-3 rounded-lg border border-dashed border-[var(--anda-border)] p-4">
         <Field label={t("webhook_url")} htmlFor="wh-url">
           <Input id="wh-url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." />
         </Field>
@@ -819,7 +819,7 @@ function LtiPanel(): React.ReactNode {
   return (
     <div className="max-w-2xl space-y-5">
       {first != null && (
-        <div className="rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] p-4 text-xs">
+        <div className="rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] p-4 text-xs">
           <p className="mb-2 font-semibold">{t("lti_endpoints_hint")}</p>
           {Object.entries(first.toolEndpoints).map(([k, v]) => (
             <p key={k} className="font-mono">
@@ -829,9 +829,9 @@ function LtiPanel(): React.ReactNode {
         </div>
       )}
       {(q.data ?? []).map((r) => (
-        <div key={r.id} className="flex items-center gap-3 rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface)] px-4 py-2.5 text-sm">
+        <div key={r.id} className="flex items-center gap-3 rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 text-sm">
           <span className="flex-1 truncate">{r.issuer}</span>
-          <span className="font-mono text-xs text-[var(--ull-text-dim)]">{r.clientId}</span>
+          <span className="font-mono text-xs text-[var(--anda-text-dim)]">{r.clientId}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -847,10 +847,10 @@ function LtiPanel(): React.ReactNode {
           </Button>
         </div>
       ))}
-      <div className="space-y-3 rounded-lg border border-dashed border-[var(--ull-border)] p-4">
+      <div className="space-y-3 rounded-lg border border-dashed border-[var(--anda-border)] p-4">
         {(
           [
-            ["issuer", "Issuer (https://moodle.ull.es)"],
+            ["issuer", "Issuer (https://moodle.example.org)"],
             ["clientId", "Client ID"],
             ["deploymentId", "Deployment ID"],
             ["authUrl", "Auth URL (/mod/lti/auth.php)"],
@@ -893,7 +893,7 @@ function BackupPanel(): React.ReactNode {
         <Download className="h-4 w-4" /> {t("backup_download")}
       </Button>
       <div>
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-[var(--ull-radius)] border border-[var(--ull-border)] px-4 py-2 text-sm hover:bg-[var(--ull-surface-2)]">
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-[var(--anda-radius)] border border-[var(--anda-border)] px-4 py-2 text-sm hover:bg-[var(--anda-surface-2)]">
           {importing ? <Spinner /> : <Upload className="h-4 w-4" />} {t("backup_import")}
           <input
             type="file"
@@ -918,7 +918,7 @@ function BackupPanel(): React.ReactNode {
           />
         </label>
       </div>
-      <p className="text-xs text-[var(--ull-text-dim)]">{t("backup_hint")}</p>
+      <p className="text-xs text-[var(--anda-text-dim)]">{t("backup_hint")}</p>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { media, orgInvites, orgMembers, orgs, projects, users } from "@ull360/db";
+import { media, orgInvites, orgMembers, orgs, projects, users } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, newToken, nowMs, parseJson, sha256Hex, slugify } from "../lib/util.js";
@@ -171,8 +171,8 @@ export function orgRoutes(): Hono<AppEnv> {
     runtime.deferred(
       runtime.email.send({
         to: emailNorm,
-        subject: `Invitación a ${org?.name ?? "ULL360"}`,
-        text: `${auth.user.name} te invita a colaborar en "${org?.name}" en ULL360.\n\nAcepta la invitación aquí (caduca en 14 días):\n${url}`,
+        subject: `Invitación a ${org?.name ?? "Andarama"}`,
+        text: `${auth.user.name} te invita a colaborar en "${org?.name}" en Andarama.\n\nAcepta la invitación aquí (caduca en 14 días):\n${url}`,
       }),
     );
     await audit(c, "org.invite", "invite", id, { email: emailNorm, role: body.role }, orgId);

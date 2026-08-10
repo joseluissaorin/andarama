@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { PlatformRuntime } from "@ull360/adapters";
+import type { PlatformRuntime } from "@andarama/adapters";
 import type { AppConfig, AppEnv, Db } from "./lib/context.js";
 import { ApiError, problem, serverError } from "./lib/errors.js";
 import { checkCsrf, resolveAuth } from "./lib/session.js";
@@ -112,7 +112,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
     const auth = c.get("auth");
     if (auth == null) return c.json({ user: null });
     const db = c.get("db");
-    const { orgMembers, orgs } = await import("@ull360/db");
+    const { orgMembers, orgs } = await import("@andarama/db");
     const { eq } = await import("drizzle-orm");
     const memberships = await db
       .select({ org: orgs, role: orgMembers.role })
@@ -139,7 +139,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
     const auth = c.get("auth");
     if (auth == null) return c.json({ error: "Sin sesión" }, 401);
     const db = c.get("db");
-    const { users } = await import("@ull360/db");
+    const { users } = await import("@andarama/db");
     const { eq } = await import("drizzle-orm");
     const body = (await c.req.json()) as Record<string, unknown>;
     const prefs = {

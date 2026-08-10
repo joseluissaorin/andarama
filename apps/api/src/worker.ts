@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
-import * as schema from "@ull360/db";
+import * as schema from "@andarama/db";
 import {
   cfPasswordHasher,
   createAeAnalytics,
@@ -12,15 +12,15 @@ import {
   type KVNamespaceLike,
   type QueueLike,
   type R2BucketLike,
-} from "@ull360/adapters/cloudflare";
-import type { PlatformRuntime } from "@ull360/adapters";
+} from "@andarama/adapters/cloudflare";
+import type { PlatformRuntime } from "@andarama/adapters";
 import { createApp } from "./app.js";
 import type { AppConfig, Db } from "./lib/context.js";
 import { purgeExpiredSessions } from "./lib/session.js";
 import { purgeTrashedProjects } from "./routes/projects.js";
 import { getSettings } from "./lib/helpers.js";
 
-export { LiveTourRoomDO, ProjectPresenceDO } from "@ull360/realtime/durable-objects";
+export { LiveTourRoomDO, ProjectPresenceDO } from "@andarama/realtime/durable-objects";
 
 /**
  * Entrada Cloudflare Workers: construye el PlatformRuntime a partir de los
@@ -97,7 +97,7 @@ function buildRuntime(env: Env, publicUrl: string, waitUntil: (p: Promise<unknow
     email: createFetchEmail({
       webhookUrl: env.EMAIL_WEBHOOK_URL,
       apiKey: env.EMAIL_WEBHOOK_KEY,
-      from: env.EMAIL_FROM ?? "ull360@localhost",
+      from: env.EMAIL_FROM ?? "andarama@localhost",
     }),
     deferred: waitUntil,
   };
@@ -107,7 +107,7 @@ function buildConfig(env: Env, publicUrl: string): AppConfig {
   return {
     publicUrl,
     secret: env.APP_SECRET,
-    emailFrom: env.EMAIL_FROM ?? "ull360@localhost",
+    emailFrom: env.EMAIL_FROM ?? "andarama@localhost",
     turnstileSiteKey: env.TURNSTILE_SITE_KEY,
     turnstileSecret: env.TURNSTILE_SECRET,
     maxUploadBytes: 512 * 1024 * 1024,
@@ -158,41 +158,99 @@ export default {
       },
     });
 
-    // Dominio propio (CNAME): un host distinto del canonico sirve su tour en la raiz
-    let effectiveRequest = request;
-    const canonicalHost = (() => {
+    // -----------------------------------------------------------------------
+    // Enrutado por host. El mismo worker sirve tres portadas:
+    //   andarama.com        -> la landing (y los tours /t/... para compartir)
+    //   app.andarama.com    -> el Studio, con URL limpias en la raiz
+    //   docs.andarama.com   -> la documentacion, con URL limpias en la raiz
+    // Los hosts *.workers.dev y el self-host siguen siendo por rutas (/studio,
+    // /docs), que es lo que esperan los despliegues de un solo dominio.
+    // -----------------------------------------------------------------------
+    const apexHost = (() => {
       try {
         return new URL(publicUrl).host;
       } catch {
         return url.host;
       }
     })();
-    if (url.host !== canonicalHost) {
-      const p = url.pathname;
+    const appHost = `app.${apexHost}`;
+    const docsHost = `docs.${apexHost}`;
+    const path = url.pathname;
+    // Un fichero lleva extension; una pagina, no. Distinguirlo permite
+    // redirigir las paginas a su URL limpia sin tocar los assets.
+    const esPagina = !/\.[a-z0-9]+$/i.test(path.split("/").pop() ?? "");
+
+    if (url.host === `www.${apexHost}`) {
+      return Response.redirect(`https://${apexHost}${path}${url.search}`, 301);
+    }
+
+    if (url.host === apexHost) {
+      // Las secciones viven en sus subdominios: las URL viejas acompanan
+      if ((path === "/studio" || path.startsWith("/studio/")) && esPagina) {
+        const resto = path.slice("/studio".length) || "/";
+        return Response.redirect(`https://${appHost}${resto}${url.search}`, 301);
+      }
+      if ((path === "/docs" || path.startsWith("/docs/")) && esPagina) {
+        const resto = path.slice("/docs".length) || "/";
+        return Response.redirect(`https://${docsHost}${resto}${url.search}`, 301);
+      }
+    }
+    if (url.host === appHost || url.host === docsHost) {
+      const prefijo = url.host === appHost ? "/studio" : "/docs";
+      if ((path === prefijo || path.startsWith(`${prefijo}/`)) && esPagina) {
+        const resto = path.slice(prefijo.length) || "/";
+        return Response.redirect(`https://${url.host}${resto}${url.search}`, 301);
+      }
+      // El manifiesto de la PWA cambia de ambito cuando el Studio vive en la
+      // raiz: id, start_url y scope pasan a "/" (fichero gemelo pregenerado)
+      if (url.host === appHost && path === "/studio/manifest.webmanifest" && env.ASSETS != null) {
+        return env.ASSETS.fetch(new Request(`${url.origin}/studio/manifest-root.webmanifest`, { headers: request.headers }));
+      }
+    }
+
+    // Dominio propio (CNAME): un host desconocido sirve su tour en la raiz
+    let effectiveRequest = request;
+    const esConocido =
+      url.host === apexHost || url.host === appHost || url.host === docsHost ||
+      url.host.endsWith(".workers.dev") || url.hostname === "localhost" || url.hostname === "127.0.0.1";
+    if (!esConocido) {
       const passthrough =
-        p.startsWith("/api/") || p.startsWith("/viewer/") || p.startsWith("/ingest/") || p.startsWith("/studio") ||
-        p.startsWith("/rt/") || p.startsWith("/docs") || p.startsWith("/t/") || p.startsWith("/embed.js");
+        path.startsWith("/api/") || path.startsWith("/viewer/") || path.startsWith("/ingest/") || path.startsWith("/studio") ||
+        path.startsWith("/rt/") || path.startsWith("/docs") || path.startsWith("/t/") || path.startsWith("/embed.js");
       if (!passthrough) {
         const slug = await env.KV.get(`domain:${url.host}`);
         if (slug != null) {
           const rewritten = new URL(url.toString());
-          rewritten.pathname = `/t/${slug}${p === "/" ? "" : p}`;
+          rewritten.pathname = `/t/${slug}${path === "/" ? "" : path}`;
           effectiveRequest = new Request(rewritten.toString(), request);
         }
       }
     }
 
-    if (new URL(effectiveRequest.url).pathname === "/") {
-      return Response.redirect(`${publicUrl}/studio/`, 302);
+    // La raiz de cada host: landing en el apex (y en workers.dev), Studio en
+    // el subdominio de la app, documentacion en el suyo
+    if (new URL(effectiveRequest.url).pathname === "/" && env.ASSETS != null) {
+      const portada =
+        url.host === appHost ? "/studio/index.html" : url.host === docsHost ? "/docs/index.html" : "/landing/index.html";
+      return env.ASSETS.fetch(new Request(`${url.origin}${portada}`, { headers: request.headers }));
     }
 
     const response = await app.fetch(effectiveRequest, env as never, ctx as never);
-    // Rutas no manejadas: assets estaticos (Studio + visor)
-    if (response.status === 404 && env.ASSETS != null && request.method === "GET" && !url.pathname.startsWith("/api/")) {
+    // Rutas no manejadas: assets estaticos (Studio + visor + docs + landing)
+    if (response.status === 404 && env.ASSETS != null && request.method === "GET" && !path.startsWith("/api/")) {
       const assetRes = await env.ASSETS.fetch(request);
       if (assetRes.status !== 404) return assetRes;
-      // SPA fallback del Studio
-      if (url.pathname.startsWith("/studio")) {
+      // En los subdominios, las rutas limpias se resuelven contra su seccion
+      const prefijo = url.host === appHost ? "/studio" : url.host === docsHost ? "/docs" : url.host === apexHost ? "/landing" : null;
+      const esSeccion = path.startsWith("/studio") || path.startsWith("/docs") || path.startsWith("/viewer") || path.startsWith("/landing");
+      if (prefijo != null && !esSeccion) {
+        const traducida = await env.ASSETS.fetch(new Request(`${url.origin}${prefijo}${path}`, { headers: request.headers }));
+        if (traducida.status !== 404) return traducida;
+      }
+      // SPA fallback del Studio (rutas del editor, tanto /studio/... como
+      // limpias). Solo para paginas: un fichero con extension que no existe
+      // debe ser un 404, no un index.html disfrazado.
+      if (esPagina && (path.startsWith("/studio") || url.host === appHost)) {
         return env.ASSETS.fetch(new Request(`${url.origin}/studio/index.html`, { headers: request.headers }));
       }
     }

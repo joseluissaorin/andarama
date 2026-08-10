@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { ArrowRight, Check, GripVertical, MapPin, Trash2, UploadCloud, Wand2 } from "lucide-react";
-import { Button, Dialog, Field, Input, Select, Spinner, Switch, useToast } from "@ull360/ui";
+import { Button, Dialog, Field, Input, Select, Spinner, Switch, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useT } from "../i18n";
 import { uploadMedia } from "../upload";
@@ -220,7 +220,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
               <span
                 key={label}
                 className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  step === i ? "bg-[var(--ull-primary)] text-white" : "bg-[var(--ull-surface-2)] text-[var(--ull-text-dim)]"
+                  step === i ? "bg-[var(--anda-primary)] text-white" : "bg-[var(--anda-surface-2)] text-[var(--anda-text-dim)]"
                 }`}
               >
                 {i + 1}. {label}
@@ -268,7 +268,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
           <div className="flex flex-wrap items-end gap-2">
             <Field label={t("target_project")} htmlFor="iw-project">
               {project != null ? (
-                <p id="iw-project" className="min-w-56 rounded-lg bg-[var(--ull-surface-2)] px-3 py-2 text-sm font-medium">
+                <p id="iw-project" className="min-w-56 rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-sm font-medium">
                   {project.title}
                 </p>
               ) : (
@@ -296,7 +296,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
           {items.length === 0 ? (
             <button
               type="button"
-              className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--ull-border)] p-12 text-[var(--ull-text-dim)] hover:border-[var(--ull-primary)] hover:text-[var(--ull-primary)]"
+              className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--anda-border)] p-12 text-[var(--anda-text-dim)] hover:border-[var(--anda-primary)] hover:text-[var(--anda-primary)]"
               onClick={() => fileInput.current?.click()}
             >
               <UploadCloud className="h-8 w-8" />
@@ -324,10 +324,10 @@ export function ImportWizard({ orgId, open, onClose, project }: {
                       });
                     }}
                     onDragEnd={() => setDragKey(null)}
-                    className="flex items-center gap-2.5 rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-2"
+                    className="flex items-center gap-2.5 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-2"
                   >
-                    <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-[var(--ull-text-dim)]" />
-                    <span className="w-6 text-right text-xs tabular-nums text-[var(--ull-text-dim)]">{i + 1}</span>
+                    <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-[var(--anda-text-dim)]" />
+                    <span className="w-6 text-right text-xs tabular-nums text-[var(--anda-text-dim)]">{i + 1}</span>
                     <img src={item.previewUrl} alt="" className="h-11 w-[4.5rem] shrink-0 rounded-lg object-cover" />
                     <Input
                       value={item.name}
@@ -335,13 +335,13 @@ export function ImportWizard({ orgId, open, onClose, project }: {
                       className="flex-1"
                       onChange={(e) => setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, name: e.target.value } : x)))}
                     />
-                    <span className="w-24 text-right text-xs text-[var(--ull-text-dim)]">
+                    <span className="w-24 text-right text-xs text-[var(--anda-text-dim)]">
                       {item.status === "done" ? (
                         <Check className="ml-auto h-4 w-4 text-emerald-500" />
                       ) : item.status === "uploading" ? (
                         `${item.percent.toFixed(2)} %`
                       ) : item.status === "error" ? (
-                        <span className="text-[var(--ull-danger)]">{t("error")}</span>
+                        <span className="text-[var(--anda-danger)]">{t("error")}</span>
                       ) : (
                         `${(item.file.size / 1024 / 1024).toFixed(1)} MB`
                       )}
@@ -397,11 +397,11 @@ export function ImportWizard({ orgId, open, onClose, project }: {
               ))}
             </Select>
           )}
-          <p className="text-sm text-[var(--ull-text-dim)]">
+          <p className="text-sm text-[var(--anda-text-dim)]">
             {nextUnplaced != null ? t("plan_place_next", { name: nextUnplaced.name }) : t("plan_all_placed")}
           </p>
           {floorplan != null ? (
-            <div className="relative overflow-hidden rounded-xl border border-[var(--ull-border)]">
+            <div className="relative overflow-hidden rounded-xl border border-[var(--anda-border)]">
               <img
                 src={floorplan.url.startsWith("media:") ? `/api/v1/media/${floorplan.url.slice(6)}/file` : floorplan.url}
                 alt={floorplan.title}
@@ -421,7 +421,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
                       key={item.key}
                       type="button"
                       title={`${item.name} (${t("click_to_clear")})`}
-                      className="absolute flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--ull-primary)] text-[11px] font-bold text-white shadow-md hover:scale-110"
+                      className="absolute flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[var(--anda-primary)] text-[11px] font-bold text-white shadow-md hover:scale-110"
                       style={{ left: `${item.plan.x * 100}%`, top: `${item.plan.y * 100}%` }}
                       onClick={() => setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, plan: undefined } : x)))}
                     >
@@ -431,7 +431,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
               )}
             </div>
           ) : (
-            <p className="text-sm text-[var(--ull-text-dim)]">{t("no_floorplan_hint")}</p>
+            <p className="text-sm text-[var(--anda-text-dim)]">{t("no_floorplan_hint")}</p>
           )}
         </div>
       )}
@@ -459,12 +459,12 @@ export function ImportWizard({ orgId, open, onClose, project }: {
                 {items.map((item) => (
                   <li key={item.key}>
                     {item.name}
-                    {item.plan != null && <MapPin className="ml-1 inline h-3.5 w-3.5 text-[var(--ull-primary)]" aria-label={t("placed_on_plan")} />}
+                    {item.plan != null && <MapPin className="ml-1 inline h-3.5 w-3.5 text-[var(--anda-primary)]" aria-label={t("placed_on_plan")} />}
                   </li>
                 ))}
               </ol>
               <Switch id="iw-connect" checked={connectSequence} onCheckedChange={setConnectSequence} label={t("connect_sequence")} />
-              <p className="text-xs text-[var(--ull-text-dim)]">{t("connect_sequence_hint")}</p>
+              <p className="text-xs text-[var(--anda-text-dim)]">{t("connect_sequence_hint")}</p>
             </>
           )}
         </div>

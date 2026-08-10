@@ -1,13 +1,13 @@
 # Guía de contribución
 
-Gracias por tu interés en ULL360. Este proyecto es código abierto (EUPL-1.2) y las contribuciones son bienvenidas.
+Gracias por tu interés en Andarama. Este proyecto es código abierto (EUPL-1.2) y las contribuciones son bienvenidas.
 
 ## Preparar el entorno
 
 Requisitos: Node.js >= 20, pnpm >= 10 (y Docker si quieres probar el self-host).
 
 ```bash
-git clone https://github.com/joseluissaorin/ull360 && cd ull360
+git clone https://github.com/joseluissaorin/andarama && cd andarama
 pnpm install
 pnpm build:packages
 pnpm dev            # API en http://localhost:8787 (wrangler dev)

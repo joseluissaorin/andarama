@@ -11,9 +11,9 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Badge, Button, Dialog, Field, Input, Tooltip, useToast } from "@ull360/ui";
-import type { Tour } from "@ull360/schema";
-import { mountViewer, type MountedSkin } from "@ull360/viewer-ui";
+import { Badge, Button, Dialog, Field, Input, Tooltip, useToast } from "@andarama/ui";
+import type { Tour } from "@andarama/schema";
+import { mountViewer, type MountedSkin } from "@andarama/viewer-ui";
 import { api } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -131,8 +131,8 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
   return (
     <div className="flex h-full">
       <aside
-        className={`flex w-64 flex-col border-r bg-[var(--ull-surface)] ${
-          mediaOver ? "border-[var(--ull-primary)] bg-[var(--ull-primary)]/5" : "border-[var(--ull-border)]"
+        className={`flex w-64 flex-col border-r bg-[var(--anda-surface)] ${
+          mediaOver ? "border-[var(--anda-primary)] bg-[var(--anda-primary)]/5" : "border-[var(--anda-border)]"
         }`}
         onDragOver={(e) => {
           if (!canEdit || !hasMediaDrag(e.dataTransfer)) return;
@@ -155,7 +155,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
         }}
       >
         <div className="flex items-center justify-between px-3 py-2.5">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("scenes")}</h2>
+          <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("scenes")}</h2>
           {canEdit && (
             <Button size="sm" variant="ghost" onClick={() => setAddOpen(true)} aria-label={t("add_scene")}>
               <Plus className="h-4 w-4" />
@@ -164,13 +164,13 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
         </div>
         {scenes.length > 6 && (
           <div className="relative mx-2 mb-2">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--ull-text-dim)]" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--anda-text-dim)]" />
             <input
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               placeholder={t("search")}
               aria-label={t("search")}
-              className="w-full rounded-lg border border-[var(--ull-border)] bg-[var(--ull-surface-2)] py-1.5 pl-8 pr-2 text-[13px] outline-none focus:border-[var(--ull-primary)]"
+              className="w-full rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface-2)] py-1.5 pl-8 pr-2 text-[13px] outline-none focus:border-[var(--anda-primary)]"
             />
           </div>
         )}
@@ -208,37 +208,37 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
                 }}
                 className={`group relative mb-1 rounded-lg border p-2 transition-shadow ${
                   selected?.id === scene.id
-                    ? "border-[var(--ull-primary)] bg-[var(--ull-surface-2)]"
-                    : "border-transparent hover:bg-[var(--ull-surface-2)]"
-                } ${dropAt === scene.id ? "shadow-[inset_0_2px_0_var(--ull-primary)]" : ""} ${dragId === scene.id ? "opacity-40" : ""}`}
+                    ? "border-[var(--anda-primary)] bg-[var(--anda-surface-2)]"
+                    : "border-transparent hover:bg-[var(--anda-surface-2)]"
+                } ${dropAt === scene.id ? "shadow-[inset_0_2px_0_var(--anda-primary)]" : ""} ${dragId === scene.id ? "opacity-40" : ""}`}
               >
                 <button type="button" className="flex w-full items-center gap-2 text-left" onClick={() => editor.select(scene.id)}>
                   {canEdit && (
-                    <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-[var(--ull-text-dim)] opacity-0 transition-opacity group-hover:opacity-60" />
+                    <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-[var(--anda-text-dim)] opacity-0 transition-opacity group-hover:opacity-60" />
                   )}
                   {scene.mediaId != null ? (
                     <img src={`/api/v1/media/${scene.mediaId}/derived/thumb`} alt="" className="h-9 w-14 rounded object-cover" loading="lazy"
                       onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")} />
                   ) : (
-                    <span className="flex h-9 w-14 shrink-0 items-center justify-center rounded bg-[var(--ull-surface-2)] text-[var(--ull-text-dim)]">
+                    <span className="flex h-9 w-14 shrink-0 items-center justify-center rounded bg-[var(--anda-surface-2)] text-[var(--anda-text-dim)]">
                       <ImageIcon className="h-4 w-4" />
                     </span>
                   )}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-medium">{scene.title}</span>
-                    <span className="flex items-center gap-1 text-[11px] text-[var(--ull-text-dim)]">
+                    <span className="flex items-center gap-1 text-[11px] text-[var(--anda-text-dim)]">
                       {isStart && <Badge tone="ok">{t("start_scene_badge")}</Badge>}
                       {scene.type !== "image" && <Badge>{scene.type}</Badge>}
                       {lockedByOther && (
                         <Tooltip content={t("scene_locked", { name: lock.name })}>
-                          <Lock className="h-3 w-3 text-[var(--ull-accent)]" />
+                          <Lock className="h-3 w-3 text-[var(--anda-accent)]" />
                         </Tooltip>
                       )}
                     </span>
                   </span>
                 </button>
                 {canEdit && (
-                  <div className="absolute right-1.5 top-1.5 hidden gap-0.5 rounded-md bg-[var(--ull-surface)] p-0.5 shadow-sm group-focus-within:flex group-hover:flex">
+                  <div className="absolute right-1.5 top-1.5 hidden gap-0.5 rounded-md bg-[var(--anda-surface)] p-0.5 shadow-sm group-focus-within:flex group-hover:flex">
                     <Tooltip content={t("duplicate")}>
                       <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("duplicate")} onClick={() => duplicate(scene.id)}>
                         <Copy className="h-3.5 w-3.5" />
@@ -254,9 +254,9 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
               </div>
             );
           })}
-          {scenes.length === 0 && <p className="p-3 text-[13px] text-[var(--ull-text-dim)]">{t("add_scene")}</p>}
+          {scenes.length === 0 && <p className="p-3 text-[13px] text-[var(--anda-text-dim)]">{t("add_scene")}</p>}
           {scenes.length > 0 && visible.length === 0 && (
-            <p className="p-3 text-[13px] text-[var(--ull-text-dim)]">{t("no_results")}</p>
+            <p className="p-3 text-[13px] text-[var(--anda-text-dim)]">{t("no_results")}</p>
           )}
         </div>
       </aside>
@@ -265,13 +265,13 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
         {selected != null ? (
           <ViewerPane key={selected.id} project={project} sceneId={selected.id} canEdit={canEdit} />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-[var(--ull-text-dim)]">{t("no_projects")}</div>
+          <div className="flex h-full items-center justify-center text-sm text-[var(--anda-text-dim)]">{t("no_projects")}</div>
         )}
       </div>
 
       {selected != null && (
         <aside
-          className="relative flex min-h-0 shrink-0 flex-col overflow-hidden border-l border-[var(--ull-border)] bg-[var(--ull-surface)]"
+          className="relative flex min-h-0 shrink-0 flex-col overflow-hidden border-l border-[var(--anda-border)] bg-[var(--anda-surface)]"
           style={{ width: panelWidth }}
         >
           {/* Tirador: 320 px se queda corto para las etiquetas en español */}
@@ -280,7 +280,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
             aria-label={t("resize_panel")}
             aria-orientation="vertical"
             tabIndex={0}
-            className="absolute -left-1 top-0 z-20 h-full w-2 cursor-col-resize hover:bg-[var(--ull-primary)]/25"
+            className="absolute -left-1 top-0 z-20 h-full w-2 cursor-col-resize hover:bg-[var(--anda-primary)]/25"
             onPointerDown={(e) => {
               e.preventDefault();
               const startX = e.clientX;
@@ -340,9 +340,9 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
 }
 
 /** Arrastre de una escena de la lista: crea el paso hacia ella. */
-export const SCENE_DRAG_TYPE = "application/x-ull360-scene";
+export const SCENE_DRAG_TYPE = "application/x-anda-scene";
 
-const PANEL_WIDTH_KEY = "ull360.panelWidth";
+const PANEL_WIDTH_KEY = "andarama.panelWidth";
 const PANEL_MIN = 320;
 const PANEL_MAX = 620;
 
@@ -380,9 +380,9 @@ export function setPlacementMode(mode: PlacementMode): void {
 let highlighted: string | null = null;
 export function highlightHotspot(id: string | null): void {
   highlighted = id;
-  for (const node of document.querySelectorAll<HTMLElement>(".ull360-hotspot")) {
+  for (const node of document.querySelectorAll<HTMLElement>(".anda-hotspot")) {
     const isIt = id != null && node.dataset.hotspotId === id;
-    node.style.outline = isIt ? "3px solid var(--ull-primary)" : "";
+    node.style.outline = isIt ? "3px solid var(--anda-primary)" : "";
     node.style.outlineOffset = isIt ? "3px" : "";
     node.style.zIndex = isIt ? "30" : "";
   }
@@ -498,7 +498,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
     };
     const isChrome = (e: MouseEvent): boolean => {
       const el = e.target as HTMLElement;
-      return el.closest(".ull360-hotspot, .ull360-controls, .ull360-compass, .ull360-loading, button, a") != null;
+      return el.closest(".anda-hotspot, .anda-controls, .anda-compass, .anda-loading, button, a") != null;
     };
     node.addEventListener(
       "click",
@@ -671,24 +671,24 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   return (
     <>
       {/* Barra de herramientas del lienzo: nada flota sobre el visor */}
-      <div className="flex min-h-10 items-center gap-2 border-b border-[var(--ull-border)] bg-[var(--ull-surface)] px-3 py-1.5">
+      <div className="flex min-h-10 items-center gap-2 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-1.5">
         {placement.kind !== "none" ? (
-          <span className="flex items-center gap-2 rounded-full bg-[var(--ull-primary-soft)] px-3 py-1 text-[13px] font-medium text-[var(--ull-primary)]">
+          <span className="flex items-center gap-2 rounded-full bg-[var(--anda-primary-soft)] px-3 py-1 text-[13px] font-medium text-[var(--anda-primary)]">
             <Crosshair className="h-3.5 w-3.5" />
             {placement.kind === "polygon"
               ? `${t("polygon_hint")} (${placement.points.length})`
               : placement.kind === "corners"
                 ? `${t("corners_click_hint")} (${placement.points.length}/4)`
                 : t("hotspot_place_hint")}
-            <button type="button" aria-label={t("cancel")} className="rounded-full p-0.5 hover:bg-[var(--ull-primary)]/10" onClick={() => setPlacementMode({ kind: "none" })}>
+            <button type="button" aria-label={t("cancel")} className="rounded-full p-0.5 hover:bg-[var(--anda-primary)]/10" onClick={() => setPlacementMode({ kind: "none" })}>
               <X className="h-3.5 w-3.5" />
             </button>
           </span>
         ) : (
-          <span className="truncate text-[13px] text-[var(--ull-text-dim)]">{scene?.title}</span>
+          <span className="truncate text-[13px] text-[var(--anda-text-dim)]">{scene?.title}</span>
         )}
         <div className="flex-1" />
-        {compiling && <span className="text-xs text-[var(--ull-text-dim)]">{t("loading")}</span>}
+        {compiling && <span className="text-xs text-[var(--anda-text-dim)]">{t("loading")}</span>}
         {issues.length > 0 && <IssuesButton issues={issues} />}
         {canEdit && (
           <Button size="sm" variant="outline" onClick={() => setPaletteOpen(true)}>
@@ -741,7 +741,7 @@ function IssuesButton({ issues }: { issues: { severity: string; message: string 
         {t("issues")} ({issues.length})
       </Button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-1 max-h-64 w-80 overflow-y-auto rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-2 shadow-[var(--ull-shadow-lg)]">
+        <div className="absolute right-0 top-full z-30 mt-1 max-h-64 w-80 overflow-y-auto rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-2 shadow-[var(--anda-shadow-lg)]">
           <ul className="space-y-1 text-xs">
             {issues.map((issue, i) => (
               <li key={i} className={issue.severity === "error" ? "text-red-500" : "text-amber-600"}>

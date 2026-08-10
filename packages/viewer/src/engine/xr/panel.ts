@@ -1,4 +1,4 @@
-import type { Hotspot } from "@ull360/schema";
+import type { Hotspot } from "@andarama/schema";
 
 /**
  * Paneles inmersivos: el contenido de un hotspot dibujado sobre un lienzo 2D

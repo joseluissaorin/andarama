@@ -34,7 +34,7 @@ import {
   VolumeX,
   X,
 } from "lucide";
-import { registerIcons, type IconNode } from "@ull360/viewer";
+import { registerIcons, type IconNode } from "@andarama/viewer";
 
 /** Registra los iconos de interfaz de la skin en el registro del visor. */
 export function registerUiIcons(): void {

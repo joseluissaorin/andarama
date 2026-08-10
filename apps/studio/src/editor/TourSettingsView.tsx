@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BookOpen, Sparkles } from "lucide-react";
-import { Button, Field, Input, Select, Switch, Textarea, useToast } from "@ull360/ui";
+import { Button, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import { CssGuideDialog, cssPrompt } from "./CssGuide";
 import { MediaPicker } from "./MediaPicker";
 import { FAMILY_ORDER, HOTSPOT_CATALOG } from "./hotspotCatalog";
@@ -60,7 +60,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("tour_settings")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t("default_lang")} htmlFor="ts-lang">
@@ -102,7 +102,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("ui_components")}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {UI_TOGGLES.map((key) => (
@@ -114,7 +114,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
                 onCheckedChange={(v) => patchUi({ [key]: v })}
                 label={t(`ui_${key}` as never)}
               />
-              <p className="ml-11 mt-0.5 text-xs leading-snug text-[var(--ull-text-dim)]">{t(`ui_${key}_desc` as never)}</p>
+              <p className="ml-11 mt-0.5 text-xs leading-snug text-[var(--anda-text-dim)]">{t(`ui_${key}_desc` as never)}</p>
             </div>
           ))}
         </div>
@@ -129,13 +129,13 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
                 step={2}
                 value={Number(ui.hotspotSize ?? 44)}
                 disabled={!canEdit}
-                className="h-1.5 max-w-64 flex-1 accent-[var(--ull-primary)]"
+                className="h-1.5 max-w-64 flex-1 accent-[var(--anda-primary)]"
                 onChange={(e) => patchUi({ hotspotSize: Number(e.target.value) })}
               />
               <span className="w-10 text-right text-sm tabular-nums">{Number(ui.hotspotSize ?? 44)}</span>
               <span
                 aria-hidden
-                className="shrink-0 rounded-full bg-[var(--ull-primary)]"
+                className="shrink-0 rounded-full bg-[var(--anda-primary)]"
                 style={{ width: Number(ui.hotspotSize ?? 44) / 2, height: Number(ui.hotspotSize ?? 44) / 2 }}
               />
             </div>
@@ -143,8 +143,8 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label={t("theme")} htmlFor="th-base">
-            <Select id="th-base" value={String(theme.base ?? "ull")} disabled={!canEdit} onChange={(e) => patchTheme({ base: e.target.value })}>
-              <option value="ull">ULL</option>
+            <Select id="th-base" value={theme.base === "ull" ? "anda" : String(theme.base ?? "anda")} disabled={!canEdit} onChange={(e) => patchTheme({ base: e.target.value })}>
+              <option value="anda">Andarama</option>
               <option value="dark">Oscuro</option>
               <option value="light">Claro</option>
               <option value="auto">Auto</option>
@@ -158,21 +158,21 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
                 id="th-color"
                 type="color"
                 aria-label={t("primary_color")}
-                value={String(theme.primaryColor ?? "#5c068c")}
+                value={String(theme.primaryColor ?? "#f59e00")}
                 disabled={!canEdit}
                 onChange={(e) => patchTheme({ primaryColor: e.target.value })}
-                className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-[var(--ull-border)] bg-transparent p-0.5"
+                className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-[var(--anda-border)] bg-transparent p-0.5"
               />
               <Input
                 aria-label={`${t("primary_color")} (hex)`}
                 className="max-w-28 font-mono text-xs uppercase"
-                value={String(theme.primaryColor ?? "#5c068c")}
+                value={String(theme.primaryColor ?? "#f59e00")}
                 disabled={!canEdit}
                 onChange={(e) => patchTheme({ primaryColor: e.target.value })}
               />
             </div>
             <div className="mt-1.5 flex gap-1.5">
-              {(["#5c068c", "#0b1020", "#00847f", "#c0392b"] as const).map((c) => (
+              {(["#f59e00", "#ffd900", "#0b1020", "#00847f"] as const).map((c) => (
                 <button
                   key={c}
                   type="button"
@@ -181,7 +181,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
                   disabled={!canEdit}
                   onClick={() => patchTheme({ primaryColor: c })}
                   className={`h-6 w-6 rounded-full border-2 ${
-                    String(theme.primaryColor ?? "#5c068c").toLowerCase() === c ? "border-[var(--ull-text)]" : "border-transparent"
+                    String(theme.primaryColor ?? "#f59e00").toLowerCase() === c ? "border-[var(--anda-text)]" : "border-transparent"
                   }`}
                   style={{ background: c }}
                 />
@@ -204,7 +204,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
               size="sm"
               variant="outline"
               onClick={() => {
-                void navigator.clipboard.writeText(cssPrompt(String(theme.base ?? "ull"), String(theme.primaryColor ?? "#5c068c")));
+                void navigator.clipboard.writeText(cssPrompt(String(theme.base ?? "anda"), String(theme.primaryColor ?? "#f59e00")));
                 toast.push(t("prompt_copied"), "ok");
               }}
             >
@@ -217,27 +217,27 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       <CssGuideDialog open={cssHelp} onClose={() => setCssHelp(false)} />
 
       {/* Cómo se ve el enlace del tour al pegarlo en un chat o una red */}
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-1 text-[15px] font-semibold">{t("social_settings")}</h2>
-        <p className="mb-4 text-xs text-[var(--ull-text-dim)]">{t("social_intro")}</p>
+        <p className="mb-4 text-xs text-[var(--anda-text-dim)]">{t("social_intro")}</p>
 
         {/* Vista previa de la tarjeta, que es lo que de verdad se juzga */}
-        <div className="mb-4 max-w-md overflow-hidden rounded-xl border border-[var(--ull-border)]">
-          <div className="flex aspect-[1200/630] items-center justify-center bg-[var(--ull-surface-2)]">
+        <div className="mb-4 max-w-md overflow-hidden rounded-xl border border-[var(--anda-border)]">
+          <div className="flex aspect-[1200/630] items-center justify-center bg-[var(--anda-surface-2)]">
             {social.image != null && social.image !== "" ? (
               <img src={String(social.image)} alt="" className="h-full w-full object-cover" />
             ) : (
-              <span className="text-xs text-[var(--ull-text-dim)]">{t("social_no_image")}</span>
+              <span className="text-xs text-[var(--anda-text-dim)]">{t("social_no_image")}</span>
             )}
           </div>
-          <div className="space-y-0.5 bg-[var(--ull-surface)] p-3">
-            <p className="text-[11px] uppercase tracking-wide text-[var(--ull-text-dim)]">
+          <div className="space-y-0.5 bg-[var(--anda-surface)] p-3">
+            <p className="text-[11px] uppercase tracking-wide text-[var(--anda-text-dim)]">
               {String(social.siteName ?? "") || new URL(location.origin).host}
             </p>
             <p className="truncate text-[13px] font-semibold">
               {String(social.title ?? "") || String(settings.title ?? t("tour"))}
             </p>
-            <p className="line-clamp-2 text-xs text-[var(--ull-text-dim)]">
+            <p className="line-clamp-2 text-xs text-[var(--anda-text-dim)]">
               {String(social.description ?? "") || String(settings.description ?? "")}
             </p>
           </div>
@@ -248,7 +248,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             <Input id="so-title" value={String(social.title ?? "")} disabled={!canEdit} onChange={(e) => patchSocial({ title: e.target.value || undefined })} />
           </Field>
           <Field label={t("social_site")} htmlFor="so-site">
-            <Input id="so-site" value={String(social.siteName ?? "")} placeholder="Universidad de La Laguna" disabled={!canEdit} onChange={(e) => patchSocial({ siteName: e.target.value || undefined })} />
+            <Input id="so-site" value={String(social.siteName ?? "")} placeholder="Museo de la Ciudad" disabled={!canEdit} onChange={(e) => patchSocial({ siteName: e.target.value || undefined })} />
           </Field>
         </div>
         <div className="mt-4">
@@ -289,7 +289,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
         <div className="mt-4">
           <Switch id="so-noindex" checked={social.noindex === true} disabled={!canEdit} onCheckedChange={(v) => patchSocial({ noindex: v || undefined })} label={t("social_noindex")} />
-          <p className="ml-11 mt-0.5 text-xs text-[var(--ull-text-dim)]">{t("social_noindex_desc")}</p>
+          <p className="ml-11 mt-0.5 text-xs text-[var(--anda-text-dim)]">{t("social_noindex_desc")}</p>
         </div>
 
         <MediaPicker
@@ -304,9 +304,9 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       </section>
 
       {/* Gafas y cardboard: qué se puede accionar sin ratón ni teclado */}
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-1 text-[15px] font-semibold">{t("vr_settings")}</h2>
-        <p className="mb-4 text-xs text-[var(--ull-text-dim)]">{t("vr_settings_intro")}</p>
+        <p className="mb-4 text-xs text-[var(--anda-text-dim)]">{t("vr_settings_intro")}</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={t("vr_hotspots_mode")} htmlFor="vr-mode">
             <Select
@@ -341,7 +341,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
               if (kinds.length === 0) return null;
               const allOn = kinds.every((k) => (vr.types as Record<string, boolean> | undefined)?.[k.type] !== false);
               return (
-                <div key={family} className="rounded-lg border border-[var(--ull-border)] p-3">
+                <div key={family} className="rounded-lg border border-[var(--anda-border)] p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-[13px] font-semibold">{t(`hotspot_family_${family}` as never)}</h3>
                     <Button
@@ -374,12 +374,12 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
                 </div>
               );
             })}
-            <p className="text-xs text-[var(--ull-text-dim)]">{t("vr_nav_always")}</p>
+            <p className="text-xs text-[var(--anda-text-dim)]">{t("vr_nav_always")}</p>
           </div>
         )}
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("autorotate")}</h2>
         <div className="flex flex-wrap items-end gap-4">
           <Switch id="ar-enabled" checked={autorotate.enabled === true} disabled={!canEdit}
@@ -395,7 +395,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("welcome_screen")} / {t("final_screen")}</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="space-y-3">
@@ -426,7 +426,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("quiz_settings")}</h2>
         <div className="flex flex-wrap items-end gap-4">
           <Field label={t("passing_score")} htmlFor="qz-pass">
@@ -442,7 +442,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
         </div>
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("treasure_hunt")}</h2>
         <Switch id="th-en" checked={hunt.enabled === true} disabled={!canEdit}
           onCheckedChange={(v) => {
@@ -457,18 +457,18 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             });
           }}
           label={`${t("enabled")} (objetivos: ${(hunt.targets ?? []).length})`} />
-        <p className="mt-2 text-xs text-[var(--ull-text-dim)]">
+        <p className="mt-2 text-xs text-[var(--anda-text-dim)]">
           Los objetivos se toman de los hotspots de contenido; edita la lista en JSON avanzado si necesitas afinarlos.
         </p>
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("geo_map")}</h2>
         <Switch id="geo-en" checked={geoMap.enabled === true} disabled={!canEdit}
           onCheckedChange={(v) => patch((s) => { s.geoMap = { ...(s.geoMap as object), enabled: v }; })} label={t("enabled")} />
       </section>
 
-      <section className="rounded-xl border border-[var(--ull-border)] bg-[var(--ull-surface)] p-5">
+      <section className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("autopilot_routes")} / {t("variables")}</h2>
         <Field label={`${t("autopilot_routes")} (JSON)`} htmlFor="ap-json" hint='[{"id":"r1","title":"Visita","steps":[{"scene":"...","rotate":6.28,"dwell":2}],"loop":true}]'>
           <Textarea

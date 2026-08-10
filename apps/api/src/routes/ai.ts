@@ -40,7 +40,7 @@ async function resolveMediaKey(c: { get: (k: "db") => any }, imageUrl: string): 
   const m = /^\/api\/v1\/media\/([A-Za-z0-9_-]+)\/(file|derived\/thumb)/.exec(imageUrl);
   if (m == null) throw notFound();
   const db = c.get("db");
-  const { media, mediaDerivatives } = await import("@ull360/db");
+  const { media, mediaDerivatives } = await import("@andarama/db");
   const { and, eq } = await import("drizzle-orm");
   if (m[2] === "file") {
     const row = (await db.select().from(media).where(eq(media.id, m[1]!)).limit(1))[0];

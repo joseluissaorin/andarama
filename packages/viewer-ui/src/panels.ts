@@ -12,11 +12,11 @@ import type {
   TextHotspot,
   VideoFileHotspot,
   WebHotspot,
-} from "@ull360/schema";
-import { resolveUrl, type TourViewer } from "@ull360/viewer";
+} from "@andarama/schema";
+import { resolveUrl, type TourViewer } from "@andarama/viewer";
 import { el, trapFocus } from "./dom.js";
 import { renderMarkdown } from "./markdown.js";
-import { createIconSvg } from "@ull360/viewer";
+import { createIconSvg } from "@andarama/viewer";
 import type { Translator } from "./i18n.js";
 
 export interface PanelContext {
@@ -68,7 +68,7 @@ export class PanelHost {
 
     const title = this.ctx.viewer.text(hotspot.label) || this.ctx.viewer.text((hotspot as { title?: unknown }).title as any) || "";
     const closeBtn = el("button", {
-      className: "ull360-btn",
+      className: "anda-btn",
       type: "button",
       "aria-label": this.ctx.t("close"),
       // Accionable con la mirada: con el giroscopio puesto no hay dedo que
@@ -81,15 +81,15 @@ export class PanelHost {
     const panel = el(
       "div",
       {
-        className: `ull360-panel${content.wide === true ? " ull360-panel--wide" : ""}`,
+        className: `anda-panel${content.wide === true ? " anda-panel--wide" : ""}`,
         role: "dialog",
         "aria-modal": "true",
         "aria-label": title || hotspot.type,
       },
-      el("div", { className: "ull360-panel__head" }, el("h2", { text: title || " " }), closeBtn),
+      el("div", { className: "anda-panel__head" }, el("h2", { text: title || " " }), closeBtn),
       content.body,
     );
-    this.backdrop = el("div", { className: "ull360-panel-backdrop" }, panel);
+    this.backdrop = el("div", { className: "anda-panel-backdrop" }, panel);
     this.backdrop.addEventListener("click", (e) => {
       if (e.target === this.backdrop) this.close();
     });
@@ -103,13 +103,13 @@ export class PanelHost {
   private openTooltip(hotspot: Hotspot, anchor: HTMLElement): void {
     const text = this.ctx.viewer.text((hotspot as { text?: unknown }).text as never) || this.ctx.viewer.text(hotspot.label);
     if (text === "") return;
-    const existing = this.ctx.container.querySelector(`.ull360-tooltip-bubble[data-for="${hotspot.id}"]`);
+    const existing = this.ctx.container.querySelector(`.anda-tooltip-bubble[data-for="${hotspot.id}"]`);
     if (existing != null) {
       existing.remove();
       return;
     }
-    this.ctx.container.querySelectorAll(".ull360-tooltip-bubble").forEach((b) => b.remove());
-    const bubble = el("div", { className: "ull360-tooltip-bubble", role: "status", "data-for": hotspot.id, text });
+    this.ctx.container.querySelectorAll(".anda-tooltip-bubble").forEach((b) => b.remove());
+    const bubble = el("div", { className: "anda-tooltip-bubble", role: "status", "data-for": hotspot.id, text });
     this.ctx.container.appendChild(bubble);
     const place = (): void => {
       const cRect = this.ctx.container.getBoundingClientRect();
@@ -173,23 +173,23 @@ function buildPanelContent(hotspot: Hotspot, ctx: PanelContext): PanelContent | 
 // ---------------------------------------------------------------------------
 
 function textPanel(hs: TextHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body" });
-  const prose = el("div", { className: "ull360-prose" });
+  const body = el("div", { className: "anda-panel__body" });
+  const prose = el("div", { className: "anda-prose" });
   prose.innerHTML = renderMarkdown(ctx.viewer.text(hs.body));
   body.appendChild(prose);
   return { body };
 }
 
 function imagePanel(hs: ImageHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
-  const zoom = el("div", { className: "ull360-deepzoom" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
+  const zoom = el("div", { className: "anda-deepzoom" });
   const img = el("img", { src: resolveUrl(ctx.baseUrl, hs.url), alt: ctx.viewer.text(hs.altText) });
   zoom.appendChild(img);
   body.appendChild(zoom);
   const caption = ctx.viewer.text(hs.caption);
-  if (caption !== "") body.appendChild(el("div", { className: "ull360-deepzoom__caption", text: caption }));
+  if (caption !== "") body.appendChild(el("div", { className: "anda-deepzoom__caption", text: caption }));
   if (hs.download === true) {
-    const bar = el("div", { className: "ull360-deepzoom__caption" });
+    const bar = el("div", { className: "anda-deepzoom__caption" });
     const a = el("a", { href: resolveUrl(ctx.baseUrl, hs.url), download: "", text: ctx.t("download") });
     a.style.color = "var(--u3-primary)";
     bar.appendChild(a);
@@ -300,11 +300,11 @@ function setupDeepZoom(viewport: HTMLElement, img: HTMLImageElement): void {
 
 function galleryPanel(hs: GalleryHotspot, ctx: PanelContext): PanelContent {
   let index = 0;
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
-  const wrap = el("div", { className: "ull360-gallery" });
-  const main = el("img", { className: "ull360-gallery__main", alt: "" });
-  const meta = el("div", { className: "ull360-gallery__meta" });
-  const thumbs = el("div", { className: "ull360-gallery__thumbs", role: "tablist" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
+  const wrap = el("div", { className: "anda-gallery" });
+  const main = el("img", { className: "anda-gallery__main", alt: "" });
+  const meta = el("div", { className: "anda-gallery__meta" });
+  const thumbs = el("div", { className: "anda-gallery__thumbs", role: "tablist" });
 
   const show = (i: number): void => {
     index = (i + hs.items.length) % hs.items.length;
@@ -319,10 +319,10 @@ function galleryPanel(hs: GalleryHotspot, ctx: PanelContext): PanelContent {
       t.setAttribute("aria-current", j === index ? "true" : "false");
     });
   };
-  const prev = el("button", { className: "ull360-btn ull360-gallery__nav ull360-gallery__nav--prev", "aria-label": ctx.t("gallery_prev") });
+  const prev = el("button", { className: "anda-btn anda-gallery__nav anda-gallery__nav--prev", "aria-label": ctx.t("gallery_prev") });
   prev.appendChild(createIconSvg("chevron-left", 20));
   prev.addEventListener("click", () => show(index - 1));
-  const next = el("button", { className: "ull360-btn ull360-gallery__nav ull360-gallery__nav--next", "aria-label": ctx.t("gallery_next") });
+  const next = el("button", { className: "anda-btn anda-gallery__nav anda-gallery__nav--next", "aria-label": ctx.t("gallery_next") });
   next.appendChild(createIconSvg("chevron-right", 20));
   next.addEventListener("click", () => show(index + 1));
 
@@ -338,7 +338,7 @@ function galleryPanel(hs: GalleryHotspot, ctx: PanelContext): PanelContent {
 }
 
 function videoPanel(hs: VideoFileHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
   const video = el("video", {
     controls: true,
     playsinline: true,
@@ -359,7 +359,7 @@ function videoPanel(hs: VideoFileHotspot, ctx: PanelContext): PanelContent {
 }
 
 function embedPanel(hs: EmbedVideoHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
   let src = "";
   const nocookie = hs.nocookie !== false;
   if (hs.provider === "youtube") {
@@ -388,7 +388,7 @@ function embedPanel(hs: EmbedVideoHotspot, ctx: PanelContext): PanelContent {
 }
 
 function audioPanel(hs: AudioHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body" });
+  const body = el("div", { className: "anda-panel__body" });
   const audio = el("audio", { controls: true, style: "width:100%;" });
   audio.src = resolveUrl(ctx.baseUrl, hs.url);
   audio.loop = hs.loop ?? false;
@@ -398,7 +398,7 @@ function audioPanel(hs: AudioHotspot, ctx: PanelContext): PanelContent {
   if (transcript !== "") {
     const details = el("details", { style: "margin-top:12px;" });
     details.appendChild(el("summary", { text: ctx.t("transcript") }));
-    const prose = el("div", { className: "ull360-prose" });
+    const prose = el("div", { className: "anda-prose" });
     prose.innerHTML = renderMarkdown(transcript);
     details.appendChild(prose);
     body.appendChild(details);
@@ -408,7 +408,7 @@ function audioPanel(hs: AudioHotspot, ctx: PanelContext): PanelContent {
 }
 
 function pdfPanel(hs: PdfHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
   const holder = el("div", { style: "min-height:60vh;display:flex;flex-direction:column;" });
   body.appendChild(holder);
   const url = resolveUrl(ctx.baseUrl, hs.url);
@@ -457,7 +457,7 @@ async function renderPdf(holder: HTMLElement, url: string, ctx: PanelContext): P
     status.textContent = ctx.t("pdf_page", { page, total: doc.numPages });
   };
   const btn = (icon: string, label: string, fn: () => void): HTMLButtonElement => {
-    const b = el("button", { className: "ull360-btn", "aria-label": label, style: "width:36px;height:36px;" });
+    const b = el("button", { className: "anda-btn", "aria-label": label, style: "width:36px;height:36px;" });
     b.appendChild(createIconSvg(icon, 16));
     b.addEventListener("click", fn);
     return b;
@@ -493,7 +493,7 @@ async function renderPdf(holder: HTMLElement, url: string, ctx: PanelContext): P
 }
 
 function modelPanel(hs: Model3dHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
   const holder = el("div", { style: "height:60vh;background:#1a1a2a;" });
   body.appendChild(holder);
   if (hs.format === "obj" || hs.format === "stl") {
@@ -603,7 +603,7 @@ async function renderThreeModel(holder: HTMLElement, url: string, format: "obj" 
 }
 
 function webPanel(hs: WebHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
   // Sandbox estricto por defecto: allow-scripts + allow-same-origin juntos
   // anulan el aislamiento, asi que same-origin es opt-in explicito.
   const sandbox = Array.isArray(hs.sandbox)
@@ -624,8 +624,8 @@ function webPanel(hs: WebHotspot, ctx: PanelContext): PanelContent {
 }
 
 function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body" });
-  const form = el("form", { className: "ull360-form", novalidate: true });
+  const body = el("div", { className: "anda-panel__body" });
+  const form = el("form", { className: "anda-form", novalidate: true });
   const fields: { id: string; input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement; required: boolean }[] = [];
 
   for (const field of hs.fields) {
@@ -640,7 +640,7 @@ function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
     } else if (field.type === "textarea") {
       input = el("textarea", { id: `u3f-${field.id}`, rows: "4" });
     } else if (field.type === "checkbox") {
-      const wrap = el("div", { className: "ull360-check" });
+      const wrap = el("div", { className: "anda-check" });
       input = el("input", { type: "checkbox", id: `u3f-${field.id}` });
       wrap.append(input);
       form.removeChild(label);
@@ -676,7 +676,7 @@ function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
     }
   }
 
-  const submit = el("button", { className: "ull360-primary-btn", type: "submit", text: ctx.viewer.text(hs.submitLabel) || ctx.t("submit") });
+  const submit = el("button", { className: "anda-primary-btn", type: "submit", text: ctx.viewer.text(hs.submitLabel) || ctx.t("submit") });
   const status = el("p", { role: "status", style: "margin-top:10px;font-size:14px;" });
   form.append(submit, status);
 
@@ -685,13 +685,13 @@ function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
     // Validacion basica
     for (const f of fields) {
       const value = f.input instanceof HTMLInputElement && f.input.type === "checkbox" ? f.input.checked : f.input.value;
-      form.querySelector(`#u3f-${f.id} + .ull360-form__error`)?.remove();
+      form.querySelector(`#u3f-${f.id} + .anda-form__error`)?.remove();
       if (f.required && (value === "" || value === false)) {
-        f.input.insertAdjacentElement("afterend", el("p", { className: "ull360-form__error", text: ctx.t("required_field") }));
+        f.input.insertAdjacentElement("afterend", el("p", { className: "anda-form__error", text: ctx.t("required_field") }));
         return;
       }
       if (f.input instanceof HTMLInputElement && f.input.type === "email" && f.input.value !== "" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.input.value)) {
-        f.input.insertAdjacentElement("afterend", el("p", { className: "ull360-form__error", text: ctx.t("invalid_email") }));
+        f.input.insertAdjacentElement("afterend", el("p", { className: "anda-form__error", text: ctx.t("invalid_email") }));
         return;
       }
     }
@@ -719,7 +719,7 @@ function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
     send()
       .then(() => {
         ctx.viewer.trackForm(hs.id);
-        form.replaceChildren(el("p", { className: "ull360-prose", text: ctx.viewer.text(hs.successMessage) || ctx.t("form_success") }));
+        form.replaceChildren(el("p", { className: "anda-prose", text: ctx.viewer.text(hs.successMessage) || ctx.t("form_success") }));
       })
       .catch(() => {
         submit.disabled = false;
@@ -735,15 +735,15 @@ function comparePanel(hs: CompareHotspot, ctx: PanelContext): PanelContent {
   if (hs.mode === "panoramas") {
     return comparePanoramas(hs, ctx);
   }
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
-  const wrap = el("div", { className: "ull360-compare" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
+  const wrap = el("div", { className: "anda-compare" });
   const before = el("img", { src: resolveUrl(ctx.baseUrl, hs.before.url ?? ""), alt: ctx.viewer.text(hs.before.label) || ctx.t("before") });
-  const afterClip = el("div", { className: "ull360-compare__after" });
+  const afterClip = el("div", { className: "anda-compare__after" });
   const after = el("img", { src: resolveUrl(ctx.baseUrl, hs.after.url ?? ""), alt: ctx.viewer.text(hs.after.label) || ctx.t("after") });
   afterClip.appendChild(after);
-  const handle = el("div", { className: "ull360-compare__handle", role: "slider", "aria-label": "Comparador", tabindex: "0", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "50" });
-  const tagB = el("span", { className: "ull360-compare__tag", text: ctx.viewer.text(hs.before.label) || ctx.t("before"), style: "left:10px;" });
-  const tagA = el("span", { className: "ull360-compare__tag", text: ctx.viewer.text(hs.after.label) || ctx.t("after"), style: "right:10px;" });
+  const handle = el("div", { className: "anda-compare__handle", role: "slider", "aria-label": "Comparador", tabindex: "0", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": "50" });
+  const tagB = el("span", { className: "anda-compare__tag", text: ctx.viewer.text(hs.before.label) || ctx.t("before"), style: "left:10px;" });
+  const tagA = el("span", { className: "anda-compare__tag", text: ctx.viewer.text(hs.after.label) || ctx.t("after"), style: "right:10px;" });
   wrap.append(before, afterClip, handle, tagB, tagA);
   body.appendChild(wrap);
   const setPos = (pct: number): void => {
@@ -783,14 +783,14 @@ function comparePanel(hs: CompareHotspot, ctx: PanelContext): PanelContent {
  * en uno mueve el otro: la comparación es real, no dos botones.
  */
 function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body ull360-panel__body--flush" });
+  const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
   const beforeLabel = ctx.viewer.text(hs.before.label) || ctx.t("before");
   const afterLabel = ctx.viewer.text(hs.after.label) || ctx.t("after");
-  const split = el("div", { className: "ull360-split" });
+  const split = el("div", { className: "anda-split" });
   const v = ctx.viewer.view();
   const frames: HTMLIFrameElement[] = [];
   const mkPane = (sceneId: string | undefined, label: string): HTMLElement => {
-    const pane = el("div", { className: "ull360-split__pane" });
+    const pane = el("div", { className: "anda-split__pane" });
     if (sceneId == null) return pane;
     const iframe = el("iframe", {
       src: `${location.pathname}${location.search}#s=${encodeURIComponent(sceneId)}&y=${v.yaw.toFixed(3)}&p=${v.pitch.toFixed(3)}&f=${v.fov.toFixed(3)}`,
@@ -798,7 +798,7 @@ function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
       allow: "fullscreen; gyroscope",
     });
     frames.push(iframe);
-    pane.append(iframe, el("span", { className: "ull360-compare__tag", text: label, style: "left:10px;top:10px;bottom:auto;" }));
+    pane.append(iframe, el("span", { className: "anda-compare__tag", text: label, style: "left:10px;top:10px;bottom:auto;" }));
     return pane;
   };
   split.append(mkPane(hs.before.sceneId, beforeLabel), mkPane(hs.after.sceneId, afterLabel));
@@ -807,14 +807,14 @@ function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
   // Sincronía bidireccional con supresión de eco
   let lastPush = 0;
   const onMessage = (e: MessageEvent): void => {
-    const data = e.data as { ull360?: string; view?: { yaw: number; pitch: number; fov: number } };
-    if (data?.ull360 !== "viewChange" || data.view == null) return;
+    const data = e.data as { andarama?: string; view?: { yaw: number; pitch: number; fov: number } };
+    if (data?.andarama !== "viewChange" || data.view == null) return;
     const from = frames.find((f) => f.contentWindow === e.source);
     if (from == null) return;
     if (Date.now() - lastPush < 120) return;
     lastPush = Date.now();
     for (const f of frames) {
-      if (f !== from) f.contentWindow?.postMessage({ ull360: "setView", view: data.view }, "*");
+      if (f !== from) f.contentWindow?.postMessage({ andarama: "setView", view: data.view }, "*");
     }
   };
   window.addEventListener("message", onMessage);
@@ -829,8 +829,8 @@ function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
 }
 
 function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
-  const body = el("div", { className: "ull360-panel__body" });
-  const question = el("div", { className: "ull360-prose" });
+  const body = el("div", { className: "anda-panel__body" });
+  const question = el("div", { className: "anda-prose" });
   question.innerHTML = renderMarkdown(ctx.viewer.text(hs.question));
   body.appendChild(question);
 
@@ -843,7 +843,7 @@ function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
     const input = el("input", { type: multi ? "checkbox" : "radio", name, id: `${name}-${opt.id}` });
     const wrap = el(
       "label",
-      { className: "ull360-quiz__option", for: `${name}-${opt.id}` },
+      { className: "anda-quiz__option", for: `${name}-${opt.id}` },
       input,
       el("span", { text: ctx.viewer.text(opt.text) }),
     );
@@ -854,7 +854,7 @@ function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
 
   let attempts = 0;
   const maxAttempts = hs.attempts ?? 0;
-  const check = el("button", { className: "ull360-primary-btn", type: "button", text: ctx.t("quiz_check") });
+  const check = el("button", { className: "anda-primary-btn", type: "button", text: ctx.t("quiz_check") });
   const feedback = el("div", { role: "status" });
   body.append(check, feedback);
 
@@ -870,7 +870,7 @@ function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
       else delete o.wrap.dataset.state;
       o.input.disabled = isCorrect || (maxAttempts > 0 && attempts >= maxAttempts);
     }
-    feedback.className = `ull360-quiz__feedback ${isCorrect ? "ull360-quiz__feedback--ok" : "ull360-quiz__feedback--ko"}`;
+    feedback.className = `anda-quiz__feedback ${isCorrect ? "anda-quiz__feedback--ok" : "anda-quiz__feedback--ko"}`;
     feedback.textContent = isCorrect
       ? ctx.viewer.text(hs.feedbackCorrect) || ctx.t("quiz_correct")
       : ctx.viewer.text(hs.feedbackWrong) || ctx.t("quiz_incorrect");

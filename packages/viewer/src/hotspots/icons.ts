@@ -38,7 +38,7 @@ import {
   Video,
   Volume2,
 } from "lucide";
-import type { HotspotType } from "@ull360/schema";
+import type { HotspotType } from "@andarama/schema";
 
 /**
  * Iconografia SVG del visor (lucide, licencia ISC). Nunca emojis.

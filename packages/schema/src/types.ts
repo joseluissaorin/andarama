@@ -1,5 +1,5 @@
 /**
- * Formato tour.json de ULL360, version 1.
+ * Formato tour.json de Andarama, version 1.
  *
  * Este modulo es la unica fuente de verdad del contrato entre el editor
  * (Studio), el motor de visualizacion (Viewer), el exportador y la API.
@@ -8,7 +8,7 @@
  */
 
 export const TOUR_SCHEMA_VERSION = 1;
-export const TOUR_SCHEMA_URL = "https://ull360.dev/schema/tour-1.json";
+export const TOUR_SCHEMA_URL = "https://andarama.com/schema/tour-1.json";
 
 /**
  * Cadena localizable: o bien un literal (idioma por defecto) o un mapa
@@ -616,8 +616,8 @@ export interface FinalScreen {
 }
 
 export interface ThemeConfig {
-  /** Predefinidos: "light" | "dark" | "auto" | "ull". */
-  base?: "light" | "dark" | "auto" | "ull";
+  /** Predefinidos: "light" | "dark" | "auto" | "anda" ("ull" pervive como alias heredado). */
+  base?: "light" | "dark" | "auto" | "anda" | "ull";
   primaryColor?: string;
   fontFamily?: string;
   borderRadius?: string;

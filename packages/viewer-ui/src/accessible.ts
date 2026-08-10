@@ -1,5 +1,5 @@
-import type { Hotspot, Scene } from "@ull360/schema";
-import { resolveUrl, type TourViewer } from "@ull360/viewer";
+import type { Hotspot, Scene } from "@andarama/schema";
+import { resolveUrl, type TourViewer } from "@andarama/viewer";
 import { el } from "./dom.js";
 import { renderMarkdown } from "./markdown.js";
 import type { Translator } from "./i18n.js";
@@ -12,9 +12,9 @@ import type { Translator } from "./i18n.js";
  */
 export function buildAccessibleView(viewer: TourViewer, t: Translator, baseUrl: string, onClose: () => void): HTMLElement {
   const tour = viewer.tour;
-  const root = el("div", { className: "ull360-accessible", role: "document", lang: viewer.currentLang() });
+  const root = el("div", { className: "anda-accessible", role: "document", lang: viewer.currentLang() });
   const main = el("main");
-  const back = el("button", { className: "ull360-primary-btn", type: "button", text: t("back_to_360") });
+  const back = el("button", { className: "anda-primary-btn", type: "button", text: t("back_to_360") });
   back.addEventListener("click", onClose);
   main.appendChild(back);
   main.appendChild(el("h1", { text: viewer.text(tour.meta.title) }));
@@ -52,7 +52,7 @@ function renderScene(
   const desc = viewer.text(scene.description);
   if (desc !== "") section.appendChild(el("p", { text: desc }));
 
-  const jump = el("button", { className: "ull360-primary-btn", type: "button", text: viewer.text(scene.title), "aria-label": `${t("back_to_360")}: ${viewer.text(scene.title)}` });
+  const jump = el("button", { className: "anda-primary-btn", type: "button", text: viewer.text(scene.title), "aria-label": `${t("back_to_360")}: ${viewer.text(scene.title)}` });
   jump.addEventListener("click", () => {
     onClose();
     void viewer.goTo(scene.id);
@@ -80,7 +80,7 @@ function renderHotspot(viewer: TourViewer, hs: Hotspot, baseUrl: string): HTMLEl
     case "text": {
       const div = el("div");
       if (label !== "") div.appendChild(el("h3", { text: label }));
-      const prose = el("div", { className: "ull360-prose" });
+      const prose = el("div", { className: "anda-prose" });
       prose.innerHTML = renderMarkdown(viewer.text(hs.body));
       div.appendChild(prose);
       return div;

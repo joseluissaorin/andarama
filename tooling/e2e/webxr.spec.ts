@@ -37,7 +37,7 @@ interface VrState {
 declare global {
   interface Window {
     __xr: XrMockState;
-    ULL360?: { instance?: { viewer: { vrState: () => VrState; exitVr: () => void } } };
+    Andarama?: { instance?: { viewer: { vrState: () => VrState; exitVr: () => void } } };
   }
 }
 
@@ -192,7 +192,7 @@ test("VR: entra en sesión immersive-vr y dibuja fotogramas estéreo", async ({ 
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   await installXrMock(page);
   await page.goto("/t/tour-e2e");
-  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
 
   await page.locator('button[aria-label="Modo VR"]').click();
 
@@ -203,7 +203,7 @@ test("VR: entra en sesión immersive-vr y dibuja fotogramas estéreo", async ({ 
   const info = await page.evaluate(() => ({
     options: window.__xr.sessionOptions,
     joints: window.__xr.jointsRead,
-    state: window.ULL360!.instance!.viewer.vrState(),
+    state: window.Andarama!.instance!.viewer.vrState(),
   }));
   // hand-tracking se pide como opcional: la sesión arranca aunque no exista.
   expect((info.options as { optionalFeatures: string[] }).optionalFeatures).toContain("hand-tracking");
@@ -223,7 +223,7 @@ test("VR: la pinza sobre un hotspot abre su panel inmersivo", async ({ page }) =
   };
   const hs = tour.scenes[0]!.hotspots[0]!;
   await page.goto("/t/tour-e2e");
-  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
   await page.locator('button[aria-label="Modo VR"]').click();
   await expect.poll(async () => page.evaluate(() => window.__xr.frames), { timeout: 15_000 }).toBeGreaterThan(5);
 
@@ -237,7 +237,7 @@ test("VR: la pinza sobre un hotspot abre su panel inmersivo", async ({ page }) =
   });
 
   await expect
-    .poll(async () => page.evaluate(() => window.ULL360!.instance!.viewer.vrState().openHotspotId), { timeout: 10_000 })
+    .poll(async () => page.evaluate(() => window.Andarama!.instance!.viewer.vrState().openHotspotId), { timeout: 10_000 })
     .toBe(hs.id);
 
   // Abrir la pinza no cierra el panel: la interacción es discreta.
@@ -245,7 +245,7 @@ test("VR: la pinza sobre un hotspot abre su panel inmersivo", async ({ page }) =
     window.__xr.pinch = 0.06;
   });
   await expect
-    .poll(async () => page.evaluate(() => window.ULL360!.instance!.viewer.vrState().openHotspotId), { timeout: 5_000 })
+    .poll(async () => page.evaluate(() => window.Andarama!.instance!.viewer.vrState().openHotspotId), { timeout: 5_000 })
     .toBe(hs.id);
 
   // Y apuntando al aspa se cierra: sin esto el panel sería una trampa.
@@ -271,20 +271,20 @@ test("VR: la pinza sobre un hotspot abre su panel inmersivo", async ({ page }) =
     window.__xr.pinch = 0.01;
   });
   await expect
-    .poll(async () => page.evaluate(() => window.ULL360!.instance!.viewer.vrState().openHotspotId), { timeout: 10_000 })
+    .poll(async () => page.evaluate(() => window.Andarama!.instance!.viewer.vrState().openHotspotId), { timeout: 10_000 })
     .toBeNull();
 });
 
 test("VR: salir de la sesión devuelve el visor plano", async ({ page }) => {
   await installXrMock(page);
   await page.goto("/t/tour-e2e");
-  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
   await page.locator('button[aria-label="Modo VR"]').click();
   await expect.poll(async () => page.evaluate(() => window.__xr.frames), { timeout: 15_000 }).toBeGreaterThan(5);
 
-  await page.evaluate(() => window.ULL360!.instance!.viewer.exitVr());
+  await page.evaluate(() => window.Andarama!.instance!.viewer.exitVr());
   await expect
-    .poll(async () => page.evaluate(() => window.ULL360!.instance!.viewer.vrState().active), { timeout: 5_000 })
+    .poll(async () => page.evaluate(() => window.Andarama!.instance!.viewer.vrState().active), { timeout: 5_000 })
     .toBe(false);
-  await expect(page.locator(".ull360-viewer canvas").first()).toBeVisible();
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible();
 });

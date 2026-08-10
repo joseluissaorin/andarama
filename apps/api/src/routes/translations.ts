@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
-import { projects, translations as translationsTable } from "@ull360/db";
+import { projects, translations as translationsTable } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, forbidden } from "../lib/errors.js";
 import { newId, parseJson } from "../lib/util.js";
@@ -210,7 +210,7 @@ export async function collectSourceStrings(
   db: import("../lib/context.js").Db,
   projectId: string,
 ): Promise<{ entity: string; entityId: string; field: string; value: string }[]> {
-  const { scenes: scenesTable, hotspots: hotspotsTable } = await import("@ull360/db");
+  const { scenes: scenesTable, hotspots: hotspotsTable } = await import("@andarama/db");
   const { asc, inArray } = await import("drizzle-orm");
   const out: { entity: string; entityId: string; field: string; value: string }[] = [];
   const project = (await db.select().from(projects).where(eq(projects.id, projectId)).limit(1))[0];

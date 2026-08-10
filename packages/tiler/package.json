@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/tiler",
+  "name": "@andarama/tiler",
   "version": "0.1.0",
-  "description": "Pipeline de tiles de ULL360: navegador (WebWorker + OffscreenCanvas) y Node (sharp)",
+  "description": "Pipeline de tiles de Andarama: navegador (WebWorker + OffscreenCanvas) y Node (sharp)",
   "license": "EUPL-1.2",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,7 +10,7 @@
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
     "./node": { "types": "./dist/node/index.d.ts", "import": "./dist/node/index.js" }
   },
-  "bin": { "ull360-tile": "./dist/node/cli.js" },
+  "bin": { "anda-tile": "./dist/node/cli.js" },
   "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -18,7 +18,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ull360/schema": "workspace:*"
+    "@andarama/schema": "workspace:*"
   },
   "optionalDependencies": {
     "sharp": "^0.33.5"

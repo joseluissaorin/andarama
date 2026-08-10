@@ -1,11 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Button, Field, Input, useToast } from "@ull360/ui";
+import { Button, Field, Input, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
-import { UllLogo } from "../components/Shell";
-import marcaNegativo from "../brand/marca-ull-negativo.svg";
+import { AndaLogo } from "../components/Shell";
+import andaCriatura from "../brand/anda-criatura.svg";
 
 export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "invite" }): React.ReactNode {
   const t = useT();
@@ -82,10 +82,10 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
   };
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-[var(--ull-bg)] p-6">
-      <div className="flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--ull-border)] bg-[var(--ull-surface)] shadow-[var(--ull-shadow-lg)]">
+    <div className="flex min-h-full items-center justify-center bg-[var(--anda-bg)] p-6">
+      <div className="flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-shadow-lg)]">
         {/* Panel de marca */}
-        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[image:var(--ull-grad-deep)] p-10 text-white md:flex">
+        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[image:var(--anda-grad-deep)] p-10 text-white md:flex">
           <svg
             className="pointer-events-none absolute -right-28 -top-24 opacity-25"
             width="420"
@@ -101,37 +101,34 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
             <circle cx="100" cy="100" r="5" fill="white" />
           </svg>
           <div className="flex items-center gap-3">
-            {/* Marca oficial en negativo (ficheros del manual de identidad) */}
-            <img src={marcaNegativo} alt="Universidad de La Laguna" className="h-11 w-auto" />
+            <img src={andaCriatura} alt="" className="h-12 w-12" />
+            <span className="text-[22px] font-bold tracking-tight">andarama</span>
           </div>
           <div className="relative">
-            <h2 className="text-[26px] font-bold leading-snug tracking-tight">
-              Tours virtuales 360
-              <br />
-              para enseñar, difundir
-              <br />y conservar.
-            </h2>
+            <h2 className="text-[30px] font-bold leading-snug tracking-tight">¡anda!</h2>
+            <p className="mt-2 max-w-[300px] text-[17px] font-semibold leading-relaxed text-white/90">
+              andarama me deja andar por panoramas
+            </p>
             <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-white/70">
-              Editor visual, publicación en un clic, LTI para el Aula Virtual y exportación abierta. Código abierto de la
-              Universidad de La Laguna.
+              Editor visual, publicación en un clic, realidad virtual y exportación abierta.
             </p>
           </div>
-          <p className="relative text-[11.5px] font-medium text-white/50">ULL360 — código abierto (EUPL-1.2)</p>
+          <p className="relative font-mono text-[11px] text-white/60">código abierto — EUPL-1.2</p>
         </div>
 
         {/* Formulario */}
         <div className="w-full p-8 sm:p-10 md:w-[54%]">
         <div className="mb-6 flex items-center gap-3 md:hidden">
-          <UllLogo size={34} />
+          <AndaLogo size={34} />
           <div>
             <h1 className="text-lg font-bold leading-tight">{t("app_name")}</h1>
-            <p className="text-xs text-[var(--ull-text-dim)]">Universidad de La Laguna</p>
+            <p className="text-xs text-[var(--anda-text-dim)]">¡anda! andarama me deja andar por panoramas</p>
           </div>
         </div>
         <h1 className="mb-1 hidden text-[22px] font-bold tracking-tight md:block">
           {forgotMode ? t("forgot") : mode === "register" ? t("register") : mode === "reset" ? t("password") : t("welcome_back")}
         </h1>
-        <p className="mb-6 hidden text-[13.5px] text-[var(--ull-text-dim)] md:block">{t("app_name")}</p>
+        <p className="mb-6 hidden text-[13.5px] text-[var(--anda-text-dim)] md:block">{t("app_name")}</p>
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -172,7 +169,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
               <Input id="totp" inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value)} autoFocus />
             </Field>
           )}
-          {error != null && <p className="text-sm text-[var(--ull-danger)]">{error}</p>}
+          {error != null && <p className="text-sm text-[var(--anda-danger)]">{error}</p>}
           <Button type="submit" className="w-full" loading={busy}>
             {forgotMode ? t("forgot") : mode === "register" ? t("register") : mode === "reset" ? t("save") : t("login")}
           </Button>
@@ -180,23 +177,23 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
         {ssoAvailable && mode === "login" && (
           <a
             href="/api/v1/auth/oidc/start"
-            className="mt-3 block rounded-[var(--ull-radius)] border border-[var(--ull-border)] px-4 py-2 text-center text-sm hover:bg-[var(--ull-surface-2)]"
+            className="mt-3 block rounded-[var(--anda-radius)] border border-[var(--anda-border)] px-4 py-2 text-center text-sm hover:bg-[var(--anda-surface-2)]"
           >
             {t("sso_login")}
           </a>
         )}
-        <div className="mt-5 flex justify-between text-[13px] text-[var(--ull-text-dim)]">
+        <div className="mt-5 flex justify-between text-[13px] text-[var(--anda-text-dim)]">
           {mode === "login" ? (
             <>
               <button type="button" className="hover:underline" onClick={() => setForgotMode(!forgotMode)}>
                 {t("forgot")}
               </button>
-              <button type="button" className="font-semibold text-[var(--ull-primary)] hover:underline" onClick={() => void navigate({ to: "/register" })}>
+              <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/register" })}>
                 {t("register")}
               </button>
             </>
           ) : (
-            <button type="button" className="font-semibold text-[var(--ull-primary)] hover:underline" onClick={() => void navigate({ to: "/login" })}>
+            <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/login" })}>
               {t("login")}
             </button>
           )}

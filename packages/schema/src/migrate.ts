@@ -69,7 +69,7 @@ export function migrateTour(input: unknown): Tour {
   let version = typeof doc.version === "number" ? doc.version : 0;
   if (version > TOUR_SCHEMA_VERSION) {
     throw new TourMigrationError(
-      `El tour usa la version ${version}, posterior a la soportada (${TOUR_SCHEMA_VERSION}); actualiza ULL360`,
+      `El tour usa la version ${version}, posterior a la soportada (${TOUR_SCHEMA_VERSION}); actualiza Andarama`,
       version,
     );
   }

@@ -1,7 +1,7 @@
 {
-  "name": "@ull360/docs",
+  "name": "@andarama/docs",
   "version": "0.1.0",
-  "description": "Documentacion de ULL360 (Astro Starlight)",
+  "description": "Documentacion de Andarama (Astro Starlight)",
   "license": "EUPL-1.2",
   "type": "module",
   "private": true,

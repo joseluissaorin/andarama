@@ -18,7 +18,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      "DATA_DIR=/tmp/ull360-e2e-$RANDOM PORT=8799 ASSETS_DIR=../apps/studio/dist-root npx tsx ../apps/api/src/node.ts",
+      "DATA_DIR=/tmp/anda-e2e-$RANDOM PORT=8799 ASSETS_DIR=../apps/studio/dist-root npx tsx ../apps/api/src/node.ts",
     cwd: __dirname,
     url: "http://localhost:8799/api/v1/health",
     reuseExistingServer: false,

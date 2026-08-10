@@ -12,9 +12,9 @@ import {
   createSqliteKv,
   createSqlAnalytics,
   migrateSqlite,
-} from "@ull360/adapters/node";
-import type { PlatformRuntime } from "@ull360/adapters";
-import { createRealtimeServer } from "@ull360/realtime/node";
+} from "@andarama/adapters/node";
+import type { PlatformRuntime } from "@andarama/adapters";
+import { createRealtimeServer } from "@andarama/realtime/node";
 import { createApp } from "./app.js";
 import type { AppConfig, Db } from "./lib/context.js";
 import { processJob } from "./jobs.js";
@@ -39,10 +39,10 @@ async function main(): Promise<void> {
 
   const { mkdir } = await import("node:fs/promises");
   await mkdir(dataDir, { recursive: true });
-  const { db, sqlite } = await createSqliteDb(join(dataDir, "ull360.db"));
+  const { db, sqlite } = await createSqliteDb(join(dataDir, "andarama.db"));
   const migrationsDir = findMigrationsDir();
   const applied = await migrateSqlite(sqlite, migrationsDir, {
-    backupPath: join(dataDir, `ull360-backup-${new Date().toISOString().slice(0, 10)}.db`),
+    backupPath: join(dataDir, `anda-backup-${new Date().toISOString().slice(0, 10)}.db`),
   });
   if (applied.length > 0) console.log(`[db] migraciones aplicadas: ${applied.join(", ")}`);
 
@@ -60,7 +60,7 @@ async function main(): Promise<void> {
         process.env.S3_ENDPOINT != null
           ? {
               endpoint: process.env.S3_ENDPOINT,
-              bucket: process.env.S3_BUCKET ?? "ull360",
+              bucket: process.env.S3_BUCKET ?? "andarama",
               accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
               secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
               region: process.env.S3_REGION,
@@ -76,7 +76,7 @@ async function main(): Promise<void> {
       secure: process.env.SMTP_SECURE === "1",
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
-      from: process.env.EMAIL_FROM ?? "ull360@localhost",
+      from: process.env.EMAIL_FROM ?? "andarama@localhost",
     }),
     deferred: (p) => {
       void p.catch((err) => console.error("[deferred]", err));
@@ -91,7 +91,7 @@ async function main(): Promise<void> {
   const config: AppConfig = {
     publicUrl,
     secret,
-    emailFrom: process.env.EMAIL_FROM ?? "ull360@localhost",
+    emailFrom: process.env.EMAIL_FROM ?? "andarama@localhost",
     turnstileSiteKey: process.env.TURNSTILE_SITE_KEY,
     turnstileSecret: process.env.TURNSTILE_SECRET,
     maxUploadBytes: 512 * 1024 * 1024,
@@ -147,6 +147,9 @@ async function main(): Promise<void> {
           }
         }
         if (new URL(effectiveRequest.url).pathname === "/") {
+          // La portada del self-host es la landing; el Studio vive en /studio
+          const landing = await serveStatic(assetRoots, "/landing/index.html");
+          if (landing != null) return landing;
           return Response.redirect(`${publicUrl}/studio/`, 302);
         }
         const response = await app.fetch(effectiveRequest);
@@ -164,7 +167,7 @@ async function main(): Promise<void> {
       hostname: "0.0.0.0",
     },
     (info) => {
-      console.log(`ULL360 self-host escuchando en http://localhost:${info.port} (datos en ${dataDir})`);
+      console.log(`Andarama self-host escuchando en http://localhost:${info.port} (datos en ${dataDir})`);
     },
   );
 
@@ -182,8 +185,8 @@ async function main(): Promise<void> {
 function findMigrationsDir(): string {
   const candidates = [
     resolve(here, "../../../packages/db/migrations"),
-    resolve(here, "../node_modules/@ull360/db/migrations"),
-    resolve(process.cwd(), "node_modules/@ull360/db/migrations"),
+    resolve(here, "../node_modules/@andarama/db/migrations"),
+    resolve(process.cwd(), "node_modules/@andarama/db/migrations"),
     resolve(here, "./migrations"),
   ];
   for (const dir of candidates) {
@@ -207,8 +210,12 @@ function findAssetRoots(): string[] {
 }
 
 async function serveStatic(roots: string[], pathname: string): Promise<Response | null> {
-  const clean = decodeURIComponent(pathname).replaceAll("\\", "/");
+  let clean = decodeURIComponent(pathname).replaceAll("\\", "/");
   if (clean.includes("..")) return null;
+  // Como Workers Assets: un directorio o una URL limpia sirven su index.html
+  // (la documentación genera /docs/usuario/grafo/index.html).
+  if (clean.endsWith("/")) clean += "index.html";
+  else if (!/\.[a-z0-9]+$/i.test(clean.split("/").pop() ?? "")) clean += "/index.html";
   for (const root of roots) {
     const filePath = join(root, clean);
     try {

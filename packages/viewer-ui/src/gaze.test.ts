@@ -63,7 +63,7 @@ describe("cursor arrastrado por la cabeza", () => {
   });
 
   it("solo son accionables los marcadores y lo marcado a propósito", () => {
-    expect(GAZE_SELECTOR).toContain(".ull360-hotspot");
+    expect(GAZE_SELECTOR).toContain(".anda-hotspot");
     expect(GAZE_SELECTOR).toContain("[data-gaze]");
   });
 });
