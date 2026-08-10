@@ -139,6 +139,10 @@ export const VIEWER_CSS = `
   border: 1px solid var(--u3-glass-border); border-radius: 999px; padding: 6px; box-shadow: var(--u3-shadow); }
 .ull360-controls { right: 16px; max-height: calc(100% - 120px); overflow-y: auto; scrollbar-width: none; }
 .ull360-controls::-webkit-scrollbar { display: none; }
+/* Dique plegado: solo queda el tirador, para dejar la escena limpia */
+.ull360-controls.is-compact > *:not(.ull360-controls__toggle) { display: none; }
+.ull360-controls__toggle { opacity: .8; }
+.ull360-controls__toggle:hover { opacity: 1; }
 .ull360-controls-left { left: 16px; }
 .ull360-controls .ull360-divider { height: 1px; margin: 4px 8px; background: var(--u3-glass-border); border: none; }
 
@@ -416,6 +420,9 @@ export const VIEWER_CSS = `
 .ull360-gaze-track{fill:none;stroke:rgba(255,255,255,.32);stroke-width:4}
 .ull360-gaze-ring{fill:none;stroke:var(--u3-primary,#5c068c);stroke-width:4;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;filter:drop-shadow(0 0 3px rgba(0,0,0,.55))}
 .ull360-gaze-dot{fill:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}
+.ull360-gaze-tip{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;max-width:70vw;overflow:hidden;text-overflow:ellipsis;padding:5px 12px;border-radius:999px;background:rgba(8,10,22,.86);color:#fff;font:600 13px/1.3 var(--u3-font,system-ui);box-shadow:0 2px 10px rgba(0,0,0,.35);opacity:0;transition:opacity .15s}
+.ull360-gaze.is-active .ull360-gaze-tip{opacity:1}
+.ull360-gaze-tip:empty{display:none}
 `;
 
 let injected = false;

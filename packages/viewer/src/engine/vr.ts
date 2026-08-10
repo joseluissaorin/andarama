@@ -1,6 +1,8 @@
 import type { Hotspot } from "@ull360/schema";
 import { XrRenderer } from "./xr/render.js";
 import { XrInput, type XrPointer } from "./xr/input.js";
+import { cameraQuaternion, rotateAroundWorldY, screenAngle, viewMatrixFromQuat, yawPitchFromQuat, type Quat } from "./xr/orientation.js";
+import { DeviceOrientationControlMethod } from "./gyro.js";
 import {
   drawPanel,
   newPanelState,
@@ -137,6 +139,11 @@ export class VRManager {
   private headPosition: Vec3 = [0, 0, 0];
   private gazeProgress = 0;
   private xrForward: Vec3 | null = null;
+  /** Orientación completa del móvil en cartón: conserva el balanceo. */
+  private cardboardQuat: Quat | null = null;
+  private rotateHint: HTMLElement | null = null;
+  private resizeHandler: (() => void) | null = null;
+  private tapHandler: ((e: Event) => void) | null = null;
   private reticleTex = new Map<string, WebGLTexture>();
   /** Permanencia configurable por tour (`vr.dwellSeconds`). */
   dwellMs = DEFAULT_DWELL_MS;
@@ -312,20 +319,60 @@ export class VRManager {
     this.exitButton.addEventListener("click", () => this.exit());
     this.container.appendChild(this.exitButton);
 
+    // Unas gafas de cartón se sujetan en horizontal. Si el bloqueo de
+    // orientación no está disponible (Safari no lo tiene), al menos se avisa.
+    this.rotateHint = document.createElement("div");
+    this.rotateHint.setAttribute("role", "status");
+    this.rotateHint.style.cssText =
+      "position:absolute;inset:0;z-index:42;display:none;align-items:center;justify-content:center;" +
+      "background:rgba(6,8,20,.92);color:#fff;font:600 16px/1.5 system-ui;text-align:center;padding:24px;";
+    this.rotateHint.textContent = this.callbacks.t("vr_rotate_device");
+    this.container.appendChild(this.rotateHint);
+    const updateRotateHint = (): void => {
+      if (this.rotateHint == null) return;
+      const portrait = this.container.clientHeight > this.container.clientWidth;
+      this.rotateHint.style.display = portrait ? "flex" : "none";
+    };
+    updateRotateHint();
+    this.resizeHandler = updateRotateHint;
+    window.addEventListener("resize", this.resizeHandler);
+    window.addEventListener("orientationchange", this.resizeHandler);
+
+    // iOS 13+ exige permiso explícito: sin pedirlo el evento no llega nunca y
+    // el modo cartón se queda congelado mirando al frente.
+    await DeviceOrientationControlMethod.requestPermission().catch(() => false);
+
     const initial = this.callbacks.getViewYawPitch();
     this.cardboardYawPitch = { ...initial };
-    let last: { yaw: number; pitch: number } | null = null;
+    // Rumbo del dispositivo al entrar: se resta para que el tour empiece
+    // mirando donde estaba el visor plano y no donde apunte el norte.
+    let headingOffset: number | null = null;
     this.orientationHandler = (e: DeviceOrientationEvent): void => {
       if (e.alpha == null || e.beta == null || e.gamma == null) return;
-      const yaw = (-e.alpha * Math.PI) / 180;
-      const pitch = ((e.beta - 90) * Math.PI) / 180;
-      if (last != null) {
-        this.cardboardYawPitch.yaw += yaw - last.yaw;
-        this.cardboardYawPitch.pitch = Math.max(-1.4, Math.min(1.4, this.cardboardYawPitch.pitch + (pitch - last.pitch)));
-      }
-      last = { yaw, pitch };
+      const raw = cameraQuaternion(e.alpha, e.beta, e.gamma, screenAngle());
+      if (headingOffset == null) headingOffset = yawPitchFromQuat(raw).yaw - initial.yaw;
+      // El desfase de rumbo se aplica al propio cuaternión: si solo se
+      // corrigiera el yaw, el retículo y los hotspots quedarían en un sitio y
+      // la imagen en otro.
+      const q = rotateAroundWorldY(raw, headingOffset);
+      this.cardboardQuat = q;
+      this.cardboardYawPitch = yawPitchFromQuat(q);
     };
     window.addEventListener("deviceorientation", this.orientationHandler);
+
+    // Las gafas de cartón llevan un botón que toca la pantalla: tocar acciona
+    // al instante lo que esté enfocado, sin esperar la permanencia.
+    this.tapHandler = (e: Event): void => {
+      const el = e.target as HTMLElement | null;
+      if (el != null && el.closest("button") != null) return;
+      const target = this.hover.get("gaze");
+      if (target != null) {
+        e.preventDefault();
+        this.gazeProgress = 0;
+        this.activate(target);
+      }
+    };
+    this.canvas?.addEventListener("pointerdown", this.tapHandler);
     this.onChange?.(true, "cardboard");
 
     // Selección por mirada: sin mando ni pantalla táctil accesible, el
@@ -371,7 +418,9 @@ export class VRManager {
       if (target != null) this.hover.set("gaze", target);
       this.refreshPanelTexture();
       const proj = perspective(1.05, w / 2 / h, 0.05, 120);
-      const view = viewMatrix(yaw, pitch);
+      // Con el cuaternión se conserva la inclinación de la cabeza; sin él, al
+      // ladear el móvil la escena se quedaba tiesa y mareaba.
+      const view = this.cardboardQuat != null ? viewMatrixFromQuat(this.cardboardQuat) : viewMatrix(yaw, pitch);
       gl.viewport(0, 0, w / 2, h);
       this.drawScene(proj, view, 0, []);
       gl.viewport(w / 2, 0, w / 2, h);
@@ -676,9 +725,10 @@ export class VRManager {
       const center = this.hotspotCenter(hs);
       const active = hovered.has(hs.id);
       const size = HOTSPOT_SIZE * clampScale(hs.scale) * (active ? 1.18 : 1);
+      // Sin flipY: el quad ya mapea v=1 abajo y la textura de un lienzo tiene
+      // su primera fila arriba. Invertirla ponía los rótulos del revés.
       r.draw(r.quad, r.billboardMatrix(center, this.headPosition, size), {
         texture: this.iconTexture(hs, active),
-        flipY: true,
       });
     }
 
@@ -692,7 +742,7 @@ export class VRManager {
         scaled[i] = model[i]! * PANEL_WIDTH_M;
         scaled[4 + i] = model[4 + i]! * PANEL_HEIGHT_M;
       }
-      r.draw(r.quad, scaled, { texture: this.panelTex, flipY: true });
+      r.draw(r.quad, scaled, { texture: this.panelTex });
       // Punto de mira sobre la zona apuntada
       for (const target of this.hover.values()) {
         if (target?.kind !== "panel") continue;
@@ -758,18 +808,30 @@ export class VRManager {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, 128, 128);
     // Punto central siempre visible
+    // Contorno oscuro bajo todo: sin él el retículo desaparece sobre un cielo
+    // claro, que es exactamente lo que pasaba.
     ctx.beginPath();
-    ctx.arc(64, 64, step > 0 ? 7 : 5, 0, Math.PI * 2);
-    ctx.fillStyle = step > 0 ? "rgba(255,255,255,.95)" : "rgba(255,255,255,.75)";
+    ctx.arc(64, 64, step > 0 ? 9 : 7, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,.55)";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(64, 64, step > 0 ? 6 : 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
     ctx.fill();
     // Anillo de fondo y anillo que se dibuja
-    ctx.lineWidth = 7;
-    ctx.strokeStyle = "rgba(255,255,255,.28)";
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = "rgba(0,0,0,.45)";
+    ctx.beginPath();
+    ctx.arc(64, 64, 42, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = "rgba(255,255,255,.55)";
     ctx.beginPath();
     ctx.arc(64, 64, 42, 0, Math.PI * 2);
     ctx.stroke();
     if (step > 0) {
-      ctx.strokeStyle = "rgba(184,107,235,.98)";
+      ctx.strokeStyle = "#c084fc";
+      ctx.lineWidth = 7;
       ctx.lineCap = "round";
       ctx.beginPath();
       ctx.arc(64, 64, 42, -Math.PI / 2, -Math.PI / 2 + step * Math.PI * 2);
@@ -815,15 +877,41 @@ export class VRManager {
     ctx.strokeStyle = active ? "#d9bcee" : "rgba(255,255,255,0.85)";
     ctx.stroke();
     drawGlyph(ctx, hs.type);
-    const label = hs.label.slice(0, 24);
+    const label = hs.label.slice(0, 22);
     if (label !== "") {
-      ctx.font = "600 26px system-ui, sans-serif";
+      // A seis metros y en estéreo, un rótulo de 26 px no se lee. Va más
+      // grande y sobre una cápsula opaca, que es lo único legible tanto con
+      // cielo claro como con sombra.
+      // La cápsula no puede salirse de la textura: primero se encoge la letra
+      // y, si aún no cabe, se recorta con puntos suspensivos.
       ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      let size = 34;
+      let texto = label;
+      ctx.font = `700 ${size}px system-ui, sans-serif`;
+      while (ctx.measureText(texto).width + 28 > 240 && size > 22) {
+        size -= 2;
+        ctx.font = `700 ${size}px system-ui, sans-serif`;
+      }
+      while (ctx.measureText(texto).width + 28 > 240 && texto.length > 4) {
+        texto = `${texto.slice(0, -2)}…`;
+      }
+      const width = Math.min(240, ctx.measureText(texto).width + 28);
+      const x = 128 - width / 2;
+      const y = active ? 196 : 200;
+      ctx.beginPath();
+      const r = 16;
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + 44, r);
+      ctx.arcTo(x + width, y + 44, x, y + 44, r);
+      ctx.arcTo(x, y + 44, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+      ctx.fillStyle = active ? "rgba(92, 6, 140, 0.94)" : "rgba(12, 16, 30, 0.82)";
+      ctx.fill();
       ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "rgba(0,0,0,0.85)";
-      ctx.shadowBlur = 8;
-      ctx.fillText(label, 128, 214);
-      ctx.shadowBlur = 0;
+      ctx.fillText(texto, 128, y + 23);
+      ctx.textBaseline = "alphabetic";
     }
     const tex = this.renderer.createTexture();
     this.renderer.upload(tex, canvas);
@@ -869,6 +957,19 @@ export class VRManager {
     this.iconTex.clear();
     this.exitButton?.remove();
     this.exitButton = null;
+    if (this.resizeHandler != null) {
+      window.removeEventListener("resize", this.resizeHandler);
+      window.removeEventListener("orientationchange", this.resizeHandler);
+      this.resizeHandler = null;
+    }
+    if (this.tapHandler != null) {
+      this.canvas?.removeEventListener("pointerdown", this.tapHandler);
+      this.tapHandler = null;
+    }
+    this.rotateHint?.remove();
+    this.rotateHint = null;
+    this.cardboardQuat = null;
+    this.reticleTex.clear();
     this.renderer?.destroy();
     this.renderer = null;
     this.canvas?.remove();

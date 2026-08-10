@@ -99,6 +99,12 @@ export function startGaze(container: HTMLElement, options: GazeOptions): GazeHan
     </svg>`;
   container.appendChild(host);
 
+  // Rótulo de lo enfocado: sin saber qué es, uno espera dos segundos y medio
+  // a ver qué pasa. Con el nombre delante se decide antes de que sea tarde.
+  const tip = document.createElement("div");
+  tip.className = "ull360-gaze-tip";
+  host.appendChild(tip);
+
   const ring = host.querySelector<SVGCircleElement>(".ull360-gaze-ring")!;
   const circumference = 2 * Math.PI * 30;
   ring.style.strokeDasharray = String(circumference);
@@ -162,9 +168,12 @@ export function startGaze(container: HTMLElement, options: GazeOptions): GazeHan
     if (target == null) {
       host.classList.remove("is-active");
       ring.style.strokeDashoffset = String(circumference);
+      tip.textContent = "";
       return;
     }
     host.classList.add("is-active");
+    const nombre = target.getAttribute("aria-label") ?? target.textContent?.trim() ?? "";
+    if (tip.textContent !== nombre) tip.textContent = nombre;
     const progress = Math.min(1, (performance.now() - since) / dwellMs);
     ring.style.strokeDashoffset = String(circumference * (1 - progress));
     if (progress >= 1) {

@@ -153,16 +153,7 @@ export class XrRenderer {
 
   /** Matriz de modelo de un billboard centrado en `center` y orientado al usuario. */
   billboardMatrix(center: Vec3, eye: Vec3, size: number): Float32Array {
-    const fwd = normalize([eye[0] - center[0], eye[1] - center[1], eye[2] - center[2]]);
-    const worldUp: Vec3 = Math.abs(fwd[1]) > 0.95 ? [0, 0, 1] : [0, 1, 0];
-    const right = normalize(cross(worldUp, fwd));
-    const up = cross(fwd, right);
-    return new Float32Array([
-      right[0] * size, right[1] * size, right[2] * size, 0,
-      up[0] * size, up[1] * size, up[2] * size, 0,
-      fwd[0], fwd[1], fwd[2], 0,
-      center[0], center[1], center[2], 1,
-    ]);
+    return billboardModelMatrix(center, eye, size);
   }
 
   /** Matriz de un segmento desde `from` hasta `to` (la geometría `line` va de 0 a 1 en Z). */
@@ -223,22 +214,51 @@ function buildProgram(gl: WebGLRenderingContext, vs: string, fs: string): WebGLP
   return p;
 }
 
+/**
+ * Punto de la esfera para una coordenada de textura equirectangular.
+ *
+ * Para verla desde dentro no basta con negar la X: eso es una **reflexión**, y
+ * el panorama salía en espejo —los rótulos al revés— tanto en cartón como en
+ * gafas. Hay que invertir X y Z a la vez, que es lo que coloca el centro de la
+ * imagen (u = 0,5) justo al frente, mirando a −Z.
+ */
+/**
+ * Matriz de un billboard mirando al ojo. El eje local +X debe caer a la derecha
+ * de quien mira: si se invierte, los rótulos salen en espejo.
+ */
+export function billboardModelMatrix(center: Vec3, eye: Vec3, size: number): Float32Array {
+  const fwd = normalize([eye[0] - center[0], eye[1] - center[1], eye[2] - center[2]]);
+  const worldUp: Vec3 = Math.abs(fwd[1]) > 0.95 ? [0, 0, 1] : [0, 1, 0];
+  const right = normalize(cross(worldUp, fwd));
+  const up = cross(fwd, right);
+  return new Float32Array([
+    right[0] * size, right[1] * size, right[2] * size, 0,
+    up[0] * size, up[1] * size, up[2] * size, 0,
+    fwd[0], fwd[1], fwd[2], 0,
+    center[0], center[1], center[2], 1,
+  ]);
+}
+
+export function spherePoint(u: number, v: number, radius: number, inside: boolean): [number, number, number] {
+  const phi = v * Math.PI;
+  const theta = u * 2 * Math.PI;
+  const inward = inside ? -1 : 1;
+  return [
+    inward * radius * Math.sin(phi) * Math.sin(theta),
+    radius * Math.cos(phi),
+    -inward * radius * Math.sin(phi) * Math.cos(theta),
+  ];
+}
+
 function buildSphere(gl: WebGLRenderingContext, lonSegs: number, latSegs: number, radius: number, inside: boolean): Geometry {
   const pos: number[] = [];
   const uv: number[] = [];
   const idx: number[] = [];
   for (let lat = 0; lat <= latSegs; lat++) {
     const v = lat / latSegs;
-    const phi = v * Math.PI;
     for (let lon = 0; lon <= lonSegs; lon++) {
       const u = lon / lonSegs;
-      const theta = u * 2 * Math.PI;
-      const sign = inside ? -1 : 1;
-      pos.push(
-        sign * radius * Math.sin(phi) * Math.sin(theta),
-        radius * Math.cos(phi),
-        -radius * Math.sin(phi) * Math.cos(theta),
-      );
+      pos.push(...spherePoint(u, v, radius, inside));
       uv.push(u, v);
     }
   }

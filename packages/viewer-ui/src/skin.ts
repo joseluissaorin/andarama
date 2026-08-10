@@ -179,7 +179,22 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   if (ui.compass !== false) container.appendChild(buildCompass(viewer, t));
 
   // ------- Miniaturas -------
-  if (ui.thumbnails !== false) container.appendChild(buildThumbnails(viewer, t, baseUrl));
+  // Las miniaturas las decide el tour, pero también quien mira: en un móvil
+  // ocupan un tercio de la pantalla y a veces se quieren fuera.
+  const THUMBS_KEY = "ull360.thumbs";
+  let thumbsEl: HTMLElement | null = null;
+  const thumbsAllowed = ui.thumbnails !== false;
+  let thumbsOn = thumbsAllowed && localStorage.getItem(THUMBS_KEY) !== "off";
+  const renderThumbs = (): void => {
+    if (thumbsOn && thumbsEl == null) {
+      thumbsEl = buildThumbnails(viewer, t, baseUrl);
+      container.appendChild(thumbsEl);
+    } else if (!thumbsOn && thumbsEl != null) {
+      thumbsEl.remove();
+      thumbsEl = null;
+    }
+  };
+  renderThumbs();
 
   // ------- Plano / mapa -------
   const mapPanel = edit
@@ -198,6 +213,23 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
   // ------- Controles laterales -------
   const controls = el("div", { className: "ull360-controls" });
+  // Dique plegable: en un móvil, ocho botones se comen la escena. Se recuerda
+  // la decisión, y en pantallas pequeñas empieza plegado.
+  const COMPACT_KEY = "ull360.compactControls";
+  const saved = localStorage.getItem(COMPACT_KEY);
+  let compact = saved != null ? saved === "on" : window.matchMedia("(max-width: 640px)").matches;
+  const applyCompact = (): void => {
+    controls.classList.toggle("is-compact", compact);
+    compactBtn.setAttribute("aria-pressed", String(compact));
+    compactBtn.setAttribute("aria-label", compact ? t("expand_controls") : t("compact_controls"));
+    compactBtn.replaceChildren(createIconSvg(compact ? "chevrons-up" : "chevrons-down", 20));
+  };
+  const compactBtn = iconButton("chevrons-down", t("compact_controls"), () => {
+    compact = !compact;
+    localStorage.setItem(COMPACT_KEY, compact ? "on" : "off");
+    applyCompact();
+  });
+  compactBtn.classList.add("ull360-controls__toggle");
   const controlsLeft = el("div", { className: "ull360-controls-left" });
 
   if (mapPanel.available) {
@@ -287,6 +319,17 @@ export function mountViewer(options: SkinOptions): MountedSkin {
       if (e.active && e.mode === "xr") toast(container, t("vr_hint_hands"));
     });
     controls.appendChild(vrBtn);
+  }
+
+  if (thumbsAllowed) {
+    const thumbsBtn = iconButton("layout-grid", t("toggle_thumbnails"), () => {
+      thumbsOn = !thumbsOn;
+      localStorage.setItem(THUMBS_KEY, thumbsOn ? "on" : "off");
+      thumbsBtn.setAttribute("aria-pressed", String(thumbsOn));
+      renderThumbs();
+    });
+    thumbsBtn.setAttribute("aria-pressed", String(thumbsOn));
+    controls.appendChild(thumbsBtn);
   }
 
   if (ui.fullscreen !== false && document.fullscreenEnabled) {
@@ -391,7 +434,11 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     skip.remove();
   }
 
-  if (controls.childElementCount > 0) container.appendChild(controls);
+  if (controls.childElementCount > 0) {
+    controls.appendChild(compactBtn);
+    applyCompact();
+    container.appendChild(controls);
+  }
   if (controlsLeft.childElementCount > 0) container.appendChild(controlsLeft);
 
   // ------- Video 360: barra de controles -------

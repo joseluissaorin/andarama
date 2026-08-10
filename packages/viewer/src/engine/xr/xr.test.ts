@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { billboardModelMatrix, spherePoint } from "./render.js";
 import { angleDiff, dirFromYawPitch, matForward, matPosition, rayRect, raySphere, vecDistance, vecNormalize } from "./math.js";
 import { HAND_JOINTS } from "./input.js";
 import { needsExternalContinuation, isImmersivePanel, stripMarkdown } from "./panel.js";
@@ -171,5 +172,94 @@ describe("cerrar el panel mirándolo", () => {
     expect(hit).not.toBeNull();
     expect(hit!.u).toBeCloseTo(0.5, 2);
     expect(hit!.v).toBeCloseTo(0.5, 2);
+  });
+});
+
+describe("esfera del entorno", () => {
+  const R = 50;
+
+  it("el centro de la imagen queda al frente, mirando a -Z", () => {
+    const p = spherePoint(0.5, 0.5, R, true);
+    expect(Math.abs(p[0])).toBeLessThan(1e-6);
+    expect(Math.abs(p[1])).toBeLessThan(1e-6);
+    expect(p[2]).toBeCloseTo(-R, 5);
+  });
+
+  it("no está en espejo: a la derecha de la imagen corresponde la derecha real", () => {
+    // Un cuarto de vuelta a la derecha (yaw +90°) es u = 0,75 y debe caer en +X
+    const p = spherePoint(0.75, 0.5, R, true);
+    expect(p[0]).toBeCloseTo(R, 5);
+  });
+
+  it("arriba de la imagen es arriba", () => {
+    expect(spherePoint(0.5, 0, R, true)[1]).toBeCloseTo(R, 5);
+    expect(spherePoint(0.5, 1, R, true)[1]).toBeCloseTo(-R, 5);
+  });
+
+  it("la dirección de la esfera coincide con la del resto del motor", () => {
+    for (const yaw of [0, 0.7, -1.3, 2.9]) {
+      const u = ((0.5 + yaw / (2 * Math.PI)) % 1 + 1) % 1;
+      const p = spherePoint(u, 0.5, 1, true);
+      const d = dirFromYawPitch(yaw, 0);
+      expect(Math.abs(p[0] - d[0])).toBeLessThan(1e-6);
+      expect(Math.abs(p[2] - d[2])).toBeLessThan(1e-6);
+    }
+  });
+
+  it("la esfera exterior (manos y mandos) sigue siendo una esfera del radio pedido", () => {
+    for (const [u, v] of [[0, 0.5], [0.25, 0.3], [0.5, 0.5], [0.9, 0.8]]) {
+      const p = spherePoint(u!, v!, R, false);
+      expect(Math.hypot(p[0], p[1], p[2])).toBeCloseTo(R, 4);
+    }
+  });
+});
+
+describe("orientación de los billboards", () => {
+  /** Esquinas del quad tal y como las define la geometría, con su UV. */
+  const CORNERS: { local: [number, number]; u: number; v: number }[] = [
+    { local: [-0.5, -0.5], u: 0, v: 1 },
+    { local: [0.5, -0.5], u: 1, v: 1 },
+    { local: [-0.5, 0.5], u: 0, v: 0 },
+    { local: [0.5, 0.5], u: 1, v: 0 },
+  ];
+
+  function world(m: Float32Array, x: number, y: number): [number, number, number] {
+    return [
+      m[0]! * x + m[4]! * y + m[12]!,
+      m[1]! * x + m[5]! * y + m[13]!,
+      m[2]! * x + m[6]! * y + m[14]!,
+    ];
+  }
+
+  it("el borde izquierdo de la textura queda a la izquierda de quien mira", () => {
+    // Hotspot justo al frente, ojo en el origen
+    const m = billboardModelMatrix([0, 0, -6], [0, 0, 0], 1);
+    const izq = world(m, ...CORNERS[0]!.local);
+    const der = world(m, ...CORNERS[1]!.local);
+    expect(izq[0]).toBeLessThan(der[0]);
+  });
+
+  it("y arriba de la textura queda arriba", () => {
+    const m = billboardModelMatrix([0, 0, -6], [0, 0, 0], 1);
+    const abajo = world(m, ...CORNERS[0]!.local);
+    const arriba = world(m, ...CORNERS[2]!.local);
+    expect(arriba[1]).toBeGreaterThan(abajo[1]);
+  });
+
+  it("también con el hotspot a un lado", () => {
+    // A la derecha del usuario: el billboard gira, pero el texto no se refleja
+    const m = billboardModelMatrix([6, 0, 0], [0, 0, 0], 1);
+    const izq = world(m, ...CORNERS[0]!.local);
+    const der = world(m, ...CORNERS[1]!.local);
+    // Mirando hacia +X (yaw 90°), la derecha del espectador es +Z
+    expect(izq[2]).toBeLessThan(der[2]);
+  });
+
+  it("el billboard queda perpendicular a la mirada", () => {
+    const m = billboardModelMatrix([3, 1, -4], [0, 0, 0], 1);
+    const fwd = [m[8]!, m[9]!, m[10]!];
+    const haciaElOjo = [-3, -1, 4];
+    const n = Math.hypot(...haciaElOjo);
+    for (let i = 0; i < 3; i++) expect(Math.abs(fwd[i]! - haciaElOjo[i]! / n)).toBeLessThan(1e-6);
   });
 });

@@ -99,6 +99,21 @@ El fichero `LEEME.md` que acompaña a cada paquete lo recuerda, y el `.htaccess`
 incluido añade los tipos MIME y las cabeceras de caché que necesita un
 alojamiento compartido corriente.
 
+## Modo cartón, en detalle
+
+Unas gafas de cartón se sujetan **en horizontal**: si el móvil está vertical
+aparece un aviso pidiendo que se gire, y el visor intenta bloquear la
+orientación donde el navegador lo permite (Safari no lo permite).
+
+- La orientación se calcula con el cuaternión del dispositivo y se compensa el
+  ángulo de la pantalla, así que la escena mantiene el horizonte a nivel al
+  girar el teléfono y respeta la inclinación de la cabeza. Antes se traducían
+  los ángulos a mano y la imagen aparecía volcada.
+- El **botón físico** de las gafas de cartón toca la pantalla: al tocar, se
+  acciona al instante lo que esté enfocado, sin esperar la permanencia.
+- En iOS hay que aceptar el permiso de movimiento y orientación; sin él el
+  seguimiento no llega y la escena se queda quieta.
+
 ## Cerrar un panel
 
 Todo panel abierto lleva su aspa arriba a la derecha, y se alcanza con
