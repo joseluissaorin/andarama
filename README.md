@@ -21,7 +21,7 @@ La trazabilidad completa de la especificación a la implementación está en [RE
 - **Cloudflare "un comando"**: toda la plataforma (frontend, API, base de datos, almacenamiento, colas, tiempo real, analítica) corre sobre Workers, D1, R2, KV, Durable Objects, Queues y Workers Analytics Engine, dentro del free tier para usos pequeños y medios.
 
   ```bash
-  git clone https://github.com/ull/ull360 && cd ull360
+  git clone https://github.com/joseluissaorin/ull360 && cd ull360
   pnpm install
   pnpm deploy:cloudflare
   ```
@@ -29,7 +29,7 @@ La trazabilidad completa de la especificación a la implementación está en [RE
 - **Self-hosting trivial**: una única imagen Docker (Node.js + SQLite + sistema de ficheros) que replica el comportamiento de Cloudflare mediante una capa de adaptadores.
 
   ```bash
-  curl -O https://raw.githubusercontent.com/ull/ull360/main/deploy/docker/docker-compose.yml
+  curl -O https://raw.githubusercontent.com/joseluissaorin/ull360/main/deploy/docker/docker-compose.yml
   docker compose up -d
   ```
 
@@ -78,6 +78,8 @@ La documentación completa (manual de usuario, guía de administración, guías 
 ## Licencia
 
 [EUPL-1.2](LICENSE). Titularidad del código: Universidad de La Laguna. Los medios de ejemplo se publican bajo CC BY 4.0; las fotografías del tour de demostración proceden de Wikimedia Commons (CC BY-SA, atribuciones en el propio tour). Véase [AUTHORS](AUTHORS).
+
+Los materiales de terceros incluidos (marca y tipografía oficiales de la ULL, dependencias destacadas) se detallan en [NOTICE.md](NOTICE.md); la marca de la Universidad de La Laguna no queda cubierta por la EUPL. Código de conducta en [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## Seguridad
 

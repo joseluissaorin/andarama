@@ -7,7 +7,7 @@ Gracias por tu interés en ULL360. Este proyecto es código abierto (EUPL-1.2) y
 Requisitos: Node.js >= 20, pnpm >= 10 (y Docker si quieres probar el self-host).
 
 ```bash
-git clone https://github.com/ull/ull360 && cd ull360
+git clone https://github.com/joseluissaorin/ull360 && cd ull360
 pnpm install
 pnpm build:packages
 pnpm dev            # API en http://localhost:8787 (wrangler dev)

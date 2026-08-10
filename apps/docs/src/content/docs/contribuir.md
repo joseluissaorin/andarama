@@ -2,12 +2,12 @@
 title: Contribuir
 ---
 
-ULL360 es código abierto bajo **EUPL-1.2** y las contribuciones son bienvenidas. La guía completa está en [CONTRIBUTING.md](https://github.com/ull/ull360/blob/main/CONTRIBUTING.md).
+ULL360 es código abierto bajo **EUPL-1.2** y las contribuciones son bienvenidas. La guía completa está en [CONTRIBUTING.md](https://github.com/joseluissaorin/ull360/blob/main/CONTRIBUTING.md).
 
 ## Resumen
 
 ```bash
-git clone https://github.com/ull/ull360 && cd ull360
+git clone https://github.com/joseluissaorin/ull360 && cd ull360
 pnpm install
 pnpm build:packages
 pnpm dev:node        # self-host en http://localhost:8788
@@ -30,4 +30,4 @@ pnpm test:e2e        # E2E (Playwright)
 
 ## Seguridad
 
-No abras issues públicos para vulnerabilidades: consulta [SECURITY.md](https://github.com/ull/ull360/blob/main/SECURITY.md).
+No abras issues públicos para vulnerabilidades: consulta [SECURITY.md](https://github.com/joseluissaorin/ull360/blob/main/SECURITY.md).

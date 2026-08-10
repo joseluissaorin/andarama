@@ -12,7 +12,7 @@ Objetivo: **de cero a instancia funcionando en menos de 10 minutos** con una cue
 ## Un comando
 
 ```bash
-git clone https://github.com/ull/ull360 && cd ull360
+git clone https://github.com/joseluissaorin/ull360 && cd ull360
 pnpm install
 pnpm deploy:cloudflare
 ```

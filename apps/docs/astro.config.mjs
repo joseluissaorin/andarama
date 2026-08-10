@@ -12,7 +12,7 @@ export default defineConfig({
         root: { label: "Español", lang: "es" },
       },
       social: {
-        github: "https://github.com/ull/ull360",
+        github: "https://github.com/joseluissaorin/ull360",
       },
       sidebar: [
         { label: "Introducción", slug: "index" },

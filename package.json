@@ -6,7 +6,7 @@
   "license": "EUPL-1.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ull/ull360"
+    "url": "https://github.com/joseluissaorin/ull360.git"
   },
   "engines": {
     "node": ">=20"
@@ -35,5 +35,9 @@
     "prettier": "^3.5.0",
     "vitest": "^3.0.5",
     "@playwright/test": "^1.50.1"
+  },
+  "homepage": "https://ull360.jlsf2005.workers.dev",
+  "bugs": {
+    "url": "https://github.com/joseluissaorin/ull360/issues"
   }
 }
