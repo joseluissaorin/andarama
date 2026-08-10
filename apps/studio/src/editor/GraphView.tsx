@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Expand, LayoutGrid, Plus, Trash2, Undo2, Wand2 } from "lucide-react";
+import { Expand, LayoutGrid, Map as MapIcon, Plus, Trash2, Undo2, Wand2 } from "lucide-react";
 import { Button, Input, Select, Tooltip } from "@ull360/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
@@ -12,8 +12,11 @@ import {
   readAutopilot,
   writeAutopilot,
   type AutopilotRouteDraft,
+  type GraphIssue,
 } from "./graphModel";
 import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
+import { GraphHelp } from "./GraphHelp";
+import { GraphIssues } from "./GraphIssues";
 
 /**
  * Editor del grafo de escenas al estilo de un editor de nodos (Blender):
@@ -99,6 +102,19 @@ export function GraphView({ canEdit, onOpenScene }: {
   const [mediaOver, setMediaOver] = useState(false);
   // Crear el paso de vuelta al conectar: es lo habitual en un recorrido.
   const [bothWays, setBothWays] = useState(true);
+  const [showPlan, setShowPlan] = useState(false);
+  // Imán a la rejilla: se puede apagar para colocar a ojo
+  const [snap, setSnap] = useState(true);
+  const snapRef = useRef(snap);
+  snapRef.current = snap;
+
+  /** Primer plano de planta del tour: se puede calcar bajo el grafo. */
+  const floorplan = ((snapshot.settings.floorplans as { id: string; title: string; url: string }[] | undefined) ?? [])[0] ?? null;
+  const floorplanUrl = ((): string | null => {
+    if (floorplan == null) return null;
+    const m = /^media:(.+)$/.exec(floorplan.url);
+    return m != null ? `/api/v1/media/${m[1]}/file` : floorplan.url;
+  })();
 
   // En modo autopilot el lienzo dibuja el recorrido, no los pasos del visitante
   const routeEdges = useMemo(() => {
@@ -235,6 +251,14 @@ export function GraphView({ canEdit, onOpenScene }: {
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") return;
       if (e.key === "f" || e.key === "F") {
         fitView();
+      } else if (e.key === "g" || e.key === "G") {
+        setSnap((v) => !v);
+      } else if (e.key === "l" || e.key === "L") {
+        if (canEdit) autoLayout();
+      } else if (e.key === "p" || e.key === "P") {
+        setShowPlan((v) => !v);
+      } else if ((e.key === "a" || e.key === "A") && !e.metaKey && !e.ctrlKey) {
+        setSelectedNodes(new Set(snapshot.scenes.map((sc) => sc.id)));
       } else if (e.key === "Escape") {
         if (dragRef.current?.kind === "connect") {
           dragRef.current = null;
@@ -254,7 +278,7 @@ export function GraphView({ canEdit, onOpenScene }: {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [fitView, canEdit, selectedEdge, editor, hideGhost]);
+  }, [fitView, canEdit, selectedEdge, editor, hideGhost, autoLayout, snapshot.scenes]);
 
   // Rueda: zoom anclado al cursor
   const onWheel = (e: React.WheelEvent): void => {
@@ -345,8 +369,10 @@ export function GraphView({ canEdit, onOpenScene }: {
       setPositions((prev) => {
         const next = { ...prev };
         for (const [id, o] of Object.entries(st.orig)) {
-          // Snap suave a rejilla de 10 px
-          next[id] = { x: Math.round((o.x + dx) / 10) * 10, y: Math.round((o.y + dy) / 10) * 10 };
+          // Imán suave a rejilla de 10 px, desactivable con G
+          const gx = o.x + dx;
+          const gy = o.y + dy;
+          next[id] = snapRef.current ? { x: Math.round(gx / 10) * 10, y: Math.round(gy / 10) * 10 } : { x: gx, y: gy };
         }
         return next;
       });
@@ -428,6 +454,64 @@ export function GraphView({ canEdit, onOpenScene }: {
   );
   const issues = useMemo(() => graphIssues(snapshot, edges, orphans), [snapshot, edges, orphans]);
 
+  /** Centrar la vista sobre lo que señala un aviso y seleccionarlo. */
+  const focusIssue = useCallback(
+    (issue: GraphIssue): void => {
+      const pos = positionsRef.current[issue.sceneId];
+      if (pos != null && svgRef.current != null) {
+        const rect = svgRef.current.getBoundingClientRect();
+        const scale = Math.max(0.6, viewRef.current.scale);
+        setView({
+          scale,
+          ox: rect.width / 2 - (pos.x + NODE_W / 2) * scale,
+          oy: rect.height / 2 - (pos.y + NODE_H / 2) * scale,
+        });
+      }
+      if (issue.hotspotId != null) {
+        setSelectedEdge(issue.hotspotId);
+        setSelectedNodes(new Set());
+      } else {
+        setSelectedNodes(new Set([issue.sceneId]));
+        setSelectedEdge(null);
+      }
+    },
+    [],
+  );
+
+  /** Arreglo automático del aviso, cuando existe uno sensato. */
+  const issueAction = useCallback(
+    (issue: GraphIssue): { label: string; run: () => void } | null => {
+      if (!canEdit) return null;
+      if (issue.kind === "no-return") {
+        const edge = edges.find((e) => e.id === issue.hotspotId);
+        if (edge == null) return null;
+        return {
+          label: t("add_return"),
+          run: () => editor.apply((draft) => createNavHotspot(draft, edge.to, edge.from, { entryMode: "lookBack" })),
+        };
+      }
+      if (issue.kind === "no-target" || issue.kind === "broken-target") {
+        return {
+          label: t("delete"),
+          run: () => {
+            if (issue.hotspotId != null) editor.apply((draft) => deleteEdge(draft, issue.hotspotId!));
+          },
+        };
+      }
+      if (issue.kind === "unplaced") {
+        return {
+          label: t("place_in_panorama"),
+          run: () => onOpenScene?.(issue.sceneId, issue.hotspotId),
+        };
+      }
+      if (issue.kind === "orphan") {
+        return { label: t("open_scene"), run: () => onOpenScene?.(issue.sceneId) };
+      }
+      return null;
+    },
+    [canEdit, edges, editor, onOpenScene, t],
+  );
+
   /** Editar la arista es editar su hotspot. */
   const patchEdgeContent = (patch: Record<string, unknown>): void => {
     if (selectedHotspot == null) return;
@@ -468,7 +552,9 @@ export function GraphView({ canEdit, onOpenScene }: {
               </button>
             ))}
           </div>
-          <span className="text-[13px] text-[var(--ull-text-dim)]">{mode === "scenes" ? t("graph_help") : t("graph_help_autopilot")}</span>
+          <span className="hidden text-[13px] text-[var(--ull-text-dim)] lg:inline">
+            {mode === "scenes" ? t("graph_help_short") : t("graph_help_autopilot")}
+          </span>
           <div className="flex-1" />
           {mode === "scenes" && (
             <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--ull-text-dim)]">
@@ -476,15 +562,21 @@ export function GraphView({ canEdit, onOpenScene }: {
               {t("create_return")}
             </label>
           )}
-          {issues.length > 0 ? (
-            <Tooltip content={issues.slice(0, 6).map((i) => `${t(`graph_issue_${i.kind}`)}: ${i.label}`).join("\n")}>
-              <span className="cursor-help rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-600">
-                {t("graph_issues", { count: String(issues.length) })}
-              </span>
+          <GraphIssues issues={issues} onFocus={focusIssue} actionFor={issueAction} />
+          {floorplan != null && (
+            <Tooltip content={t("toggle_floorplan")}>
+              <Button
+                size="sm"
+                variant="ghost"
+                aria-label={t("toggle_floorplan")}
+                aria-pressed={showPlan}
+                onClick={() => setShowPlan((v) => !v)}
+              >
+                <MapIcon className="h-4 w-4" />
+              </Button>
             </Tooltip>
-          ) : (
-            <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-600">{t("all_reachable")}</span>
           )}
+          <GraphHelp mode={mode} />
           <Tooltip content={`${t("fit_view")} (F)`}>
             <Button size="sm" variant="ghost" aria-label={t("fit_view")} onClick={fitView}>
               <Expand className="h-4 w-4" />
@@ -555,6 +647,14 @@ export function GraphView({ canEdit, onOpenScene }: {
             </defs>
             <rect width="100%" height="100%" fill="url(#graph-dots)" />
 
+            {/* Plano de planta calcado debajo: colocar el grafo sobre la
+                planta real hace evidente qué falta conectar */}
+            {showPlan && floorplanUrl != null && (
+              <g transform={`translate(${view.ox} ${view.oy}) scale(${view.scale})`} style={{ pointerEvents: "none" }}>
+                <image href={floorplanUrl} x={-40} y={-40} width={1200} height={900} opacity={0.28} preserveAspectRatio="xMidYMid meet" />
+              </g>
+            )}
+
             <g transform={`translate(${view.ox} ${view.oy}) scale(${view.scale})`}>
               {/* Aristas */}
               {visibleEdges.map((e) => {
@@ -572,6 +672,9 @@ export function GraphView({ canEdit, onOpenScene }: {
                       strokeWidth={selected ? 2.5 : 1.8}
                       strokeDasharray={e.unplaced ? "6 4" : undefined}
                     />
+                    {/* Zona ancha invisible: acertar en una curva de 2 px es
+                        imposible, y desenlazar tiene que ser fácil */}
+                    <path d={d} fill="none" stroke="transparent" strokeWidth={16} style={{ cursor: "pointer" }} />
                     {step != null ? (
                       <>
                         <circle cx={mid.x} cy={mid.y} r={9} fill="var(--ull-accent)" />
@@ -581,6 +684,27 @@ export function GraphView({ canEdit, onOpenScene }: {
                       </>
                     ) : (
                       <circle cx={mid.x} cy={mid.y} r={selected ? 4 : 3} fill={color} fillOpacity={selected ? 1 : 0.6} />
+                    )}
+                    {/* Desenlazar: visible en la arista seleccionada, sin
+                        tener que adivinar que existe la tecla Supr */}
+                    {selected && mode === "scenes" && canEdit && (
+                      <g
+                        style={{ cursor: "pointer" }}
+                        onPointerDown={(ev) => {
+                          ev.stopPropagation();
+                          editor.apply((draft) => deleteEdge(draft, e.id));
+                          setSelectedEdge(null);
+                        }}
+                      >
+                        <title>{t("unlink_scenes")}</title>
+                        <circle cx={mid.x} cy={mid.y - 18} r={10} fill="var(--ull-danger, #dc2626)" />
+                        <path
+                          d={`M ${mid.x - 4} ${mid.y - 22} L ${mid.x + 4} ${mid.y - 14} M ${mid.x + 4} ${mid.y - 22} L ${mid.x - 4} ${mid.y - 14}`}
+                          stroke="#fff"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                        />
+                      </g>
                     )}
                   </g>
                 );

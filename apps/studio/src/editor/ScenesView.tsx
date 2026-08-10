@@ -21,6 +21,7 @@ import { clientId, readJson } from "./editorApi";
 import { MediaPicker } from "./MediaPicker";
 import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
 import { PropertiesPanel } from "./PropertiesPanel";
+import { HotspotPalette } from "./HotspotPalette";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
 
@@ -270,7 +271,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
 
       {selected != null && (
         <aside
-          className="relative flex shrink-0 flex-col border-l border-[var(--ull-border)] bg-[var(--ull-surface)]"
+          className="relative flex min-h-0 shrink-0 flex-col overflow-hidden border-l border-[var(--ull-border)] bg-[var(--ull-surface)]"
           style={{ width: panelWidth }}
         >
           {/* Tirador: 320 px se queda corto para las etiquetas en español */}
@@ -419,6 +420,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   const placementRef = useRef(placement);
   placementRef.current = placement;
   const [compiling, setCompiling] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const firstMount = useRef(true);
 
   // Arrastrar una escena de la lista sobre el panorama crea el paso hacia ella
@@ -676,6 +678,11 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         {compiling && <span className="text-xs text-[var(--ull-text-dim)]">{t("loading")}</span>}
         {issues.length > 0 && <IssuesButton issues={issues} />}
         {canEdit && (
+          <Button size="sm" variant="outline" onClick={() => setPaletteOpen(true)}>
+            <Plus className="h-4 w-4" /> {t("add_hotspot_button")}
+          </Button>
+        )}
+        {canEdit && (
           <Tooltip content={t("use_current_view_hint")}>
             <Button
               size="sm"
@@ -700,6 +707,12 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
           className={`absolute inset-0 bg-[#0b1020] ${placement.kind !== "none" ? "cursor-crosshair" : ""}`}
         />
       </div>
+
+      <HotspotPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onPick={(type) => setPlacementMode(type === "polygon" ? { kind: "polygon", points: [] } : { kind: "hotspot", type })}
+      />
     </>
   );
 }
@@ -725,6 +738,7 @@ function IssuesButton({ issues }: { issues: { severity: string; message: string 
           </ul>
         </div>
       )}
+
     </div>
   );
 }

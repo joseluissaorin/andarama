@@ -4,6 +4,7 @@ import { FolderKanban, Image, Languages, LogOut, ShieldCheck, UserCircle, Buildi
 import { Button, Select, Spinner, Tooltip } from "@ull360/ui";
 import { useAuth } from "../stores";
 import { useI18nStore, useT } from "../i18n";
+import logoUll360 from "../brand/logo-ull360.svg";
 import iconoUll from "../brand/icono-ull.svg";
 import iconoUllBlanco from "../brand/icono-ull-blanco.svg";
 
@@ -36,10 +37,8 @@ export function Shell(): React.ReactNode {
     <div className="flex h-full">
       <aside className="flex w-60 flex-col border-r border-[var(--ull-border)] bg-[var(--ull-surface)]">
         <div className="flex items-center gap-3 px-4 pb-4 pt-5">
-          {/* Simbolo oficial ULL sobre violeta corporativo (version icono del manual) */}
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#5c068c] shadow-[var(--ull-shadow)]">
-            <UllLogo size={22} light />
-          </span>
+          {/* Marca de producto de ULL360 (propia); la institucional va aparte */}
+          <img src={logoUll360} alt="" width={40} height={40} className="rounded-xl shadow-[var(--ull-shadow)]" />
           <div className="leading-tight">
             <span className="block text-[15px] font-bold tracking-tight">ULL360</span>
             <span className="block text-[11px] font-medium text-[var(--ull-text-dim)]">Universidad de La Laguna</span>

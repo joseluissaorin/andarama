@@ -22,6 +22,7 @@ import { useT } from "../i18n";
 import { loadSnapshot, syncSnapshot } from "./editorApi";
 import { ScenesView } from "./ScenesView";
 import { GraphView } from "./GraphView";
+import { MediaDock } from "./MediaDock";
 import { FloorplanView } from "./FloorplanView";
 import { TranslationsView } from "./TranslationsView";
 import { TourSettingsView } from "./TourSettingsView";
@@ -290,7 +291,10 @@ export function EditorPage(): React.ReactNode {
         ))}
       </nav>
 
-      <div className="min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 flex-col">
+        {/* Escenas y grafo comparten el panel de biblioteca: es donde se
+            arrastran los panoramas para convertirlos en escenas. */}
+        <div className="min-h-0 flex-1">
         {tab === "scenes" && <ScenesView project={project} canEdit={canEdit} locks={presence.locks} myConnId={connIdRef.current} />}
         {tab === "graph" && (
           <GraphView
@@ -307,6 +311,10 @@ export function EditorPage(): React.ReactNode {
         {tab === "analytics" && <AnalyticsView project={project} />}
         {tab === "comments" && <CommentsView project={project} />}
         {tab === "versions" && <VersionsView project={project} />}
+        </div>
+        {(tab === "scenes" || tab === "graph") && (
+          <MediaDock orgId={project.orgId} projectId={project.id} projectTitle={project.title} canEdit={canEdit} />
+        )}
       </div>
 
       <PublishDialog open={dialog === "publish"} onClose={() => setDialog(null)} project={project} onPublished={(pub) => setProject({ ...project, publication: pub })} />

@@ -98,7 +98,8 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await page.fill("#sc-alt", "Escena de prueba E2E");
 
   // Colocar un hotspot de texto: paleta buscable y clic sobre el panorama
-  await page.getByRole("button", { name: /añadir hotspot/i }).click();
+  // Hay dos accesos a la paleta: el de la barra del visor y el del panel
+  await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
   await page.locator('[role="dialog"] input').first().fill("texto");
   await page.getByRole("button", { name: /^Texto/ }).first().click();
   await page.locator(".ull360-viewer").first().click({ position: { x: 500, y: 350 } });

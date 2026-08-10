@@ -27,7 +27,13 @@ export function isPano(media: MediaItem): boolean {
 }
 
 /** Miniatura que se convierte en little planet al pasar el ratón. */
-export function PlanetThumb({ media, className }: { media: MediaItem; className?: string }): React.ReactNode {
+export function PlanetThumb({ media, className, onOpen360 }: {
+  media: MediaItem;
+  className?: string;
+  /** Abre el visor 360. Si no se pasa, el distintivo no es pulsable. */
+  onOpen360?: () => void;
+}): React.ReactNode {
+  const t = useT();
   const [planet, setPlanet] = useState<string | null>(null);
   const [hover, setHover] = useState(false);
   const equirect = previewEquirect(media);
@@ -69,12 +75,28 @@ export function PlanetThumb({ media, className }: { media: MediaItem; className?
           <img src={planet} alt="" className="h-full w-auto max-w-none" />
         </span>
       )}
-      <span
-        className="pointer-events-none absolute bottom-1 right-1 rounded-md bg-black/55 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-        title="360"
-      >
-        <Orbit className="h-3.5 w-3.5" />
-      </span>
+      {/* El distintivo 360 parecía un botón y no lo era: al pulsarlo se abría
+          la ficha del fichero. Ahora abre el visor, que es lo que promete. */}
+      {onOpen360 != null ? (
+        <button
+          type="button"
+          title={t("open_360")}
+          aria-label={t("open_360")}
+          className="absolute bottom-1 right-1 rounded-md bg-black/60 p-1.5 text-white opacity-0 transition-opacity hover:bg-black/80 focus-visible:opacity-100 group-hover:opacity-100"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onOpen360();
+          }}
+        >
+          <Orbit className="h-4 w-4" />
+        </button>
+      ) : (
+        <span className="pointer-events-none absolute bottom-1 right-1 rounded-md bg-black/55 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100" title="360">
+          <Orbit className="h-3.5 w-3.5" />
+        </span>
+      )}
     </div>
   );
 }

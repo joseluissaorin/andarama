@@ -151,7 +151,42 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             </Select>
           </Field>
           <Field label={t("primary_color")} htmlFor="th-color">
-            <Input id="th-color" type="color" value={String(theme.primaryColor ?? "#5c68a5")} disabled={!canEdit} onChange={(e) => patchTheme({ primaryColor: e.target.value })} />
+            {/* Un input de color estirado se ve como una raya y no se sabe qué
+                color es: muestra cuadrada, valor legible y atajos de marca. */}
+            <div className="flex items-center gap-2">
+              <input
+                id="th-color"
+                type="color"
+                aria-label={t("primary_color")}
+                value={String(theme.primaryColor ?? "#5c068c")}
+                disabled={!canEdit}
+                onChange={(e) => patchTheme({ primaryColor: e.target.value })}
+                className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-[var(--ull-border)] bg-transparent p-0.5"
+              />
+              <Input
+                aria-label={`${t("primary_color")} (hex)`}
+                className="max-w-28 font-mono text-xs uppercase"
+                value={String(theme.primaryColor ?? "#5c068c")}
+                disabled={!canEdit}
+                onChange={(e) => patchTheme({ primaryColor: e.target.value })}
+              />
+            </div>
+            <div className="mt-1.5 flex gap-1.5">
+              {(["#5c068c", "#0b1020", "#00847f", "#c0392b"] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  aria-label={c}
+                  title={c}
+                  disabled={!canEdit}
+                  onClick={() => patchTheme({ primaryColor: c })}
+                  className={`h-6 w-6 rounded-full border-2 ${
+                    String(theme.primaryColor ?? "#5c068c").toLowerCase() === c ? "border-[var(--ull-text)]" : "border-transparent"
+                  }`}
+                  style={{ background: c }}
+                />
+              ))}
+            </div>
           </Field>
           <Field label="Radio de esquinas" htmlFor="th-radius">
             <Input id="th-radius" value={String(theme.borderRadius ?? "12px")} disabled={!canEdit} onChange={(e) => patchTheme({ borderRadius: e.target.value })} />

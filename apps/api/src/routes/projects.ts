@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, isNotNull, isNull, lt } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lt } from "drizzle-orm";
 import {
   hotspots as hotspotsTable,
   projectMembers,
@@ -36,14 +36,28 @@ export function projectRoutes(): Hono<AppEnv> {
         .select()
         .from(projects)
         .where(and(eq(projects.orgId, orgId), isNotNull(projects.deletedAt)));
-      return c.json(rows.map(projectSummary));
+      return c.json(rows.map((row) => projectSummary(row)));
     }
     const rows = await listAccessibleProjects(db, orgId, auth.user);
     const pubs = await db.select().from(publications);
     const pubByProject = new Map(pubs.map((p) => [p.projectId, p]));
+
+    // Portada de cada tour: el panorama de su escena inicial, o el de la
+    // primera escena si aún no se ha elegido inicio.
+    const ids = rows.map((p) => p.id);
+    const sceneRows = ids.length > 0
+      ? await db.select().from(scenesTable).where(inArray(scenesTable.projectId, ids)).orderBy(asc(scenesTable.sort))
+      : [];
+    const coverOf = (project: typeof rows[number]): string | null => {
+      const own = sceneRows.filter((sc) => sc.projectId === project.id);
+      const start = parseJson<{ startScene?: string }>(project.settingsJson, {}).startScene;
+      const scene = own.find((sc) => sc.id === start) ?? own[0];
+      return scene?.mediaId ?? null;
+    };
+
     return c.json(
       rows.map((p) => ({
-        ...projectSummary(p),
+        ...projectSummary(p, coverOf(p)),
         publishedSlug: pubByProject.get(p.id)?.slug ?? null,
       })),
     );
@@ -423,7 +437,7 @@ async function duplicateContent(
   }
 }
 
-function projectSummary(p: typeof projects.$inferSelect): Record<string, unknown> {
+function projectSummary(p: typeof projects.$inferSelect, cover?: string | null): Record<string, unknown> {
   return {
     id: p.id,
     orgId: p.orgId,
@@ -433,6 +447,8 @@ function projectSummary(p: typeof projects.$inferSelect): Record<string, unknown
     tags: parseJson(p.tagsJson, []),
     status: p.status,
     isTemplate: p.isTemplate,
+    /** Medio de la escena inicial: la portada del tour en el panel. */
+    coverMediaId: cover ?? null,
     createdBy: p.createdBy,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,

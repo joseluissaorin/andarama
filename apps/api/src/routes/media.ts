@@ -365,6 +365,29 @@ export function mediaRoutes(): Hono<AppEnv> {
     });
   });
 
+  /**
+   * Preview equirectangular pequeño de un panorama. Vive dentro del manifiesto
+   * de tiles como data URI; servirlo como imagen permite pintar el planeta de
+   * la portada sin descargar el panorama entero.
+   */
+  r.get("/:mediaId/preview", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const row = await ownedMedia(c, auth, c.req.param("mediaId"), "reader");
+    const der = (await db
+      .select()
+      .from(mediaDerivatives)
+      .where(and(eq(mediaDerivatives.mediaId, row.id), eq(mediaDerivatives.kind, "tiles")))
+      .limit(1))[0];
+    const preview = parseJson<{ preview?: string }>(der?.manifestJson ?? "{}", {}).preview;
+    const match = /^data:(image\/[a-z+]+);base64,(.+)$/.exec(preview ?? "");
+    if (match == null) throw notFound();
+    const bytes = Uint8Array.from(atob(match[2]!), (ch) => ch.charCodeAt(0));
+    return new Response(bytes as unknown as BodyInit, {
+      headers: { "content-type": match[1]!, "cache-control": "private, max-age=86400" },
+    });
+  });
+
   /** Carpetas existentes en la biblioteca, con cuantos medios tiene cada una. */
   r.get("/folders", async (c) => {
     const auth = requireAuth(c);

@@ -99,6 +99,15 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const editor = useEditor();
   const [pickerFor, setPickerFor] = useState<"panorama" | "ambient" | "narration" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState<string | null>(null);
+  // Categorías ya usadas en el tour, sin repetir y ordenadas
+  const categories = [
+    ...new Set(
+      editor.snapshot!.scenes
+        .map((sc) => String(readJson<Record<string, unknown>>(sc.metaJson, {}).category ?? "").trim())
+        .filter((c) => c !== ""),
+    ),
+  ].sort((a, b) => a.localeCompare(b, "es"));
   const meta = readJson<Record<string, unknown>>(scene.metaJson, {});
   const audio = readJson<Record<string, any>>(scene.audioJson, {});
   const map = readJson<Record<string, any>>(scene.mapJson, {});
@@ -117,7 +126,9 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
     });
 
   return (
-    <div className="space-y-5 p-4">
+    // El aside es una columna con altura fija: sin este contenedor propio, el
+    // formulario de escena se salía por debajo del viewport en vez de rodar.
+    <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
       <div>
         <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{scene.title}</h3>
         <div className="space-y-3">
@@ -145,8 +156,59 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
           <Field label={t("description")} htmlFor="sc-desc">
             <Textarea id="sc-desc" rows={2} value={String(meta.description ?? "")} disabled={!canEdit} onChange={(e) => patchMeta({ description: e.target.value })} />
           </Field>
-          <Field label={t("category")} htmlFor="sc-cat">
-            <Input id="sc-cat" value={String(meta.category ?? "")} disabled={!canEdit} onChange={(e) => patchMeta({ category: e.target.value })} />
+          {/* Las categorías agrupan el menú de escenas: escribirlas a mano
+              acababa en «Interiores», «interiores» e «Interior» como tres
+              grupos distintos. Se eligen de las que ya existen en el tour. */}
+          <Field label={t("category")} htmlFor="sc-cat" hint={t("category_hint")}>
+            <div className="flex items-center gap-2">
+              <Select
+                id="sc-cat"
+                className="flex-1"
+                value={String(meta.category ?? "")}
+                disabled={!canEdit}
+                onChange={(e) => {
+                  if (e.target.value === "__new__") {
+                    setNewCategory("");
+                    return;
+                  }
+                  patchMeta({ category: e.target.value === "" ? undefined : e.target.value });
+                }}
+              >
+                <option value="">{t("category_none")}</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+                <option value="__new__">{t("category_new")}…</option>
+              </Select>
+            </div>
+            {newCategory != null && (
+              <div className="mt-1.5 flex items-center gap-2">
+                <Input
+                  autoFocus
+                  aria-label={t("category_new")}
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newCategory.trim() !== "") {
+                      patchMeta({ category: newCategory.trim() });
+                      setNewCategory(null);
+                    } else if (e.key === "Escape") setNewCategory(null);
+                  }}
+                />
+                <Button
+                  size="sm"
+                  disabled={newCategory.trim() === ""}
+                  onClick={() => {
+                    patchMeta({ category: newCategory.trim() });
+                    setNewCategory(null);
+                  }}
+                >
+                  {t("create")}
+                </Button>
+              </div>
+            )}
           </Field>
           <Switch id="sc-hidden" checked={meta.hidden === true} onCheckedChange={(v) => patchMeta({ hidden: v })} label={t("hidden_scene")} disabled={!canEdit} />
         </div>

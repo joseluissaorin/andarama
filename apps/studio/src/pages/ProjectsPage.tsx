@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { littlePlanetFor } from "../media/littlePlanet";
+import { useEffect, useMemo, useState } from "react";
 import {
   Copy,
   ExternalLink,
@@ -38,6 +39,7 @@ interface ProjectSummary {
   tags: string[];
   status: string;
   isTemplate: boolean;
+  coverMediaId: string | null;
   updatedAt: number;
   publishedSlug: string | null;
 }
@@ -262,8 +264,26 @@ function ProjectCard({ project, inTrash, onChanged }: {
     }
   };
 
-  // Portada con matiz derivado del id (estable por proyecto)
+  // Portada con matiz derivado del id (estable por proyecto), de respaldo
   const hue = [...project.id].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 360;
+
+  // Planeta de la escena inicial: se calcula del preview equirect del medio,
+  // que pesa poco y se cachea, y se guarda en memoria entre navegaciones.
+  const [planet, setPlanet] = useState<string | null>(null);
+  useEffect(() => {
+    const mediaId = project.coverMediaId;
+    if (mediaId == null) {
+      setPlanet(null);
+      return;
+    }
+    let alive = true;
+    void littlePlanetFor(mediaId, `/api/v1/media/${mediaId}/preview`, 320).then((url) => {
+      if (alive) setPlanet(url);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [project.coverMediaId]);
 
   return (
     <div className="group overflow-hidden rounded-2xl border border-[var(--ull-border)] bg-[var(--ull-surface)] shadow-[var(--ull-shadow)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[var(--ull-shadow-lg)]">
@@ -281,14 +301,22 @@ function ProjectCard({ project, inTrash, onChanged }: {
             background: `linear-gradient(130deg, hsl(${hue}, 42%, 38%), hsl(${(hue + 45) % 360}, 48%, 55%))`,
           }}
         />
-        <svg className="absolute -right-7 -top-9 h-36 w-36 opacity-25" viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="42" fill="none" stroke="white" strokeWidth="1.5" />
-          <ellipse cx="50" cy="50" rx="42" ry="16" fill="none" stroke="white" strokeWidth="1" />
-          <ellipse cx="50" cy="50" rx="16" ry="42" fill="none" stroke="white" strokeWidth="1" />
-        </svg>
-        <span className="absolute bottom-3 left-4 text-[19px] font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
-          {project.title.slice(0, 1).toUpperCase()}
-        </span>
+        {/* Portada: la escena inicial vista como planeta, que es lo que
+            distingue un tour de otro mucho mejor que una inicial */}
+        {planet != null ? (
+          <img src={planet} alt="" className="absolute inset-0 h-full w-full object-cover object-center" />
+        ) : (
+          <svg className="absolute -right-7 -top-9 h-36 w-36 opacity-25" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="white" strokeWidth="1.5" />
+            <ellipse cx="50" cy="50" rx="42" ry="16" fill="none" stroke="white" strokeWidth="1" />
+            <ellipse cx="50" cy="50" rx="16" ry="42" fill="none" stroke="white" strokeWidth="1" />
+          </svg>
+        )}
+        {planet == null && (
+          <span className="absolute bottom-3 left-4 text-[19px] font-bold tracking-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+            {project.title.slice(0, 1).toUpperCase()}
+          </span>
+        )}
       </button>
       <div className="p-4 pt-3">
       <div className="flex items-start justify-between gap-2">

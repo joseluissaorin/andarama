@@ -33,6 +33,25 @@ del preview equirect que el teselado ya guarda, sin pedir nada a la red.
 proyecciones, para asegurarse de que es el correcto antes de convertirlo en
 escena. No crea nada: es solo una comprobación.
 
+## Cómo se organiza
+
+La biblioteca se recorre, no se filtra: a la izquierda están los **tours** y las
+**carpetas**, y el contenido se limita a lo que elijas. Con un tour seleccionado,
+lo que subas queda asignado a ese tour automáticamente.
+
+## El panel de biblioteca del editor
+
+Dentro del editor, en **Escenas** y en **Grafo**, hay un panel de biblioteca
+abajo. Arranca mostrando **solo los medios de ese tour**, así que no hay que
+buscar entre todo lo de la organización, y lo que se sube desde ahí queda
+asignado al tour y aparece al momento. Se pliega con la flecha si estorba.
+
+Desde el panel se puede:
+
+- **Comprobar** un panorama en 360 (botón sobre la miniatura o doble clic).
+- **Arrastrarlo** al grafo o a la lista de escenas para crear la escena.
+- Cambiar a **Toda la biblioteca** cuando haga falta traer algo de otro sitio.
+
 ## Llevar medios al tour
 
 Los panoramas se pueden **arrastrar** desde la biblioteca hasta el editor:

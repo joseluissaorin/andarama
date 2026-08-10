@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
+import { Camera, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
 import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@ull360/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
@@ -99,6 +99,10 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
     queryFn: () => api<{ folder: string; total: number; panoramas: number }[]>(`/media/folders?org=${orgId}`),
   });
 
+  // Al subir desde la biblioteca con un tour seleccionado, lo subido entra en
+  // ese tour: si no, hay que ir a asignarlo a mano cada vez.
+  const assignAfterUpload = fullPage && project !== "" && project !== "none" ? project : null;
+
   // Los planetas del hover se calculan en tiempo ocioso: al pasar el ratón ya
   // están hechos y aparecen en el mismo fotograma.
   useEffect(() => {
@@ -142,6 +146,9 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })),
           );
           if (result.deduplicated) toast.push(t("deduplicated"));
+          if (assignAfterUpload != null) {
+            await api(`/media/${result.id}`, { method: "PATCH", body: { projectId: assignAfterUpload } });
+          }
           setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1500);
           void queryClient.invalidateQueries({ queryKey: ["media"] });
         } catch (err) {
@@ -149,17 +156,77 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
         }
       }
     },
-    [orgId, kindFilter, queryClient, toast, t],
+    [orgId, kindFilter, queryClient, toast, t, assignAfterUpload],
   );
 
   return (
     <div
+      className={fullPage ? "flex gap-5" : undefined}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
         void doUpload(e.dataTransfer.files);
       }}
     >
+      {/* Organizar, no solo filtrar: la biblioteca se recorre por tours y por
+          carpetas, que es como está guardada la cabeza de quien la usa. */}
+      {fullPage && (
+        <nav className="w-52 shrink-0 space-y-4 text-[13px]">
+          <div>
+            <h2 className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("tours")}</h2>
+            <ul className="space-y-0.5">
+              {[
+                { id: "", label: t("all_tours") },
+                { id: "none", label: t("without_tour") },
+                ...(projects.data ?? []).map((p) => ({ id: p.id, label: p.title })),
+              ].map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => setProject(item.id)}
+                    className={`flex w-full items-center gap-2 truncate rounded-lg px-2 py-1.5 text-left ${
+                      project === item.id ? "bg-[var(--ull-primary-soft)] font-medium text-[var(--ull-primary)]" : "hover:bg-[var(--ull-surface-2)]"
+                    }`}
+                  >
+                    <FolderKanban className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                    <span className="truncate">{item.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {(folders.data ?? []).length > 0 && (
+            <div>
+              <h2 className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--ull-text-dim)]">{t("folders")}</h2>
+              <ul className="space-y-0.5">
+                {[{ folder: "", total: 0, panoramas: 0 }, ...(folders.data ?? [])]
+                  .filter((f, i) => i === 0 || f.folder !== "")
+                  .map((f, i) => {
+                    const value = i === 0 ? "" : f.folder === "" ? "root" : f.folder;
+                    const label = i === 0 ? t("all_folders") : f.folder === "" ? t("folder_root") : f.folder;
+                    return (
+                      <li key={value || "todas"}>
+                        <button
+                          type="button"
+                          onClick={() => setFolder(value)}
+                          className={`flex w-full items-center gap-2 truncate rounded-lg px-2 py-1.5 text-left ${
+                            folder === value ? "bg-[var(--ull-primary-soft)] font-medium text-[var(--ull-primary)]" : "hover:bg-[var(--ull-surface-2)]"
+                          }`}
+                        >
+                          <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                          <span className="truncate">{label}</span>
+                          {i > 0 && <span className="ml-auto text-[11px] text-[var(--ull-text-dim)]">{f.total}</span>}
+                        </button>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </div>
+          )}
+        </nav>
+      )}
+
+      <div className={fullPage ? "min-w-0 flex-1" : undefined}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Input placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-52" aria-label={t("search")} />
         {kindFilter == null && (
@@ -172,7 +239,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             ))}
           </Select>
         )}
-        {fullPage && (
+        {false && fullPage && (
           <Select value={project} onChange={(e) => setProject(e.target.value)} className="max-w-48" aria-label={t("filter_by_tour")}>
             <option value="">{t("all_tours")}</option>
             <option value="none">{t("without_tour")}</option>
@@ -183,7 +250,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             ))}
           </Select>
         )}
-        {(folders.data ?? []).length > 1 && (
+        {!fullPage && (folders.data ?? []).length > 1 && (
           <Select value={folder} onChange={(e) => setFolder(e.target.value)} className="max-w-44" aria-label={t("folder")}>
             <option value="">{t("all_folders")}</option>
             {(folders.data ?? []).map((f) => (
@@ -316,7 +383,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
               >
                 <div className="flex h-28 items-center justify-center overflow-hidden bg-[var(--ull-surface-2)]">
                   {isPano(m) ? (
-                    <PlanetThumb media={m} />
+                    <PlanetThumb media={m} onOpen360={() => { setDetail(null); setPreview(m); }} />
                   ) : m.derivatives.some((d) => d.kind === "thumb") ? (
                     <img src={`/api/v1/media/${m.id}/derived/thumb`} alt="" className="h-full w-full object-cover" loading="lazy" />
                   ) : m.kind === "image" || m.kind === "floorplan" ? (
@@ -475,6 +542,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
           </div>
         )}
       </Dialog>
+      </div>
     </div>
   );
 }
