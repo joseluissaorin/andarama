@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, RefreshCw, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
+import { Camera, RefreshCw, Search, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
 import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
@@ -287,7 +287,10 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
 
       <div className={fullPage ? "min-w-0 flex-1" : undefined}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Input placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-52" aria-label={t("search")} />
+        <div className="anda-buscador w-56 shrink-0">
+          <Search aria-hidden="true" />
+          <input type="search" placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} aria-label={t("search")} />
+        </div>
         {kindFilter == null && (
           <Select value={kind} onChange={(e) => setKind(e.target.value)} className="max-w-44" aria-label={t("type")}>
             <option value="">{t("all_kinds")}</option>
@@ -409,8 +412,8 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                 e.dataTransfer.setData(MEDIA_DRAG_TYPE, JSON.stringify([mediaDragPayload(m)]));
                 e.dataTransfer.effectAllowed = "copy";
               }}
-              className={`group relative overflow-hidden rounded-xl border bg-[var(--anda-surface)] text-left shadow-sm transition-shadow hover:shadow-md ${
-                selected.has(m.id) ? "border-[var(--anda-primary)] ring-1 ring-[var(--anda-primary)]" : "border-[var(--anda-border)]"
+              className={`anda-tarjeta group relative overflow-hidden text-left ${
+                selected.has(m.id) ? "border-[var(--anda-primary)] ring-1 ring-[var(--anda-primary)]" : ""
               }`}
             >
               <button
@@ -457,7 +460,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
                   setPreview(m);
                 }}
               >
-                <div className="flex h-28 items-center justify-center overflow-hidden bg-[var(--anda-surface-2)]">
+                <div className="anda-portada flex h-28 items-center justify-center overflow-hidden border-b border-[var(--anda-border)] bg-[var(--anda-surface-2)]">
                   {isPano(m) ? (
                     <PlanetThumb media={m} onOpen360={() => { setDetail(null); setPreview(m); }} />
                   ) : m.derivatives.some((d) => d.kind === "thumb") ? (

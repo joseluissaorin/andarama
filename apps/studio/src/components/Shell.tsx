@@ -72,7 +72,7 @@ export function Shell(): React.ReactNode {
             alt=""
             width={42}
             height={42}
-            className="rounded-xl border-2 border-[var(--anda-text)] shadow-[3px_3px_0_var(--anda-yellow)]"
+            className="rounded-xl shadow-[var(--anda-relieve)]"
           />
           <div className="leading-tight">
             <span className="block text-[18px] font-bold tracking-tight">andarama</span>
@@ -132,7 +132,7 @@ export function Shell(): React.ReactNode {
             {t("install_app")}
           </button>
         )}
-        <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl border-2 border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-1.5">
+        <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-1.5 shadow-[inset_0_1px_2px_rgba(72,52,8,0.06)]">
           <Tooltip content={lang === "es" ? "English" : "Español"}>
             <Button variant="ghost" size="icon" aria-label="Idioma de la interfaz" onClick={() => setLang(lang === "es" ? "en" : "es")}>
               <Languages className="h-4 w-4" />

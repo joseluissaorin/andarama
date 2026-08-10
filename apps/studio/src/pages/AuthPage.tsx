@@ -83,7 +83,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
 
   return (
     <div className="flex min-h-full items-center justify-center bg-[var(--anda-bg)] p-6">
-      <div className="anda-enter flex w-full max-w-4xl overflow-hidden rounded-3xl border-[3px] border-[var(--anda-text)] bg-[var(--anda-surface)] shadow-[10px_10px_0_var(--anda-yellow)]">
+      <div className="anda-enter flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-relieve-alto)]">
         {/* Panel de marca: naranja plano de risografía, el grito con su
             desregistro y la criatura paseando por su suelo */}
         <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[#ff8a00] p-10 text-[#fff8ec] md:flex">

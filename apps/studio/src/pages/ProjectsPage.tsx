@@ -219,7 +219,7 @@ export function ProjectsPage(): React.ReactNode {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="anda-buscador max-w-72 flex-1">
+        <div className="anda-buscador w-full max-w-72 sm:w-72">
           <Search aria-hidden="true" />
           <input
             type="search"
@@ -415,7 +415,7 @@ function FolderCard({ name, count, dragOver, onOpen, onDragOver, onDropProject, 
       }`}
     >
       <button type="button" className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={onOpen}>
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[var(--anda-text)] bg-[var(--anda-yellow)] text-[#33260f] transition-transform duration-200 group-hover:-rotate-6 group-hover:scale-105">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[image:linear-gradient(180deg,var(--anda-primary-light),var(--anda-primary))] text-[#33260f] shadow-[var(--anda-relieve)] transition-transform duration-200 group-hover:-rotate-6 group-hover:scale-105">
           <Folder className="h-5 w-5" />
         </span>
         <span className="min-w-0">
@@ -508,7 +508,7 @@ function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
     >
       <button
         type="button"
-        className="anda-portada relative block h-32 w-full overflow-hidden border-b-2 border-[var(--anda-text)] text-left"
+        className="anda-portada relative block h-32 w-full overflow-hidden border-b border-[var(--anda-border)] text-left"
         aria-label={project.title}
         onClick={() => {
           if (!inTrash) void navigate({ to: "/p/$projectId", params: { projectId: project.id } });

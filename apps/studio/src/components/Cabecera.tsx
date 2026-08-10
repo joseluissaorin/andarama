@@ -3,9 +3,10 @@ import { Criatura } from "./Criatura";
 /**
  * Cabecera de sección del Studio.
  *
- * El mismo gesto que la portada y el acceso: naranja plano de risografía,
- * título enorme en tinta y la criatura paseando por su suelo. Sirve para que
- * todas las pantallas se reconozcan como Andarama sin repetir el marcado.
+ * Deliberadamente discreta: una banda con el mismo relieve que los botones
+ * —degradado suave, filo de luz arriba, sombra corta— y el título en tinta.
+ * El naranja a sangre y el borde de tinta se quedan para la portada y el
+ * acceso; aquí competían con el contenido y partían la página en dos.
  */
 export function Cabecera({ title, hint, right, criatura = true }: {
   title: string;
@@ -15,18 +16,16 @@ export function Cabecera({ title, hint, right, criatura = true }: {
   criatura?: boolean;
 }): React.ReactNode {
   return (
-    <div className="anda-enter mb-5 overflow-hidden rounded-3xl border-[3px] border-[var(--anda-text)] bg-[#ff8a00] px-6 py-5 shadow-[8px_8px_0_var(--anda-yellow)]">
+    <div className="anda-cabecera anda-enter mb-5 px-5 py-4">
       <div className="flex flex-wrap items-center gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-[30px] font-extrabold leading-none tracking-tight text-[#33260f]">{title}</h1>
-          {hint != null && <p className="mt-1.5 text-[13.5px] font-semibold text-[#fff8ec]">{hint}</p>}
+          <h1 className="text-[23px] font-bold leading-tight tracking-tight text-[var(--anda-text)]">{title}</h1>
+          {hint != null && <p className="mt-1 text-[13px] text-[var(--anda-text-dim)]">{hint}</p>}
         </div>
         {right}
-        {/* Brinco en el sitio, no paseo: en una franja estrecha la criatura
-            pasaría más tiempo fuera del recuadro que dentro. */}
         {criatura && (
-          <div className="hidden shrink-0 sm:block">
-            <Criatura size={54} andando />
+          <div className="hidden shrink-0 opacity-90 sm:block">
+            <Criatura size={40} andando />
           </div>
         )}
       </div>

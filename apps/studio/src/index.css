@@ -112,96 +112,122 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * Tarjetas, navegación y buscador con carácter.
+ * Relieve: el lenguaje visual del Studio.
  *
- * La regla de la casa: borde de tinta y sombra amarilla desplazada, como algo
- * impreso y recortado. Al pasar por encima la pieza se levanta y la sombra se
- * separa; nada de degradados tímidos.
+ * El mismo gesto del botón principal —degradado vertical suave, filo de luz
+ * arriba y sombra corta— aplicado a todo lo que se puede pulsar o contiene
+ * algo. Es un relieve de tecla, no una pegatina recortada: la marca gritona
+ * se queda para la portada y el acceso, que es donde toca gritar.
  * ------------------------------------------------------------------------- */
+:root {
+  --anda-luz: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --anda-relieve: var(--anda-luz), 0 1px 2px rgba(72, 52, 8, 0.1), 0 2px 8px rgba(72, 52, 8, 0.06);
+  --anda-relieve-alto: var(--anda-luz), 0 2px 4px rgba(72, 52, 8, 0.12), 0 10px 24px rgba(72, 52, 8, 0.14);
+}
+.dark {
+  --anda-luz: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Cabecera de sección: una banda con relieve, no un cartel */
+.anda-cabecera {
+  border: 1px solid var(--anda-border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--anda-surface) 0%, var(--anda-primary-soft) 100%);
+  box-shadow: var(--anda-relieve);
+}
+
+/* Tarjetas */
 .anda-tarjeta {
-  border: 2px solid var(--anda-text);
-  background: var(--anda-surface);
-  border-radius: 18px;
-  box-shadow: 4px 4px 0 var(--anda-border);
+  border: 1px solid var(--anda-border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--anda-surface) 0%, var(--anda-surface-2) 100%);
+  box-shadow: var(--anda-relieve);
   transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.18s ease, border-color 0.18s ease;
 }
 .anda-tarjeta:hover {
-  transform: translate(-2px, -3px);
-  box-shadow: 8px 9px 0 var(--anda-yellow);
+  transform: translateY(-3px);
+  border-color: var(--anda-primary-light);
+  box-shadow: var(--anda-relieve-alto);
 }
-.anda-tarjeta:has(:focus-visible) {
-  box-shadow: 8px 9px 0 var(--anda-yellow);
-}
-/* La carpeta se distingue por la línea discontinua, no por ser más apagada */
+.anda-tarjeta:has(:focus-visible) { box-shadow: var(--anda-relieve-alto); border-color: var(--anda-primary); }
 .anda-tarjeta--carpeta { border-style: dashed; }
-.anda-tarjeta--carpeta:hover, .anda-tarjeta--soltando {
-  border-style: solid;
-  border-color: var(--anda-primary);
-  box-shadow: 8px 9px 0 var(--anda-yellow);
+.anda-tarjeta--carpeta:hover, .anda-tarjeta--soltando { border-style: solid; border-color: var(--anda-primary); }
+.anda-tarjeta--soltando {
+  transform: translateY(-3px);
+  background: linear-gradient(180deg, var(--anda-primary-soft) 0%, var(--anda-surface-2) 100%);
+  box-shadow: var(--anda-relieve-alto);
 }
-.anda-tarjeta--soltando { transform: translate(-2px, -3px) scale(1.01); }
 
 /* La portada respira al pasar por encima */
 .anda-portada img, .anda-portada span[data-fondo] { transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1); }
-.anda-tarjeta:hover .anda-portada img, .anda-tarjeta:hover .anda-portada span[data-fondo] { transform: scale(1.06); }
+.anda-tarjeta:hover .anda-portada img, .anda-tarjeta:hover .anda-portada span[data-fondo] { transform: scale(1.05); }
 
-/* Navegación lateral: el activo es una pastilla amarilla con su tope de tinta */
+/* Navegación lateral: el activo es la misma tecla ámbar del botón principal */
 .anda-nav {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  border-radius: 999px;
-  padding: 10px 14px;
+  border-radius: 12px;
+  padding: 9px 12px;
   font-size: 13.5px;
   font-weight: 600;
   color: var(--anda-text-dim);
-  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
-.anda-nav:hover { background: var(--anda-surface-2); color: var(--anda-text); transform: translateX(2px); }
+.anda-nav:hover { background: var(--anda-surface-2); color: var(--anda-text); }
 .anda-nav.active {
-  background: var(--anda-yellow);
+  background: linear-gradient(180deg, var(--anda-primary-light) 0%, var(--anda-primary) 100%);
   color: #33260f;
-  box-shadow: 2px 2px 0 var(--anda-text);
+  box-shadow: var(--anda-relieve);
 }
-.anda-nav.active:hover { transform: translateX(2px); }
 .anda-nav__icono { display: flex; flex: 0 0 auto; }
-.anda-nav.active .anda-nav__icono { transform: scale(1.08); }
 
-/* Buscador: pastilla con tinta, lupa dentro y foco amarillo */
+/* Buscador: hueco con luz arriba, no un campo de formulario cualquiera */
 .anda-buscador { position: relative; display: flex; align-items: center; }
-.anda-buscador svg { position: absolute; left: 14px; height: 17px; width: 17px; color: var(--anda-text-dim); pointer-events: none; }
+.anda-buscador svg { position: absolute; left: 13px; height: 16px; width: 16px; color: var(--anda-text-dim); pointer-events: none; }
 .anda-buscador input {
   width: 100%;
-  border: 2px solid var(--anda-text);
+  border: 1px solid var(--anda-border);
   border-radius: 999px;
-  background: var(--anda-surface);
-  padding: 9px 16px 9px 40px;
+  background: linear-gradient(180deg, var(--anda-surface-2) 0%, var(--anda-surface) 100%);
+  padding: 9px 16px 9px 38px;
   font-size: 14px;
-  font-weight: 500;
   color: var(--anda-text);
-  box-shadow: 3px 3px 0 var(--anda-border);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: inset 0 1px 2px rgba(72, 52, 8, 0.08);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.anda-buscador input::placeholder { color: var(--anda-text-dim); font-weight: 500; }
+.anda-buscador input::placeholder { color: var(--anda-text-dim); }
 .anda-buscador input:focus {
   outline: none;
-  box-shadow: 4px 5px 0 var(--anda-yellow);
-  transform: translate(-1px, -1px);
+  border-color: var(--anda-primary);
+  box-shadow: inset 0 1px 2px rgba(72, 52, 8, 0.08), var(--anda-ring);
 }
 
-/* Segmentado (Proyectos / Plantillas / Papelera) */
-.anda-seg { display: flex; gap: 4px; border: 2px solid var(--anda-text); border-radius: 999px; padding: 3px; background: var(--anda-surface); }
+/* Segmentado: el elegido sube, los demás quedan hundidos */
+.anda-seg {
+  display: flex;
+  gap: 3px;
+  border: 1px solid var(--anda-border);
+  border-radius: 999px;
+  padding: 3px;
+  background: linear-gradient(180deg, var(--anda-surface-2) 0%, var(--anda-surface) 100%);
+  box-shadow: inset 0 1px 2px rgba(72, 52, 8, 0.07);
+}
 .anda-seg button {
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 13px;
   font-weight: 600;
   color: var(--anda-text-dim);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
-.anda-seg button:hover { color: var(--anda-text); background: var(--anda-surface-2); }
-.anda-seg button[aria-pressed="true"] { background: var(--anda-text); color: var(--anda-bg); }
+.anda-seg button:hover { color: var(--anda-text); }
+.anda-seg button[aria-pressed="true"] {
+  background: linear-gradient(180deg, var(--anda-primary-light) 0%, var(--anda-primary) 100%);
+  color: #33260f;
+  box-shadow: var(--anda-relieve);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .anda-tarjeta, .anda-nav, .anda-buscador input, .anda-portada img, .anda-portada span[data-fondo] { transition: none; }
