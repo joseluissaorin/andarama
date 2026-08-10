@@ -31,4 +31,4 @@ Cada cuenta pertenece a una o varias **organizaciones**. Los roles por organizac
 
 ## Controles del visor
 
-Ratón (arrastrar, rueda, doble clic), táctil (1 dedo, pellizco), teclado (flechas, `+`/`-`, `Tab` por hotspots, `Enter`, `Esc`), giroscopio en móviles y modo VR.
+Ratón (arrastrar, rueda, doble clic), táctil (1 dedo, pellizco), teclado (flechas, `+`/`-`, `Tab` por hotspots, `Enter`, `Esc`), giroscopio en móviles y **modo VR** con gafas: en unas Meta Quest, Pico, Vive o Vision Pro basta con abrir la dirección del tour en el navegador de las gafas y pulsar **Modo VR**; las manos aparecen dentro del tour y accionan los hotspots con la pinza (véase la [guía de realidad virtual](/docs/usuario/realidad-virtual/)).

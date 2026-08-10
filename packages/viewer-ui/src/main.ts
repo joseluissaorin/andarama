@@ -1,5 +1,6 @@
 import { mountViewer } from "./skin.js";
 import type { Tour } from "@ull360/schema";
+import { baseFromTourUrl } from "./url.js";
 
 /**
  * Punto de entrada del bundle standalone: paginas de tour publicadas
@@ -24,11 +25,12 @@ interface StandaloneConfig {
 declare global {
   interface Window {
     ULL360_CONFIG?: StandaloneConfig;
-    ULL360?: { mount: typeof mountViewer };
+    ULL360?: { mount: typeof mountViewer; instance?: ReturnType<typeof mountViewer> };
   }
 }
 
 window.ULL360 = { mount: mountViewer };
+
 
 async function boot(): Promise<void> {
   const container = document.getElementById("ull360");
@@ -50,10 +52,12 @@ async function boot(): Promise<void> {
   }
   const params = new URLSearchParams(location.search);
   const liveRoom = params.get("live");
-  mountViewer({
+  // La instancia queda accesible en window.ULL360.instance: los integradores
+  // (y las pruebas) pueden pilotar el visor ya montado sin volver a montarlo.
+  window.ULL360!.instance = mountViewer({
     container,
     tour,
-    baseUrl: cfg.baseUrl ?? container.dataset.base ?? (tourUrl != null ? tourUrl.replace(/\/[^/]*$/, "") : ""),
+    baseUrl: cfg.baseUrl ?? container.dataset.base ?? baseFromTourUrl(tourUrl),
     analyticsEndpoint: cfg.analyticsEndpoint,
     formEndpoint: cfg.formEndpoint,
     turnstileSiteKey: cfg.turnstileSiteKey,

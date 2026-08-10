@@ -32,6 +32,7 @@ export default defineConfig({
             { label: "Escenas y hotspots", slug: "usuario/escenas" },
             { label: "El grafo de escenas", slug: "usuario/grafo" },
             { label: "Publicar y exportar", slug: "usuario/publicar" },
+            { label: "Realidad virtual (WebXR)", slug: "usuario/realidad-virtual" },
             { label: "Embeber un tour", slug: "usuario/embeber" },
             { label: "Docencia: quiz, LTI y SCORM", slug: "usuario/docencia" },
             { label: "Visitas guiadas en vivo", slug: "usuario/en-vivo" },

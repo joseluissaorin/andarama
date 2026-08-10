@@ -70,6 +70,8 @@ export class TourViewer {
   private degraded = false;
   private basePreloaded = new Set<string>();
   private sceneUse = new Map<string, number>();
+  /** URL solicitada dentro de VR: se abre al terminar la sesión inmersiva. */
+  private pendingExternalUrl: string | null = null;
   private baseUrl: string;
   private destroyed = false;
   private idleMovementActive = false;
@@ -134,13 +136,35 @@ export class TourViewer {
       onNavigate: async (target) => {
         await this.goTo(target, { force: true });
       },
+      onDirectAction: (hs) => {
+        // Enlace, estado y polígono se resuelven con la lógica normal del
+        // visor; el enlace se difiere a la salida de VR (abrir una pestaña
+        // durante la sesión inmersiva no es visible para el usuario).
+        if (hs.type === "link") {
+          const link = hs.hotspot as { url: string; scheme?: string };
+          const url = link.scheme === "tel" ? `tel:${link.url}` : link.scheme === "mailto" ? `mailto:${link.url}` : link.url;
+          this.pendingExternalUrl = url;
+          return;
+        }
+        this.activateHotspot(hs.hotspot, null);
+      },
+      onQuizAnswer: (hotspotId, correct, points) => this.reportQuizAnswer(hotspotId, correct, points),
+      onExternalRequest: (url) => {
+        this.pendingExternalUrl = url;
+      },
       onExit: () => {
-        // al salir de VR la vista sigue donde estaba
+        // Al salir de VR se abre el contenido que quedó pendiente
+        const url = this.pendingExternalUrl;
+        this.pendingExternalUrl = null;
+        if (url != null) window.open(url, "_blank", "noopener");
       },
       getViewYawPitch: () => {
         const v = this.view();
         return { yaw: v.yaw, pitch: v.pitch };
       },
+      text: (value) => this.text(value as never),
+      url: (value) => resolveUrl(this.baseUrl, value),
+      t: (key, params) => this.options.translate?.(key, params) ?? key,
     });
     this.vr.onChange = (active, mode) => {
       this.emit("vrChange", { active, mode });
@@ -1019,19 +1043,44 @@ export class TourViewer {
     return this.vr.active;
   }
 
+  /**
+   * Estado de la sesion inmersiva. Lo usan la skin, los integradores y las
+   * pruebas automatizadas para saber que esta ocurriendo dentro de las gafas.
+   */
+  vrState(): { active: boolean; mode: "xr" | "cardboard" | null; hands: boolean; openHotspotId: string | null; hotspots: number } {
+    return {
+      active: this.vr.active,
+      mode: this.vr.currentMode,
+      hands: this.vr.handsTracked,
+      openHotspotId: this.vr.openHotspotId,
+      hotspots: this.vrHotspots().length,
+    };
+  }
+
+  /**
+   * Hotspots visibles en VR: TODOS los tipos, no solo la navegación. Los
+   * polígonos usan el primero de sus vértices como ancla del billboard.
+   */
   private vrHotspots(): VrHotspot[] {
     const scene = this.currentScene();
     if (scene == null) return [];
     return scene.hotspots
-      .filter((h): h is NavigationHotspot => h.type === "navigation")
       .filter((h) => evalConditions(h.conditions, this.vars, this.lang, this.currentVideoTime()))
-      .map((h) => ({
-        id: h.id,
-        yaw: h.yaw,
-        pitch: h.pitch,
-        label: this.text(h.label) || this.text(h.altText),
-        target: h.target,
-      }));
+      .map((h) => {
+        const anchor =
+          h.type === "polygon" && h.points.length > 0
+            ? { yaw: h.points[0]!.yaw, pitch: h.points[0]!.pitch }
+            : { yaw: h.yaw, pitch: h.pitch };
+        return {
+          id: h.id,
+          yaw: anchor.yaw,
+          pitch: anchor.pitch,
+          label: this.text(h.label) || this.text(h.altText),
+          type: h.type,
+          target: h.type === "navigation" ? (h as NavigationHotspot).target : undefined,
+          hotspot: h,
+        };
+      });
   }
 
   private async buildVrEnvironment(): Promise<VrEnvironment> {

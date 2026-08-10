@@ -45,7 +45,15 @@ Ratón (drag/inercia/rueda/doble clic), táctil (pan/pinch), teclado completo (f
 
 ## §2.7 VR / WebXR
 
-Sesión immersive-vr con render estéreo propio, selección por mirada (temporizador con anillo de progreso) y por mandos (select), cardboard SBS+giroscopio sin WebXR, hotspots agrandados con teletransporte y botón de salida accesible, exports conservan VR (renderer autocontenido en el bundle). `viewer/engine/vr.ts`. **C**
+Sesión `immersive-vr` con render estéreo propio (una pasada por vista, viewport de la `XRWebGLLayer`), espacio de referencia `local` con respaldo a `viewer`, y `hand-tracking`, `local-floor` y `bounded-floor` como características opcionales para que la sesión arranque siempre.
+
+**Manos**: las 25 articulaciones del módulo XRHand por mano, leídas con `fillPoses`/`fillJointRadii` en una sola llamada (respaldo `getJointPose`), dibujadas como esferas con su radio real; pinza pulgar-índice con histéresis 22/32 mm como respaldo del evento `select`; toque directo con la yema del índice sobre los paneles a menos de 45 mm. **Mandos**: rayo desde `targetRaySpace`, esfera en `gripSpace`, activación por `select`. Manos y mandos conviven en la misma sesión.
+
+**Interacción**: los 17 tipos de hotspot aparecen en VR (los polígonos anclados en su primer vértice) como pictogramas con etiqueta; rayo que se acorta al impacto y se tiñe con el color de marca. Paneles inmersivos dibujados con Canvas 2D y subidos como textura (texto con desplazamiento, imagen, galería, vídeo con transporte, audio con transcripción, quiz puntuable, comparador con divisor arrastrable); PDF, web, formulario, vídeo embebido y modelo 3D muestran tarjeta y se abren al salir de la sesión.
+
+**Respaldo**: cardboard SBS + giroscopio sin WebXR, selección por mirada con permanencia de 1,5 s y botón de salida accesible. Aviso explícito cuando falta HTTPS (WebXR exige contexto seguro). Los exports conservan la VR: el renderer es autocontenido, sin DOM ni dependencias, y el paquete incluye `.htaccess` y `LEEME.md` con las condiciones de alojamiento.
+
+`viewer/engine/vr.ts`, `viewer/engine/xr/{math,input,render,panel}.ts`. Pruebas: `xr.test.ts` (8 unitarias) y `tooling/e2e/webxr.spec.ts` (sesión WebXR simulada en navegador real: entrada en sesión, 25 articulaciones, pinza que abre panel, salida). **C**
 
 ## §2.8 Los 17 tipos de hotspot
 
@@ -95,7 +103,7 @@ Variables de estado evaluables en condiciones y acciones, quizzes con puntuació
 
 ## §4 No funcionales
 
-- **Rendimiento**: visor 99 KB gzip (presupuesto 250 KB) con chunks perezosos; preview embebido para primera vista; monitor FPS con degradación; grafo canvas para 500+ escenas; API CRUD simple (D1/SQLite indexados). **C**
+- **Rendimiento**: visor 116 KB gzip con el motor WebXR incluido (presupuesto 250 KB) con chunks perezosos; preview embebido para primera vista; monitor FPS con degradación; grafo canvas para 500+ escenas; API CRUD simple (D1/SQLite indexados). **C**
 - **Seguridad**: HSTS, CSP con nonces, frame-ancestors por tour, sandbox iframes, sesiones HttpOnly+Secure+SameSite, CSRF doble token, Argon2id (self-host) / PBKDF2-100k (Workers, límite de plataforma documentado), rate limiting + Turnstile, authz en servidor en cada ruta, IDs nanoid, saneado (magic bytes, SVG, Markdown whitelist, CSS), auditoría, RGPD (sin cookies, ip hash diaria solo anti-abuso), SECURITY.md, npm audit + OSV en CI. **C\***
 - **Fiabilidad**: D1 Time Travel + backup JSON descargable; self-host VACUUM INTO + script cron; publicaciones inmutables versionadas; servido de tours sin DB (puntero en almacenamiento + caché KV). **C**
 - **Compatibilidad**: 2 últimas versiones de navegadores mayores (target es2020, WebGL1, sin APIs exóticas obligatorias); exports funcionan en cualquier estático (rutas relativas) con modo single-file para file://. **C**

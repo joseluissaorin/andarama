@@ -3,7 +3,9 @@ import { resolveL10n } from "@ull360/schema";
 import { ZipWriter } from "./zip.js";
 import {
   renderAccessibleHtml,
+  renderHtaccess,
   renderIndexHtml,
+  renderReadme,
   renderServiceWorker,
   renderWebManifest,
 } from "./templates.js";
@@ -31,7 +33,7 @@ export interface ExportOptions {
   analyticsEndpoint?: string | null;
   /** Service worker offline (PWA instalable para kioscos/museos). */
   serviceWorker?: boolean;
-  /** Todo inline en un unico index.html (tours pequenos). */
+  /** Todo inline en un único index.html (tours pequeños). */
   singleFile?: boolean;
   /** Export SCORM con reporte de finalizacion/puntuacion. */
   scorm?: ScormVersion | null;
@@ -240,6 +242,7 @@ export async function runExport(
       kiosk: options.kiosk,
     });
     await add("index.html", enc.encode(html));
+    await add("LEEME.md", enc.encode(renderReadme(title)));
   } else {
     // Paquete estandar
     let done = 0;
@@ -276,6 +279,10 @@ export async function runExport(
       scorm: options.scorm != null,
     });
     await add("index.html", enc.encode(html));
+    // Paquete listo para un alojamiento estático básico: tipos MIME de
+    // Apache e instrucciones de publicación (incluido el HTTPS que exige VR).
+    await add(".htaccess", enc.encode(renderHtaccess()));
+    await add("LEEME.md", enc.encode(renderReadme(title)));
   }
 
   onProgress?.({ phase: "finalize", done: 0, total: 1 });

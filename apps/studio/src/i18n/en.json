@@ -175,6 +175,7 @@
   "export_single": "Single HTML file (small tours)",
   "export_scorm": "SCORM package",
   "export_kiosk": "Kiosk mode (autopilot + inactivity reset)",
+  "export_vr_note": "The package keeps VR headset support. WebXR only works over HTTPS: upload it to a host with a certificate; opening it with a double click (file://) falls back to cardboard mode.",
   "export_start": "Generate ZIP",
   "export_progress": "Generating package",
   "export_done": "Package generated",

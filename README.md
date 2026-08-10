@@ -16,6 +16,12 @@ ULL360 se compone de tres piezas:
 
 La trazabilidad completa de la especificación a la implementación está en [REQUIREMENTS.md](REQUIREMENTS.md).
 
+## Realidad virtual
+
+Todos los tours se ven con gafas (Meta Quest, Pico, Vive, Vision Pro y cualquier equipo con WebXR) sin instalar nada: se abre la dirección del tour en el navegador de las gafas y se pulsa **Modo VR**. Las manos aparecen dentro del tour con sus 25 articulaciones y accionan los hotspots con la pinza de pulgar e índice; con mandos se apunta con el rayo y se acciona con el gatillo. Los 17 tipos de hotspot son accesibles en la sesión inmersiva —los que no se pueden componer dentro de las gafas (PDF, formularios, web incrustada, modelos 3D) se abren automáticamente al salir—. Sin WebXR el mismo botón entra en modo cardboard (pantalla partida, giroscopio y selección por mirada).
+
+WebXR exige un contexto seguro: el tour debe servirse por `https://` (o `localhost`). Los paquetes exportados incluyen la realidad virtual, pero solo entran en modo inmersivo si se suben a un alojamiento con HTTPS, no abriéndolos con `file://`. Detalles en la [guía de realidad virtual](apps/docs/src/content/docs/usuario/realidad-virtual.md).
+
 ## Objetivos de despliegue
 
 - **Cloudflare "un comando"**: toda la plataforma (frontend, API, base de datos, almacenamiento, colas, tiempo real, analítica) corre sobre Workers, D1, R2, KV, Durable Objects, Queues y Workers Analytics Engine, dentro del free tier para usos pequeños y medios.

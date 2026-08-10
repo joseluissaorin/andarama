@@ -246,10 +246,13 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
       // Ficheros del visor
       const viewerList = await fetch("/viewer/files.json").then((r) => (r.ok ? (r.json() as Promise<string[]>) : []));
       const viewerFiles = await Promise.all(
-        viewerList.map(async (path) => ({
-          path,
-          data: new Uint8Array(await (await fetch(`/viewer/${path}`)).arrayBuffer()),
-        })),
+        // Los sourcemaps no se publican: ahorran ~1,5 MB en cada paquete
+        viewerList
+          .filter((path) => !path.endsWith(".map"))
+          .map(async (path) => ({
+            path,
+            data: new Uint8Array(await (await fetch(`/viewer/${path}`)).arrayBuffer()),
+          })),
       );
       const assetProvider: AssetProvider = {
         list: async () => assets.map((a) => a.rel),
@@ -344,6 +347,7 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
           </Select>
         </Field>
         <Switch id="ex-kiosk" checked={kiosk} onCheckedChange={setKiosk} label={t("export_kiosk")} />
+        <p className="rounded-lg bg-[var(--ull-surface-2)] p-3 text-xs text-[var(--ull-text-dim)]">{t("export_vr_note")}</p>
         {progress != null && <p className="text-sm text-[var(--ull-text-dim)]">{progress}</p>}
       </div>
     </Dialog>

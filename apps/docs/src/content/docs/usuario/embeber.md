@@ -32,6 +32,12 @@ El componente crea el iframe por ti (con pantalla completa, giroscopio y WebXR p
   allow="fullscreen; gyroscope; accelerometer; xr-spatial-tracking"
   allowfullscreen
   title="Mi tour virtual"></iframe>
+
+El atributo `allow` es el que habilita la realidad virtual dentro del iframe:
+sin `xr-spatial-tracking` el botón **Modo VR** aparece pero la sesión no
+arranca, porque el documento incrustado no tiene permiso para pedirla. La
+página que embebe debe servirse además por HTTPS. Véase la
+[guía de realidad virtual](/docs/usuario/realidad-virtual/).
 ```
 
 Ambos fragmentos aparecen listos para copiar en **Compartir** dentro del editor.

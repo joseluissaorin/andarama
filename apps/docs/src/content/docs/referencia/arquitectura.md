@@ -30,6 +30,7 @@ Elecciones clave: **Hono** corre idéntico en Workers y Node; **Drizzle** compar
 
 ## Presupuestos de rendimiento
 
-- Runtime del visor: **99 KB gzip** (presupuesto: menos de 250 KB); VR, PDF.js, hls.js, model-viewer y Leaflet se cargan bajo demanda como chunks separados.
+- Runtime del visor: **116 KB gzip** con el motor WebXR incluido (presupuesto: menos de 250 KB); PDF.js, hls.js, model-viewer y Leaflet se cargan bajo demanda como chunks separados.
+- Motor WebXR (`engine/xr/`): renderer WebGL propio de un solo programa, sin dependencias ni DOM, para que la realidad virtual sobreviva intacta en los paquetes exportados. Dentro de la sesión el panorama se resuelve como esfera equirectangular de una textura (2048 px en tours multirresolución) en lugar de mosaico de tiles: en estéreo, una textura estable rinde mejor que la carga progresiva.
 - Primera vista útil con preview borroso embebido en el `tour.json` (base64) + nivel base + tiles del frustum.
 - Monitor de FPS interno con degradación automática (desactiva efectos si baja de 40 FPS).

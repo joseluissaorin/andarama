@@ -153,3 +153,79 @@ self.addEventListener("fetch", (e) => {
 });
 `;
 }
+
+/**
+ * Configuración de Apache para hosting compartido básico: tipos MIME de los
+ * formatos modernos (algunos paneles antiguos no los conocen y los sirven como
+ * texto plano, lo que rompe las tiles) y caché razonable. En Nginx o en un
+ * hosting que ya sirva bien estos tipos, el fichero simplemente se ignora.
+ */
+export function renderHtaccess(): string {
+  return `# ULL360 — tour exportado. Fichero opcional para servidores Apache.
+AddType image/webp .webp
+AddType image/avif .avif
+AddType application/manifest+json .webmanifest
+AddType application/json .json
+AddType text/javascript .js
+AddType video/mp4 .mp4
+AddType video/webm .webm
+AddType audio/mpeg .mp3
+AddType text/vtt .vtt
+AddType model/gltf-binary .glb
+AddType model/gltf+json .gltf
+
+<IfModule mod_headers.c>
+  # Las tiles y los medios llevan hash en la ruta de version: caché larga.
+  <FilesMatch "\\.(webp|avif|jpg|jpeg|png|mp4|webm|mp3|glb)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+  <FilesMatch "\\.(html|json)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/javascript application/json image/svg+xml
+</IfModule>
+`;
+}
+
+/** Instrucciones de publicación que acompañan al paquete exportado. */
+export function renderReadme(title: string): string {
+  return `# ${title}
+
+Tour virtual 360 autocontenido, generado con ULL360.
+
+## Cómo publicarlo
+
+Sube **todo el contenido de esta carpeta** (incluido \`index.html\` y las
+carpetas \`viewer/\` y \`a/\`) a cualquier alojamiento de ficheros estáticos:
+hosting compartido con cPanel, Apache o Nginx, GitHub Pages, Netlify, un
+bucket de almacenamiento o el aula virtual. No hace falta PHP, ni base de
+datos, ni Node.js.
+
+Funciona igual dentro de un subdirectorio (\`https://midominio.es/tours/mi-tour/\`):
+todas las rutas del paquete son relativas.
+
+## Modo VR con gafas
+
+El modo inmersivo (Meta Quest, Pico y visores compatibles, con manos o mandos)
+usa WebXR, y **WebXR solo funciona sobre HTTPS**. Es un requisito del
+navegador, no de ULL360:
+
+- Sirve el tour por \`https://\` (hoy casi todos los alojamientos ofrecen
+  certificado gratuito con Let's Encrypt; en cPanel suele llamarse «SSL/TLS»).
+- Abriendo el \`index.html\` con doble clic (\`file://\`) el tour se ve, pero el
+  botón de VR entra en modo cardboard en lugar de inmersivo.
+- Si lo embebes en un iframe, añade
+  \`allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer"\`.
+
+## Ficheros
+
+- \`index.html\` — punto de entrada.
+- \`viewer/\` — motor del visor.
+- \`a/\` — panoramas, tiles y demás medios.
+- \`tour.json\` — definición del tour.
+- \`.htaccess\` — tipos MIME para Apache (opcional; se puede borrar).
+`;
+}

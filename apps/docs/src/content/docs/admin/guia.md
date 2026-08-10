@@ -34,6 +34,26 @@ Registro de auditoría de acciones sensibles: quién publicó, despublicó, borr
 
 Suscripción de sistemas externos a eventos `publish`, `unpublish` y `form_submission`, con firma HMAC opcional (`X-ULL360-Signature`).
 
+## Realidad virtual en la instancia
+
+No hay nada que activar: la realidad virtual es parte del visor y funciona en
+todos los tours. Lo único que la condiciona es el alojamiento.
+
+- **HTTPS obligatorio.** WebXR solo existe en contextos seguros. Una instancia
+  servida por `http://` mostrará el botón, pero entrará en modo cardboard. Con
+  dominio propio para un tour, el certificado lo emite Cloudflare
+  automáticamente (véase «Dominio propio para un tour»).
+- **Embebidos.** Si los tours se insertan en el portal de la universidad, el
+  iframe necesita `allow="xr-spatial-tracking"`; el código que genera el Studio
+  ya lo incluye.
+- **Gafas compartidas** (aulas, jornadas de puertas abiertas): conviene publicar
+  el tour como **kiosko** y abrirlo en el navegador de las gafas con la sesión
+  ya iniciada. El modo VR no requiere cuenta ni permisos adicionales.
+- **Analítica.** Entrar en modo inmersivo se registra como evento `vr`, de modo
+  que el panel de analítica distingue las visitas con gafas.
+- Los tours exportados conservan la realidad virtual, pero solo entran en modo
+  inmersivo si se suben a un alojamiento con HTTPS.
+
 ## Copias de seguridad
 
 - **Cloudflare**: D1 tiene Time Travel de 30 días. Además, descarga la copia completa desde Administración, Copia de seguridad (JSON con todas las tablas) y sincroniza el bucket R2 con `rclone`/`aws s3 sync`.

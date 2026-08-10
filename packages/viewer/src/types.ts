@@ -18,6 +18,11 @@ export interface TourViewerOptions {
   onAnalytics?: (event: ViewerAnalyticsEvent) => void;
   /** Respetar prefers-reduced-motion (por defecto true). */
   respectReducedMotion?: boolean;
+  /**
+   * Traductor de la interfaz. Lo aporta la skin para que los textos del modo
+   * inmersivo (paneles, botones) sigan el idioma del tour.
+   */
+  translate?: (key: string, params?: Record<string, string | number>) => string;
 }
 
 export interface ViewerAnalyticsEvent {

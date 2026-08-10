@@ -21,7 +21,7 @@ ULL360 es una plataforma web de código abierto para crear, publicar y distribui
 - Audio ambiente, narración (con bloqueo de navegación), audio espacial HRTF y música global con ducking.
 - 17 tipos de hotspot: navegación, texto Markdown, imagen con zoom profundo, galería, vídeo, YouTube/Vimeo/PeerTube, audio, PDF, modelo 3D (con AR), web, formulario con Turnstile, comparador (imágenes o panoramas), quiz, polígono, etiqueta, enlace y contador/estado.
 - Planos de planta con radar de orientación multi-planta y mapa geográfico OSM/Leaflet.
-- Modo VR (WebXR + cardboard), giroscopio, deep links, proyecciones little planet/fisheye/panini/arquitectónica.
+- Modo VR con gafas (WebXR con manos y mandos, respaldo cardboard), giroscopio, deep links, proyecciones little planet/fisheye/panini/arquitectónica.
 - Multiidioma de contenido con export/import XLIFF y CSV.
 - Accesibilidad WCAG 2.1 AA con modo de contenido accesible lineal (también útil para SEO).
 - Tours guiados en vivo (un guía controla la vista de N asistentes), comentarios, versiones, presencia.

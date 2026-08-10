@@ -43,3 +43,26 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 | **Comparador** | Antes/después de dos imágenes con deslizador, o **vista dividida de dos escenas sincronizadas** | Modo, imágenes o escenas, etiquetas |
 
 Los tours exportados como paquete estático conservan todos los widgets; los que necesitan backend (formularios hacia la API) usan el webhook configurado o quedan deshabilitados con aviso.
+
+## Comportamiento en realidad virtual
+
+Dentro de una sesión WebXR **todos** los hotspots están presentes y son
+accionables con la pinza de la mano o el gatillo del mando. Los que llevan
+contenido se abren en un panel inmersivo dibujado por el propio motor:
+
+| Tipo | Dentro de las gafas |
+|---|---|
+| Navegación | Teletransporte a la escena destino sin salir de la sesión |
+| Enlace, estado, polígono | Ejecutan su acción directamente |
+| Texto, tooltip | Panel con el texto y desplazamiento |
+| Imagen | Panel con la imagen ajustada y su pie |
+| Galería | Panel con anterior/siguiente y contador |
+| Vídeo (fichero) | Panel con barra de progreso y pausa |
+| Audio | Panel con transporte y transcripción |
+| Pregunta (quiz) | Opciones pulsables, comprobación y puntuación real |
+| Comparador | Divisor arrastrable con la pinza |
+| PDF, web, formulario, vídeo embebido, modelo 3D | Tarjeta con el título y la dirección y botón **Abrir al salir de VR**: el visor los abre en una pestaña al terminar la sesión |
+
+Los paneles se dibujan con Canvas 2D y se suben como textura, sin DOM ni
+dependencias externas: se comportan igual en un tour publicado y en un paquete
+exportado. Véase la [guía de realidad virtual](/docs/usuario/realidad-virtual/).

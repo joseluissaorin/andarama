@@ -46,4 +46,20 @@ Opciones:
 - **SCORM 1.2 / 2004**: paquete para LMS con reporte de finalización y puntuación.
 - **Kiosko**: autopilot + reinicio por inactividad + bloqueo de salida.
 
+El ZIP incluye además un `LEEME.md` con las instrucciones de subida y un
+`.htaccess` con los tipos MIME (`.webp`, `.avif`, `.glb`, `.webmanifest`) y las
+cabeceras de caché que necesitan los alojamientos compartidos con Apache. El
+paquete funciona igual dentro de un subdirectorio (`https://midominio.es/tours/mi-tour/`):
+todas las rutas son relativas.
+
+### Realidad virtual en el paquete exportado
+
+El paquete lleva el mismo motor que el tour publicado, así que el botón **Modo
+VR** funciona también desde el ZIP, con una condición: **hay que servirlo por
+HTTPS**. WebXR solo existe en contextos seguros; abriendo el `index.html` con
+doble clic (`file://`) el tour se ve, pero el modo inmersivo cae al respaldo
+cardboard. Cualquier alojamiento con certificado —incluidos GitHub Pages,
+Cloudflare Pages o Netlify, gratuitos— sirve. Véase la
+[guía de realidad virtual](/docs/usuario/realidad-virtual/).
+
 También puedes automatizar la publicación desde CI con un token de API (`POST /api/v1/projects/{id}/publish`) y recibir webhooks de publicación.

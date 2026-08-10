@@ -74,6 +74,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     editMode: options.editMode,
     deepLinks: options.deepLinks,
     analyticsEndpoint: options.analyticsEndpoint,
+    // Los textos del modo inmersivo (paneles VR) siguen el idioma del tour
+    translate: (key, params) => t(key as never, params),
   });
 
   const t0 = createTranslator(viewer.currentLang());
@@ -243,7 +245,19 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   }
 
   if (ui.vr !== false) {
-    controls.appendChild(iconButton("glasses", t("vr_mode"), () => void viewer.enterVr()));
+    const vrBtn = iconButton("glasses", t("vr_mode"), () => {
+      // WebXR solo existe en contextos seguros: sin HTTPS el visor entra en
+      // modo cardboard, así que conviene avisar de por qué no hay inmersión.
+      if (!isSecureContext && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+        toast(container, t("vr_needs_https"));
+      }
+      void viewer.enterVr();
+    });
+    viewer.on("vrChange", (e) => {
+      vrBtn.setAttribute("aria-pressed", String(e.active));
+      if (e.active && e.mode === "xr") toast(container, t("vr_hint_hands"));
+    });
+    controls.appendChild(vrBtn);
   }
 
   if (ui.fullscreen !== false && document.fullscreenEnabled) {
