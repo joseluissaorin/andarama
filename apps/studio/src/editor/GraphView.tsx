@@ -260,6 +260,8 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
 
   const positionsRef = useRef(positions);
   positionsRef.current = positions;
+  /** Marcos de área. Se declara aquí porque el encuadre los necesita. */
+  const framesRef = useRef<{ area: Area; x0: number; y0: number; x1: number; y1: number }[]>([]);
   const visibleScenes = useMemo(() => snapshot.scenes.filter((s) => positions[s.id] != null), [snapshot.scenes, positions]);
   const unplaced = useMemo(
     () => (compactNodes ? snapshot.scenes.filter((s) => positions[s.id] == null) : []),
@@ -472,11 +474,24 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
   const fitView = useCallback(
     (ids?: string[]): void => {
       const list = ids != null && ids.length > 0 ? ids : Object.keys(positionsRef.current);
-      const box = boundsOf(positionsRef.current, list, sizeRef.current);
-      if (box == null || svgRef.current == null) return;
+      const nodes = boundsOf(positionsRef.current, list, sizeRef.current);
+      if (nodes == null || svgRef.current == null) return;
+      // Encuadrar todo incluye los marcos de área: si no, sus títulos quedaban
+      // cortados por arriba.
+      const box = { ...nodes };
+      if (ids == null) {
+        for (const f of framesRef.current) {
+          box.x0 = Math.min(box.x0, f.x0);
+          box.y0 = Math.min(box.y0, f.y0);
+          box.x1 = Math.max(box.x1, f.x1);
+          box.y1 = Math.max(box.y1, f.y1);
+        }
+      }
       const rect = svgRef.current.getBoundingClientRect();
+      // Nunca se amplía al encuadrar: un tour de tres escenas al 180 % es
+      // ridículo y esconde el resto del lienzo.
       const scale = Math.min(
-        2,
+        1,
         clampScale(Math.min((rect.width - 80) / Math.max(1, box.x1 - box.x0), (rect.height - 80) / Math.max(1, box.y1 - box.y0)), modeRef.current),
       );
       setView({
@@ -953,7 +968,6 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
     // Los marcos grandes se dibujan primero para no tapar a los pequeños
     return out.sort((a, b) => (b.x1 - b.x0) * (b.y1 - b.y0) - (a.x1 - a.x0) * (a.y1 - a.y0));
   }, [areas, snapshot.scenes, positions, mode]);
-  const framesRef = useRef(frames);
   framesRef.current = frames;
 
   /** Área cuyo marco contiene el punto, la más pequeña si hay varias. */
