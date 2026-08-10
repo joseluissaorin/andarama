@@ -22,6 +22,30 @@ Al subir un panorama, **tu propio navegador** genera la pirámide de tiles (equi
 
 Si la imagen supera la capacidad del dispositivo (más de 16K de ancho en la mayoría), se genera una versión al límite del dispositivo y se encola un trabajo para que el **contenedor de procesado** genere la resolución completa (hasta 32K).
 
+El troceador **comprueba lo que ha pintado** antes de subir nada: mira el error
+de la tarjeta gráfica y muestrea las seis caras del cubo. Si salen en negro
+—porque la textura no ha cabido en la memoria de vídeo— reduce la fuente a la
+mitad y lo vuelve a intentar, y si aun así no hay manera avisa en vez de subir
+seiscientas teselas vacías.
+
+## Regenerar las teselas
+
+Si un panorama se ve bien en la biblioteca pero negro o vacío en el visor, sus
+teselas se generaron mal. Selecciónalo en la biblioteca y pulsa **Regenerar
+teselas**: se rehacen a partir del fichero original, que sigue guardado, sin
+tener que volver a subir nada. Vale para varios a la vez.
+
+## Volcar la tarjeta de la cámara
+
+**Importar de cámara 360** abre el asistente que sube el lote entero, permite
+renombrarlo por patrón, colocarlo sobre el plano y crear las escenas de golpe.
+Está en la biblioteca y también en el panel de biblioteca del editor —en
+Escenas y en Grafo—, y ahí el tour de destino ya viene puesto.
+
+Las fotos se suben **solapadas**: mientras una se trocea, que es cosa de la
+tarjeta gráfica, la anterior se está subiendo, que es cosa de la red. Las
+partes de un fichero grande también viajan en paralelo.
+
 ## Comprobar un panorama antes de usarlo
 
 En la biblioteca, **pasar el ratón** sobre la miniatura de un panorama lo

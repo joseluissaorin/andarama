@@ -23,6 +23,20 @@ Cada cuenta pertenece a una o varias **organizaciones**. Los roles por organizac
 4. Coloca hotspots haciendo clic sobre el panorama.
 5. Pulsa **Publicar**: obtendrás una URL pública `/t/tu-slug`, código QR y código de embebido.
 
+## Instalar el Studio como aplicación
+
+El Studio es una aplicación instalable. En Chrome, Edge y Android aparece
+**Instalar la aplicación** en la barra lateral (o el icono de instalar de la
+barra de direcciones). En iPad y iPhone se añade desde Safari: **Compartir →
+Añadir a pantalla de inicio**.
+
+Instalada se abre en su propia ventana, sin barra del navegador, y arranca al
+instante aunque la red vaya mal. Los datos nunca se sirven de una copia local:
+lo que se guarda es el armazón de la aplicación, nunca las respuestas de la
+API, para que no puedas ver un tour de hace dos horas creyendo que es el de
+ahora. Cuando hay una versión nueva avisa en la barra lateral y se aplica al
+pulsar, no por sorpresa mientras editas.
+
 ## Atajos de teclado del Studio
 
 - `Ctrl/Cmd + K`: paleta de comandos
