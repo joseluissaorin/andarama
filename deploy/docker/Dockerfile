@@ -2,7 +2,7 @@
 # Un proceso, un volumen (/data), un puerto (8788).
 
 # ---------- build ----------
-FROM node:22-bookworm-slim AS build
+FROM node:26-bookworm-slim AS build
 RUN corepack enable
 WORKDIR /app
 COPY pnpm-workspace.yaml package.json ./
@@ -16,12 +16,12 @@ RUN pnpm --filter @andarama/studio build
 RUN pnpm --filter @andarama/api build:node
 
 # ---------- runtime deps (solo modulos nativos/externos) ----------
-FROM node:22-bookworm-slim AS deps
+FROM node:26-bookworm-slim AS deps
 WORKDIR /deps
 RUN npm install --omit=dev better-sqlite3@13 sharp@0.33 ws@8 nodemailer@6
 
 # ---------- runtime ----------
-FROM node:22-bookworm-slim
+FROM node:26-bookworm-slim
 ENV NODE_ENV=production \
     DATA_DIR=/data \
     PORT=8788 \
