@@ -17,8 +17,11 @@ export default defineConfig({
     locale: "es-ES",
   },
   webServer: {
+    // `pnpm --filter ... exec` en vez de `npx`: con pnpm el binario de tsx vive
+    // en el node_modules del propio paquete, y en un runner limpio npx no lo
+    // encontraba (salía con 127 y las E2E no llegaban a arrancar).
     command:
-      "DATA_DIR=/tmp/anda-e2e-$RANDOM PORT=8799 ASSETS_DIR=../apps/studio/dist-root npx tsx ../apps/api/src/node.ts",
+      "DATA_DIR=/tmp/anda-e2e-$RANDOM PORT=8799 ASSETS_DIR=../studio/dist-root pnpm --filter @andarama/api exec tsx src/node.ts",
     cwd: __dirname,
     url: "http://localhost:8799/api/v1/health",
     reuseExistingServer: false,
