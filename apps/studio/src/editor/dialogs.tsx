@@ -18,7 +18,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   open: boolean;
   onClose: () => void;
   project: ProjectInfo;
-  onPublished: (pub: { slug: string; visibility: string; hasPassword: boolean }) => void;
+  onPublished: (pub: { slug: string; visibility: string; hasPassword: boolean; kiosk: boolean }) => void;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -30,8 +30,9 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [publishAt, setPublishAt] = useState("");
   const [expireAt, setExpireAt] = useState("");
   const [note, setNote] = useState("");
+  const [kiosk, setKiosk] = useState(project.publication?.kiosk === true);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ url: string; warnings: { message: string }[] } | null>(null);
+  const [result, setResult] = useState<{ url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] } | null>(null);
 
   const publish = async (): Promise<void> => {
     setBusy(true);
@@ -40,7 +41,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
       // del visor. Si la captura falla, se publica igual y el servidor usa la
       // previsualización equirectangular.
       const shareImage = (await captureShareImage(project.id)) ?? undefined;
-      const res = await api<{ slug: string; url: string; warnings: { message: string }[] }>(`/projects/${project.id}/publish`, {
+      const res = await api<{ slug: string; url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] }>(`/projects/${project.id}/publish`, {
         method: "POST",
         body: {
           slug,
@@ -51,11 +52,12 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           customDomain: customDomain.trim() !== "" ? customDomain.trim().toLowerCase() : undefined,
           publishAt: publishAt !== "" ? new Date(publishAt).getTime() : undefined,
           expireAt: expireAt !== "" ? new Date(expireAt).getTime() : undefined,
+          kiosk,
           note: note !== "" ? note : undefined,
         },
       });
-      setResult({ url: res.url, warnings: res.warnings });
-      onPublished({ slug: res.slug, visibility, hasPassword: password !== "" });
+      setResult({ url: res.url, kioskUrl: res.kioskUrl, tourUrl: res.tourUrl, kiosk: res.kiosk, warnings: res.warnings });
+      onPublished({ slug: res.slug, visibility, hasPassword: password !== "", kiosk: res.kiosk });
       toast.push(t("publish_ok"), "ok");
     } catch (err) {
       toast.push(String(err instanceof Error ? err.message : err), "error");
@@ -106,6 +108,14 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               <option value="domains">{t("vis_domains")}</option>
             </Select>
           </Field>
+          {/* Cómo se abre el enlace. El quiosco no es otro tour: es el mismo
+              recorrido puesto en bucle para una pantalla sin nadie delante. */}
+          <Field label={t("open_mode")} htmlFor="pb-modo" hint={kiosk ? t("open_mode_kiosk_hint") : t("open_mode_tour_hint")}>
+            <Select id="pb-modo" value={kiosk ? "kiosk" : "tour"} onChange={(e) => setKiosk(e.target.value === "kiosk")}>
+              <option value="tour">{t("open_mode_tour")}</option>
+              <option value="kiosk">{t("open_mode_kiosk")}</option>
+            </Select>
+          </Field>
           {visibility === "password" && (
             <Field label={t("password")} htmlFor="pb-pass">
               <Input id="pb-pass" type="text" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={project.publication?.hasPassword ? "(mantener la actual)" : ""} />
@@ -133,7 +143,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm">{t("publish_url")}:</p>
+          <p className="text-sm">{result.kiosk ? t("open_mode_kiosk") : t("publish_url")}:</p>
           {/* El enlace recién publicado se va a pegar en algún sitio: el botón
               de copiar tiene que estar aquí, no en otro diálogo. */}
           <div className="flex items-center gap-2">
@@ -149,6 +159,31 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               variant="secondary"
               onClick={() => {
                 void navigator.clipboard.writeText(result.url).then(() => toast.push(t("copied"), "ok"));
+              }}
+            >
+              <Copy className="h-4 w-4" /> {t("copy")}
+            </Button>
+          </div>
+          {/* El otro enlace siempre está: el mismo tour, la otra manera de
+              abrirlo. Nadie debería tener que republicar para conseguirlo. */}
+          <div className="flex items-center gap-2">
+            <a
+              href={result.kiosk ? result.tourUrl : result.kioskUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="anda-hueco min-w-0 flex-1 break-all p-2.5 text-[13px] text-[var(--anda-text-dim)]"
+            >
+              <span className="mr-1.5 font-semibold text-[var(--anda-text)]">
+                {result.kiosk ? t("open_mode_tour") : t("open_mode_kiosk")}:
+              </span>
+              {result.kiosk ? result.tourUrl : result.kioskUrl}
+            </a>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                void navigator.clipboard
+                  .writeText(result.kiosk ? result.tourUrl : result.kioskUrl)
+                  .then(() => toast.push(t("copied"), "ok"));
               }}
             >
               <Copy className="h-4 w-4" /> {t("copy")}
@@ -181,6 +216,10 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
   const toast = useToast();
   const [qr, setQr] = useState<string | null>(null);
   const url = project.publication != null ? `${location.origin}/t/${project.publication.slug}` : "";
+  // El quiosco es una manera de abrir el mismo tour, no otra publicación: el
+  // enlace de arriba es el publicado y este fuerza el modo contrario.
+  const enQuiosco = project.publication?.kiosk === true;
+  const otroUrl = url !== "" ? `${url}?kiosk=${enQuiosco ? "0" : "1"}` : "";
   const embed = `<iframe src="${url}" style="width:100%;aspect-ratio:16/9;border:0;" allow="fullscreen; gyroscope; accelerometer; xr-spatial-tracking" allowfullscreen title="${project.title}"></iframe>`;
   const webComponent =
     project.publication != null
@@ -203,7 +242,18 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
         <Field label={t("publish_url")}>
           <div className="flex gap-2">
             <Input readOnly value={url} aria-label={t("publish_url")} />
-            <Button variant="secondary" onClick={() => copy(url)}>
+            <Button variant="secondary" className="shrink-0" onClick={() => copy(url)}>
+              {t("copy")}
+            </Button>
+          </div>
+        </Field>
+        <Field
+          label={enQuiosco ? t("open_mode_tour") : t("open_mode_kiosk")}
+          hint={enQuiosco ? t("open_mode_tour_hint") : t("open_mode_kiosk_hint")}
+        >
+          <div className="flex gap-2">
+            <Input readOnly value={otroUrl} aria-label={enQuiosco ? t("open_mode_tour") : t("open_mode_kiosk")} />
+            <Button variant="secondary" className="shrink-0" onClick={() => copy(otroUrl)}>
               {t("copy")}
             </Button>
           </div>
@@ -211,7 +261,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
         <Field label={t("embed_code")}>
           <div className="flex gap-2">
             <Textarea readOnly value={embed} rows={3} className="font-mono text-xs" aria-label={t("embed_code")} />
-            <Button variant="secondary" onClick={() => copy(embed)}>
+            <Button variant="secondary" className="shrink-0" onClick={() => copy(embed)}>
               {t("copy")}
             </Button>
           </div>
@@ -219,7 +269,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
         <Field label={t("web_component")} hint={t("web_component_hint")}>
           <div className="flex gap-2">
             <Textarea readOnly value={webComponent} rows={3} className="font-mono text-xs" aria-label={t("web_component")} />
-            <Button variant="secondary" onClick={() => copy(webComponent)}>
+            <Button variant="secondary" className="shrink-0" onClick={() => copy(webComponent)}>
               {t("copy")}
             </Button>
           </div>
@@ -427,7 +477,7 @@ export function LiveDialog({ open, onClose, project }: { open: boolean; onClose:
             <Field label={t("live_guide_link")}>
               <div className="flex gap-2">
                 <Input readOnly value={`${base}?live=${room.code}&guide=${room.guideKey}`} aria-label={t("live_guide_link")} />
-                <Button variant="secondary" onClick={() => copy(`${base}?live=${room.code}&guide=${room.guideKey}`)}>
+                <Button variant="secondary" className="shrink-0" onClick={() => copy(`${base}?live=${room.code}&guide=${room.guideKey}`)}>
                   {t("copy")}
                 </Button>
               </div>
@@ -435,7 +485,7 @@ export function LiveDialog({ open, onClose, project }: { open: boolean; onClose:
             <Field label={t("live_attendee_link")}>
               <div className="flex gap-2">
                 <Input readOnly value={`${base}?live=${room.code}`} aria-label={t("live_attendee_link")} />
-                <Button variant="secondary" onClick={() => copy(`${base}?live=${room.code}`)}>
+                <Button variant="secondary" className="shrink-0" onClick={() => copy(`${base}?live=${room.code}`)}>
                   {t("copy")}
                 </Button>
               </div>

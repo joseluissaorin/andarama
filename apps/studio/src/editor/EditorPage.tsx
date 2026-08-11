@@ -40,7 +40,7 @@ export interface ProjectInfo {
   title: string;
   slug: string;
   permissions: { canEdit: boolean; canPublish: boolean; canManage: boolean; role: string };
-  publication: { slug: string; visibility: string; hasPassword: boolean } | null;
+  publication: { slug: string; visibility: string; hasPassword: boolean; kiosk?: boolean } | null;
 }
 
 type EditorTab = "scenes" | "graph" | "preview" | "translations" | "settings" | "analytics" | "comments" | "versions";

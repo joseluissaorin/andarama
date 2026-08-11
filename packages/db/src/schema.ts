@@ -330,6 +330,8 @@ export const publications = sqliteTable(
     customDomain: text("custom_domain"),
     publishAt: integer("publish_at"),
     expireAt: integer("expire_at"),
+    /** El enlace abre el recorrido en modo quiosco: bucle y liberación. */
+    kiosk: integer("kiosk", { mode: "boolean" }).notNull().default(false),
     ltiJson: text("lti_json"),
     publishedAt: integer("published_at").notNull(),
     publishedBy: text("published_by").notNull(),

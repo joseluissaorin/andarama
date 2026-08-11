@@ -599,6 +599,9 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     barra.appendChild(estado);
     const lista = el("div", { className: "anda-kiosk__routes" });
     barra.appendChild(lista);
+    // La barra ocupa el suelo de la pantalla: las miniaturas suben para no
+    // quedar debajo del texto, que era justo donde caían.
+    container.classList.add("anda-con-kiosko");
     container.appendChild(barra);
 
     let explorando = false;

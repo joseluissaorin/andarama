@@ -116,5 +116,19 @@ solo y cualquiera puede tomar el mando.
   un minuto, el quiosco vuelve al principio y sigue solo.
 - **La lista de recorridos** está siempre abajo: se pulsa uno y empieza ese.
 
-Se activa al exportar (**Exportar › Modo quiosco**) o añadiendo `?kiosk=1` a
-la dirección del tour publicado.
+### Cómo se consigue
+
+Hay tres caminos, y los tres llevan al mismo sitio:
+
+- **Al publicar**, en **Cómo se abre el enlace**, eligiendo «Modo quiosco». La
+  dirección de siempre (`/t/tu-tour`) arranca ya en bucle, que es lo que hace
+  falta cuando el televisor de la entrada solo sabe abrir una URL fija. Volver
+  a publicar sin tocar nada conserva el modo; para deshacerlo se elige
+  «Recorrido normal».
+- **Con el enlace de quiosco**, que está siempre a mano en **Compartir** y en
+  la pantalla final de publicar: es la misma dirección con `?kiosk=1`. Sirve
+  para poner una pantalla en bucle sin cambiar cómo abre el enlace todo el
+  mundo. Funciona en los dos sentidos: `?kiosk=0` saca el recorrido suelto de
+  un tour publicado en quiosco, por si quieres compartirlo con alguien.
+- **Al exportar** (**Exportar › Modo quiosco**), si lo que quieres es un
+  paquete que funcione sin conexión ni servidor.

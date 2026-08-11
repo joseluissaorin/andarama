@@ -191,6 +191,8 @@ export const VIEWER_CSS = `
   border: 2px solid var(--u3-primary-strong); box-shadow: 0 0 12px rgba(139, 152, 232, .5); }
 .anda-thumbs img { width: 92px; height: 54px; object-fit: cover; border-radius: 10px; display: block; background: #26304f; }
 @media (max-width: 720px) { .anda-thumbs { display: none; } }
+/* Con el quiosco puesto, la tira de miniaturas se sube por encima de su barra */
+.anda-con-kiosko .anda-thumbs { bottom: max(104px, calc(env(safe-area-inset-bottom) + 96px)); }
 
 /* ============ Brujula ============ */
 .anda-compass { position: absolute; top: max(74px, calc(env(safe-area-inset-top) + 60px)); right: 16px; width: 46px; height: 46px;

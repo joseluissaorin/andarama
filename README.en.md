@@ -45,7 +45,7 @@ It started as **ULL360**, commissioned by Universidad de La Laguna, and is now a
   </tr>
   <tr>
     <td width="22%"><b>One-click publishing</b></td>
-    <td>Public link, <code>&lt;script&gt;</code> embed, custom domain via CNAME, password, expiry date and a social card rendered with the actual projection of the opening scene.</td>
+    <td>Public link, <code>&lt;script&gt;</code> embed, custom domain via CNAME, password, expiry date, opening as a tour or in kiosk mode, and a social card rendered with the actual projection of the opening scene.</td>
   </tr>
   <tr>
     <td width="22%"><b>Open export</b></td>

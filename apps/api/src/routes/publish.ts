@@ -32,6 +32,8 @@ export interface PublicationPointer {
   defaultLang: string;
   analytics: boolean;
   turnstile?: boolean;
+  /** El enlace abre el recorrido en modo quiosco (bucle y liberación). */
+  kiosk?: boolean;
 }
 
 const publishSchema = z.object({
@@ -47,6 +49,8 @@ const publishSchema = z.object({
     .optional(),
   publishAt: z.number().optional(),
   expireAt: z.number().optional(),
+  /** Cómo se abre el enlace: recorrido normal (false) o quiosco (true). */
+  kiosk: z.boolean().optional(),
   note: z.string().max(500).optional(),
   /** Portada para compartir capturada por el editor: la escena inicial con la
    *  proyección real del visor, como data URL JPEG. */
@@ -142,6 +146,10 @@ export function publishRoutes(): Hono<AppEnv> {
       await runtime.kv.put(`domain:${customDomain}`, slug);
     }
 
+    // Republicar sin tocar el modo lo conserva: quien solo cambia el contenido
+    // no tiene por qué acordarse de que aquella pantalla iba en bucle.
+    const kiosk = body.kiosk ?? existingPub?.kiosk ?? false;
+
     const settings = parseJson<Record<string, unknown>>(access.project.settingsJson, {});
     const pointer: PublicationPointer = {
       version: number,
@@ -156,6 +164,7 @@ export function publishRoutes(): Hono<AppEnv> {
       defaultLang: compiled.tour.meta.defaultLang,
       analytics: (compiled.tour.analytics?.enabled ?? true) !== false,
       turnstile: c.get("config").turnstileSiteKey != null,
+      kiosk: kiosk ? true : undefined,
     };
     await runtime.storage.put(`pub/${slug}/current.json`, JSON.stringify(pointer), { contentType: "application/json" });
     // Invalidar cache KV del puntero
@@ -173,6 +182,7 @@ export function publishRoutes(): Hono<AppEnv> {
           customDomain,
           publishAt: body.publishAt ?? null,
           expireAt: body.expireAt ?? null,
+          kiosk,
           publishedAt: nowMs(),
           publishedBy: auth.user.id,
         })
@@ -188,6 +198,7 @@ export function publishRoutes(): Hono<AppEnv> {
         customDomain,
         publishAt: body.publishAt ?? null,
         expireAt: body.expireAt ?? null,
+        kiosk,
         publishedAt: nowMs(),
         publishedBy: auth.user.id,
       });
@@ -200,6 +211,11 @@ export function publishRoutes(): Hono<AppEnv> {
       slug,
       version: number,
       url: `${c.get("config").publicUrl}/t/${slug}`,
+      // Los dos enlaces existen siempre: el de la publicación, limpio, y el
+      // del otro modo con el parámetro que lo fuerza.
+      kioskUrl: `${c.get("config").publicUrl}/t/${slug}${kiosk ? "" : "?kiosk=1"}`,
+      tourUrl: `${c.get("config").publicUrl}/t/${slug}${kiosk ? "?kiosk=0" : ""}`,
+      kiosk,
       warnings: compiled.issues.filter((i) => i.severity === "warning"),
     }, 201);
   });

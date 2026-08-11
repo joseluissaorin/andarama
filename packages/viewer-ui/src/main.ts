@@ -61,7 +61,9 @@ async function boot(): Promise<void> {
     analyticsEndpoint: cfg.analyticsEndpoint,
     formEndpoint: cfg.formEndpoint,
     turnstileSiteKey: cfg.turnstileSiteKey,
-    kiosk: cfg.kiosk === true || params.get("kiosk") === "1",
+    // ?kiosk=1 lo enciende y ?kiosk=0 lo apaga aunque el paquete venga en
+    // quiosco: una misma dirección sirve para la pantalla y para la persona.
+    kiosk: params.get("kiosk") === "0" ? false : cfg.kiosk === true || params.get("kiosk") === "1",
     live:
       cfg.liveUrl != null || liveRoom != null
         ? {

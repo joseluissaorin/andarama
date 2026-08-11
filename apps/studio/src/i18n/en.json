@@ -826,5 +826,10 @@
   "icon_rotation": "Icon rotation",
   "icon_rotation_hint": "Degrees clockwise. It turns the drawing, not the chip.",
   "copy_link": "Copy link",
-  "go_to_scene": "Go to"
+  "go_to_scene": "Go to",
+  "open_mode": "How the link opens",
+  "open_mode_tour": "Normal tour",
+  "open_mode_kiosk": "Kiosk mode",
+  "open_mode_tour_hint": "Whoever opens the link starts where the tour starts and walks at their own pace.",
+  "open_mode_kiosk_hint": "For an unattended screen: the routes play in a loop and, if someone touches it, they are free to explore and it resumes on its own."
 }

@@ -826,5 +826,10 @@
   "icon_rotation": "Giro del icono",
   "icon_rotation_hint": "Grados en el sentido de las agujas del reloj. Gira el dibujo, no el fondo.",
   "copy_link": "Copiar el enlace",
-  "go_to_scene": "Ir a"
+  "go_to_scene": "Ir a",
+  "open_mode": "Cómo se abre el enlace",
+  "open_mode_tour": "Recorrido normal",
+  "open_mode_kiosk": "Modo quiosco",
+  "open_mode_tour_hint": "Quien abra el enlace empieza donde empieza el tour y anda a su ritmo.",
+  "open_mode_kiosk_hint": "Para una pantalla sin nadie delante: los recorridos se reproducen en bucle y, si alguien toca, queda libre para explorar y vuelve solo al rato."
 }

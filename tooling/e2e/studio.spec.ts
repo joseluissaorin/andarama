@@ -156,10 +156,11 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await page.locator("header").getByRole("button", { name: "Publicar" }).click();
   const publishDialog = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
   await publishDialog.getByRole("button", { name: "Publicar", exact: true }).click();
-  const link = publishDialog.locator('a[href*="/t/"]');
+  // El primero es el enlace publicado; debajo va el del otro modo de apertura
+  const link = publishDialog.locator('a[href*="/t/"]').first();
   await expect(link).toBeVisible({ timeout: 30_000 });
   // El enlace recién publicado se copia desde aquí mismo
-  await expect(publishDialog.getByRole("button", { name: "Copiar" })).toBeVisible();
+  await expect(publishDialog.getByRole("button", { name: "Copiar" }).first()).toBeVisible();
 });
 
 test("el grafo tiene los cuatro modos y el plano ya no es una pestaña", async ({ page }) => {
@@ -278,7 +279,7 @@ test("un área es la categoría del menú de escenas", async ({ page }) => {
   await page.locator("header").getByRole("button", { name: "Republicar" }).click();
   const dialog = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
   await dialog.getByRole("button", { name: "Publicar", exact: true }).click();
-  await expect(dialog.locator('a[href*="/t/"]')).toBeVisible({ timeout: 30_000 });
+  await expect(dialog.locator('a[href*="/t/"]').first()).toBeVisible({ timeout: 30_000 });
   const tour = (await (await page.request.get("/t/tour-e2e/tour.json")).json()) as { scenes: { category?: string }[] };
   expect(tour.scenes[0]!.category).toBe("Planta baja");
 });
@@ -321,6 +322,53 @@ test("visor publico: navegacion, panel y deep link", async ({ page }) => {
   // Modo accesible
   await page.locator('button[aria-label="Versión accesible"]').click();
   await expect(page.locator(".anda-accessible")).toContainText("Escena E2E");
+});
+
+test("publicar en modo quiosco: el enlace de siempre arranca en bucle", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  const projectUrl = page.url().split("?")[0]!;
+
+  const publicar = async (modo: "kiosk" | "tour"): Promise<void> => {
+    await page.goto(projectUrl);
+    await page.locator("header").getByRole("button", { name: /Publicar|Republicar/ }).click();
+    const dlg = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
+    await dlg.locator("#pb-modo").selectOption(modo);
+    await dlg.getByRole("button", { name: /^(Publicar|Republicar)$/ }).click();
+    await expect(dlg.locator('a[href*="/t/"]').first()).toBeVisible({ timeout: 60_000 });
+    // El otro modo queda a mano sin republicar
+    await expect(dlg.getByText(modo === "kiosk" ? "Recorrido normal:" : "Modo quiosco:")).toBeVisible();
+  };
+
+  // Publicado como quiosco, la direccion de siempre ya sale en bucle. El
+  // parametro `v` solo evita el cache del navegador: la pagina publica se
+  // sirve con max-age de 60 s y aqui se cambia de modo en segundos.
+  await publicar("kiosk");
+  await page.goto("/t/tour-e2e?v=quiosco");
+  await expect(page.locator(".anda-kiosk")).toBeVisible({ timeout: 30_000 });
+  // Del tour en bucle sale el recorrido suelto sin republicar
+  await page.goto("/t/tour-e2e?kiosk=0&v=suelto");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-kiosk")).toHaveCount(0);
+
+  // Y de vuelta al recorrido normal, donde el parametro sigue valiendo
+  await publicar("tour");
+  await page.goto("/t/tour-e2e?v=normal");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-kiosk")).toHaveCount(0);
+  await page.goto("/t/tour-e2e?kiosk=1&v=forzado");
+  await expect(page.locator(".anda-kiosk")).toBeVisible({ timeout: 30_000 });
+
+  // La barra no puede taparle la cara a las miniaturas
+  const solapan = await page.evaluate(() => {
+    const barra = document.querySelector(".anda-kiosk")?.getBoundingClientRect();
+    const tiras = document.querySelector(".anda-thumbs")?.getBoundingClientRect();
+    if (barra == null || tiras == null) return false;
+    return tiras.bottom > barra.top + 4;
+  });
+  expect(solapan).toBe(false);
 });
 
 test("el tour compartido lleva tarjeta con imagen propia", async ({ request }) => {

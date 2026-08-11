@@ -45,7 +45,7 @@ Nació como **ULL360**, un encargo de la Universidad de La Laguna, y hoy es un p
   </tr>
   <tr>
     <td width="22%"><b>Publicación en un clic</b></td>
-    <td>Enlace público, incrustable con un <code>&lt;script&gt;</code>, dominio propio por CNAME, contraseña, caducidad y tarjeta social con la proyección real de la escena.</td>
+    <td>Enlace público, incrustable con un <code>&lt;script&gt;</code>, dominio propio por CNAME, contraseña, caducidad, apertura en recorrido o en modo quiosco, y tarjeta social con la proyección real de la escena.</td>
   </tr>
   <tr>
     <td width="22%"><b>Exportación abierta</b></td>

@@ -248,6 +248,43 @@ describe("flujo critico", () => {
     expect(tour.version).toBe(1);
   });
 
+  it("el enlace se puede publicar en modo quiosco, y el normal lo admite por parametro", async () => {
+    // Publicado como quiosco: la pagina sale ya en bucle, sin parametros
+    const res = await call(`/api/v1/projects/${projectId}/publish`, {
+      method: "POST",
+      body: { visibility: "public", kiosk: true },
+    });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { url: string; kioskUrl: string; tourUrl: string; kiosk: boolean };
+    expect(body.kiosk).toBe(true);
+    // Publicado en quiosco, el enlace limpio ES el de quiosco
+    expect(body.kioskUrl).not.toContain("kiosk=");
+    expect(body.kioskUrl).toBe(body.url);
+    const quiosco = await call(`/t/${publishedSlug}`, { auth: false });
+    expect(await quiosco.text()).toContain('"kiosk":true');
+    // Y del tour en bucle se puede sacar el recorrido suelto sin republicar
+    expect(body.tourUrl).toContain("kiosk=0");
+    const suelto = await call(`/t/${publishedSlug}?kiosk=0`, { auth: false });
+    expect(await suelto.text()).not.toContain('"kiosk":true');
+
+    // Republicar sin decir nada conserva el modo elegido
+    await call(`/api/v1/projects/${projectId}/publish`, { method: "POST", body: { visibility: "public" } });
+    expect(await (await call(`/t/${publishedSlug}`, { auth: false })).text()).toContain('"kiosk":true');
+
+    // Y se puede volver al recorrido normal, que sigue admitiendo el parametro
+    const normal = await call(`/api/v1/projects/${projectId}/publish`, {
+      method: "POST",
+      body: { visibility: "public", kiosk: false },
+    });
+    const cuerpoNormal = (await normal.json()) as { kiosk: boolean; kioskUrl: string; tourUrl: string };
+    expect(cuerpoNormal.kiosk).toBe(false);
+    // Y ahora el que lleva parametro es el de quiosco
+    expect(cuerpoNormal.kioskUrl).toContain("kiosk=1");
+    expect(cuerpoNormal.tourUrl).not.toContain("kiosk=");
+    expect(await (await call(`/t/${publishedSlug}`, { auth: false })).text()).not.toContain('"kiosk":true');
+    expect(await (await call(`/t/${publishedSlug}?kiosk=1`, { auth: false })).text()).toContain('"kiosk":true');
+  });
+
   it("proteccion por contrasena", async () => {
     await call(`/api/v1/projects/${projectId}/publish`, {
       method: "POST",

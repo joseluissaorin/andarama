@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Añadido
 
+- **Modo de apertura en la publicación**: al publicar se elige si el enlace abre el recorrido normal o el modo quiosco, y el otro enlace queda siempre a mano con `?kiosk=1` o `?kiosk=0`. El quiosco dejó de ser cosa exclusiva del ZIP exportado: una pantalla de vestíbulo puede apuntar a la URL de siempre.
 - Giro del icono de los hotspots (`style.icon.rotation`): deslizador, número y ocho ángulos de un toque. Gira el dibujo y no el fondo circular, que es lo que permite apuntar una flecha a un pasillo concreto.
 - Botón de salto bajo el hotspot de navegación elegido: lleva a la escena de destino aterrizando con la orientación de esa llegada.
 - Botón de copiar junto al enlace recién publicado.

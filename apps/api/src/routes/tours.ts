@@ -92,6 +92,13 @@ export function tourRoutes(): Hono<AppEnv> {
     return pointer;
   };
 
+  /** Modo de apertura: el parámetro de la URL gana al de la publicación. */
+  const modoQuiosco = (param: string | undefined, publicado: boolean): boolean => {
+    if (param === "1") return true;
+    if (param === "0") return false;
+    return publicado;
+  };
+
   /** Comprueba proteccion. Devuelve null si OK o una Response de bloqueo. */
   const checkAccess = async (c: any, slug: string, pointer: PublicationPointer): Promise<Response | null> => {
     const now = Date.now();
@@ -224,6 +231,10 @@ export function tourRoutes(): Hono<AppEnv> {
       social: resolveSocial(tour, lang, `${c.get("config").publicUrl}/t/${slug}`),
       canonicalUrl: `${c.get("config").publicUrl}/t/${slug}`,
       analyticsEndpoint: pointer.analytics ? "/ingest/e" : null,
+      // El modo lo decide la publicación, y el parámetro manda sobre ella en
+      // los dos sentidos: ?kiosk=1 saca un enlace de pantalla de un tour
+      // normal, y ?kiosk=0 saca el recorrido suelto de uno publicado en bucle.
+      kiosk: modoQuiosco(c.req.query("kiosk"), pointer.kiosk === true),
       formEndpoint: `/api/v1/public/forms/${slug}`,
       turnstileSiteKey: c.get("config").turnstileSiteKey ?? null,
       accessibleHtml: renderAccessibleHtml(tour, lang, `/t/${slug}`),
