@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4   # la versión la manda packageManager
+      - uses: pnpm/action-setup@v6   # la versión la manda packageManager
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4   # la versión la manda packageManager
+      - uses: pnpm/action-setup@v6   # la versión la manda packageManager
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -80,7 +80,7 @@ jobs:
     needs: build-test
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4   # la versión la manda packageManager
+      - uses: pnpm/action-setup@v6   # la versión la manda packageManager
       - uses: actions/setup-node@v4
         with:
           node-version: 22
