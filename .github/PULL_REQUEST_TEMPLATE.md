@@ -1,17 +1,21 @@
 ## Qué cambia
 
-<!-- Resumen del cambio y del porqué. Enlaza el issue si existe. -->
+<!-- El cambio y el porqué, en dos líneas. Enlaza el issue si existe: «Cierra #12». -->
 
 ## Cómo se ha probado
 
-- [ ] `pnpm lint` y `pnpm typecheck` en verde
-- [ ] `pnpm test` (unitarios e integración) en verde
-- [ ] `pnpm test:e2e` en verde
-- [ ] Verificado en navegador real (si toca visor o Studio)
+<!-- Cuenta también lo que miraste en el navegador, no solo lo que pasó en verde. -->
+
+- [ ] `pnpm lint` y `pnpm typecheck`
+- [ ] `pnpm test` (unitarias)
+- [ ] `pnpm --filter @andarama/studio build && pnpm test:e2e` (el Studio se recompila antes: las E2E sirven `dist-root`)
+- [ ] Verificado en un navegador de verdad, si toca el visor o el Studio
 
 ## Lista de control
 
-- [ ] Prosa en español con tildes y eñes correctas
-- [ ] Sin emojis en la interfaz (iconos SVG de lucide)
-- [ ] Cadenas de UI en los diccionarios i18n (es y en)
-- [ ] Documentación actualizada si el cambio la afecta
+- [ ] Prosa en español, con tildes y eñes, y la raya bien usada
+- [ ] Sin emojis en la interfaz: iconos SVG
+- [ ] Cadenas nuevas en los diccionarios `es` y `en`
+- [ ] Si cambia `tour.json`: versión nueva del esquema y migrador en `packages/schema`
+- [ ] Documentación actualizada en `apps/docs` si el cambio la afecta
+- [ ] Acepto publicar esta contribución bajo la EUPL-1.2

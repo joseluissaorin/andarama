@@ -1,0 +1,133 @@
+<!doctype html>
+<!--
+  Portada del repositorio: el mismo grito de andarama.com, compuesto para que
+  quepa en el ancho de un README de GitHub. Se convierte en PNG con
+  `node tooling/marca/generar.mjs`; las fuentes y la criatura los inyecta el
+  guion, así que este fichero se puede abrir y tocar sin instalar nada.
+-->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @font-face {
+        font-family: "Baloo 2";
+        font-weight: 400 800;
+        src: url("{{FUENTE_BALOO}}") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Mono";
+        font-weight: 400;
+        src: url("{{FUENTE_MONO}}") format("woff2");
+      }
+      :root {
+        --papel: #f7f2e7;
+        --tinta: #33260f;
+        --tinta-suave: #85764f;
+        --amarillo: #ffd900;
+        --naranja: #ff8a00;
+        --naranja-tinta: #e8501a;
+        --ambar: #f59e00;
+      }
+      * { box-sizing: border-box; margin: 0; }
+      body {
+        width: 1280px;
+        height: 480px;
+        background: var(--papel);
+        /* Grano de papel: la huella del proceso, aunque sea en pantalla */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.06 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+        color: var(--tinta);
+        font-family: "Baloo 2", system-ui, sans-serif;
+        position: relative;
+        overflow: hidden;
+      }
+      .marca {
+        position: absolute;
+        top: 30px;
+        left: 44px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 25px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .marca .sello {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: var(--naranja);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 2px 0 var(--naranja-tinta);
+      }
+      .marca .sello svg { width: 40px; height: 40px; display: block; }
+      .licencia {
+        position: absolute;
+        top: 40px;
+        right: 44px;
+        font-family: "Space Mono", monospace;
+        font-size: 12.5px;
+        color: var(--tinta-suave);
+      }
+      .centro { padding-top: 96px; text-align: center; }
+      .grito {
+        font-size: 150px;
+        font-weight: 800;
+        line-height: 0.92;
+        letter-spacing: -0.03em;
+        transform: rotate(-2deg);
+        /* Desregistro de imprenta: la misma palabra, dos tintas detrás */
+        text-shadow: 5px 5px 0 var(--amarillo), 10px 10px 0 rgba(232, 80, 26, 0.35);
+      }
+      .subtitulo {
+        margin-top: 26px;
+        font-size: 29px;
+        font-weight: 700;
+      }
+      .subtitulo em {
+        font-style: normal;
+        background: var(--amarillo);
+        border-radius: 8px;
+        padding: 0 9px;
+      }
+      .susurro {
+        margin-top: 16px;
+        font-family: "Space Mono", monospace;
+        font-size: 13px;
+        color: var(--tinta-suave);
+      }
+      /* La transgresión sobre la retícula: las criaturas pasan por debajo */
+      .suelo {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 58px;
+        border-bottom: 3px solid var(--tinta);
+        opacity: 0.85;
+      }
+      .criatura { position: absolute; bottom: 56px; }
+      .criatura svg { display: block; }
+      .c1 { left: 120px; }
+      .c1 svg { width: 88px; height: 88px; }
+      .c2 { left: 560px; }
+      .c2 svg { width: 62px; height: 62px; transform: rotate(3deg); }
+      .c3 { left: 1010px; }
+      .c3 svg { width: 74px; height: 74px; transform: scaleX(-1); }
+    </style>
+  </head>
+  <body>
+    <div class="marca"><span class="sello">{{CRIATURA}}</span><span>andarama</span></div>
+    <div class="licencia">código abierto · EUPL-1.2</div>
+
+    <div class="centro">
+      <h1 class="grito">¡anda!</h1>
+      <p class="subtitulo">andarama me deja <em>andar</em> por panoramas</p>
+      <p class="susurro">recorridos virtuales 360 · editor visual · visor WebGL con realidad virtual · exportación abierta</p>
+    </div>
+
+    <div class="suelo"></div>
+    <div class="criatura c1">{{CRIATURA}}</div>
+    <div class="criatura c2">{{CRIATURA}}</div>
+    <div class="criatura c3">{{CRIATURA}}</div>
+  </body>
+</html>

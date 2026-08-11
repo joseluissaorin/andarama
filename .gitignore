@@ -1,5 +1,7 @@
 node_modules/
 dist/
+dist-root/
+dist-node/
 build/
 .wrangler/
 .dev.vars

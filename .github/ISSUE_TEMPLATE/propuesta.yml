@@ -1,0 +1,52 @@
+name: Propuesta
+description: Una idea para que Andarama haga algo que hoy no hace
+title: "[propuesta] "
+labels: ["propuesta"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de escribir código, mejor acordar el camino. Cuenta el problema real que tienes delante: casi siempre hay más de una manera de resolverlo y la mejor no suele ser la primera.
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué problema resuelve
+      description: La necesidad concreta, no la solución. Docencia, difusión, accesibilidad, patrimonio, lo que sea.
+      placeholder: Al enseñar un tour en clase no puedo dejarlo funcionando solo mientras hablo.
+    validations:
+      required: true
+
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Qué propones
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Qué otras maneras has considerado
+
+  - type: dropdown
+    id: parte
+    attributes:
+      label: A qué parte afecta
+      options:
+        - Studio (el editor)
+        - Visor
+        - Realidad virtual
+        - API o despliegue
+        - Exportación
+        - Documentación
+        - Varias o no lo sé
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: ayuda
+    attributes:
+      label: ¿Te animas a implementarlo?
+      options:
+        - label: Puedo intentar el PR si acordamos el camino

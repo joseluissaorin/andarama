@@ -14,4 +14,10 @@ Como participantes, contribuidores y responsables, nos comprometemos a hacer de 
 
 ## Aplicación
 
-Los comportamientos abusivos pueden comunicarse de forma confidencial siguiendo el procedimiento de [SECURITY.md](SECURITY.md) o abriendo contacto con las personas responsables del proyecto. Todas las quejas se revisarán e investigarán con prontitud y de forma justa.
+Los comportamientos abusivos pueden comunicarse de forma confidencial a **jl@joseluissaorin.com**. Todas las quejas se revisarán e investigarán con prontitud y de forma justa, y se respetará la privacidad de quien informa.
+
+Las personas responsables del proyecto pueden retirar comentarios, commits, código, issues y cualquier otra contribución que no cumpla estas normas, y explicarán el motivo cuando corresponda. Las faltas repetidas o graves pueden acabar en la expulsión de los espacios del proyecto.
+
+Este código se aplica en todos los espacios del proyecto (repositorio, issues, discusiones, PR) y también cuando alguien representa al proyecto en público.
+
+Texto completo y traducciones: [Contributor Covenant 2.1](https://www.contributor-covenant.org/es/version/2/1/code_of_conduct/).

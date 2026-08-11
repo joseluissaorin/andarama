@@ -2,11 +2,32 @@
   "name": "andarama",
   "version": "0.1.0",
   "private": true,
-  "description": "Andarama - Recorridos virtuales 360 de codigo abierto: anda por panoramas",
+  "description": "Andarama: recorridos virtuales 360 de código abierto. ¡anda! andarama me deja andar por panoramas.",
+  "keywords": [
+    "360",
+    "panorama",
+    "virtual-tour",
+    "recorridos-virtuales",
+    "webxr",
+    "vr",
+    "webgl",
+    "equirectangular",
+    "cloudflare-workers",
+    "self-hosted",
+    "scorm",
+    "open-source",
+    "marzipano",
+    "tour-360"
+  ],
   "license": "EUPL-1.2",
+  "author": "José Luis Saorín Ferrer <jl@joseluissaorin.com> (https://joseluissaorin.com)",
   "repository": {
     "type": "git",
     "url": "https://github.com/joseluissaorin/andarama.git"
+  },
+  "homepage": "https://andarama.com",
+  "bugs": {
+    "url": "https://github.com/joseluissaorin/andarama/issues"
   },
   "engines": {
     "node": ">=20"
@@ -36,9 +57,5 @@
     "prettier": "^3.5.0",
     "vitest": "^3.0.5",
     "@playwright/test": "^1.50.1"
-  },
-  "homepage": "https://andarama.com",
-  "bugs": {
-    "url": "https://github.com/joseluissaorin/andarama/issues"
   }
 }

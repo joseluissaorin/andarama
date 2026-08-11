@@ -1,101 +1,186 @@
-# andarama
+<p align="center">
+  <img src=".github/assets/portada.png" alt="andarama: ¡anda! andarama me deja andar por panoramas" width="100%" />
+</p>
 
-**¡anda! andarama me deja andar por panoramas.**
+<p align="center">
+  <a href="LICENSE"><img alt="Licencia EUPL-1.2" src="https://img.shields.io/badge/licencia-EUPL--1.2-f59e00?style=flat-square&labelColor=33260f" /></a>
+  <a href="https://github.com/joseluissaorin/andarama/actions/workflows/ci.yml"><img alt="Estado de la CI" src="https://img.shields.io/github/actions/workflow/status/joseluissaorin/andarama/ci.yml?branch=main&style=flat-square&label=CI&labelColor=33260f&color=3d8b40" /></a>
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-estricto-ff8a00?style=flat-square&labelColor=33260f" />
+  <img alt="Pruebas" src="https://img.shields.io/badge/pruebas-242%20unitarias%20%2B%2020%20E2E-ffd900?style=flat-square&labelColor=33260f" />
+  <a href="https://andarama.com"><img alt="Instancia de referencia" src="https://img.shields.io/badge/demo-andarama.com-e8501a?style=flat-square&labelColor=33260f" /></a>
+</p>
 
-Plataforma web de código abierto para crear, publicar y distribuir recorridos virtuales 360 interactivos. Nació como ULL360, un proyecto para la Universidad de La Laguna, y hoy es un proyecto independiente utilizable por cualquier organización.
+<p align="center">
+  <a href="https://andarama.com"><b>Web</b></a> ·
+  <a href="https://app.andarama.com"><b>Studio</b></a> ·
+  <a href="https://docs.andarama.com"><b>Documentación</b></a> ·
+  <a href="https://andarama.com/t/recorrido-real"><b>Tour de ejemplo</b></a> ·
+  <a href="README.en.md"><b>English</b></a>
+</p>
 
-Andarama se compone de tres piezas:
+---
 
-1. **Andarama Studio** - editor visual en el navegador (SPA) para construir tours sin conocimientos técnicos.
-2. **Andarama Viewer** - motor de visualización WebGL embebible y exportable como paquete HTML estático autocontenido.
-3. **Andarama API** - backend ligero (gestión de proyectos, usuarios, medios, procesado, analítica, colaboración en tiempo real).
+Andarama es una plataforma de código abierto para **crear, publicar y compartir recorridos virtuales 360**. Se suben fotos esféricas, se conectan como quien dibuja un plano y sale un recorrido que se pasea desde cualquier navegador, también con gafas de realidad virtual. Sin plugins, sin cuenta de pago y sin dejar los datos en casa ajena: corre entero en la capa gratuita de Cloudflare o en un contenedor Docker propio.
 
-**Instancia de referencia**: [andarama.com](https://andarama.com)
+Nació como **ULL360**, un encargo de la Universidad de La Laguna, y hoy es un proyecto independiente que puede usar cualquier organización.
 
-- La aplicación (Studio): [app.andarama.com](https://app.andarama.com)
-- La documentación: [docs.andarama.com](https://docs.andarama.com)
-- Tour con fotografías esféricas reales: [/t/recorrido-real](https://andarama.com/t/recorrido-real) (imágenes de Wikimedia Commons bajo CC BY-SA; atribuciones dentro del propio tour).
+## Qué trae dentro
 
-La trazabilidad completa de la especificación a la implementación está en [REQUIREMENTS.md](REQUIREMENTS.md).
+<table>
+  <tr>
+    <td width="22%"><b>Editor visual</b></td>
+    <td>Escenas, hotspots y grafo del recorrido con vista previa WYSIWYG del visor real. Arrastrar una escena sobre el panorama crea el paso hacia ella.</td>
+  </tr>
+  <tr>
+    <td width="22%"><b>Diecisiete tipos de hotspot</b></td>
+    <td>Navegación, texto, imagen, galería, vídeo, audio, PDF, web incrustada, modelo 3D, cuestionario, formulario, polígono, estado, tesoro y más, todos accionables también dentro de las gafas.</td>
+  </tr>
+  <tr>
+    <td width="22%"><b>Visor WebGL</b></td>
+    <td>Multirresolución con teselado propio, vídeo 360, audio espacial, proyecciones (little planet, estenopeica, ojo de pez), brújula, plano y giroscopio.</td>
+  </tr>
+  <tr>
+    <td width="22%"><b>Realidad virtual de verdad</b></td>
+    <td>WebXR con manos de 25 articulaciones y mandos, más modo cartón para móviles sin WebXR. Se abre la URL en las gafas y ya.</td>
+  </tr>
+  <tr>
+    <td width="22%"><b>Publicación en un clic</b></td>
+    <td>Enlace público, incrustable con un <code>&lt;script&gt;</code>, dominio propio por CNAME, contraseña, caducidad y tarjeta social con la proyección real de la escena.</td>
+  </tr>
+  <tr>
+    <td width="22%"><b>Exportación abierta</b></td>
+    <td>Paquete ZIP estático autocontenido, fichero HTML único, SCORM 1.2 y 2004, modo quiosco y PWA. Lo exportado funciona sin Andarama detrás.</td>
+  </tr>
+  <tr>
+    <td width="22%"><b>Colaboración</b></td>
+    <td>Presencia y bloqueo por escena con Durable Objects, comentarios, versiones y visitas guiadas en directo.</td>
+  </tr>
+  <tr>
+    <td width="22%"><b>Accesibilidad y idiomas</b></td>
+    <td>Recorrido en texto plano alternativo, foco visible, objetivos de 44 px, <code>prefers-reduced-motion</code> respetado y traducciones por escena y por hotspot.</td>
+  </tr>
+</table>
 
-## El editor de un vistazo
+## El editor
 
-- **Escenas**: panel de propiedades por pestañas (contenido, aspecto, condiciones), redimensionable, con paleta buscable para añadir cualquiera de los 17 tipos de hotspot. Arrastrar una escena sobre el panorama crea el paso hacia ella.
-- **Grafo**: cada flecha **es** un hotspot de navegación, no un dato paralelo. Se conecta arrastrando desde el borde del nodo, con la vuelta creada de una vez, y hay un modo aparte para los recorridos guiados del autopilot.
-- **Biblioteca de medios**: el ratón sobre un panorama lo enseña como *little planet* sin pedir nada a la red, y el doble clic lo abre en 360 para comprobarlo antes de convertirlo en escena. Los panoramas —o una carpeta entera— se arrastran al editor.
-- **Ajustes**: valores por defecto heredados de la organización, guía del CSS propio con prompt para IA, control de qué se acciona en gafas y vista previa de la tarjeta que se ve al compartir el enlace.
+<p align="center">
+  <img src=".github/assets/studio-editor.jpg" alt="El editor de Andarama con una escena de la catedral de Geisenheim, la lista de escenas a la izquierda y el panel de llegadas a la derecha" width="100%" />
+</p>
 
-## Realidad virtual
+La orientación con la que se entra en una sala **no es de la sala, es del camino**: entrar en el salón desde el pasillo y entrar desde la cocina son dos llegadas distintas y cada una guarda su vista. El panel «Cómo se llega aquí» las reúne todas para poder decidirlas estando en la escena de destino, que es el único sitio donde se puede juzgar el resultado.
 
-Todos los tours se ven con gafas (Meta Quest, Pico, Vive, Vision Pro y cualquier equipo con WebXR) sin instalar nada: se abre la dirección del tour en el navegador de las gafas y se pulsa **Modo VR**. Las manos aparecen dentro del tour con sus 25 articulaciones y accionan los hotspots con la pinza de pulgar e índice; con mandos se apunta con el rayo y se acciona con el gatillo. Los 17 tipos de hotspot son accesibles en la sesión inmersiva —los que no se pueden componer dentro de las gafas (PDF, formularios, web incrustada, modelos 3D) se abren automáticamente al salir—. Sin WebXR el mismo botón entra en **modo cartón**: pantalla partida, orientación por cuaterniones con compensación del giro de pantalla, selección por mirada con anillo de permanencia y activación inmediata al pulsar el botón físico de las gafas. En el visor plano con giroscopio hay el mismo retículo, que enseña el nombre de lo enfocado y se convierte en cursor cuando hay un panel abierto para poder cerrarlo.
+<table>
+  <tr>
+    <td width="50%"><img src=".github/assets/studio-grafo.png" alt="El grafo del recorrido con las escenas agrupadas por áreas y las conexiones dibujadas como flechas" /></td>
+    <td width="50%"><img src=".github/assets/studio-proyectos.png" alt="El tablero de proyectos de Andarama con las portadas de cuatro recorridos" /></td>
+  </tr>
+  <tr>
+    <td><b>El grafo</b>: cada flecha <i>es</i> un hotspot de navegación, no un dato paralelo. Se conecta arrastrando desde el borde del nodo y la vuelta se crea de una vez.</td>
+    <td><b>El tablero</b>: carpetas, plantillas, papelera y buscador. La portada de cada tour es el panorama de su escena inicial.</td>
+  </tr>
+</table>
 
-WebXR exige un contexto seguro: el tour debe servirse por `https://` (o `localhost`). Los paquetes exportados incluyen la realidad virtual, pero solo entran en modo inmersivo si se suben a un alojamiento con HTTPS. Detalles en la [guía de realidad virtual](apps/docs/src/content/docs/usuario/realidad-virtual.md).
+## El visor
 
-## Objetivos de despliegue
+<p align="center">
+  <img src=".github/assets/visor.jpg" alt="El visor de Andarama enseñando el interior de una catedral, con el dock de controles a la derecha y la tira de miniaturas abajo" width="100%" />
+</p>
 
-- **Cloudflare "un comando"**: toda la plataforma (frontend, API, base de datos, almacenamiento, colas, tiempo real, analítica) corre sobre Workers, D1, R2, KV, Durable Objects, Queues y Workers Analytics Engine, dentro del free tier para usos pequeños y medios.
+Cristal oscuro sobre cualquier panorama, dock de controles agrupado, tira de miniaturas y nada que tape la foto. Se puede probar en vivo: [andarama.com/t/recorrido-real](https://andarama.com/t/recorrido-real) (fotografías de Wikimedia Commons bajo CC BY-SA, con las atribuciones dentro del propio tour).
 
-  ```bash
-  git clone https://github.com/joseluissaorin/andarama && cd andarama
-  pnpm install
-  pnpm deploy:cloudflare
-  ```
+## Poner uno en marcha
 
-- **Self-hosting trivial**: una única imagen Docker (Node.js + SQLite + sistema de ficheros) que replica el comportamiento de Cloudflare mediante una capa de adaptadores.
+### Cloudflare, un comando
 
-  ```bash
-  curl -O https://raw.githubusercontent.com/joseluissaorin/andarama/main/deploy/docker/docker-compose.yml
-  docker compose up -d
-  ```
+Todo Andarama cabe en Workers, D1, R2, KV, Durable Objects, Queues y Analytics Engine, dentro de la capa gratuita para usos pequeños y medios.
 
-## Estructura del monorepo
-
+```bash
+git clone https://github.com/joseluissaorin/andarama && cd andarama
+pnpm install
+pnpm deploy:cloudflare
 ```
-andarama/
-├─ apps/
-│  ├─ studio/            # Editor SPA (React 18 + Vite + TanStack Query/Router + Zustand)
-│  ├─ api/               # Worker Hono: API + auth + servido de tours + assets
-│  ├─ realtime/          # Durable Objects (LiveTourRoom, ProjectPresence)
-│  └─ docs/              # Documentación (Astro Starlight)
-├─ packages/
-│  ├─ schema/            # tour.json: tipos TS + JSON Schema + migradores de versión
-│  ├─ viewer/            # Motor 360 (TS + WebGL, base Marzipano con capas propias)
-│  ├─ viewer-ui/         # Skin del visor (Web Components, framework-agnostic)
-│  ├─ tiler/             # Tiling en navegador (WebWorkers) y en Node (sharp)
-│  ├─ exporter/          # Generador de paquetes estáticos/SCORM (browser + Node)
-│  ├─ adapters/          # Interfaces + impl. cloudflare/ y node/
-│  ├─ db/                # Esquema Drizzle ORM + migraciones (D1 y SQLite)
-│  └─ ui/                # Design system del Studio (Radix + Tailwind, tema Andarama)
-├─ deploy/
-│  ├─ cloudflare/        # wrangler.jsonc, script bootstrap
-│  └─ docker/            # Dockerfile único, docker-compose.yml, Caddyfile
-└─ tooling/              # eslint, tsconfig, playwright
+
+El guion crea los recursos que falten, aplica las migraciones y deja la instancia servida en tu dominio.
+
+### Docker, un fichero
+
+Una sola imagen con Node y SQLite que replica el comportamiento de Cloudflare mediante la capa de adaptadores.
+
+```bash
+curl -O https://raw.githubusercontent.com/joseluissaorin/andarama/main/deploy/docker/docker-compose.yml
+docker compose up -d
 ```
+
+Guía completa de ambos caminos en [docs.andarama.com](https://docs.andarama.com).
 
 ## Desarrollo
+
+Requisitos: Node.js 20 o superior y pnpm 10.
 
 ```bash
 pnpm install
 pnpm build:packages      # compila packages/
-pnpm dev                 # API worker en local (wrangler dev, puerto 8787)
+pnpm dev                 # API en local (wrangler dev, puerto 8787)
 pnpm dev:studio          # Studio con Vite (puerto 5173, proxy a la API)
-pnpm dev:node            # variante self-host (Node + SQLite) en el puerto 8788
-pnpm test                # tests unitarios (Vitest)
-pnpm test:e2e            # tests E2E (Playwright)
+pnpm dev:node            # variante self-host (Node + SQLite) en el 8788
+pnpm test                # 242 pruebas unitarias (Vitest)
+pnpm test:e2e            # 20 pruebas E2E (Playwright, servidor real)
+pnpm lint && pnpm typecheck
 ```
 
-El script `scripts/seed-demo.mjs` construye y publica el tour de demostración con fotografías reales contra cualquier instancia: `node scripts/seed-demo.mjs <url-base> <email> <password> <dir-panoramas>` (el directorio debe contener panoramas equirectangulares y un `atribuciones.json`).
+Para tener contenido con el que jugar, `scripts/seed-demo.mjs` construye y publica el tour de demostración contra cualquier instancia:
 
-## Documentación
+```bash
+node scripts/seed-demo.mjs <url-base> <email> <password> <dir-panoramas>
+```
 
-La documentación completa (manual de usuario, guía de administración, guías de despliegue, referencia OpenAPI, formato tour.json y tutoriales) vive en `apps/docs` y se publica junto con la instancia en `/docs`.
+## Cómo está montado
+
+```
+andarama/
+├─ apps/
+│  ├─ studio/            # Editor SPA (React + Vite + TanStack + Zustand)
+│  ├─ api/               # Worker Hono: API, auth, servido de tours y assets
+│  ├─ realtime/          # Durable Objects (LiveTourRoom, ProjectPresence)
+│  ├─ landing/           # La portada de andarama.com
+│  └─ docs/              # Documentación (Astro Starlight)
+├─ packages/
+│  ├─ schema/            # tour.json: tipos, JSON Schema y migradores de versión
+│  ├─ viewer/            # Motor 360 (WebGL sobre Marzipano, con capas propias)
+│  ├─ viewer-ui/         # Skin del visor (Web Components, sin framework)
+│  ├─ tiler/             # Teselado en el navegador (WebWorkers) y en Node (sharp)
+│  ├─ exporter/          # Paquetes estáticos, SCORM, quiosco y PWA
+│  ├─ adapters/          # Interfaces + implementaciones cloudflare/ y node/
+│  ├─ db/                # Esquema Drizzle + migraciones (D1 y SQLite)
+│  └─ ui/                # Design system del Studio (Radix + Tailwind)
+├─ deploy/               # wrangler.jsonc, bootstrap, Dockerfile, compose
+└─ tooling/              # eslint, tsconfig, Playwright, imágenes de marca
+```
+
+Tres reglas de oro sostienen el conjunto:
+
+1. **Ningún módulo de dominio habla con Cloudflare.** Todo pasa por `packages/adapters`, que es lo que permite que el self-host no sea un puerto sino la misma aplicación.
+2. **`tour.json` es el contrato.** Cambiarlo exige versión nueva y migrador en `packages/schema`; lo exportado tiene que seguir abriéndose dentro de diez años.
+3. **El visor no depende de ningún framework.** Se incrusta en cualquier página con una etiqueta y sobrevive a la moda de turno.
+
+La trazabilidad de la especificación a la implementación está en [REQUIREMENTS.md](REQUIREMENTS.md).
+
+## Contribuir
+
+Las contribuciones son bienvenidas, desde una errata hasta un idioma nuevo o un tipo de hotspot. Empieza por [CONTRIBUTING.md](CONTRIBUTING.md); si vienes a mirar, los issues con la etiqueta `good first issue` son un buen sitio por donde entrar. Este proyecto se rige por su [código de conducta](CODE_OF_CONDUCT.md).
+
+Para vulnerabilidades, nada de issues públicos: [SECURITY.md](SECURITY.md) explica el canal privado.
 
 ## Licencia
 
-[EUPL-1.2](LICENSE). Los medios de ejemplo se publican bajo CC BY 4.0; las fotografías del tour de demostración proceden de Wikimedia Commons (CC BY-SA, atribuciones en el propio tour). Véase [AUTHORS](AUTHORS).
+[EUPL-1.2](LICENSE), una licencia copyleft de la Comisión Europea compatible con GPL, AGPL, MPL y EPL. En corto: se puede usar, estudiar, modificar y redistribuir, incluso comercialmente, siempre que el trabajo derivado se comparta con la misma licencia o una compatible.
 
-Los materiales de terceros incluidos (tipografías, dependencias destacadas) y el origen del proyecto se detallan en [NOTICE.md](NOTICE.md). Código de conducta en [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Los materiales de terceros (tipografías, dependencias) y el origen del proyecto están en [NOTICE.md](NOTICE.md). Autoría en [AUTHORS](AUTHORS). Las fotografías del tour de demostración proceden de Wikimedia Commons bajo CC BY-SA, con sus atribuciones dentro del tour.
 
-## Seguridad
+<p align="center">
+  <img src=".github/assets/social.png" alt="andarama, tours virtuales 360 de código abierto" width="70%" />
+</p>
 
-Divulgación responsable de vulnerabilidades: véase [SECURITY.md](SECURITY.md).
+<p align="center">
+  <sub>Hecho por <a href="https://joseluissaorin.com">José Luis Saorín</a> · <a href="https://andarama.com">andarama.com</a></sub>
+</p>

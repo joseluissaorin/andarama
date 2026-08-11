@@ -1,0 +1,30 @@
+# Actualizaciones de dependencias agrupadas y mensuales: el ruido semanal en un
+# monorepo con pnpm no lo lee nadie, y lo que no se lee no se aplica.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      desarrollo:
+        dependency-type: development
+      produccion:
+        dependency-type: production
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(ci)"
+
+  - package-ecosystem: docker
+    directory: "/deploy/docker"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(docker)"

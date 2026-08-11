@@ -1,0 +1,21 @@
+name: Documentación
+description: Algo de la documentación falta, sobra o está mal
+title: "[docs] "
+labels: ["documentación"]
+body:
+  - type: input
+    id: pagina
+    attributes:
+      label: Página
+      description: La dirección de docs.andarama.com o el fichero de apps/docs.
+      placeholder: https://docs.andarama.com/usuario/escenas/
+    validations:
+      required: true
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Qué falla
+      description: Lo que dice y lo que debería decir. Si te lanzas a corregirlo directamente en un PR, mejor todavía.
+    validations:
+      required: true

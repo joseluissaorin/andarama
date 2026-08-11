@@ -1,0 +1,29 @@
+# Análisis estático de seguridad. Se ejecuta en cada empujón a main, en los PR
+# y una vez por semana, porque las reglas nuevas encuentran cosas viejas.
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "31 4 * * 1"
+
+jobs:
+  analizar:
+    name: Analizar TypeScript
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"

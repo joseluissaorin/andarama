@@ -1,0 +1,112 @@
+<!doctype html>
+<!--
+  Tarjeta social del repositorio (1280x640): la que enseña GitHub cuando
+  alguien pega el enlace. Se sube en Ajustes del repositorio, «Social preview».
+-->
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @font-face {
+        font-family: "Baloo 2";
+        font-weight: 400 800;
+        src: url("{{FUENTE_BALOO}}") format("woff2");
+      }
+      @font-face {
+        font-family: "Space Mono";
+        font-weight: 400;
+        src: url("{{FUENTE_MONO}}") format("woff2");
+      }
+      :root {
+        --papel: #f7f2e7;
+        --tinta: #33260f;
+        --tinta-suave: #85764f;
+        --amarillo: #ffd900;
+        --naranja: #ff8a00;
+        --naranja-tinta: #e8501a;
+      }
+      * { box-sizing: border-box; margin: 0; }
+      body {
+        width: 1280px;
+        height: 640px;
+        background: var(--papel);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.06 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+        color: var(--tinta);
+        font-family: "Baloo 2", system-ui, sans-serif;
+        position: relative;
+        overflow: hidden;
+        padding: 74px 80px;
+      }
+      .marca {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 32px;
+        font-weight: 700;
+      }
+      .marca .sello {
+        width: 62px;
+        height: 62px;
+        border-radius: 16px;
+        background: var(--naranja);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 3px 0 var(--naranja-tinta);
+      }
+      .marca .sello svg { width: 54px; height: 54px; display: block; }
+      .grito {
+        margin-top: 34px;
+        font-size: 158px;
+        font-weight: 800;
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+        transform: rotate(-2deg);
+        transform-origin: left center;
+        text-shadow: 5px 5px 0 var(--amarillo), 10px 10px 0 rgba(232, 80, 26, 0.35);
+      }
+      .subtitulo {
+        margin-top: 40px;
+        font-size: 37px;
+        font-weight: 700;
+        max-width: 820px;
+      }
+      .subtitulo em {
+        font-style: normal;
+        background: var(--amarillo);
+        border-radius: 9px;
+        padding: 0 10px;
+      }
+      .susurro {
+        position: absolute;
+        left: 80px;
+        bottom: 104px;
+        font-family: "Space Mono", monospace;
+        font-size: 16.5px;
+        color: var(--tinta-suave);
+      }
+      .suelo {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 62px;
+        border-bottom: 3px solid var(--tinta);
+        opacity: 0.85;
+      }
+      .criatura { position: absolute; bottom: 60px; }
+      .criatura svg { display: block; }
+      .c1 { right: 120px; }
+      .c1 svg { width: 128px; height: 128px; }
+      .c2 { right: 300px; }
+      .c2 svg { width: 84px; height: 84px; transform: rotate(3deg); }
+    </style>
+  </head>
+  <body>
+    <div class="marca"><span class="sello">{{CRIATURA}}</span><span>andarama</span></div>
+    <h1 class="grito">¡anda!</h1>
+    <p class="subtitulo">tours virtuales 360 de <em>código abierto</em></p>
+    <p class="susurro">editor visual · visor WebGL con realidad virtual · exportación abierta · EUPL-1.2</p>
+    <div class="suelo"></div>
+    <div class="criatura c2">{{CRIATURA}}</div>
+    <div class="criatura c1">{{CRIATURA}}</div>
+  </body>
+</html>

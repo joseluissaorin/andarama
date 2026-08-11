@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Preguntas y conversación
+    url: https://github.com/joseluissaorin/andarama/discussions
+    about: Dudas de uso, ideas a medio cocer y enseñar lo que has construido.
+  - name: Documentación
+    url: https://docs.andarama.com
+    about: Manual de uso, guías de despliegue, referencia de la API y del formato tour.json.
+  - name: Vulnerabilidades de seguridad
+    url: https://github.com/joseluissaorin/andarama/security/advisories/new
+    about: Canal privado. Por favor, no las cuentes en un issue público.

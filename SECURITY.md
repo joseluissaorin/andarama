@@ -2,10 +2,10 @@
 
 ## Divulgación responsable
 
-Si encuentras una vulnerabilidad en Andarama, por favor no abras un issue público. Escribe a:
+Si encuentras una vulnerabilidad en Andarama, por favor no abras un issue público. Hay dos canales privados:
 
-- **seguridad@andarama.dev** (canal preferente)
-- o utiliza los avisos de seguridad privados de GitHub ("Report a vulnerability") en el repositorio.
+- **Avisos de seguridad de GitHub** (canal preferente): pestaña *Security* del repositorio, «Report a vulnerability». Queda registrado, es privado y permite trabajar en la corrección antes de publicarla.
+- **jl@joseluissaorin.com**, si prefieres el correo o no tienes cuenta de GitHub.
 
 Nos comprometemos a:
 
@@ -18,6 +18,10 @@ Nos comprometemos a:
 Están en ámbito: la API (`apps/api`), el Studio (`apps/studio`), el visor (`packages/viewer`, `packages/viewer-ui`), los paquetes exportados, los adaptadores y las configuraciones de despliegue de referencia.
 
 Quedan fuera de ámbito: vulnerabilidades en dependencias ya publicadas por sus autores (actualizamos mediante CI), ataques de denegación de servicio volumétricos, e ingeniería social.
+
+## Versiones con soporte
+
+Andarama se desarrolla en `main` y aún no tiene versiones mantenidas en paralelo: las correcciones salen en la rama principal y en la instancia de referencia. Cuando haya una 1.0 etiquetada, esta sección dirá qué ramas reciben parches.
 
 ## Prácticas del proyecto
 

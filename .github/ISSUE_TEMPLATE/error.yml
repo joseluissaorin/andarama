@@ -1,0 +1,80 @@
+name: Informe de error
+description: Algo no funciona como debería
+title: "[error] "
+labels: ["error"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por contarlo. Un informe que se puede reproducir se arregla en horas; uno que dice «no va» se queda esperando.
+
+        Si lo que has encontrado es un problema de **seguridad**, no lo cuentes aquí: sigue [SECURITY.md](https://github.com/joseluissaorin/andarama/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: que-pasa
+    attributes:
+      label: Qué ocurre
+      description: Lo que ves, en una o dos frases.
+      placeholder: Al arrastrar un panorama sobre el grafo no se crea la escena.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducir
+    attributes:
+      label: Cómo reproducirlo
+      description: Los pasos exactos, en orden, para que le pase a otra persona.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Qué esperabas que pasara
+    validations:
+      required: true
+
+  - type: dropdown
+    id: parte
+    attributes:
+      label: Qué parte falla
+      options:
+        - Studio (el editor)
+        - Visor (el tour publicado o incrustado)
+        - Realidad virtual (WebXR o modo cartón)
+        - API o despliegue
+        - Exportación (ZIP, SCORM, quiosco)
+        - Documentación
+        - No lo sé
+    validations:
+      required: true
+
+  - type: dropdown
+    id: despliegue
+    attributes:
+      label: Dónde corre
+      options:
+        - andarama.com (la instancia de referencia)
+        - Cloudflare, instancia propia
+        - Self-host con Docker
+        - Desarrollo local
+    validations:
+      required: true
+
+  - type: input
+    id: entorno
+    attributes:
+      label: Navegador, sistema y versión de Andarama
+      placeholder: "Safari 18 en macOS 15; commit 7a9aeaa"
+    validations:
+      required: true
+
+  - type: textarea
+    id: pruebas
+    attributes:
+      label: Capturas, consola o tour de ejemplo
+      description: Si el problema es visual, una captura vale por mil palabras. Si es de datos, adjunta el `tour.json` (se descarga desde Exportar) o el enlace a un tour público donde se vea.
