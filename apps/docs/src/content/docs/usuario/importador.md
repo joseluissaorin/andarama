@@ -11,7 +11,7 @@ Se abre desde **Biblioteca de medios → Importar de cámara 360**.
 
 1. Arrastra todas las fotos (o vídeos 360) de la cámara a la ventana.
 2. Elige el **tour de destino**.
-3. La lista se ordena sola por fecha de captura; puedes reordenar arrastrando cada fila.
+3. La lista se ordena sola **por nombre de fichero**, con los números como números (`R0010002` antes que `R0010010`), que es el orden en que la cámara fue guardando. El selector **Orden** permite cambiarlo a nombre descendente o a fecha de captura, y arrastrar una fila por su asa pasa al orden manual.
 4. Renombra cada foto haciendo clic en su nombre, o usa **Renombrar por patrón**: escribe por ejemplo `Planta 1 ({n})` y `{n}` se sustituye por el número de orden.
 5. Pulsa **Subir**: cada fila muestra su progreso (las fotos esféricas se detectan y trocean automáticamente en tiles multirresolución).
 

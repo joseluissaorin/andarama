@@ -8,3 +8,5 @@ export { generateCertificatePdf, downloadCertificate } from "./certificate.js";
 export { LiveClient, type LiveOptions } from "./live.js";
 export { registerUiIcons } from "./icons.js";
 export { el, iconButton, toast, trapFocus } from "./dom.js";
+export { parseVideoRef, type VideoRef } from "./video.js";
+export { embedSource, embedFileName, type EmbedSource } from "./embed.js";

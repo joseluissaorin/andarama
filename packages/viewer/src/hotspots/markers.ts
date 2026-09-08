@@ -33,8 +33,19 @@ interface ManagedMarker {
   /** Botón interior con todo el estilo y los listeners. */
   element: HTMLElement;
   marzipanoHotspot: any;
+  /** Condiciones de visibilidad (idioma, variables, tiempo de vídeo). */
   visible: boolean;
+  /** Con una proyección puesta: la dirección no se representa en pantalla. */
+  offProjection: boolean;
 }
+
+/**
+ * Posicionado alternativo: fracciones [0,1] del lienzo para una dirección, o
+ * null si no se representa. Lo aporta el visor cuando hay una proyección
+ * activa (little planet, ojo de pez…), en la que la cámara rectilínea de
+ * Marzipano ya no dice dónde cae cada cosa.
+ */
+export type ScreenProjector = (yaw: number, pitch: number) => { x: number; y: number } | null;
 
 interface ProjectedVideo {
   hotspot: Hotspot & { corners: { yaw: number; pitch: number }[] };
@@ -53,6 +64,7 @@ export class SceneMarkers {
   private projected: ProjectedVideo[] = [];
   private videoTime: number | null = null;
   private boundViewer: any = null;
+  private projector: ScreenProjector | null = null;
 
   constructor(
     private scene: Scene,
@@ -92,7 +104,7 @@ export class SceneMarkers {
       const el = this.buildMarkerElement(hotspot);
       anchor.appendChild(el);
       const marz = hotspotContainer.createHotspot(anchor, { yaw: hotspot.yaw, pitch: hotspot.pitch });
-      const managed: ManagedMarker = { hotspot, anchor, element: el, marzipanoHotspot: marz, visible: true };
+      const managed: ManagedMarker = { hotspot, anchor, element: el, marzipanoHotspot: marz, visible: true, offProjection: false };
       if (this.callbacks.editable === true) this.attachDrag(managed);
       this.markers.push(managed);
     }
@@ -127,7 +139,69 @@ export class SceneMarkers {
     this.updateProjected();
   }
 
+  /** Coordenadas de pantalla (px) de una dirección, con o sin proyección puesta. */
+  private toScreen(yaw: number, pitch: number): { x: number; y: number } | null {
+    if (this.projector != null) {
+      const p = this.projector(yaw, pitch);
+      if (p == null) return null;
+      return { x: p.x * this.container.clientWidth, y: p.y * this.container.clientHeight };
+    }
+    try {
+      return (this.view.coordinatesToScreen({ yaw, pitch }) as { x: number; y: number } | null) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Activa o quita el posicionado alternativo. Con proyector, el ancla de
+   * Marzipano se neutraliza por CSS (clase del contenedor) y el botón interior
+   * se coloca a mano en cada fotograma con `updateProjectedPositions`.
+   */
+  setProjector(projector: ScreenProjector | null): void {
+    if (projector === this.projector) return;
+    this.projector = projector;
+    if (projector == null) {
+      for (const m of this.markers) {
+        m.element.style.left = "";
+        m.element.style.top = "";
+        m.offProjection = false;
+        this.applyDisplay(m);
+      }
+      for (const p of this.projected) p.video.style.visibility = "";
+    } else {
+      this.updateProjectedPositions();
+    }
+    this.updatePolygons();
+  }
+
+  /** Recoloca los marcadores según el proyector activo (una vez por frame). */
+  updateProjectedPositions(): void {
+    if (this.projector == null) return;
+    const w = this.container.clientWidth;
+    const h = this.container.clientHeight;
+    for (const m of this.markers) {
+      const p = this.projector(m.hotspot.yaw, m.hotspot.pitch);
+      const off = p == null;
+      if (!off) {
+        m.element.style.left = `${(p.x * w).toFixed(1)}px`;
+        m.element.style.top = `${(p.y * h).toFixed(1)}px`;
+      }
+      if (off !== m.offProjection) {
+        m.offProjection = off;
+        this.applyDisplay(m);
+      }
+    }
+    // El vídeo proyectado depende de la homografía rectilínea: se oculta
+    for (const p of this.projected) p.video.style.visibility = "hidden";
+  }
+
+  private applyDisplay(m: ManagedMarker): void {
+    m.element.style.display = m.visible && !m.offProjection ? "" : "none";
+  }
+
   private updateProjected(): void {
+    if (this.projector != null) return;
     for (const p of this.projected) {
       const pts = p.hotspot.corners.map((c) => {
         try {
@@ -204,7 +278,11 @@ export class SceneMarkers {
     scaleWrap.appendChild(iconWrap);
     el.appendChild(scaleWrap);
 
-    const labelText = resolveL10n(hotspot.label, this.callbacks.lang(), this.callbacks.defaultLang);
+    // Una etiqueta flotante tiene un solo texto: el de la burbuja. Es lo que
+    // se enseña también al pasar el ratón, sin obligar a escribirlo dos veces.
+    const labelText =
+      resolveL10n(hotspot.label, this.callbacks.lang(), this.callbacks.defaultLang) ||
+      (hotspot.type === "tooltip" ? resolveL10n(hotspot.text, this.callbacks.lang(), this.callbacks.defaultLang) : "");
     if (labelText !== "" && hotspot.labelVisibility !== "never") {
       const label = document.createElement("span");
       label.className = "anda-hotspot__label";
@@ -335,13 +413,7 @@ export class SceneMarkers {
           sampled.push({ yaw: a.yaw + dyaw * t, pitch: a.pitch + (b.pitch - a.pitch) * t });
         }
       }
-      const pts: ({ x: number; y: number } | null)[] = sampled.map((p) => {
-        try {
-          return this.view.coordinatesToScreen({ yaw: p.yaw, pitch: p.pitch });
-        } catch {
-          return null;
-        }
-      });
+      const pts: ({ x: number; y: number } | null)[] = sampled.map((p) => this.toScreen(p.yaw, p.pitch));
       const visible = pts.filter((p): p is { x: number; y: number } => p != null);
       // Si más de la mitad del contorno queda fuera, mejor no dibujar nada
       // que dibujar un parche deformado.
@@ -373,7 +445,7 @@ export class SceneMarkers {
       const visible = evalConditions(m.hotspot.conditions, this.vars, lang, videoTime);
       if (visible !== m.visible) {
         m.visible = visible;
-        m.element.style.display = visible ? "" : "none";
+        this.applyDisplay(m);
       }
     }
     for (const p of this.polygons) {

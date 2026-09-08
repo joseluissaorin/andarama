@@ -69,8 +69,12 @@ export type ViewerEventMap = {
   langChange: { lang: string };
   muteChange: { muted: boolean };
   vrChange: { active: boolean; mode: "xr" | "cardboard" | null };
-  autopilotChange: { active: boolean; routeId: string | null };
+  autopilotChange: { active: boolean; routeId: string | null; reason: "start" | "next" | "finished" | "stopped" | "paused" };
   narrationBlock: { blocked: boolean };
+  /** Se intentó salir de la escena y algo lo impide. */
+  navBlocked: { reason: "quiz" | "narration"; hotspotId?: string };
+  /** Cambia la pregunta con compuerta que retiene en la escena (null = libre). */
+  gateChange: { hotspotId: string | null };
   treasureProgress: { found: number; total: number; lastFound?: string };
   error: { message: string; cause?: unknown };
 };

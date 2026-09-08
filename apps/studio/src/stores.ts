@@ -37,6 +37,10 @@ export const useAuth = create<AuthState>((set, get) => ({
   currentOrgId: localStorage.getItem("andarama:org"),
   bootstrap: async () => {
     set({ loaded: false });
+    // Con Clerk, la cookie de lectura para lo que se carga por URL
+    if (getClerk()?.isSignedIn() === true) {
+      await api("/auth/clerk/session", { method: "POST", body: {} }).catch(() => {});
+    }
     await get().refresh();
   },
   refresh: async () => {
@@ -57,6 +61,8 @@ export const useAuth = create<AuthState>((set, get) => ({
     const clerk = getClerk();
     if (clerk != null) {
       set({ me: { user: null, orgs: [] }, currentOrgId: null });
+      // Primero la cookie de lectura, luego la sesión de Clerk
+      await api("/auth/logout", { method: "POST" }).catch(() => {});
       await clerk.signOut();
       return;
     }

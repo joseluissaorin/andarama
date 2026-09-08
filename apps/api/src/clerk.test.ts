@@ -145,6 +145,27 @@ describe("instancia alojada con Clerk", () => {
     expect(me.billing).toEqual({ mode: "clerk", plan: "andar", planName: "Andar" });
   });
 
+  it("acuña una cookie de lectura a cambio del token, válida solo para GET", async () => {
+    const res = await call("tok-ana", "/api/v1/auth/clerk/session", { method: "POST", body: {} });
+    expect(res.status).toBe(200);
+    const jar = (res.headers.getSetCookie?.() ?? []).map((sc) => sc.split(";")[0]!).join("; ");
+    expect(jar).toContain("u3s=");
+    // Con la cookie sola se lee (miniaturas, tiles, descargas)...
+    const me = await app.request("http://localhost/api/v1/me", { headers: { cookie: jar } });
+    expect(((await me.json()) as { user: { email: string } | null }).user?.email).toBe("ana@ejemplo.es");
+    // ...pero no se escribe: las mutaciones exigen el token de Clerk
+    const csrf = jar.match(/u3c=([^;]+)/)?.[1] ?? "";
+    const orgs = (await (await call("tok-ana", "/api/v1/me")).json()) as { orgs: { id: string }[] };
+    const post = await app.request("http://localhost/api/v1/projects", {
+      method: "POST",
+      headers: { cookie: jar, "x-csrf-token": csrf, "content-type": "application/json" },
+      body: JSON.stringify({ orgId: orgs.orgs[0]!.id, title: "Con cookie" }),
+    });
+    expect(post.status).toBe(401);
+    // Sin token de Clerk no hay cookie
+    expect((await call(null, "/api/v1/auth/clerk/session", { method: "POST", body: {} })).status).toBe(401);
+  });
+
   it("el plan Andar permite un recorrido y ni uno más", async () => {
     const me = (await (await call("tok-ana", "/api/v1/me")).json()) as { orgs: { id: string }[] };
     const orgId = me.orgs[0]!.id;

@@ -5,6 +5,7 @@ import {
   BarChart3,
   GitBranch,
   History,
+  Pencil,
   Languages as LanguagesIcon,
   Map as MapIcon,
   MessageSquare,
@@ -17,7 +18,8 @@ import {
   Undo2,
   UploadCloud,
 } from "lucide-react";
-import { Badge, Button, Spinner, Tooltip, useToast } from "@andarama/ui";
+import { Badge, Button, Input, Spinner, Tooltip, useToast } from "@andarama/ui";
+import { api } from "../api";
 import { useAuth, useEditor, type EditorSnapshot } from "../stores";
 import { useT } from "../i18n";
 import { loadSnapshot, syncSnapshot } from "./editorApi";
@@ -73,6 +75,9 @@ export function EditorPage(): React.ReactNode {
   });
   const [dialog, setDialog] = useState<"publish" | "export" | "share" | "live" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  /** Título en edición (null = no se está renombrando). */
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const lastSyncError = useRef<string | null>(null);
   const [presence, setPresence] = useState<{ users: { connectionId: string; name: string; sceneId: string | null }[]; locks: Record<string, { connectionId: string; name: string }> }>({ users: [], locks: {} });
   const syncedRef = useRef<EditorSnapshot | null>(null);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -127,6 +132,14 @@ export function EditorPage(): React.ReactNode {
     } catch (err) {
       state.setSaving("error");
       console.error(err);
+      // Un guardado que falla en silencio es lo peor que puede pasar: se
+      // sigue editando sobre nada y al publicar faltan cosas. Se avisa una
+      // vez por error distinto para no llenar la pantalla en cada reintento.
+      const message = String(err instanceof Error ? err.message : err);
+      if (lastSyncError.current !== message) {
+        lastSyncError.current = message;
+        toast.push(t("save_failed", { error: message }), "error");
+      }
     }
   }, [projectId]);
 
@@ -218,6 +231,20 @@ export function EditorPage(): React.ReactNode {
   const others = presence.users.filter((u) => u.connectionId !== connIdRef.current);
   const canEdit = project.permissions.canEdit;
 
+  /** Renombrar el tour desde su propia cabecera: era imposible desde el editor. */
+  const commitRename = async (): Promise<void> => {
+    const title = renaming?.trim() ?? "";
+    setRenaming(null);
+    if (title === "" || title === project.title) return;
+    try {
+      await api(`/projects/${project.id}`, { method: "PATCH", body: { title } });
+      setProject({ ...project, title });
+      toast.push(t("renamed"), "ok");
+    } catch (err) {
+      toast.push(String(err instanceof Error ? err.message : err), "error");
+    }
+  };
+
   const TABS: { id: EditorTab; icon: React.ReactNode; label: string }[] = [
     { id: "scenes", icon: <MapIcon className="h-4 w-4" />, label: t("scenes") },
     { id: "graph", icon: <GitBranch className="h-4 w-4" />, label: t("graph") },
@@ -237,9 +264,37 @@ export function EditorPage(): React.ReactNode {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Tooltip>
-        <h1 className="max-w-64 truncate text-[15px] font-semibold">{project.title}</h1>
-        <span className="text-xs text-[var(--anda-text-dim)]">
-          {editor.saving === "saving" ? t("saving") : editor.saving === "error" ? t("error") : editor.dirty ? "..." : t("saved")}
+        {renaming != null ? (
+          <Input
+            autoFocus
+            aria-label={t("rename_tour")}
+            className="h-8 w-64 text-[15px] font-semibold"
+            value={renaming}
+            onChange={(e) => setRenaming(e.target.value)}
+            onBlur={() => void commitRename()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void commitRename();
+              else if (e.key === "Escape") setRenaming(null);
+            }}
+          />
+        ) : (
+          <button
+            type="button"
+            className="group flex min-w-0 items-center gap-1.5 rounded-md px-1 text-left hover:bg-[var(--anda-surface-2)] disabled:hover:bg-transparent"
+            title={canEdit ? t("rename_tour") : undefined}
+            aria-label={canEdit ? `${t("rename_tour")}: ${project.title}` : project.title}
+            disabled={!canEdit}
+            onClick={() => setRenaming(project.title)}
+          >
+            <h1 className="max-w-64 truncate text-[15px] font-semibold">{project.title}</h1>
+            {canEdit && <Pencil className="h-3.5 w-3.5 shrink-0 text-[var(--anda-text-dim)] opacity-0 transition-opacity group-hover:opacity-100" />}
+          </button>
+        )}
+        <span
+          className={`text-xs ${editor.saving === "error" ? "font-semibold text-[var(--anda-danger)]" : "text-[var(--anda-text-dim)]"}`}
+          title={editor.saving === "error" ? t("save_failed_short") : undefined}
+        >
+          {editor.saving === "saving" ? t("saving") : editor.saving === "error" ? t("save_failed_short") : editor.dirty ? "..." : t("saved")}
         </span>
         {others.length > 0 && (
           <div className="flex items-center gap-1" aria-label="Personas editando">

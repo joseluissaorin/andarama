@@ -4,7 +4,7 @@ import { Copy } from "lucide-react";
 import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
 import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
-import { api, authHeaders } from "../api";
+import { api, ApiRequestError, authHeaders } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import { captureShareImage } from "./shareCapture";
@@ -33,9 +33,12 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [kiosk, setKiosk] = useState(project.publication?.kiosk === true);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] } | null>(null);
+  /** Errores que impiden publicar, con su lista: antes solo salía un aviso genérico. */
+  const [blockers, setBlockers] = useState<string[] | null>(null);
 
   const publish = async (): Promise<void> => {
     setBusy(true);
+    setBlockers(null);
     try {
       // La portada para compartir: la escena inicial con la proyección real
       // del visor. Si la captura falla, se publica igual y el servidor usa la
@@ -60,6 +63,8 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
       onPublished({ slug: res.slug, visibility, hasPassword: password !== "", kiosk: res.kiosk });
       toast.push(t("publish_ok"), "ok");
     } catch (err) {
+      const issues = err instanceof ApiRequestError ? (err.extra?.issues as { message?: string }[] | undefined) : undefined;
+      if (issues != null && issues.length > 0) setBlockers(issues.map((i) => String(i.message ?? "")));
       toast.push(String(err instanceof Error ? err.message : err), "error");
     } finally {
       setBusy(false);
@@ -96,6 +101,16 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
     >
       {result == null ? (
         <div className="space-y-4">
+          {blockers != null && (
+            <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-[13px]" role="alert">
+              <p className="font-semibold text-red-600">{t("publish_blocked")}</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5 text-red-700">
+                {blockers.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <Field label={t("publish_slug")} htmlFor="pb-slug">
             <Input id="pb-slug" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} />
           </Field>

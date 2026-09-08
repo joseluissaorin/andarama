@@ -32,6 +32,8 @@ Con Clerk delante, la instancia cierra sus cuentas propias: registro, contraseñ
 
 Los tokens personales de API (`andarama_...`) siguen funcionando igual en los dos modos.
 
+El token de Clerk viaja en la cabecera `Authorization` de cada petición del Studio. Lo que el navegador carga por URL (miniaturas, tiles de la vista previa, descargas, los iframes de los códigos de inserción) no puede llevar cabeceras, así que el Studio acuña al arrancar una **cookie de lectura** a cambio del token (`POST /api/v1/auth/clerk/session`): dura doce horas, solo vale para peticiones `GET` y se borra al cerrar sesión. Las mutaciones exigen siempre el token.
+
 ## Activarlo en una instancia propia
 
 No hace falta para el self-host, pero cualquiera puede repetir el montaje:

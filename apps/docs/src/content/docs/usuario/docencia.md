@@ -4,9 +4,10 @@ title: "Docencia: quiz, LTI y SCORM"
 
 ## Quizzes y gamificación
 
-- Cada hotspot de **quiz** define pregunta, tipo (única/múltiple/V-F), opciones, feedback, puntos, intentos y **compuerta** (no permite avanzar hasta acertar).
+- Cada hotspot de **quiz** es **una pregunta**: define enunciado, tipo (única/múltiple/V-F), opciones, feedback, puntos e intentos. Un cuestionario son varias preguntas repartidas por la escena o por el tour (el botón **Añadir otra pregunta** crea la siguiente al lado); el informe final las suma todas.
+- La **compuerta** retiene al visitante en la escena hasta que acierta la pregunta (o agota los intentos): los pasos se ven apagados y, al pulsarlos, se abre la pregunta. Antes solo actuaba después de fallar, y quien no abría la pregunta se iba sin más.
 - En Ajustes del tour: puntuación mínima para aprobar, aleatorización, informe final y **certificado de finalización** (PDF con el nombre del participante).
-- **Búsqueda del tesoro**: lista de objetivos a encontrar con progreso visible.
+- **Búsqueda del tesoro**: se coloca el hotspot **Tesoro** en las escenas que se quiera y el visor lleva la cuenta de los encontrados. Se ve como una gema; para esconderlo de verdad se cambia el icono o se quita el fondo circular en «Estilo».
 - **Variables de estado**: los hotspots de contador/estado permiten puertas que se abren, cambio día/noche, rutas condicionadas, etc.
 - Las narraciones pueden **bloquear la navegación** hasta terminar (útil en prácticas guiadas).
 

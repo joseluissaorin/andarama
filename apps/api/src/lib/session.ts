@@ -14,14 +14,15 @@ const SESSION_TTL_MS = 30 * 24 * 3600 * 1000;
 export async function createSession(
   c: Context<AppEnv>,
   userId: string,
-  opts: { totpOk: boolean; ipHash?: string },
+  opts: { totpOk: boolean; ipHash?: string; ttlMs?: number },
 ): Promise<string> {
   const db = c.get("db");
   const id = newToken(32);
+  const ttlMs = opts.ttlMs ?? SESSION_TTL_MS;
   await db.insert(sessions).values({
     id: await sha256Hex(id),
     userId,
-    expiresAt: nowMs() + SESSION_TTL_MS,
+    expiresAt: nowMs() + ttlMs,
     createdAt: nowMs(),
     ipHash: opts.ipHash,
     userAgent: c.req.header("user-agent")?.slice(0, 200),
@@ -33,7 +34,7 @@ export async function createSession(
     secure,
     sameSite: "Lax",
     path: "/",
-    maxAge: SESSION_TTL_MS / 1000,
+    maxAge: ttlMs / 1000,
   });
   // CSRF doble token: cookie legible por JS que el Studio refleja en cabecera.
   setCookie(c, CSRF_COOKIE, newToken(16), {
@@ -41,7 +42,7 @@ export async function createSession(
     secure,
     sameSite: "Lax",
     path: "/",
-    maxAge: SESSION_TTL_MS / 1000,
+    maxAge: ttlMs / 1000,
   });
   return id;
 }
@@ -74,14 +75,17 @@ export async function resolveAuth(c: Context<AppEnv>): Promise<AuthState | null>
     );
     return { user, session: null, tokenScopes: parseJson<string[]>(tok.scopesJson, []) };
   }
-  // Instancia alojada: el token de sesion de Clerk viaja como Bearer y las
-  // cookies de sesion propias dejan de valer (la puerta es una sola)
+  // Instancia alojada: el token de sesion de Clerk viaja como Bearer. La
+  // cookie propia solo sirve para lo que se carga por URL y no puede llevar
+  // cabeceras (miniaturas, tiles de la vista previa, descargas, iframes):
+  // vale para GET y la acuña el propio Studio a cambio de un token de Clerk
+  // (POST /auth/clerk/session). Las mutaciones exigen siempre el Bearer.
   const verifier = c.get("clerkVerifier");
   if (verifier != null) {
     if (bearer != null && bearer.startsWith("Bearer ")) {
       return resolveClerkAuth(c, verifier, bearer.slice("Bearer ".length).trim());
     }
-    return null;
+    if (c.req.method !== "GET" && c.req.method !== "HEAD") return null;
   }
   const raw = getCookie(c, SESSION_COOKIE);
   if (raw == null) return null;

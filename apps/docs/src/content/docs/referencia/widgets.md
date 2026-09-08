@@ -18,19 +18,19 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 
 | Tipo | Qué hace | Campos propios |
 |---|---|---|
-| **Texto** | Panel con Markdown | Cuerpo (editor ampliable) |
-| **Tooltip** | Burbuja anclada al marcador (no un modal) | Texto, permanente o con autocierre |
+| **Texto** | Panel con Markdown | Cuerpo (barra de formato y editor ampliable con vista previa), título, tamaño de letra (`fontSize`) |
+| **Tooltip** | Burbuja anclada al marcador (no un modal) | Texto (es también lo que se ve al pasar el ratón), permanente o con autocierre |
 | **Imagen** | Lightbox con zoom profundo (rueda, arrastre, pellizco) | Imagen, pie de foto, descarga |
 | **Galería** | Carrusel a pantalla | Lista de imágenes con títulos |
 | **PDF** | Visor paginado con zoom (PDF.js) | Documento, descarga |
-| **Web** | Página embebida | URL, alto, sandbox estricto (por defecto) o permisivo |
+| **Web** | Página embebida o código de inserción | URL o `html` (embed de Sketchfab, Maps, Genially…), alto, sandbox estricto (por defecto) o permisivo. Un código con scripts se sirve como `embed/{id}.html` aislado |
 
 ## Audiovisual
 
 | Tipo | Qué hace | Campos propios |
 |---|---|---|
 | **Vídeo (fichero)** | Lightbox o **pantalla proyectada** sobre el panorama (homografía a 4 esquinas definidas con clics) | Vídeo, modo, autoplay/bucle/silencio |
-| **Vídeo embebido** | YouTube (sin cookies), Vimeo (DNT) o PeerTube | Proveedor, ID, inicio en segundos, autoplay |
+| **Vídeo embebido** | YouTube (sin cookies), Vimeo (DNT) o PeerTube | Proveedor, ID o dirección completa (se convierte sola), inicio en segundos, autoplay |
 | **Audio** | Reproductor con transcripción, o **fuente espacial** anclada al punto (HRTF; clic reproduce/para) | Audio, modo, volumen, bucle |
 | **Modelo 3D** | Visor interactivo, con AR en móviles | GLB/glTF/USDZ (model-viewer) y **OBJ/STL** (three.js), póster, formato |
 
@@ -38,7 +38,7 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 
 | Tipo | Qué hace | Campos propios |
 |---|---|---|
-| **Pregunta (quiz)** | Única/múltiple/verdadero-falso con puntuación, intentos, feedback y bloqueo de avance | Ver la guía de docencia |
+| **Pregunta (quiz)** | Una pregunta por marcador: única/múltiple/verdadero-falso con puntuación, intentos, feedback y compuerta (retiene en la escena hasta acertar) | Ver la guía de docencia |
 | **Formulario** | Campos configurables con anti-spam Turnstile | Título, mensaje de éxito, texto del botón, destino (API, webhook, email) |
 | **Comparador** | Antes/después de dos imágenes con deslizador, o **vista dividida de dos escenas sincronizadas** | Modo, imágenes o escenas, etiquetas |
 

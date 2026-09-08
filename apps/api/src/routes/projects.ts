@@ -19,6 +19,7 @@ import { audit, getSettings } from "../lib/helpers.js";
 import { assertTourQuota } from "../lib/quota.js";
 import { resolveNewTourSettings, type OrgDefaults, type UserPrefs } from "../lib/defaults.js";
 import { compileProject } from "../compiler.js";
+import { embedResponse } from "../lib/embed.js";
 
 export function projectRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
@@ -312,6 +313,15 @@ export function projectRoutes(): Hono<AppEnv> {
       { ttlSeconds: 3600 },
     );
     return c.json({ tour: compiled.tour, issues: compiled.issues });
+  });
+
+  // Documento aparte de un código de inserción, para la vista previa
+  r.get("/:projectId/preview/embed/:file", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const access = await projectAccess(db, c.req.param("projectId"), auth.user);
+    const compiled = await compileProject(db, access.project.id);
+    return embedResponse(compiled.tour, c.req.param("file"), compiled.tour.meta.defaultLang);
   });
 
   // Assets del borrador para la vista previa del Studio

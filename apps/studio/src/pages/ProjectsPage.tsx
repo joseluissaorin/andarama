@@ -11,6 +11,7 @@ import {
   FolderPlus,
   LayoutTemplate,
   MoreVertical,
+  Pencil,
   Plus,
   RotateCcw,
   Tag,
@@ -580,6 +581,16 @@ function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
               <>
                 <DropdownItem onSelect={() => void navigate({ to: "/p/$projectId", params: { projectId: project.id } })}>
                   <ExternalLink className="h-4 w-4" /> {t("open")}
+                </DropdownItem>
+                <DropdownItem
+                  onSelect={() => {
+                    const nuevo = prompt(t("rename_tour"), project.title)?.trim();
+                    if (nuevo != null && nuevo !== "" && nuevo !== project.title) {
+                      void run(() => api(`/projects/${project.id}`, { method: "PATCH", body: { title: nuevo } }), t("renamed"));
+                    }
+                  }}
+                >
+                  <Pencil className="h-4 w-4" /> {t("rename")}
                 </DropdownItem>
                 <DropdownItem onSelect={() => void run(() => api(`/projects/${project.id}/duplicate`, { method: "POST", body: {} }))}>
                   <Copy className="h-4 w-4" /> {t("duplicate")}

@@ -160,6 +160,47 @@ export function renderAccessibleHtml(tour: Tour, lang: string, baseUrl = ""): st
   return parts.join("\n");
 }
 
+/**
+ * Documento aparte para un código de inserción con más que un iframe (scripts,
+ * varios elementos). Se sirve dentro de un iframe con sandbox y sin origen
+ * propio: lo que traiga el código no puede tocar el tour ni sus cookies.
+ */
+export function renderEmbedHtml(html: string, title: string): string {
+  return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>${esc(title)}</title>
+<style>html,body{margin:0;background:#0b1020;color:#eef1fb;font-family:system-ui,sans-serif}body{padding:0}iframe{max-width:100%}</style>
+</head>
+<body>
+${html}
+</body>
+</html>`;
+}
+
+/** Ruta relativa del documento aparte de un código de inserción. */
+export function embedFileName(hotspotId: string): string {
+  return `embed/${hotspotId}.html`;
+}
+
+/** Hotspots web con código de inserción, que necesitan su documento aparte. */
+export function embedDocuments(tour: Tour, lang: string): { path: string; html: string }[] {
+  const out: { path: string; html: string }[] = [];
+  for (const scene of tour.scenes) {
+    for (const hs of scene.hotspots) {
+      if (hs.type !== "web") continue;
+      const code = (hs as { html?: unknown }).html;
+      if (typeof code !== "string" || code.trim() === "") continue;
+      const title = resolveL10n(hs.label, lang, tour.meta.defaultLang) || "Web";
+      out.push({ path: embedFileName(hs.id), html: renderEmbedHtml(code, title) });
+    }
+  }
+  return out;
+}
+
 export function renderWebManifest(tour: Tour, lang: string): string {
   const title = resolveL10n(tour.meta.title, lang, tour.meta.defaultLang);
   return JSON.stringify(

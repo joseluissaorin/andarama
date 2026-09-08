@@ -26,12 +26,31 @@ export function authRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
 
   // Con Clerk delante, las cuentas propias no se abren: registro, contraseña,
-  // SSO y TOTP los lleva Clerk. Solo queda cerrar sesion (limpia cookies viejas).
+  // SSO y TOTP los lleva Clerk. Quedan cerrar sesion (limpia cookies viejas)
+  // y acuñar la cookie de lectura a cambio del token de Clerk.
   r.use("*", async (c, next) => {
-    if (c.get("config").clerk != null && !c.req.path.endsWith("/auth/logout")) {
+    const path = c.req.path;
+    if (c.get("config").clerk != null && !path.endsWith("/auth/logout") && !path.endsWith("/auth/clerk/session")) {
       throw notFound("Esta instancia gestiona las cuentas con Clerk");
     }
     await next();
+  });
+
+  /**
+   * Cookie de lectura para la instancia alojada: lo que el navegador carga
+   * por URL (miniaturas, tiles, descargas, iframes) no puede llevar el token
+   * de Clerk en cabecera. Dura poco y el Studio la renueva al arrancar.
+   */
+  r.post("/clerk/session", async (c) => {
+    if (c.get("config").clerk == null) throw notFound();
+    const auth = c.get("auth");
+    if (auth == null || auth.clerkSessionId === undefined) throw unauthorized("Hace falta un token de Clerk");
+    await createSession(c, auth.user.id, {
+      totpOk: true,
+      ipHash: await dailyIpHash(clientIp(c), c.get("config").secret),
+      ttlMs: 12 * 3600 * 1000,
+    });
+    return c.json({ ok: true });
   });
 
   r.post("/register", async (c) => {

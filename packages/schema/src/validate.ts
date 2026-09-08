@@ -33,6 +33,7 @@ const HOTSPOT_TYPES = new Set([
   "tooltip",
   "link",
   "state",
+  "treasure",
 ]);
 
 function isFiniteNumber(v: unknown): v is number {
@@ -311,6 +312,16 @@ function validateHotspotContent(
         err("state-no-actions", `${hp}.actions`, "Hotspot de estado sin acciones");
       if (hs.thenGoto != null && !sceneIds.has(hs.thenGoto))
         err("state-target-missing", `${hp}.thenGoto`, `Destino inexistente: ${hs.thenGoto}`);
+      break;
+    case "treasure":
+      // Un tesoro no necesita nada más que estar colocado: el premio y la
+      // pista son opcionales. Se comprueba solo que, si vienen, sean texto.
+      if (hs.reward != null && typeof hs.reward !== "string" && typeof hs.reward !== "object")
+        err("treasure-bad-reward", `${hp}.reward`, "El premio del tesoro debe ser texto");
+      break;
+    case "web":
+      if ((typeof hs.url !== "string" || hs.url === "" || hs.url === "https://") && (typeof hs.html !== "string" || hs.html.trim() === ""))
+        warn("web-no-source", `${hp}.url`, `Contenido web "${hs.id}" sin dirección ni código de inserción`);
       break;
     default:
       break;

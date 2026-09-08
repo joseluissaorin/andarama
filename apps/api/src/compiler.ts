@@ -257,6 +257,9 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
       // `unplaced` marca en el editor los pasos creados desde el grafo que
       // aún no se han arrastrado al panorama: no pinta nada en el tour.
       delete (content as Record<string, unknown>).unplaced;
+      // `webMode` es la pestaña elegida en el editor del hotspot web: en el
+      // tour manda el contenido (html o url), no la pestaña
+      delete (content as Record<string, unknown>).webMode;
       const position = parseJson<Record<string, unknown>>(h.positionJson, {});
       return {
         id: h.id,

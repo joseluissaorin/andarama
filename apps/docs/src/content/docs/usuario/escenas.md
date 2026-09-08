@@ -73,20 +73,20 @@ Cada paso define su **orientación de entrada**:
 Todos comparten posición, etiqueta, texto alternativo, icono (biblioteca SVG o propio), estilo (tamaño, color, giro del dibujo, pulso, escala con zoom) y **condiciones de visibilidad** (por idioma, por variables de estado, por rango temporal en escenas de vídeo).
 
 1. **Navegación**: salto a otra escena; variante flecha de suelo.
-2. **Texto**: panel Markdown (títulos, listas, enlaces, tablas).
+2. **Texto**: panel Markdown (títulos, listas, enlaces, tablas), con barra de formato (negrita, cursiva, título, lista, enlace), vista previa en el editor ampliado, título propio y tamaño de letra.
 3. **Imagen**: lightbox con zoom profundo y descarga opcional.
 4. **Galería**: carrusel con títulos y descripciones.
 5. **Vídeo (fichero)**: lightbox o pantalla proyectada sobre la escena.
-6. **YouTube/Vimeo/PeerTube**: embed sin cookies por defecto.
+6. **YouTube/Vimeo/PeerTube**: embed sin cookies por defecto. Se pega la dirección tal cual (`youtu.be/…`, `watch?v=…`, `shorts/…`) y el ID se saca solo; si la dirección lleva `t=90`, ese es el segundo de inicio.
 7. **Audio**: reproductor o fuente espacial anclada.
 8. **PDF**: visor integrado con paginación y zoom.
 9. **Modelo 3D**: glTF/GLB, OBJ, STL; AR opcional en móviles.
-10. **Web/iframe**: página externa con sandbox configurable.
+10. **Web/iframe**: página externa con sandbox configurable, o un **código de inserción** (el «embed» de Sketchfab, Genially, Google Maps, H5P…). Un iframe suelto se usa directamente; un código con scripts se sirve en un documento aparte aislado. Muchas webs no permiten mostrarse dentro de otra: el panel ofrece siempre «Abrir en una pestaña nueva».
 11. **Formulario**: campos varios, envío a la API/webhook/email, anti-spam Turnstile.
-12. **Comparador**: dos imágenes con deslizador o dos panoramas completos.
-13. **Quiz**: opción única/múltiple/verdadero-falso, feedback, puntos y compuerta.
-14. **Polígono**: región dibujada vértice a vértice sobre la esfera con cualquier acción.
-15. **Etiqueta flotante**: texto permanente o al pasar el cursor.
+12. **Comparador**: dos imágenes con deslizador, o dos escenas del tour lado a lado y sincronizadas (un antes y después de la misma sala).
+13. **Quiz**: una pregunta por marcador (única/múltiple/verdadero-falso), feedback, puntos y compuerta que retiene en la escena hasta acertar.
+14. **Polígono (zona)**: región dibujada vértice a vértice sobre la esfera; se ve mientras se dibuja. Al pulsarla lleva a otra escena, abre una web o abre otro hotspot de la escena.
+15. **Etiqueta flotante**: un texto que se ve al pasar el cursor y, al pulsar, en una burbuja fija sobre el marcador.
 16. **Enlace externo**: URL, tel: o mailto:.
 17. **Contador/estado**: modifica variables del tour (puertas, día/noche, progreso).
 

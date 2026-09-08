@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
-import { ArrowRight, Check, GripVertical, MapPin, Trash2, UploadCloud, Wand2 } from "lucide-react";
+import { ArrowDownAZ, ArrowRight, Check, GripVertical, MapPin, Trash2, UploadCloud, Wand2 } from "lucide-react";
 import { Button, Dialog, Field, Input, Select, Spinner, Switch, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useT } from "../i18n";
@@ -26,6 +26,44 @@ interface WizardItem {
   error?: string;
   /** Posición sobre el plano (normalizada 0-1). */
   plan?: { x: number; y: number };
+}
+
+/**
+ * Orden de las fotos. Las cámaras numeran los ficheros, y ese número es el
+ * orden en que se anduvo: por eso el orden natural del nombre (con los
+ * números como números, no como letras) es el de serie. Arrastrar pasa a
+ * «manual» y ya no se toca.
+ */
+export type ImportOrder = "name-asc" | "name-desc" | "date-asc" | "date-desc" | "manual";
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+
+export function sortImportItems<T extends { name: string; file: { name: string; lastModified: number } }>(items: T[], order: ImportOrder): T[] {
+  if (order === "manual") return items;
+  const list = [...items];
+  const byName = (a: T, b: T): number => collator.compare(a.file.name, b.file.name);
+  const byDate = (a: T, b: T): number => a.file.lastModified - b.file.lastModified;
+  switch (order) {
+    case "name-asc":
+      return list.sort(byName);
+    case "name-desc":
+      return list.sort((a, b) => byName(b, a));
+    case "date-asc":
+      return list.sort(byDate);
+    case "date-desc":
+      return list.sort((a, b) => byDate(b, a));
+    default:
+      return list;
+  }
+}
+
+/** Mueve el elemento `from` a la posición `to` (inserta antes del que estaba ahí). */
+export function moveItem<T>(list: T[], from: number, to: number): T[] {
+  if (from < 0 || to < 0 || from >= list.length || to >= list.length || from === to) return list;
+  const next = [...list];
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved!);
+  return next;
 }
 
 /** Área con plano: es lo que aquí se usa como planta donde colocar las fotos. */
@@ -67,7 +105,12 @@ export function ImportWizard({ orgId, open, onClose, project }: {
   const [connectSequence, setConnectSequence] = useState(true);
   const [creating, setCreating] = useState(false);
   const [createdCount, setCreatedCount] = useState<number | null>(null);
+  const [order, setOrder] = useState<ImportOrder>("name-asc");
+  /** Fila que se está arrastrando y fila sobre la que se va a soltar. */
   const [dragKey, setDragKey] = useState<string | null>(null);
+  const [dropKey, setDropKey] = useState<string | null>(null);
+  /** El arrastre solo arranca desde el asa: si no, escribir en el nombre movía la fila. */
+  const [armedKey, setArmedKey] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const projects = useQuery({
@@ -101,10 +144,26 @@ export function ImportWizard({ orgId, open, onClose, project }: {
     setItems((prev) => {
       const merged = [...prev];
       for (const item of next) if (!merged.some((m) => m.key === item.key)) merged.push(item);
-      // Orden por fecha de captura (aproximada por mtime del fichero)
-      merged.sort((a, b) => a.file.lastModified - b.file.lastModified);
-      return merged;
+      // Los ficheros llegan en el orden en que el sistema quiso: se ordenan
+      // según el criterio elegido (por defecto, el nombre, que es la numeración
+      // de la cámara). En manual, lo nuevo se añade al final.
+      return sortImportItems(merged, order);
     });
+  };
+
+  const reorderBy = (next: ImportOrder): void => {
+    setOrder(next);
+    setItems((prev) => sortImportItems(prev, next));
+  };
+
+  const dropOn = (targetKey: string): void => {
+    if (dragKey == null || dragKey === targetKey) return;
+    setItems((prev) => {
+      const from = prev.findIndex((x) => x.key === dragKey);
+      const to = prev.findIndex((x) => x.key === targetKey);
+      return moveItem(prev, from, to);
+    });
+    setOrder("manual");
   };
 
   const applyPattern = (): void => {
@@ -283,6 +342,18 @@ export function ImportWizard({ orgId, open, onClose, project }: {
               )}
             </Field>
             <div className="flex-1" />
+            <Field label={t("import_order")} htmlFor="iw-order" hint={t("import_order_hint")}>
+              <div className="flex items-center gap-1.5">
+                <ArrowDownAZ className="h-4 w-4 shrink-0 text-[var(--anda-text-dim)]" aria-hidden="true" />
+                <Select id="iw-order" value={order} onChange={(e) => reorderBy(e.target.value as ImportOrder)} className="w-52">
+                  <option value="name-asc">{t("import_order_name_asc")}</option>
+                  <option value="name-desc">{t("import_order_name_desc")}</option>
+                  <option value="date-asc">{t("import_order_date_asc")}</option>
+                  <option value="date-desc">{t("import_order_date_desc")}</option>
+                  <option value="manual">{t("import_order_manual")}</option>
+                </Select>
+              </div>
+            </Field>
             <Field label={t("rename_pattern")} htmlFor="iw-pattern" hint={t("rename_pattern_hint")}>
               <div className="flex gap-1.5">
                 <Input id="iw-pattern" value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder="Planta 1 ({n})" className="w-48" />
@@ -306,27 +377,46 @@ export function ImportWizard({ orgId, open, onClose, project }: {
             <>
               <div className="max-h-80 space-y-1.5 overflow-y-auto pr-1">
                 {items.map((item, i) => (
+                  // La lista no se reordena mientras se arrastra (mover el nodo
+                  // que se está arrastrando cancela el gesto en el navegador):
+                  // se marca dónde va a caer y se mueve al soltar.
                   <div
                     key={item.key}
-                    draggable
-                    onDragStart={() => setDragKey(item.key)}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      if (dragKey == null || dragKey === item.key) return;
-                      setItems((prev) => {
-                        const from = prev.findIndex((x) => x.key === dragKey);
-                        const to = prev.findIndex((x) => x.key === item.key);
-                        if (from < 0 || to < 0) return prev;
-                        const next = [...prev];
-                        const [moved] = next.splice(from, 1);
-                        next.splice(to, 0, moved!);
-                        return next;
-                      });
+                    draggable={armedKey === item.key}
+                    onDragStart={(e) => {
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", item.key);
+                      setDragKey(item.key);
                     }}
-                    onDragEnd={() => setDragKey(null)}
-                    className="flex items-center gap-2.5 anda-ficha p-2"
+                    onDragOver={(e) => {
+                      if (dragKey == null || dragKey === item.key) return;
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dropKey !== item.key) setDropKey(item.key);
+                    }}
+                    onDragLeave={() => setDropKey((k) => (k === item.key ? null : k))}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      dropOn(item.key);
+                      setDragKey(null);
+                      setDropKey(null);
+                      setArmedKey(null);
+                    }}
+                    onDragEnd={() => {
+                      setDragKey(null);
+                      setDropKey(null);
+                      setArmedKey(null);
+                    }}
+                    className={`flex items-center gap-2.5 anda-ficha p-2 ${dragKey === item.key ? "opacity-40" : ""} ${
+                      dropKey === item.key ? "!shadow-[inset_0_2px_0_var(--anda-primary)]" : ""
+                    }`}
                   >
-                    <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-[var(--anda-text-dim)]" />
+                    <GripVertical
+                      className="h-4 w-4 shrink-0 cursor-grab text-[var(--anda-text-dim)]"
+                      aria-label={t("drag_to_reorder")}
+                      onPointerDown={() => setArmedKey(item.key)}
+                      onPointerUp={() => setArmedKey(null)}
+                    />
                     <span className="w-6 text-right text-xs tabular-nums text-[var(--anda-text-dim)]">{i + 1}</span>
                     <img src={item.previewUrl} alt="" className="h-11 w-[4.5rem] shrink-0 rounded-lg object-cover" />
                     <Input

@@ -107,8 +107,16 @@ export const VIEWER_CSS = `
 .anda-hotspot--dragging .anda-hotspot__icon--chip { border-color: var(--u3-primary-strong); box-shadow: 0 0 0 5px rgba(139,152,232,.35), 0 6px 22px rgba(0,0,0,.5); }
 .anda-hotspot--projected { pointer-events: auto; }
 .anda-hotspot--projected video { border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
-/* Proyeccion activa: los hotspots dejan de corresponder a lo visible */
-.anda-projection-active .anda-hotspot-anchor, .anda-projection-active .anda-polygons { visibility: hidden; }
+/* Proyección activa: el ancla de Marzipano se neutraliza (!important gana al
+   estilo en línea que reescribe cada frame) y el botón interior se coloca a
+   mano donde el shader dibuja esa dirección. Durante el fundido no están en
+   ningún sitio: se esconden. */
+.anda-projection-active .anda-hotspot-anchor { display: block !important; position: absolute !important;
+  transform: none !important; left: 0; top: 0; }
+.anda-projection-transition .anda-hotspot-anchor, .anda-projection-transition .anda-polygons,
+.anda-projection-transition .anda-projected-video { visibility: hidden; }
+/* Compuerta de pregunta pendiente: los pasos se ven, pero apagados */
+.anda-nav-gated .anda-hotspot--navigation .anda-hotspot__icon--chip { opacity: .55; filter: grayscale(.5); }
 
 /* ============ Barra superior flotante ============ */
 .anda-topbar { position: absolute; top: max(14px, env(safe-area-inset-top)); left: 14px; right: 14px;
@@ -214,6 +222,7 @@ export const VIEWER_CSS = `
 .anda-split { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; height: min(70vh, 640px); background: var(--u3-border); }
 .anda-split__pane { position: relative; overflow: hidden; }
 .anda-split__pane iframe { width: 100%; height: 100%; border: 0; display: block; background: #0b1020; }
+.anda-split__pane .anda-split__viewer { position: absolute; inset: 0; background: #0b1020; }
 @media (max-width: 720px) { .anda-split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; } }
 
 /* ============ Paneles / lightbox ============ */
@@ -230,7 +239,7 @@ export const VIEWER_CSS = `
 .anda-panel__head { display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--u3-border); }
 .anda-panel__head h2 { margin: 0; font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; flex: 1;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.anda-panel__body { overflow-y: auto; padding: 20px; flex: 1; -webkit-overflow-scrolling: touch; }
+.anda-panel__body { overflow-y: auto; padding: 20px; flex: 1; min-height: 0; -webkit-overflow-scrolling: touch; }
 .anda-panel__body--flush { padding: 0; }
 .anda-panel__body img { max-width: 100%; height: auto; }
 /* ============ Modo quiosco ============
@@ -261,6 +270,10 @@ export const VIEWER_CSS = `
 .anda-treasure-found__count { margin: 12px 0 0; font-size: 13px; color: var(--u3-fg-dim); }
 
 .anda-prose { line-height: 1.65; font-size: 15px; }
+.anda-prose--small { font-size: 13.5px; }
+.anda-prose--large { font-size: 17.5px; }
+.anda-prose--xlarge { font-size: 21px; line-height: 1.55; }
+.anda-prose > :first-child { margin-top: 0; }
 .anda-prose h1, .anda-prose h2, .anda-prose h3 { line-height: 1.25; letter-spacing: -0.015em; }
 .anda-prose h2 { font-size: 21px; margin: .2em 0 .6em; }
 .anda-prose h3 { font-size: 17px; }
@@ -302,6 +315,12 @@ export const VIEWER_CSS = `
   background-repeat: no-repeat; background-position: center; }
 .anda-compare__tag { position: absolute; top: 12px; padding: 5px 13px; border-radius: 999px; background: rgba(10,14,28,.72);
   backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.18); color: #fff; font-size: 12px; font-weight: 600; z-index: 1; }
+
+/* ============ Web incrustada ============ */
+.anda-web__foot { display: flex; align-items: center; gap: 12px; padding: 9px 16px; font-size: 13px; color: var(--u3-fg-dim);
+  border-top: 1px solid var(--u3-border); }
+.anda-web__foot a { color: var(--u3-primary-strong); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.anda-web__foot a:hover { text-decoration: underline; }
 
 /* ============ Formularios ============ */
 .anda-form label { display: block; font-size: 13.5px; font-weight: 600; margin: 14px 0 6px; }
@@ -381,6 +400,11 @@ export const VIEWER_CSS = `
   transition: background .12s ease; }
 .anda-menu-pop button:hover { background: var(--u3-surface-2); }
 .anda-menu-pop button[aria-pressed="true"] { background: var(--u3-primary); color: #fff; }
+/* Menú con explicación bajo cada opción (proyecciones) */
+.anda-menu-pop--wide { min-width: 280px; max-width: min(340px, 82vw); }
+.anda-menu-pop--wide button { flex-direction: column; align-items: flex-start; gap: 2px; }
+.anda-menu-pop__desc { font-size: 12px; font-weight: 450; line-height: 1.3; color: var(--u3-fg-dim); white-space: normal; }
+.anda-menu-pop button[aria-pressed="true"] .anda-menu-pop__desc { color: rgba(255,255,255,.85); }
 
 /* ============ Marca de agua ============ */
 .anda-watermark { position: absolute; left: 16px; top: max(74px, calc(env(safe-area-inset-top) + 60px)); z-index: 17;
