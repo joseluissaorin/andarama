@@ -30,7 +30,7 @@ const GB = 1024 * 1024 * 1024;
 
 export const PLANS: Record<PlanSlug, PlanInfo> = {
   andar: { slug: "andar", name: "Andar", amountCents: 200, period: "month", quotaTours: 1, quotaBytes: 5 * GB },
-  paseo: { slug: "paseo", name: "Paseo", amountCents: 2000, period: "month", quotaTours: 100, quotaBytes: 50 * GB },
+  paseo: { slug: "paseo", name: "Paseo", amountCents: 2000, period: "month", quotaTours: 10, quotaBytes: 50 * GB },
   excursion: { slug: "excursion", name: "Excursión", amountCents: 50000, period: "year", quotaTours: 500, quotaBytes: 100 * GB },
   vitalicio: { slug: "vitalicio", name: "De por vida", amountCents: 100000, period: "once", quotaTours: 1000, quotaBytes: 200 * GB },
 };

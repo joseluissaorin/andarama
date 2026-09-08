@@ -120,7 +120,7 @@ Guía completa de ambos caminos en [docs.andarama.com](https://docs.andarama.com
 | Plan | Precio | Recorridos | Medios |
 |---|---|---|---|
 | Andar | 2 $ al mes | 1 | 5 GB |
-| Paseo | 20 $ al mes | hasta 100 | 50 GB |
+| Paseo | 20 $ al mes | hasta 10 | 50 GB |
 | Excursión | 500 $ al año | hasta 500 | 100 GB |
 | De por vida | 1000 $, una vez | hasta 1000 | 200 GB |
 

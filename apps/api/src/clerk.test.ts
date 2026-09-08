@@ -200,7 +200,7 @@ describe("instancia alojada con Clerk", () => {
     const me = (await (await call("tok-ana", "/api/v1/me")).json()) as { orgs: { id: string }[]; billing: { plan: string } };
     expect(me.billing.plan).toBe("paseo");
     const usage = (await (await call("tok-ana", `/api/v1/orgs/${me.orgs[0]!.id}/usage`)).json()) as { quotaTours: number };
-    expect(usage.quotaTours).toBe(100);
+    expect(usage.quotaTours).toBe(10);
   });
 
   it("el plan concedido a mano manda sobre Clerk", async () => {

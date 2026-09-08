@@ -10,7 +10,7 @@ Andarama es de código abierto bajo EUPL-1.2. **El plan gratuito es montárselo 
 | Plan | Precio | Recorridos | Medios |
 |---|---|---|---|
 | **Andar** | 2 $ al mes | 1 | 5 GB |
-| **Paseo** | 20 $ al mes | hasta 100 | 50 GB |
+| **Paseo** | 20 $ al mes | hasta 10 | 50 GB |
 | **Excursión** | 500 $ al año | hasta 500 | 100 GB |
 | **De por vida** | 1000 $, una sola vez | hasta 1000 | 200 GB |
 

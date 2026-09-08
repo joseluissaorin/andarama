@@ -21,7 +21,7 @@ describe("planes de la instancia alojada", () => {
   it("sin plan no hay recorridos; con plan, los del plan", () => {
     expect(quotaForPlan(null)).toEqual({ quotaTours: 0, quotaBytes: 0 });
     expect(quotaForPlan("andar").quotaTours).toBe(1);
-    expect(quotaForPlan("paseo").quotaTours).toBe(100);
+    expect(quotaForPlan("paseo").quotaTours).toBe(10);
     expect(quotaForPlan("excursion").quotaTours).toBe(500);
     expect(quotaForPlan("vitalicio").quotaTours).toBe(1000);
   });

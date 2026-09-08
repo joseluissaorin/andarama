@@ -20,7 +20,7 @@
 
 ---
 
-Andarama is an open source platform to **build, publish and share 360 virtual tours**. Upload your spherical photos, connect them the way you would sketch a floor plan, and get a tour that anyone can walk through in a browser, VR headsets included. No plugins and no handing your data to someone else: it runs entirely on Cloudflare's free tier or in a Docker container of your own, and that is free. If you would rather not run anything, the hosted instance at [andarama.com](https://andarama.com#precios) has plans from $2 a month (Andar, 1 tour; Paseo, $20 a month, up to 100; Excursión, $500 a year, up to 500; lifetime, $1000 once, up to 1000), all with a fair-use policy. The free plan is hosting it yourself.
+Andarama is an open source platform to **build, publish and share 360 virtual tours**. Upload your spherical photos, connect them the way you would sketch a floor plan, and get a tour that anyone can walk through in a browser, VR headsets included. No plugins and no handing your data to someone else: it runs entirely on Cloudflare's free tier or in a Docker container of your own, and that is free. If you would rather not run anything, the hosted instance at [andarama.com](https://andarama.com#precios) has plans from $2 a month (Andar, 1 tour; Paseo, $20 a month, up to 10; Excursión, $500 a year, up to 500; lifetime, $1000 once, up to 1000), all with a fair-use policy. The free plan is hosting it yourself.
 
 It started as **ULL360**, commissioned by Universidad de La Laguna, and is now an independent project any organisation can use. The interface ships in Spanish and English; the documentation is in Spanish.
 
