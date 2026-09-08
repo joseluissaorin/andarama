@@ -6,7 +6,7 @@
     <title>andarama | ¡anda! tours 360 open source</title>
     <meta
       name="description"
-      content="¡anda! andarama me deja andar por panoramas. Crea, publica y comparte recorridos virtuales 360 con un editor visual, visor WebGL con realidad virtual y exportación abierta. Código abierto (EUPL-1.2)."
+      content="¡anda! andarama me deja andar por panoramas. Crea, publica y comparte recorridos virtuales 360 con un editor visual, visor WebGL con realidad virtual, quiz, LTI, SCORM y exportación abierta. Código abierto (EUPL-1.2): gratis en tu servidor, alojado desde 2 $ al mes."
     />
     <link rel="icon" type="image/svg+xml" href="/studio/logo-andarama.svg" />
     <link rel="canonical" href="https://andarama.com/" />
@@ -41,6 +41,10 @@
         <span>andarama</span>
       </a>
       <nav class="cabecera__nav" aria-label="Principal">
+        <a href="#editor">editor</a>
+        <a href="#visor">visor</a>
+        <a href="#gafas">gafas</a>
+        <a href="#docencia">docencia</a>
         <a href="#precios">precios</a>
         <a href="https://docs.andarama.com">documentación</a>
         <a class="btn btn--chico" href="https://app.andarama.com">Entrar al Studio</a>
@@ -78,7 +82,7 @@
         <h2>Anda por uno de verdad</h2>
         <p>
           Esto no es un vídeo: es un recorrido publicado con Andarama. Arrastra para mirar,
-          pulsa las flechas para andar.
+          pulsa las flechas para andar. Prueba el menú de proyecciones y el botón de gafas.
         </p>
         <div class="demo__marco">
           <iframe
@@ -94,40 +98,353 @@
         </p>
       </section>
 
-      <!-- La retícula estricta: seis cosas, contadas sin humo -->
-      <section class="rasgos">
-        <h2>Lo que hay dentro</h2>
+      <!-- Cuatro pasos: lo que tarda en entenderse el producto -->
+      <section class="pasos">
+        <h2>Un recorrido en cuatro pasos</h2>
+        <ol class="pasos__lista">
+          <li>
+            <span class="pasos__num">1</span>
+            <h3>Sube las fotos</h3>
+            <p>
+              Desde cualquier cámara 360 o desde el móvil. El importador lee un lote entero, ordena por la
+              numeración de la cámara, renombra por patrón y trocea los panoramas en tu propio navegador,
+              hasta 32K, sin esperar a ningún servidor.
+            </p>
+          </li>
+          <li>
+            <span class="pasos__num">2</span>
+            <h3>Conéctalas</h3>
+            <p>
+              Arrastra una escena sobre otra y ya hay un paso, con su vuelta. En el grafo cada flecha
+              <em>es</em> un hotspot de navegación: no hay un dato paralelo que se desincronice.
+            </p>
+          </li>
+          <li>
+            <span class="pasos__num">3</span>
+            <h3>Cuéntalo</h3>
+            <p>
+              Textos, fotos, vídeos, audio, PDF, modelos 3D, preguntas, formularios, planos de planta,
+              narración con audio espacial y traducciones. Diecisiete tipos de hotspot, todos accionables
+              también dentro de las gafas.
+            </p>
+          </li>
+          <li>
+            <span class="pasos__num">4</span>
+            <h3>Publícalo</h3>
+            <p>
+              Un enlace, un iframe, un dominio propio o un ZIP que funciona en cualquier hosting. En modo
+              quiosco para un televisor, en SCORM para Moodle, en PWA para verlo sin conexión.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- El editor: captura grande y el argumento de las llegadas por camino -->
+      <section class="bloque" id="editor">
+        <div class="bloque__texto">
+          <p class="susurro">el editor</p>
+          <h2>Se edita mirando, no rellenando</h2>
+          <p>
+            La vista previa es el visor de verdad en modo edición: lo que ves es lo que se publica. Se pulsa
+            sobre la foto para colocar un hotspot, se arrastra para moverlo, se dibuja un polígono vértice a
+            vértice.
+          </p>
+          <p>
+            La orientación con la que se entra en una sala <strong>no es de la sala, es del camino</strong>:
+            entrar en el salón desde el pasillo y desde la cocina son dos llegadas distintas, y cada una guarda
+            su vista. El panel «Cómo se llega aquí» las reúne todas donde se pueden juzgar: en la escena de
+            destino.
+          </p>
+          <ul class="tics">
+            <li>Deshacer y rehacer sin límite, guardado automático con aviso si algo no llega al servidor</li>
+            <li>Historial de versiones con diferencias por escena y hotspot, y restauración</li>
+            <li>Paleta de comandos, atajos de teclado y panel de propiedades con pestañas</li>
+            <li>Presencia y bloqueo suave por escena cuando editáis varios, comentarios anclados con hilos</li>
+            <li>Traducciones lado a lado con porcentaje de completitud, XLIFF y CSV</li>
+          </ul>
+        </div>
+        <figure class="bloque__figura">
+          <img src="/landing/editor.jpg" alt="El editor de Andarama con una escena de la catedral de Geisenheim, la lista de escenas a la izquierda y el panel de llegadas a la derecha" width="1440" height="900" loading="lazy" />
+        </figure>
+      </section>
+
+      <section class="bloque bloque--invertido">
+        <div class="bloque__texto">
+          <p class="susurro">el grafo</p>
+          <h2>El plano del recorrido, dibujado</h2>
+          <p>
+            Un lienzo con miniaturas, puertos, marquesina, minimapa y auto-orden. Se conecta arrastrando desde
+            el borde del nodo y la vuelta se crea de una vez. Avisa de los pasos sin destino, sin vuelta, sin
+            colocar y de las escenas a las que no se llega.
+          </p>
+          <p>
+            En modo Autopilot el mismo lienzo dibuja los recorridos guiados: paradas con permanencia, entrada
+            por el paso que une las dos escenas y giro hacia la salida antes de cruzar. Es lo que reproduce el
+            quiosco y el botón de visita automática.
+          </p>
+        </div>
+        <figure class="bloque__figura">
+          <img src="/landing/grafo.png" alt="El grafo del recorrido con las escenas agrupadas por áreas y las conexiones dibujadas como flechas" width="1440" height="900" loading="lazy" />
+        </figure>
+      </section>
+
+      <section class="bloque">
+        <div class="bloque__texto">
+          <p class="susurro">el tablero y la biblioteca</p>
+          <h2>Todo a mano, como en un escritorio</h2>
+          <p>
+            Carpetas, etiquetas, plantillas, papelera de treinta días y buscador. La portada de cada tour es el
+            panorama de su escena inicial. Duplicar, renombrar, compartir con un compañero con su rol.
+          </p>
+          <p>
+            La biblioteca enseña un <em>little planet</em> al pasar el ratón por cualquier panorama, calculado
+            en local sin pedir nada a la red, y el doble clic abre la foto en 360 para comprobarla antes de
+            usarla. Un medio, una selección o una carpeta entera se arrastran al grafo y salen escenas.
+          </p>
+          <ul class="tics">
+            <li>Subida directa multiparte y reanudable, sin duplicados gracias al hash del contenido</li>
+            <li>Lectura de metadatos GPano y EXIF con GPS, nivelado y ajuste de nadir sin destruir el original</li>
+            <li>Valores por defecto en cascada: instancia, organización, usuario, plantilla y tour</li>
+          </ul>
+        </div>
+        <figure class="bloque__figura">
+          <img src="/landing/proyectos.png" alt="El tablero de proyectos de Andarama con las portadas de cuatro recorridos" width="1440" height="790" loading="lazy" />
+        </figure>
+      </section>
+
+      <!-- Los diecisiete: la retícula estricta -->
+      <section class="hotspots">
+        <h2>Diecisiete maneras de tocar la foto</h2>
+        <p>
+          Cada hotspot lleva posición, icono, etiqueta, escala por distancia y condiciones (idioma, variables,
+          instante del vídeo). Y todos aparecen en las gafas como pictogramas que se tocan con la mano.
+        </p>
+        <ul class="hotspots__malla">
+          <li><b>Navegación</b> Paso a otra escena, con flecha de suelo y orientación de llegada.</li>
+          <li><b>Texto</b> Markdown con barra de formato, título y tamaño de letra.</li>
+          <li><b>Imagen</b> Con zoom profundo por teselas y descarga.</li>
+          <li><b>Galería</b> Varias imágenes con pies y navegación.</li>
+          <li><b>Vídeo</b> En ventana o proyectado sobre una pared con perspectiva.</li>
+          <li><b>YouTube y Vimeo</b> Pegando la dirección; sin cookies hasta que se pulsa.</li>
+          <li><b>Audio</b> Reproductor o fuente espacial que suena de donde está.</li>
+          <li><b>PDF</b> Paginado, con zoom y descarga.</li>
+          <li><b>Modelo 3D</b> glTF, OBJ y STL, con realidad aumentada en el móvil.</li>
+          <li><b>Web</b> Una página o un código de inserción (Sketchfab, Genially, H5P…).</li>
+          <li><b>Formulario</b> Campos completos, respuestas en Andarama, webhook y correo.</li>
+          <li><b>Comparador</b> Dos imágenes o dos panoramas enteros, sincronizados.</li>
+          <li><b>Quiz</b> Única, múltiple o verdadero-falso, con puntos, compuerta e intentos.</li>
+          <li><b>Polígono</b> Una zona con forma libre que resalta y actúa.</li>
+          <li><b>Etiqueta</b> Un rótulo anclado, para nombrar lo que se ve.</li>
+          <li><b>Enlace</b> Dirección web, teléfono o correo.</li>
+          <li><b>Tesoro y estado</b> Objetos que se coleccionan y contadores que abren puertas.</li>
+        </ul>
+      </section>
+
+      <!-- El visor -->
+      <section class="bloque bloque--invertido" id="visor">
+        <div class="bloque__texto">
+          <p class="susurro">el visor</p>
+          <h2>Cristal oscuro sobre la foto, y nada que la tape</h2>
+          <p>
+            Multirresolución con teselado propio hasta 32K, panoramas parciales, cubemaps, estéreo y planos
+            gigapíxel. Vídeo 360 mono y estéreo (MP4, WebM, HLS) con hotspots por instante. Audio ambiente
+            con fundido, narración, música con atenuación y audio espacial que gira con la cabeza.
+          </p>
+          <ul class="tics">
+            <li>Proyecciones little planet, ojo de pez, Panini y arquitectónica, con los hotspots en su sitio</li>
+            <li>Brújula con norte real, plano de planta con radar multiplanta y mapa sobre OpenStreetMap</li>
+            <li>Ratón, táctil, teclado completo, mando y giroscopio con retículo de mirada</li>
+            <li>Temas claro y oscuro, color, tipografía y CSS propio; pantallas de bienvenida y final</li>
+            <li>Enlaces profundos a escena, orientación e idioma; menú de escenas con búsqueda</li>
+            <li>Ciento dieciséis kilobytes comprimidos con el motor de realidad virtual incluido</li>
+          </ul>
+        </div>
+        <figure class="bloque__figura">
+          <img src="/landing/visor.jpg" alt="El visor de Andarama enseñando el interior de una catedral, con el dique de controles a la derecha y la tira de miniaturas abajo" width="1440" height="900" loading="lazy" />
+        </figure>
+      </section>
+
+      <!-- Gafas: la caja naranja, como el nombre -->
+      <section class="gafas" id="gafas">
+        <div class="gafas__caja">
+          <p class="susurro">realidad virtual</p>
+          <h2>Se abre la dirección en las gafas y ya</h2>
+          <div class="gafas__cols">
+            <div>
+              <h3>Con gafas</h3>
+              <p>
+                WebXR de verdad: las dos vistas se dibujan a la vez, las manos con sus veinticinco
+                articulaciones, la pinza de pulgar e índice, el toque directo sobre los paneles y los mandos
+                con rayo. Manos y mandos conviven en la misma sesión.
+              </p>
+            </div>
+            <div>
+              <h3>Con cartón</h3>
+              <p>
+                Cualquier móvil sin WebXR: pantalla partida, orientación por giroscopio con permiso de iOS,
+                selección por mirada con anillo de permanencia y el botón físico de las gafas de cartón.
+              </p>
+            </div>
+            <div>
+              <h3>Sin manos</h3>
+              <p>
+                Con giroscopio aparece un retículo que abre lo que se mira. Los paneles inmersivos se dibujan
+                dentro de la sesión: texto, imagen, galería, vídeo con transporte, audio con transcripción,
+                quiz puntuable y comparador con divisor.
+              </p>
+            </div>
+          </div>
+          <p class="susurro">lo exportado conserva la realidad virtual: el motor es autocontenido y el paquete trae las condiciones de alojamiento</p>
+        </div>
+      </section>
+
+      <!-- Docencia -->
+      <section class="docencia" id="docencia">
+        <h2>Para enseñar, para evaluar, para dejar constancia</h2>
+        <p>Nació en la Universidad de La Laguna y se le nota: lo que pide un aula viene de serie.</p>
         <div class="rasgos__malla">
           <article>
-            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
-            <h3>Editor visual</h3>
-            <p>Escenas, hotspots y un grafo donde cada flecha es un paso del recorrido. Sin escribir una línea de código.</p>
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+            <h3>Quiz con nota</h3>
+            <p>Preguntas repartidas por el tour, puntuación, mínimo para aprobar, aleatorización, intentos, informe final y certificado PDF con el nombre del alumno.</p>
           </article>
           <article>
-            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><ellipse cx="12" cy="12" rx="9" ry="3.5" /></svg>
-            <h3>Visor 360 propio</h3>
-            <p>WebGL multirresolución hasta 32K, vídeo 360, audio espacial, planos de planta y 17 tipos de hotspot.</p>
-          </article>
-          <article>
-            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5C3 7 5 5.5 7.5 5.5h9C19 5.5 21 7 21 9.5v4c0 2.5-2 4-4.5 4h-1L12 15l-3.5 2.5h-1C5 17.5 3 16 3 13.5Z" /><circle cx="8.5" cy="11" r="1.6" /><circle cx="15.5" cy="11" r="1.6" /></svg>
-            <h3>Realidad virtual</h3>
-            <p>WebXR con manos y mandos en cualquier gafa, y modo cartón con la mirada en cualquier móvil.</p>
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9L9.5 8Z" /></svg>
+            <h3>Búsqueda del tesoro</h3>
+            <p>Objetos escondidos por las escenas, progreso visible y variables de estado que abren puertas cuando se han encontrado todos.</p>
           </article>
           <article>
             <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10" /><path d="M2 17h20v2H2Z" /></svg>
-            <h3>Para enseñar</h3>
-            <p>Quiz con certificado, búsqueda del tesoro, LTI 1.3 con notas a Moodle y exportación SCORM.</p>
+            <h3>Moodle y compañía</h3>
+            <p>LTI 1.3 Advantage: el tour se inserta desde el propio Moodle, con selector de contenido, y devuelve la nota al libro de calificaciones. Y SCORM 1.2 y 2004 para cualquier otro campus.</p>
           </article>
           <article>
-            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M4 19h16" /></svg>
-            <h3>Exportación abierta</h3>
-            <p>Un ZIP autocontenido que funciona en cualquier hosting, HTML único, kiosko y PWA sin conexión.</p>
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
+            <h3>Visitas guiadas en vivo</h3>
+            <p>Una sala con código: el guía mueve la escena y la vista de todos, señala con el puntero, chatea; cada asistente puede soltarse y volver a sincronizar.</p>
           </article>
           <article>
-            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a4.5 4.5 0 1 1 .5-8.97A6 6 0 0 1 19 10.5 3.75 3.75 0 0 1 18.25 18Z" /></svg>
-            <h3>Tu nube o la de nadie</h3>
-            <p>Se despliega en Cloudflare con un comando, o en tu propio servidor con Docker y SQLite.</p>
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4Z" /><path d="M8 9h8M8 13h5" /></svg>
+            <h3>Formularios</h3>
+            <p>Inscripción, encuesta o contacto dentro del propio recorrido. Las respuestas se guardan y se descargan en CSV, o se reenvían a un webhook.</p>
           </article>
+          <article>
+            <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18" /><path d="M6 16V9M10 16V5M14 16v-6M18 16v-3" /></svg>
+            <h3>Analítica sin cookies</h3>
+            <p>Visitas, embudo de escenas, hotspots más usados, tiempo por escena y mapa de calor de hacia dónde mira la gente. Sin rastrear a nadie: cumple el RGPD de fábrica.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Publicar -->
+      <section class="publicar">
+        <h2>Publicar, compartir, exportar</h2>
+        <div class="publicar__cols">
+          <div>
+            <h3>Un enlace</h3>
+            <ul class="tics">
+              <li>Público, no listado, con contraseña, solo para tu organización o solo en tus dominios</li>
+              <li>Publicación programada y caducidad</li>
+              <li>Dominio propio por CNAME: el tour en la raíz de tu web</li>
+              <li>Tarjeta social con la proyección real de la escena, título y texto traducibles</li>
+              <li>Abre el recorrido normal o el modo quiosco para un televisor de vestíbulo</li>
+              <li>Código QR listo para imprimir</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Dentro de otra web</h3>
+            <ul class="tics">
+              <li>Un iframe o el componente <code>&lt;anda-tour&gt;</code> con una línea de script</li>
+              <li>API por postMessage: ir a una escena, girar la vista, cambiar de idioma, escuchar eventos</li>
+              <li>Sitemap, robots y versión en texto plano pre-renderizada para los buscadores</li>
+              <li>Webhooks al publicar y API REST documentada con OpenAPI, con tokens por ámbito</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Sin Andarama detrás</h3>
+            <ul class="tics">
+              <li>ZIP estático autocontenido: funciona en cualquier hosting, con rutas relativas</li>
+              <li>HTML único para abrir desde un pendrive</li>
+              <li>PWA con service worker para verlo sin conexión</li>
+              <li>SCORM 1.2 y 2004 con informe de finalización y nota</li>
+              <li>Quiosco en bucle, con liberación al tocar y vuelta sola</li>
+              <li>Se exporta desde el navegador, con idiomas, resolución y descargas a elegir</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Arquitectura y confianza -->
+      <section class="nube">
+        <h2>Tu nube o la de nadie</h2>
+        <p>
+          Ningún módulo de Andarama habla directamente con Cloudflare: todo pasa por una capa de adaptadores.
+          Por eso el self-host no es una versión recortada, sino <strong>la misma aplicación</strong>.
+        </p>
+        <div class="nube__cols">
+          <article>
+            <h3>Cloudflare, un comando</h3>
+            <p>
+              Workers, D1, R2, KV, Durable Objects y Analytics Engine, dentro de la capa gratuita para usos
+              pequeños y medios. <code>pnpm deploy:cloudflare</code> y en diez minutos hay instancia.
+            </p>
+          </article>
+          <article>
+            <h3>Docker, un fichero</h3>
+            <p>
+              Node y SQLite en una sola imagen, un volumen y un puerto. <code>docker compose up -d</code>.
+              Copias de seguridad con un script y el fichero portable <code>.andarama</code>.
+            </p>
+          </article>
+          <article>
+            <h3>Seguridad de serie</h3>
+            <p>
+              CSP con nonces, HSTS, sesiones seguras, CSRF de doble token, límites de peticiones, Turnstile,
+              saneado de SVG, Markdown y CSS, auditoría y permisos comprobados en el servidor en cada ruta.
+            </p>
+          </article>
+          <article>
+            <h3>Cuentas y equipos</h3>
+            <p>
+              Organizaciones con roles (administra, edita, colabora, lee), compartición por proyecto,
+              invitaciones, SSO institucional por OIDC con alta automática por dominio, verificación en dos
+              pasos y panel de administración con cuotas y uso.
+            </p>
+          </article>
+          <article>
+            <h3>Accesible e internacional</h3>
+            <p>
+              Teclado completo, foco visible, objetivos de 44 píxeles, anuncios de cambio de escena, texto
+              alternativo obligatorio con sugerencia por IA revisable, <code>prefers-reduced-motion</code>,
+              subtítulos WebVTT y traducciones por escena y por hotspot.
+            </p>
+          </article>
+          <article>
+            <h3>Código abierto</h3>
+            <p>
+              EUPL-1.2, TypeScript estricto en todo el monorepo, cientos de pruebas unitarias y de extremo a
+              extremo, integración continua con auditoría de dependencias. El formato <code>tour.json</code>
+              garantiza que lo exportado se seguirá abriendo.
+            </p>
+          </article>
+        </div>
+        <p class="susurro">
+          en andarama.com las cuentas y los pagos los lleva Clerk · los datos siguen en la base de datos de Andarama
+        </p>
+      </section>
+
+      <!-- El porqué del nombre: la sorpresa es que es literal -->
+      <section class="nombre">
+        <div class="nombre__caja">
+          <h2>¿Por qué «andarama»?</h2>
+          <p>
+            <em>Panorama</em> se inventó en 1791 para nombrar «la vista de todo». Desde entonces el
+            sufijo <em>-rama</em> sirve para las maneras de mirar: diorama, ciclorama, cinerama.
+          </p>
+          <p>
+            Nosotros solo cambiamos el verbo: un panorama se mira, un <strong>andarama se anda</strong>.
+          </p>
+          <p class="susurro">de «andar» + «-rama» · y sí, la criatura amarilla también anda</p>
         </div>
       </section>
 
@@ -202,19 +519,37 @@
         </p>
       </section>
 
-      <!-- El porqué del nombre: la sorpresa es que es literal -->
-      <section class="nombre">
-        <div class="nombre__caja">
-          <h2>¿Por qué «andarama»?</h2>
-          <p>
-            <em>Panorama</em> se inventó en 1791 para nombrar «la vista de todo». Desde entonces el
-            sufijo <em>-rama</em> sirve para las maneras de mirar: diorama, ciclorama, cinerama.
-          </p>
-          <p>
-            Nosotros solo cambiamos el verbo: un panorama se mira, un <strong>andarama se anda</strong>.
-          </p>
-          <p class="susurro">de «andar» + «-rama» · y sí, la criatura amarilla también anda</p>
-        </div>
+      <!-- Preguntas: las que llegan por correo -->
+      <section class="preguntas">
+        <h2>Lo que suele preguntarse</h2>
+        <details>
+          <summary>¿Qué cámara necesito?</summary>
+          <p>Cualquiera que saque una foto equirectangular (Insta360, Ricoh Theta, GoPro Max, Kandao…) o el móvil con una app de panoramas. También sirven cubemaps, panoramas parciales y fotos planas gigapíxel. El troceado se hace en tu navegador hasta 32K; por encima, en el servidor.</p>
+        </details>
+        <details>
+          <summary>¿Los recorridos siguen funcionando si Andarama desaparece?</summary>
+          <p>Sí. El ZIP exportado es estático y autocontenido: HTML, el visor y las teselas. Se sube a cualquier hosting, se abre desde un pendrive con el HTML único y conserva la realidad virtual. Y el formato <code>tour.json</code> está documentado y versionado.</p>
+        </details>
+        <details>
+          <summary>¿Dónde viven mis datos?</summary>
+          <p>Si te lo instalas, en tu servidor o en tu cuenta de Cloudflare. En andarama.com, en la base de datos de Andarama; Clerk solo guarda la cuenta y el cobro. La analítica de los visitantes no usa cookies ni guarda direcciones IP.</p>
+        </details>
+        <details>
+          <summary>¿Funciona con Moodle?</summary>
+          <p>Con LTI 1.3: se registra Andarama como herramienta externa, se elige el tour desde el propio Moodle y la nota del quiz vuelve al libro de calificaciones. Para otros campus, el paquete SCORM 1.2 o 2004.</p>
+        </details>
+        <details>
+          <summary>¿Puedo trabajar con más gente en el mismo tour?</summary>
+          <p>Sí. Organizaciones con roles, compartición por proyecto, presencia y bloqueo suave por escena para no pisaros, comentarios anclados en la foto e historial de versiones para volver atrás.</p>
+        </details>
+        <details>
+          <summary>¿Qué gafas sirven?</summary>
+          <p>Cualquiera con navegador WebXR (Meta Quest, Pico, Vision Pro con Safari, PC con casco). Se abre la dirección del tour desde el navegador de las gafas y se pulsa el botón de realidad virtual. Sin gafas, el modo cartón funciona en cualquier móvil.</p>
+        </details>
+        <details>
+          <summary>¿Qué significa «uso razonable»?</summary>
+          <p>Que los planes están pensados para una persona o un equipo pequeño. Si el uso deja de parecerse a eso, hablamos antes de cortar nada. Y si necesitas algo sin cuotas, la instalación propia es gratis y es el mismo programa.</p>
+        </details>
       </section>
     </main>
 
@@ -226,7 +561,8 @@
       <p class="susurro">
         código abierto bajo EUPL-1.2 · hecho a mano por
         <a href="https://joseluissaorin.com">José Luis Saorín</a> · nació como ULL360 en la
-        Universidad de La Laguna · el repositorio se publica en GitHub próximamente
+        Universidad de La Laguna · el código está en
+        <a href="https://github.com/joseluissaorin/andarama">GitHub</a>
       </p>
       <p class="susurro"><a href="https://app.andarama.com">app.andarama.com</a> · <a href="https://docs.andarama.com">docs.andarama.com</a></p>
     </footer>

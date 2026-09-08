@@ -86,7 +86,7 @@ body {
   letter-spacing: -0.01em;
 }
 .marca img { width: 48px; height: 48px; border-radius: 12px; }
-.cabecera__nav { display: flex; align-items: center; gap: 28px; }
+.cabecera__nav { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; justify-content: flex-end; }
 .cabecera__nav > a:not(.btn) {
   font-family: "Space Mono", monospace;
   font-size: 13px;
@@ -96,7 +96,7 @@ body {
 }
 .cabecera__nav > a:not(.btn):hover { border-bottom-color: var(--naranja); }
 /* En pantallas estrechas la documentación ya espera en el pie: que la marca respire */
-@media (max-width: 560px) {
+@media (max-width: 760px) {
   .cabecera__nav > a:not(.btn) { display: none; }
 }
 
@@ -332,6 +332,265 @@ main h2 {
 .precio--casa ul, .precio--casa .precio__cuando { color: var(--tinta); }
 .precio--vida { border-style: dashed; }
 .precios .susurro { margin-top: 18px; max-width: 760px; }
+
+/* ---------- pasos ---------- */
+.pasos {
+  max-width: 1080px;
+  margin: 100px auto 0;
+  padding: 0 24px;
+}
+.pasos__lista {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 18px;
+  counter-reset: paso;
+}
+.pasos__lista li {
+  position: relative;
+  background: var(--papel-2);
+  border: 2px solid var(--borde);
+  border-radius: 18px;
+  padding: 24px 22px 20px;
+}
+.pasos__lista li:hover { border-color: var(--ambar); }
+.pasos__num {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--amarillo);
+  color: var(--tinta);
+  font-weight: 800;
+  font-size: 20px;
+  box-shadow: 0 2px 0 var(--naranja-tinta);
+  transform: rotate(-4deg);
+}
+.pasos__lista h3 { margin: 14px 0 6px; font-size: 20px; }
+.pasos__lista p { margin: 0; font-size: 14.5px; color: var(--tinta-suave); }
+.pasos__lista em { font-style: italic; color: var(--tinta); }
+
+/* ---------- bloques con captura ---------- */
+.bloque {
+  max-width: 1120px;
+  margin: 110px auto 0;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: minmax(280px, 5fr) minmax(300px, 7fr);
+  gap: 40px;
+  align-items: center;
+}
+.bloque--invertido .bloque__texto { order: 2; }
+.bloque--invertido .bloque__figura { order: 1; }
+.bloque__texto > .susurro { margin: 0 0 8px; }
+.bloque__texto p { color: var(--tinta-suave); font-size: 16px; margin: 10px 0 0; }
+.bloque__texto p strong { color: var(--tinta); }
+.bloque__texto p em { font-style: italic; }
+.bloque__figura {
+  margin: 0;
+  border: 3px solid var(--tinta);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 10px 10px 0 var(--amarillo);
+  background: #201808;
+  transform: rotate(0.4deg);
+}
+.bloque--invertido .bloque__figura { transform: rotate(-0.4deg); box-shadow: -10px 10px 0 var(--amarillo); }
+.bloque__figura img { display: block; width: 100%; height: auto; }
+@media (max-width: 800px) {
+  .bloque { grid-template-columns: 1fr; gap: 26px; }
+  .bloque--invertido .bloque__texto { order: 1; }
+  .bloque--invertido .bloque__figura { order: 2; }
+}
+
+/* Listas con tic: las prestaciones, una por línea */
+.tics {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  font-size: 14.5px;
+  color: var(--tinta-suave);
+}
+.tics li { position: relative; padding-left: 26px; margin: 7px 0; }
+.tics li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 6px;
+  width: 12px;
+  height: 7px;
+  border-left: 2.5px solid var(--naranja-tinta);
+  border-bottom: 2.5px solid var(--naranja-tinta);
+  transform: rotate(-45deg);
+}
+.tics code, .nube code, .publicar code, .preguntas code {
+  font-family: "Space Mono", monospace;
+  font-size: 12.5px;
+  background: rgba(51, 38, 15, 0.07);
+  border-radius: 5px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+/* ---------- los diecisiete ---------- */
+.hotspots {
+  max-width: 1080px;
+  margin: 110px auto 0;
+  padding: 0 24px;
+}
+.hotspots > p { max-width: 640px; color: var(--tinta-suave); }
+.hotspots__malla {
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+  counter-reset: hotspot;
+}
+.hotspots__malla li {
+  counter-increment: hotspot;
+  background: var(--papel-2);
+  border: 2px solid var(--borde);
+  border-radius: 14px;
+  padding: 14px 16px 14px 46px;
+  font-size: 14px;
+  color: var(--tinta-suave);
+  position: relative;
+}
+.hotspots__malla li::before {
+  content: counter(hotspot, decimal-leading-zero);
+  position: absolute;
+  left: 14px;
+  top: 15px;
+  font-family: "Space Mono", monospace;
+  font-size: 11.5px;
+  color: var(--naranja-tinta);
+}
+.hotspots__malla li:hover { border-color: var(--ambar); }
+/* El diecisiete cierra la retícula a lo ancho en vez de quedarse huérfano */
+.hotspots__malla li:last-child { grid-column: 1 / -1; }
+.hotspots__malla b { display: block; color: var(--tinta); font-size: 15.5px; margin-bottom: 2px; }
+
+/* ---------- gafas: la caja amarilla ---------- */
+.gafas {
+  max-width: 1080px;
+  margin: 110px auto 0;
+  padding: 0 24px;
+}
+.gafas__caja {
+  background: var(--amarillo);
+  color: var(--tinta);
+  border-radius: 26px;
+  padding: 42px clamp(24px, 6vw, 64px);
+  transform: rotate(0.5deg);
+}
+.gafas__caja > .susurro { color: rgba(51, 38, 15, 0.7); margin: 0 0 8px; }
+.gafas__caja > .susurro:last-child { margin: 22px 0 0; }
+.gafas__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 26px;
+  margin-top: 18px;
+}
+.gafas__cols h3 { margin: 0 0 6px; font-size: 20px; }
+.gafas__cols p { margin: 0; font-size: 15px; color: rgba(51, 38, 15, 0.85); }
+
+/* ---------- docencia ---------- */
+.docencia {
+  max-width: 1080px;
+  margin: 110px auto 0;
+  padding: 0 24px;
+}
+.docencia > p { max-width: 640px; color: var(--tinta-suave); margin: 0; }
+.docencia .rasgos__malla { margin-top: 24px; }
+.docencia article {
+  background: var(--papel-2);
+  border: 2px solid var(--borde);
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+}
+.docencia article:hover { border-color: var(--ambar); }
+.docencia h3 { margin: 12px 0 6px; font-size: 19px; }
+.docencia article p { margin: 0; font-size: 14.5px; color: var(--tinta-suave); }
+
+/* ---------- publicar ---------- */
+.publicar {
+  max-width: 1080px;
+  margin: 110px auto 0;
+  padding: 0 24px;
+}
+.publicar__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.publicar__cols > div {
+  background: var(--papel-2);
+  border: 2px solid var(--borde);
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+}
+.publicar__cols h3 { margin: 0; font-size: 20px; }
+.publicar__cols .tics { margin-top: 10px; }
+
+/* ---------- nube ---------- */
+.nube {
+  max-width: 1080px;
+  margin: 110px auto 0;
+  padding: 0 24px;
+}
+.nube > p { max-width: 680px; color: var(--tinta-suave); margin: 0; }
+.nube > p strong { color: var(--tinta); }
+.nube__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.nube__cols article {
+  border-top: 3px solid var(--tinta);
+  padding-top: 14px;
+}
+.nube__cols h3 { margin: 0 0 6px; font-size: 19px; }
+.nube__cols p { margin: 0; font-size: 14.5px; color: var(--tinta-suave); }
+.nube > .susurro { margin-top: 22px; }
+
+/* ---------- preguntas ---------- */
+.preguntas {
+  max-width: 760px;
+  margin: 110px auto 0;
+  padding: 0 24px;
+}
+.preguntas details {
+  border-bottom: 2px solid var(--borde);
+  padding: 14px 0;
+}
+.preguntas summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 18px;
+  list-style: none;
+  position: relative;
+  padding-right: 34px;
+}
+.preguntas summary::-webkit-details-marker { display: none; }
+.preguntas summary::after {
+  content: "+";
+  position: absolute;
+  right: 4px;
+  top: -2px;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--naranja-tinta);
+  transition: transform 0.15s ease;
+}
+.preguntas details[open] summary::after { transform: rotate(45deg); }
+.preguntas details p { margin: 8px 0 0; color: var(--tinta-suave); font-size: 15px; }
 
 /* ---------- pie ---------- */
 .pie {
