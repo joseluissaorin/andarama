@@ -7,6 +7,8 @@ La manera más corta de tener Andarama en casa: un solo fichero que se ejecuta c
 
 ## Descargar y arrancar
 
+Los ejecutables se publican en las [releases de GitHub](https://github.com/joseluissaorin/andarama/releases), cada uno en un ZIP con su suma SHA-256 en `SHA256SUMS.txt`.
+
 | Sistema | Fichero |
 |---|---|
 | macOS con chip Apple (M1 en adelante) | `andarama-macos-arm64` |
