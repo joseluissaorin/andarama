@@ -50,13 +50,13 @@
     "build:desktop": "pnpm build:packages && pnpm --filter @andarama/docs build && pnpm --filter @andarama/studio build && bun run apps/desktop/build.ts"
   },
   "devDependencies": {
-    "@types/node": "^22.13.0",
-    "typescript": "^5.7.3",
-    "eslint": "^9.20.0",
-    "@typescript-eslint/eslint-plugin": "^8.24.0",
-    "@typescript-eslint/parser": "^8.24.0",
+    "@types/node": "^26.4.1",
+    "typescript": "^7.0.2",
+    "eslint": "^10.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.69.0",
+    "@typescript-eslint/parser": "^8.69.0",
     "prettier": "^3.5.0",
-    "vitest": "^3.0.5",
-    "@playwright/test": "^1.50.1"
+    "vitest": "^5.0.0",
+    "@playwright/test": "^1.63.0"
   }
 }
