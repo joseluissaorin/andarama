@@ -102,6 +102,14 @@ pnpm deploy:cloudflare
 
 El guion crea los recursos que falten, aplica las migraciones y deja la instancia servida en tu dominio.
 
+### Escritorio, un ejecutable
+
+Un solo fichero para macOS, Windows y Linux con el servidor, el Studio y el visor dentro: doble clic, se abre el navegador y los datos quedan en `~/Andarama`. Se compila con [Bun](https://bun.sh) desde cualquier sistema para los cinco objetivos:
+
+```bash
+pnpm build:desktop        # apps/desktop/dist/andarama-{macos-arm64,macos-x64,windows-x64,linux-x64,linux-arm64}
+```
+
 ### Docker, un fichero
 
 Una sola imagen con Node y SQLite que replica el comportamiento de Cloudflare mediante la capa de adaptadores.

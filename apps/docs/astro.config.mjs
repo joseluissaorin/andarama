@@ -59,6 +59,7 @@ export default defineConfig({
           items: [
             { label: "Cloudflare (referencia)", slug: "despliegue/cloudflare" },
             { label: "Self-host (Docker)", slug: "despliegue/docker" },
+            { label: "Ejecutable de escritorio", slug: "despliegue/escritorio" },
             { label: "Dominio propio para un tour", slug: "despliegue/dominios" },
           ],
         },

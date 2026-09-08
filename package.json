@@ -46,7 +46,8 @@
     "deploy:cloudflare": "node deploy/cloudflare/bootstrap.mjs",
     "docker:build": "docker build -f deploy/docker/Dockerfile -t andarama .",
     "docker:up": "docker compose -f deploy/docker/docker-compose.yml up -d",
-    "build:docs": "pnpm --filter @andarama/docs build"
+    "build:docs": "pnpm --filter @andarama/docs build",
+    "build:desktop": "pnpm build:packages && pnpm --filter @andarama/docs build && pnpm --filter @andarama/studio build && bun run apps/desktop/build.ts"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

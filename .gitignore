@@ -20,3 +20,4 @@ data/
 tmp/
 test-results/
 playwright-report/
+apps/desktop/dist/

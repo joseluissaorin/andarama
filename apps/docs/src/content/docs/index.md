@@ -13,6 +13,7 @@ Andarama es una plataforma web de código abierto para crear, publicar y distrib
 
 - **Cloudflare (referencia)**: toda la plataforma corre sobre Workers, D1, R2, KV, Durable Objects y Workers Analytics Engine, dentro del free tier para usos pequeños y medios. `pnpm deploy:cloudflare` y en menos de 10 minutos tienes una instancia.
 - **Self-host**: una única imagen Docker (Node.js + SQLite + sistema de ficheros). `docker compose up -d` es suficiente.
+- **Escritorio**: un solo ejecutable para macOS, Windows y Linux, sin instalar nada. Doble clic y se abre el Studio. Véase [Ejecutable de escritorio](/docs/despliegue/escritorio/).
 
 ## Capacidades principales
 

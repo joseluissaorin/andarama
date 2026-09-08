@@ -4,6 +4,12 @@
   "description": "API de Andarama: Worker Hono (Cloudflare) y servidor Node (self-host)",
   "license": "EUPL-1.2",
   "type": "module",
+  "exports": {
+    "./app": "./src/app.ts",
+    "./jobs": "./src/jobs.ts",
+    "./routes/projects": "./src/routes/projects.ts",
+    "./lib/context": "./src/lib/context.ts"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",

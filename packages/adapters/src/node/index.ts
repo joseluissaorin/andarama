@@ -22,6 +22,22 @@ export interface NodeDb {
   sqlite: import("better-sqlite3").Database;
 }
 
+/**
+ * Lo que necesitan las migraciones y el KV de un SQLite: better-sqlite3 lo
+ * cumple, y también `bun:sqlite` (el ejecutable de escritorio), que llama
+ * `filename` a lo que better-sqlite3 llama `name`.
+ */
+export interface SqliteLike {
+  prepare(sql: string): { run(...args: unknown[]): unknown; all(...args: unknown[]): unknown[]; get(...args: unknown[]): unknown };
+  exec(sql: string): unknown;
+  name?: string;
+  filename?: string;
+}
+
+function sqlitePath(sqlite: SqliteLike): string {
+  return sqlite.name ?? sqlite.filename ?? ":memory:";
+}
+
 export async function createSqliteDb(path: string): Promise<NodeDb> {
   const { default: Database } = await import("better-sqlite3");
   const { drizzle } = await import("drizzle-orm/better-sqlite3");
@@ -38,7 +54,7 @@ export async function createSqliteDb(path: string): Promise<NodeDb> {
  * Registra las aplicadas en _migrations (mismo criterio que d1 migrations).
  */
 export async function migrateSqlite(
-  sqlite: import("better-sqlite3").Database,
+  sqlite: SqliteLike,
   migrationsDir: string,
   opts: { backupPath?: string } = {},
 ): Promise<string[]> {
@@ -55,9 +71,9 @@ export async function migrateSqlite(
   const files = (await readdir(migrationsDir)).filter((f) => f.endsWith(".sql")).sort();
   const pending = files.filter((f) => !applied.has(f));
   if (pending.length === 0) return [];
-  if (opts.backupPath != null && sqlite.name !== ":memory:") {
+  if (opts.backupPath != null && sqlitePath(sqlite) !== ":memory:") {
     try {
-      await copyFile(sqlite.name, opts.backupPath);
+      await copyFile(sqlitePath(sqlite), opts.backupPath);
     } catch {
       // primera ejecucion: aun no existe el fichero
     }
@@ -74,7 +90,7 @@ export async function migrateSqlite(
 // KV sobre SQLite
 // ---------------------------------------------------------------------------
 
-export function createSqliteKv(sqlite: import("better-sqlite3").Database): KVAdapter {
+export function createSqliteKv(sqlite: SqliteLike): KVAdapter {
   sqlite
     .prepare("CREATE TABLE IF NOT EXISTS _kv (key TEXT PRIMARY KEY, value TEXT NOT NULL, expires_at INTEGER)")
     .run();
