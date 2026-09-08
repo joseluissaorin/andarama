@@ -20,6 +20,9 @@ import { adminRoutes } from "./routes/admin.js";
 import { tokenRoutes } from "./routes/tokens.js";
 import { liveRoutes } from "./routes/live.js";
 import { aiRoutes } from "./routes/ai.js";
+import { billingRoutes } from "./routes/billing.js";
+import { createClerkVerifier, type ClerkVerifier } from "./lib/clerk.js";
+import { PLANS, effectivePlan } from "./lib/plans.js";
 import { openApiSpec } from "./openapi.js";
 
 export interface CreateAppOptions {
@@ -29,6 +32,8 @@ export interface CreateAppOptions {
   createLiveRoom?: () => Promise<{ code: string; guideKey: string }>;
   /** Binding de Workers AI (opcional; sugerencia de alt-text §2.11). */
   getAi?: () => { run(model: string, input: Record<string, unknown>): Promise<unknown> } | null;
+  /** Verificador de tokens de Clerk (las pruebas inyectan uno falso). */
+  clerkVerifier?: ClerkVerifier | null;
 }
 
 /**
@@ -37,11 +42,18 @@ export interface CreateAppOptions {
  */
 export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
+  const clerkVerifier =
+    opts.clerkVerifier !== undefined
+      ? opts.clerkVerifier
+      : opts.config.clerk != null
+        ? createClerkVerifier(opts.config.clerk, opts.config.publicUrl)
+        : null;
 
   app.use("*", async (c, next) => {
     c.set("runtime", opts.runtime);
     c.set("db", opts.runtime.db as Db);
     c.set("config", opts.config);
+    c.set("clerkVerifier", clerkVerifier);
     c.set("cspNonce", newToken(12));
     await next();
     // Cabeceras de seguridad completas (§4.2)
@@ -104,10 +116,21 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/tokens", tokenRoutes());
   api.route("/live", liveRoutes(opts.createLiveRoom ?? null));
   api.route("/ai", aiRoutes(opts.getAi ?? (() => null)));
+  api.route("/billing", billingRoutes());
   api.route("/", analyticsRoutes());
   api.route("/", formRoutes());
   api.get("/openapi.json", (c) => c.json(openApiSpec(c.get("config").publicUrl)));
   api.get("/health", (c) => c.json({ ok: true, platform: opts.runtime.platform }));
+  /** Lo que el Studio necesita saber antes de tener sesión: qué puerta usa la instancia. */
+  api.get("/config", (c) => {
+    const config = c.get("config");
+    return c.json({
+      auth: config.clerk != null ? "clerk" : "local",
+      clerkPublishableKey: config.clerk?.publishableKey ?? null,
+      sso: config.oidc != null,
+      platform: opts.runtime.platform,
+    });
+  });
   api.get("/me", async (c) => {
     const auth = c.get("auth");
     if (auth == null) return c.json({ user: null });
@@ -129,8 +152,14 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
         totpEnabled: auth.user.totpSecret != null,
         ssoLinked: auth.user.idpSubject != null,
         prefs: JSON.parse(auth.user.prefsJson ?? "{}") as Record<string, unknown>,
+        clerkLinked: auth.user.clerkId != null,
       },
-      orgs: memberships.map((m) => ({ id: m.org.id, name: m.org.name, slug: m.org.slug, role: m.role })),
+      orgs: memberships.map((m) => ({ id: m.org.id, name: m.org.name, slug: m.org.slug, role: m.role, ownerId: m.org.ownerId })),
+      billing: (() => {
+        if (c.get("config").clerk == null) return { mode: "local" as const, plan: null, planName: null };
+        const plan = effectivePlan(auth.user);
+        return { mode: "clerk" as const, plan, planName: plan != null ? PLANS[plan].name : null };
+      })(),
     });
   });
 

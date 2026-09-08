@@ -104,6 +104,16 @@ async function main(): Promise<void> {
             allowedDomains: process.env.OIDC_ALLOWED_DOMAINS?.split(",").map((d) => d.trim()),
           }
         : undefined,
+    // Opcional también en Node: quien quiera Clerk en su servidor puede ponerlo
+    clerk:
+      process.env.CLERK_PUBLISHABLE_KEY != null && process.env.CLERK_SECRET_KEY != null
+        ? {
+            publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+            secretKey: process.env.CLERK_SECRET_KEY,
+            jwtKey: process.env.CLERK_JWT_KEY,
+            authorizedParties: process.env.CLERK_AUTHORIZED_PARTIES?.split(",").map((s) => s.trim()).filter((s) => s !== ""),
+          }
+        : undefined,
   };
 
   const realtime = await createRealtimeServer({

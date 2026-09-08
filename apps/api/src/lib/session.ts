@@ -5,6 +5,7 @@ import { apiTokens, sessions, users } from "@andarama/db";
 import type { AppEnv, AuthState, Db } from "./context.js";
 import { newToken, nowMs, parseJson, sha256Hex } from "./util.js";
 import { unauthorized, forbidden } from "./errors.js";
+import { resolveClerkAuth } from "./clerk.js";
 
 const SESSION_COOKIE = "u3s";
 const CSRF_COOKIE = "u3c";
@@ -72,6 +73,15 @@ export async function resolveAuth(c: Context<AppEnv>): Promise<AuthState | null>
       () => {},
     );
     return { user, session: null, tokenScopes: parseJson<string[]>(tok.scopesJson, []) };
+  }
+  // Instancia alojada: el token de sesion de Clerk viaja como Bearer y las
+  // cookies de sesion propias dejan de valer (la puerta es una sola)
+  const verifier = c.get("clerkVerifier");
+  if (verifier != null) {
+    if (bearer != null && bearer.startsWith("Bearer ")) {
+      return resolveClerkAuth(c, verifier, bearer.slice("Bearer ".length).trim());
+    }
+    return null;
   }
   const raw = getCookie(c, SESSION_COOKIE);
   if (raw == null) return null;

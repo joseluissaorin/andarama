@@ -8,6 +8,7 @@ import { newId, newToken, nowMs, parseJson, sha256Hex, slugify } from "../lib/ut
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
+import { orgQuota } from "../lib/quota.js";
 import { INHERITED_KEYS, propagateOrgDefaults, type OrgDefaults } from "../lib/defaults.js";
 
 const roleSchema = z.enum(["admin", "editor", "collaborator", "reader"]);
@@ -25,7 +26,7 @@ export function orgRoutes(): Hono<AppEnv> {
     if ((await db.select({ id: orgs.id }).from(orgs).where(eq(orgs.slug, slug)).limit(1)).length > 0) {
       slug = `${slug}-${newId(6).toLowerCase()}`;
     }
-    await db.insert(orgs).values({ id, name, slug, settingsJson: "{}", createdAt: nowMs() });
+    await db.insert(orgs).values({ id, name, slug, settingsJson: "{}", ownerId: auth.user.id, createdAt: nowMs() });
     await db.insert(orgMembers).values({ orgId: id, userId: auth.user.id, role: "admin", createdAt: nowMs() });
     await audit(c, "org.create", "org", id, { name }, id);
     return c.json({ id, name, slug }, 201);
@@ -146,11 +147,15 @@ export function orgRoutes(): Hono<AppEnv> {
       .select({ total: sql<number>`count(*)` })
       .from(projects)
       .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt)));
+    const quota = await orgQuota(db, c.get("config"), org);
     return c.json({
-      quotaBytes: org.quotaBytes,
+      quotaBytes: quota.quotaBytes,
       usedBytes: Number(bytesRow[0]?.total ?? 0),
-      quotaTours: org.quotaTours,
+      quotaTours: quota.quotaTours,
       usedTours: Number(projectsRow[0]?.total ?? 0),
+      plan: quota.plan,
+      fromPlan: quota.fromPlan,
+      ownerId: quota.ownerId,
     });
   });
 

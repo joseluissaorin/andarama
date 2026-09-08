@@ -30,6 +30,11 @@ export interface AppConfig {
   stream?: { accountId: string; apiToken: string; customerSubdomain?: string };
   /** Limite de subida en bytes. */
   maxUploadBytes: number;
+  /**
+   * Instancia alojada: Clerk pone la puerta (cuentas) y la caja (planes).
+   * Sin esta clave la instancia usa sus cuentas propias, que es el self-host.
+   */
+  clerk?: import("./clerk.js").ClerkConfig;
 }
 
 export type UserRow = typeof users.$inferSelect;
@@ -45,6 +50,8 @@ export interface AuthState {
   session: SessionInfo | null;
   /** Scopes si autentico via token de API. */
   tokenScopes: string[] | null;
+  /** Sesión de Clerk que presentó el token (instancia alojada). */
+  clerkSessionId?: string | null;
 }
 
 export interface AppEnv {
@@ -54,6 +61,7 @@ export interface AppEnv {
     config: AppConfig;
     auth: AuthState | null;
     cspNonce: string;
+    clerkVerifier: import("./clerk.js").ClerkVerifier | null;
   };
   Bindings: Record<string, unknown>;
 }

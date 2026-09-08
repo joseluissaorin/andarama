@@ -51,6 +51,7 @@ export default defineConfig({
           items: [
             { label: "Guía de administración", slug: "admin/guia" },
             { label: "Seguridad y RGPD", slug: "admin/seguridad" },
+            { label: "Planes, Clerk y uso razonable", slug: "admin/planes" },
           ],
         },
         {

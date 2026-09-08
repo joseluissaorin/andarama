@@ -59,6 +59,10 @@ interface Env {
   R2_SECRET_ACCESS_KEY?: string;
   STREAM_ACCOUNT_ID?: string;
   STREAM_API_TOKEN?: string;
+  CLERK_PUBLISHABLE_KEY?: string;
+  CLERK_SECRET_KEY?: string;
+  CLERK_JWT_KEY?: string;
+  CLERK_AUTHORIZED_PARTIES?: string;
 }
 
 function buildRuntime(env: Env, publicUrl: string, waitUntil: (p: Promise<unknown>) => void, uploadOrigin?: string): PlatformRuntime {
@@ -125,6 +129,16 @@ function buildConfig(env: Env, publicUrl: string): AppConfig {
     stream:
       env.STREAM_ACCOUNT_ID != null && env.STREAM_API_TOKEN != null
         ? { accountId: env.STREAM_ACCOUNT_ID, apiToken: env.STREAM_API_TOKEN }
+        : undefined,
+    // Instancia alojada: con las dos claves, Clerk pone la puerta y los planes
+    clerk:
+      env.CLERK_PUBLISHABLE_KEY != null && env.CLERK_SECRET_KEY != null
+        ? {
+            publishableKey: env.CLERK_PUBLISHABLE_KEY,
+            secretKey: env.CLERK_SECRET_KEY,
+            jwtKey: env.CLERK_JWT_KEY,
+            authorizedParties: env.CLERK_AUTHORIZED_PARTIES?.split(",").map((s) => s.trim()).filter((s) => s !== ""),
+          }
         : undefined,
   };
 }

@@ -4,7 +4,8 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { hotspots, jobs, media, mediaDerivatives, orgs, scenes } from "@andarama/db";
 import { verifyUploadUrl } from "@andarama/adapters";
 import type { AppEnv } from "../lib/context.js";
-import { badRequest, conflict, forbidden, notFound, payloadTooLarge } from "../lib/errors.js";
+import { badRequest, conflict, forbidden, notFound, payloadTooLarge, quotaExceeded } from "../lib/errors.js";
+import { orgQuota } from "../lib/quota.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
@@ -89,8 +90,13 @@ export function mediaRoutes(): Hono<AppEnv> {
       .select({ total: sql<number>`coalesce(sum(${media.bytes}), 0)` })
       .from(media)
       .where(and(eq(media.orgId, body.orgId), isNull(media.deletedAt)));
-    if (Number(used[0]?.total ?? 0) + body.bytes > org.quotaBytes) {
-      throw forbidden("La organización ha agotado su cuota de almacenamiento");
+    const quota = await orgQuota(db, c.get("config"), org);
+    if (Number(used[0]?.total ?? 0) + body.bytes > quota.quotaBytes) {
+      throw quotaExceeded("La organización ha agotado su cuota de almacenamiento", {
+        code: "quota_bytes",
+        plan: quota.plan,
+        limit: quota.quotaBytes,
+      });
     }
 
     // Deduplicacion por hash de contenido (§3.2)

@@ -4,7 +4,7 @@ import { Copy } from "lucide-react";
 import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
 import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
-import { api } from "../api";
+import { api, authHeaders } from "../api";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import { captureShareImage } from "./shareCapture";
@@ -341,7 +341,7 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
       const assetProvider: AssetProvider = {
         list: async () => assets.map((a) => a.rel),
         read: async (rel) => {
-          const res = await fetch(`/api/v1/projects/${project.id}/preview/${rel}`, { credentials: "same-origin" });
+          const res = await fetch(`/api/v1/projects/${project.id}/preview/${rel}`, { credentials: "same-origin", headers: await authHeaders() });
           if (!res.ok) throw new Error(`No se pudo leer ${rel}`);
           return new Uint8Array(await res.arrayBuffer());
         },

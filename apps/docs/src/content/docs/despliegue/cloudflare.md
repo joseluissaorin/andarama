@@ -50,3 +50,4 @@ Tras el primer despliegue: abre la URL `*.workers.dev` mostrada, registra el pri
 - **Cloudflare Stream** para vídeo: `STREAM_ACCOUNT_ID` + `STREAM_API_TOKEN`.
 - **Contenedor de procesado** (imágenes más allá de la capacidad del navegador): ejecuta el runner en cualquier máquina con acceso a la API usando la CLI `anda-tile`, o despliega la imagen Docker como Cloudflare Container asociado a la cola.
 - **Email transaccional**: `EMAIL_WEBHOOK_URL`/`EMAIL_WEBHOOK_KEY` compatibles con la API de Resend.
+- **Cuentas y planes con Clerk** (así funciona andarama.com): secretos `CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY`. Sin ellos la instancia usa sus cuentas propias, que es lo normal en un despliegue propio. Detalles en [Planes, Clerk y uso razonable](/docs/admin/planes/).

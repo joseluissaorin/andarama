@@ -25,6 +25,15 @@ const loginSchema = z.object({
 export function authRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
 
+  // Con Clerk delante, las cuentas propias no se abren: registro, contraseña,
+  // SSO y TOTP los lleva Clerk. Solo queda cerrar sesion (limpia cookies viejas).
+  r.use("*", async (c, next) => {
+    if (c.get("config").clerk != null && !c.req.path.endsWith("/auth/logout")) {
+      throw notFound("Esta instancia gestiona las cuentas con Clerk");
+    }
+    await next();
+  });
+
   r.post("/register", async (c) => {
     const runtime = c.get("runtime");
     const db = c.get("db");
@@ -76,6 +85,7 @@ export function authRoutes(): Hono<AppEnv> {
       quotaBytes: settings.defaultQuotaBytes,
       quotaTours: settings.defaultQuotaTours,
       settingsJson: "{}",
+      ownerId: userId,
       createdAt: nowMs(),
     });
     await db.insert(orgMembers).values({ orgId, userId, role: "admin", createdAt: nowMs() });
@@ -310,6 +320,7 @@ export function authRoutes(): Hono<AppEnv> {
         quotaBytes: settings.defaultQuotaBytes,
         quotaTours: settings.defaultQuotaTours,
         settingsJson: "{}",
+        ownerId: userId,
         createdAt: nowMs(),
       });
       await db.insert(orgMembers).values({ orgId, userId, role: "admin", createdAt: nowMs() });

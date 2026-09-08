@@ -1,11 +1,12 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Download, FolderKanban, Image, Languages, LogOut, Menu, RefreshCw, ShieldCheck, Share, UserCircle, Building2, X } from "lucide-react";
+import { CreditCard, Download, FolderKanban, Image, Languages, LogOut, Menu, RefreshCw, ShieldCheck, Share, UserCircle, Building2, X } from "lucide-react";
 import { Button, Dialog, Select, Tooltip } from "@andarama/ui";
 import { useAuth } from "../stores";
 import { useI18nStore, useT } from "../i18n";
 import { usePwa } from "../pwa";
 import { Criatura } from "./Criatura";
+import { getClerk, isClerkMode } from "../clerk";
 import logoAndarama from "../brand/logo-andarama.svg";
 import andaCriatura from "../brand/anda-criatura.svg";
 
@@ -13,7 +14,7 @@ import andaCriatura from "../brand/anda-criatura.svg";
 export function Shell(): React.ReactNode {
   const t = useT();
   const navigate = useNavigate();
-  const { me, loaded, refresh, currentOrgId, setOrg, logout } = useAuth();
+  const { me, loaded, bootstrap, currentOrgId, setOrg, logout } = useAuth();
   const { lang, setLang } = useI18nStore();
   const pwa = usePwa();
   const [iosHelp, setIosHelp] = useState(false);
@@ -21,14 +22,28 @@ export function Shell(): React.ReactNode {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void bootstrap();
+  }, [bootstrap]);
+
+  const clerkSinApi = loaded && me?.user == null && getClerk()?.isSignedIn() === true;
 
   useEffect(() => {
-    if (loaded && me?.user == null) {
+    if (loaded && me?.user == null && !clerkSinApi) {
       void navigate({ to: "/login" });
     }
-  }, [loaded, me, navigate]);
+  }, [loaded, me, navigate, clerkSinApi]);
+
+  if (clerkSinApi) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <Criatura size={64} />
+        <p className="max-w-md text-[14px] font-medium">{t("clerk_api_rejected")}</p>
+        <Button variant="outline" onClick={() => void logout()}>
+          {t("logout")}
+        </Button>
+      </div>
+    );
+  }
 
   if (!loaded || me?.user == null) {
     return (
@@ -103,6 +118,13 @@ export function Shell(): React.ReactNode {
           <NavItem to="/media" icon={<Image className="h-4 w-4" />} label={t("media_library")} />
           <NavItem to="/org" icon={<Building2 className="h-4 w-4" />} label={t("org_defaults")} />
           <NavItem to="/account" icon={<UserCircle className="h-4 w-4" />} label={me.user.name} />
+          {isClerkMode() && (
+            <NavItem
+              to="/plan"
+              icon={<CreditCard className="h-4 w-4" />}
+              label={me.billing?.planName != null ? `${t("plan")} · ${me.billing.planName}` : t("plan")}
+            />
+          )}
           {me.user.roleGlobal === "admin" && (
             <NavItem to="/admin" icon={<ShieldCheck className="h-4 w-4" />} label={t("admin")} />
           )}

@@ -1,5 +1,5 @@
 import { probeImage, tilePanorama, type DecodedSource } from "@andarama/tiler";
-import { api, sha256Hex } from "./api";
+import { api, authHeaders, sha256Hex } from "./api";
 import { Pool, deviceConcurrency, pooled } from "./pool";
 
 /**
@@ -328,7 +328,7 @@ async function tileAndUpload(
  */
 export async function retileMedia(mediaId: string, onProgress: (p: UploadProgress) => void): Promise<{ clientLimited: boolean }> {
   onProgress({ phase: "hashing", percent: 2 });
-  const res = await fetch(`/api/v1/media/${mediaId}/file`);
+  const res = await fetch(`/api/v1/media/${mediaId}/file`, { headers: await authHeaders() });
   if (!res.ok) throw new Error("No se pudo leer el fichero original");
   const blob = await res.blob();
   onProgress({ phase: "tiling", percent: 20 });

@@ -21,6 +21,7 @@ Listado de usuarios (rol global admin/user, 2FA, SSO), cuotas por organización 
 - **Email + contraseña** con verificación (si hay transporte de email configurado; sin él, alta directa).
 - **SSO institucional OIDC**: configura `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` y opcionalmente `OIDC_ALLOWED_DOMAINS` (alta JIT automática por dominio). Para IdP solo-SAML, el patrón soportado es un puente SAML-OIDC (Keycloak o similar) delante del IdP.
 - **2FA TOTP** opcional por usuario (aplicación de autenticación).
+- **Clerk** (instancia alojada): con `CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY` la puerta la pone Clerk y los tres puntos anteriores dejan de ofrecerse. Véase [Planes, Clerk y uso razonable](/docs/admin/planes/).
 
 ## Cola de trabajos
 

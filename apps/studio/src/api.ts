@@ -12,6 +12,23 @@ export class ApiRequestError extends Error {
   }
 }
 
+/**
+ * En la instancia alojada la sesión es de Clerk y viaja como Bearer; el
+ * proveedor lo registra el puente de Clerk al arrancar. En el self-host no
+ * hay proveedor y mandan las cookies de siempre.
+ */
+let tokenProvider: (() => Promise<string | null>) | null = null;
+
+export function setAuthTokenProvider(provider: (() => Promise<string | null>) | null): void {
+  tokenProvider = provider;
+}
+
+/** Cabeceras de autenticación para un fetch a mano (descargas, previsualizaciones). */
+export async function authHeaders(): Promise<Record<string, string>> {
+  const token = tokenProvider != null ? await tokenProvider().catch(() => null) : null;
+  return token != null ? { authorization: `Bearer ${token}` } : {};
+}
+
 function csrfToken(): string {
   const m = /(?:^|;\s*)u3c=([^;]+)/.exec(document.cookie);
   return m?.[1] ?? "";
@@ -35,6 +52,8 @@ export async function api<T = unknown>(
   if (method !== "GET" && method !== "HEAD") {
     headers["x-csrf-token"] = csrfToken();
   }
+  const token = tokenProvider != null ? await tokenProvider().catch(() => null) : null;
+  if (token != null) headers.authorization = `Bearer ${token}`;
   const res = await fetch(`/api/v1${path}`, { method, headers, body, credentials: "same-origin" });
   if (!res.ok) {
     let problem: { title?: string; detail?: string; [k: string]: unknown } = {};
@@ -51,7 +70,8 @@ export async function api<T = unknown>(
 }
 
 export async function apiBlob(path: string): Promise<Blob> {
-  const res = await fetch(`/api/v1${path}`, { credentials: "same-origin" });
+  const token = tokenProvider != null ? await tokenProvider().catch(() => null) : null;
+  const res = await fetch(`/api/v1${path}`, { credentials: "same-origin", headers: token != null ? { authorization: `Bearer ${token}` } : {} });
   if (!res.ok) throw new ApiRequestError(res.status, `Error ${res.status}`);
   return res.blob();
 }

@@ -18,6 +18,8 @@ import { OrgDefaultsPage } from "./pages/OrgDefaultsPage";
 import { MediaPage } from "./pages/MediaPage";
 import { AccountPage } from "./pages/AccountPage";
 import { AdminPage } from "./pages/AdminPage";
+import { PlanPage } from "./pages/PlanPage";
+import { AndaClerkProvider, isClerkMode, loadInstanceConfig } from "./clerk";
 import { EditorPage } from "./editor/EditorPage";
 
 const queryClient = new QueryClient({
@@ -68,6 +70,12 @@ const adminRoute = createRoute({
   component: AdminPage,
 });
 
+const planRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: "/plan",
+  component: PlanPage,
+});
+
 const editorRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/p/$projectId",
@@ -99,7 +107,7 @@ const inviteRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  shellRoute.addChildren([projectsRoute, mediaRoute, accountRoute, adminRoute, orgDefaultsRoute]),
+  shellRoute.addChildren([projectsRoute, mediaRoute, accountRoute, adminRoute, orgDefaultsRoute, planRoute]),
   editorRoute,
   loginRoute,
   registerRoute,
@@ -120,10 +128,15 @@ declare module "@tanstack/react-router" {
 
 setupPwa();
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+// La instancia dice qué puerta usa antes de pintar nada: con Clerk, el
+// Studio entero vive dentro de su proveedor; sin él, como siempre.
+void loadInstanceConfig().then(() => {
+  const app = (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
     </QueryClientProvider>
-  </React.StrictMode>,
-);
+  );
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>{isClerkMode() ? <AndaClerkProvider>{app}</AndaClerkProvider> : app}</React.StrictMode>,
+  );
+});

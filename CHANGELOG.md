@@ -6,6 +6,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ### Añadido
 
+- **Cuentas y planes con Clerk en la instancia alojada.** Con `CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY` la puerta la pone Clerk (registro, contraseña, passkeys) y Clerk Billing cobra los planes Andar (2 $ al mes, 1 recorrido), Paseo (20 $ al mes, 100), Excursión (500 $ al año, 500) y De por vida (1000 $ una vez, 1000), todos con política de uso razonable. La cuota de cada organización sale del plan de quien responde de ella; el administrador puede conceder planes a mano. El plan gratuito sigue siendo instalárselo en casa: sin esas claves nada cambia. Página **Plan** en el Studio, sección de precios en la portada y migración `0007_clerk_billing`.
 - **Modo de apertura en la publicación**: al publicar se elige si el enlace abre el recorrido normal o el modo quiosco, y el otro enlace queda siempre a mano con `?kiosk=1` o `?kiosk=0`. El quiosco dejó de ser cosa exclusiva del ZIP exportado: una pantalla de vestíbulo puede apuntar a la URL de siempre.
 - Giro del icono de los hotspots (`style.icon.rotation`): deslizador, número y ocho ángulos de un toque. Gira el dibujo y no el fondo circular, que es lo que permite apuntar una flecha a un pasillo concreto.
 - Botón de salto bajo el hotspot de navegación elegido: lleva a la escena de destino aterrizando con la orientación de esa llegada.

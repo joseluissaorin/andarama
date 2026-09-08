@@ -76,6 +76,9 @@ export function adminRoutes(): Hono<AppEnv> {
         emailVerified: u.emailVerified,
         totp: u.totpSecret != null,
         sso: u.idpSubject != null,
+        clerk: u.clerkId != null,
+        plan: u.plan,
+        planOverride: u.planOverride,
         createdAt: u.createdAt,
       })),
     );
@@ -118,7 +121,14 @@ export function adminRoutes(): Hono<AppEnv> {
   r.patch("/users/:userId", async (c) => {
     const db = c.get("db");
     const userId = c.req.param("userId");
-    const body = z.object({ roleGlobal: z.enum(["admin", "user"]).optional(), name: z.string().optional() }).parse(await c.req.json());
+    const body = z
+      .object({
+        roleGlobal: z.enum(["admin", "user"]).optional(),
+        name: z.string().optional(),
+        /** Plan concedido a mano (vitalicio, cortesía); null lo retira. */
+        planOverride: z.enum(["andar", "paseo", "excursion", "vitalicio"]).nullable().optional(),
+      })
+      .parse(await c.req.json());
     const auth = requireAuth(c);
     if (userId === auth.user.id && body.roleGlobal === "user") {
       const admins = await db.select().from(users).where(eq(users.roleGlobal, "admin"));
@@ -126,7 +136,12 @@ export function adminRoutes(): Hono<AppEnv> {
     }
     await db
       .update(users)
-      .set({ ...(body.roleGlobal != null ? { roleGlobal: body.roleGlobal } : {}), ...(body.name != null ? { name: body.name } : {}), updatedAt: nowMs() })
+      .set({
+        ...(body.roleGlobal != null ? { roleGlobal: body.roleGlobal } : {}),
+        ...(body.name != null ? { name: body.name } : {}),
+        ...(body.planOverride !== undefined ? { planOverride: body.planOverride, planUpdatedAt: nowMs() } : {}),
+        updatedAt: nowMs(),
+      })
       .where(eq(users.id, userId));
     await audit(c, "admin.user_update", "user", userId, body);
     return c.json({ ok: true });
@@ -178,6 +193,7 @@ export function adminRoutes(): Hono<AppEnv> {
       slug,
       quotaBytes: body.quotaBytes ?? settings.defaultQuotaBytes ?? 5368709120,
       quotaTours: body.quotaTours ?? settings.defaultQuotaTours ?? 100,
+      ownerId: body.ownerUserId ?? null,
       createdAt: nowMs(),
     });
     if (body.ownerUserId != null) {

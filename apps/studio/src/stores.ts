@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { api } from "./api";
+import { getClerk } from "./clerk";
 
 /** Sesion y organizacion activa. */
 
@@ -12,14 +13,19 @@ export interface Me {
     emailVerified: boolean;
     totpEnabled: boolean;
     ssoLinked: boolean;
+    clerkLinked?: boolean;
   } | null;
-  orgs: { id: string; name: string; slug: string; role: string }[];
+  orgs: { id: string; name: string; slug: string; role: string; ownerId?: string | null }[];
+  /** Plan en la instancia alojada; en el self-host, mode "local". */
+  billing?: { mode: "clerk" | "local"; plan: string | null; planName: string | null };
 }
 
 interface AuthState {
   me: Me | null;
   loaded: boolean;
   currentOrgId: string | null;
+  /** Arranque del Studio: vuelve a preguntar quién soy sin dar por buena la respuesta anterior. */
+  bootstrap: () => Promise<void>;
   refresh: () => Promise<void>;
   setOrg: (orgId: string) => void;
   logout: () => Promise<void>;
@@ -29,6 +35,10 @@ export const useAuth = create<AuthState>((set, get) => ({
   me: null,
   loaded: false,
   currentOrgId: localStorage.getItem("andarama:org"),
+  bootstrap: async () => {
+    set({ loaded: false });
+    await get().refresh();
+  },
   refresh: async () => {
     try {
       const me = await api<Me>("/me");
@@ -44,6 +54,12 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ currentOrgId: orgId });
   },
   logout: async () => {
+    const clerk = getClerk();
+    if (clerk != null) {
+      set({ me: { user: null, orgs: [] }, currentOrgId: null });
+      await clerk.signOut();
+      return;
+    }
     await api("/auth/logout", { method: "POST" });
     set({ me: { user: null, orgs: [] }, currentOrgId: null });
   },

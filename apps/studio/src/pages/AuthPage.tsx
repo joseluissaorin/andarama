@@ -1,13 +1,123 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { SignIn, SignUp, useAuth as useClerkAuth } from "@clerk/react";
 import { Button, Field, Input, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { AndaLogo } from "../components/Shell";
-import { CriaturaPaseo } from "../components/Criatura";
+import { Criatura, CriaturaPaseo } from "../components/Criatura";
+import { isClerkMode, studioPrefix } from "../clerk";
 
-export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "invite" }): React.ReactNode {
+type AuthMode = "login" | "register" | "reset" | "invite";
+
+export function AuthPage({ mode }: { mode: AuthMode }): React.ReactNode {
+  return isClerkMode() ? <ClerkAuthPage mode={mode} /> : <LocalAuthPage mode={mode} />;
+}
+
+/**
+ * El marco del acceso: el panel naranja de risografía con el grito y la
+ * criatura, y a la derecha lo que toque (el formulario propio o el de Clerk).
+ */
+function MarcoAcceso({ title, children }: { title: string; children: React.ReactNode }): React.ReactNode {
+  const t = useT();
+  return (
+    <div className="flex min-h-full items-center justify-center bg-[var(--anda-bg)] p-6">
+      <div className="anda-enter flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-relieve-alto)]">
+        {/* Panel de marca: naranja plano de risografía, el grito con su
+            desregistro y la criatura paseando por su suelo */}
+        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[#ff8a00] p-10 text-[#fff8ec] md:flex">
+          <div className="flex items-center gap-3">
+            <span className="text-[24px] font-bold tracking-tight">andarama</span>
+          </div>
+          <div className="relative">
+            <h2
+              className="-rotate-2 text-[64px] font-extrabold leading-none tracking-tight text-[#33260f]"
+              style={{ textShadow: "4px 4px 0 #ffd900" }}
+            >
+              ¡anda!
+            </h2>
+            <p className="mt-4 max-w-[300px] text-[18px] font-bold leading-relaxed">
+              andarama me deja <span className="rounded-md bg-[#ffd900] px-1.5 text-[#33260f]">andar</span> por panoramas
+            </p>
+            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-[#fff8ec]/85">
+              Editor visual, publicación en un clic, realidad virtual y exportación abierta.
+            </p>
+          </div>
+          <div>
+            <CriaturaPaseo size={54} className="text-[#33260f]" />
+            <p className="mt-3 font-mono text-[11px] text-[#fff8ec]/75">código abierto (EUPL-1.2)</p>
+          </div>
+        </div>
+
+        <div className="w-full p-8 sm:p-10 md:w-[54%]">
+          <div className="mb-6 flex items-center gap-3 md:hidden">
+            <AndaLogo size={34} />
+            <div>
+              <h1 className="text-lg font-bold leading-tight">{t("app_name")}</h1>
+              <p className="text-xs text-[var(--anda-text-dim)]">¡anda! andarama me deja andar por panoramas</p>
+            </div>
+          </div>
+          <h1 className="mb-1 hidden text-[22px] font-bold tracking-tight md:block">{title}</h1>
+          <p className="mb-6 hidden text-[13.5px] text-[var(--anda-text-dim)] md:block">{t("app_name")}</p>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Acceso con Clerk (instancia alojada). Los formularios son los de Clerk;
+ * cuando dice que hay sesión, se vuelve a preguntar al servidor quién soy y
+ * se entra. La invitación a una organización se acepta nada más entrar.
+ */
+function ClerkAuthPage({ mode }: { mode: AuthMode }): React.ReactNode {
+  const t = useT();
+  const toast = useToast();
+  const navigate = useNavigate();
+  const refresh = useAuth((s) => s.refresh);
+  const { isLoaded, isSignedIn } = useClerkAuth();
+  const params = new URLSearchParams(location.search);
+  const prefix = studioPrefix();
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+    void (async () => {
+      await refresh();
+      if (mode === "invite") {
+        try {
+          await api("/orgs/invites/accept", { method: "POST", body: { token: params.get("token"), id: params.get("id") } });
+          await refresh();
+          toast.push(t("saved"), "ok");
+        } catch (err) {
+          toast.push(err instanceof ApiRequestError ? (err.detail ?? err.title) : String(err), "error");
+        }
+      }
+      await navigate({ to: "/" });
+    })();
+  }, [isLoaded, isSignedIn, mode, refresh, navigate]);
+
+  return (
+    <MarcoAcceso title={mode === "register" ? t("register") : t("welcome_back")}>
+      {isLoaded && isSignedIn ? (
+        // Con sesión, el formulario de Clerk redirigiría por su cuenta: se espera a la API
+        <div className="flex flex-col items-center gap-3 py-10">
+          <Criatura size={56} andando />
+          <p className="text-[13px] font-medium text-[var(--anda-text-dim)]">{t("loading")}</p>
+        </div>
+      ) : mode === "register" ? (
+        <SignUp routing="hash" signInUrl={`${prefix}/login`} />
+      ) : (
+        <SignIn routing="hash" signUpUrl={`${prefix}/register`} />
+      )}
+      <p className="mt-4 text-[12.5px] text-[var(--anda-text-dim)]">{t("clerk_sign_in_hint")}</p>
+    </MarcoAcceso>
+  );
+}
+
+/** Acceso con las cuentas propias de la instancia (self-host). */
+function LocalAuthPage({ mode }: { mode: AuthMode }): React.ReactNode {
   const t = useT();
   const toast = useToast();
   const navigate = useNavigate();
@@ -81,119 +191,79 @@ export function AuthPage({ mode }: { mode: "login" | "register" | "reset" | "inv
     }
   };
 
-  return (
-    <div className="flex min-h-full items-center justify-center bg-[var(--anda-bg)] p-6">
-      <div className="anda-enter flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-relieve-alto)]">
-        {/* Panel de marca: naranja plano de risografía, el grito con su
-            desregistro y la criatura paseando por su suelo */}
-        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[#ff8a00] p-10 text-[#fff8ec] md:flex">
-          <div className="flex items-center gap-3">
-            <span className="text-[24px] font-bold tracking-tight">andarama</span>
-          </div>
-          <div className="relative">
-            <h2
-              className="-rotate-2 text-[64px] font-extrabold leading-none tracking-tight text-[#33260f]"
-              style={{ textShadow: "4px 4px 0 #ffd900" }}
-            >
-              ¡anda!
-            </h2>
-            <p className="mt-4 max-w-[300px] text-[18px] font-bold leading-relaxed">
-              andarama me deja <span className="rounded-md bg-[#ffd900] px-1.5 text-[#33260f]">andar</span> por panoramas
-            </p>
-            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-[#fff8ec]/85">
-              Editor visual, publicación en un clic, realidad virtual y exportación abierta.
-            </p>
-          </div>
-          <div>
-            <CriaturaPaseo size={54} className="text-[#33260f]" />
-            <p className="mt-3 font-mono text-[11px] text-[#fff8ec]/75">código abierto (EUPL-1.2)</p>
-          </div>
-        </div>
+  const title = forgotMode ? t("forgot") : mode === "register" ? t("register") : mode === "reset" ? t("password") : t("welcome_back");
 
-        {/* Formulario */}
-        <div className="w-full p-8 sm:p-10 md:w-[54%]">
-        <div className="mb-6 flex items-center gap-3 md:hidden">
-          <AndaLogo size={34} />
-          <div>
-            <h1 className="text-lg font-bold leading-tight">{t("app_name")}</h1>
-            <p className="text-xs text-[var(--anda-text-dim)]">¡anda! andarama me deja andar por panoramas</p>
-          </div>
-        </div>
-        <h1 className="mb-1 hidden text-[22px] font-bold tracking-tight md:block">
-          {forgotMode ? t("forgot") : mode === "register" ? t("register") : mode === "reset" ? t("password") : t("welcome_back")}
-        </h1>
-        <p className="mb-6 hidden text-[13.5px] text-[var(--anda-text-dim)] md:block">{t("app_name")}</p>
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void submit();
-          }}
-        >
-          {mode === "register" && (
-            <Field label={t("name")} htmlFor="name">
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
-            </Field>
-          )}
-          {mode !== "reset" && (
-            <Field label={t("email")} htmlFor="email">
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-            </Field>
-          )}
-          {!forgotMode && (
-            <Field label={t("password")} htmlFor="password" hint={mode === "register" ? "Mínimo 10 caracteres" : undefined}>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={mode === "register" || mode === "reset" ? 10 : 1}
-                autoComplete={mode === "register" ? "new-password" : "current-password"}
-              />
-            </Field>
-          )}
-          {mode === "register" && (
-            <Field label={t("org_name")} htmlFor="orgName">
-              <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
-            </Field>
-          )}
-          {totpRequired && (
-            <Field label={t("totp_code")} htmlFor="totp">
-              <Input id="totp" inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value)} autoFocus />
-            </Field>
-          )}
-          {error != null && <p className="text-sm text-[var(--anda-danger)]">{error}</p>}
-          <Button type="submit" className="w-full" loading={busy}>
-            {forgotMode ? t("forgot") : mode === "register" ? t("register") : mode === "reset" ? t("save") : t("login")}
-          </Button>
-        </form>
-        {ssoAvailable && mode === "login" && (
-          <a
-            href="/api/v1/auth/oidc/start"
-            className="mt-3 block rounded-[var(--anda-radius)] border border-[var(--anda-border)] px-4 py-2 text-center text-sm hover:bg-[var(--anda-surface-2)]"
-          >
-            {t("sso_login")}
-          </a>
+  return (
+    <MarcoAcceso title={title}>
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit();
+        }}
+      >
+        {mode === "register" && (
+          <Field label={t("name")} htmlFor="name">
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+          </Field>
         )}
-        <div className="mt-5 flex justify-between text-[13px] text-[var(--anda-text-dim)]">
-          {mode === "login" ? (
-            <>
-              <button type="button" className="hover:underline" onClick={() => setForgotMode(!forgotMode)}>
-                {t("forgot")}
-              </button>
-              <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/register" })}>
-                {t("register")}
-              </button>
-            </>
-          ) : (
-            <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/login" })}>
-              {t("login")}
+        {mode !== "reset" && (
+          <Field label={t("email")} htmlFor="email">
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+          </Field>
+        )}
+        {!forgotMode && (
+          <Field label={t("password")} htmlFor="password" hint={mode === "register" ? "Mínimo 10 caracteres" : undefined}>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={mode === "register" || mode === "reset" ? 10 : 1}
+              autoComplete={mode === "register" ? "new-password" : "current-password"}
+            />
+          </Field>
+        )}
+        {mode === "register" && (
+          <Field label={t("org_name")} htmlFor="orgName">
+            <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+          </Field>
+        )}
+        {totpRequired && (
+          <Field label={t("totp_code")} htmlFor="totp">
+            <Input id="totp" inputMode="numeric" value={totp} onChange={(e) => setTotp(e.target.value)} autoFocus />
+          </Field>
+        )}
+        {error != null && <p className="text-sm text-[var(--anda-danger)]">{error}</p>}
+        <Button type="submit" className="w-full" loading={busy}>
+          {forgotMode ? t("forgot") : mode === "register" ? t("register") : mode === "reset" ? t("save") : t("login")}
+        </Button>
+      </form>
+      {ssoAvailable && mode === "login" && (
+        <a
+          href="/api/v1/auth/oidc/start"
+          className="mt-3 block rounded-[var(--anda-radius)] border border-[var(--anda-border)] px-4 py-2 text-center text-sm hover:bg-[var(--anda-surface-2)]"
+        >
+          {t("sso_login")}
+        </a>
+      )}
+      <div className="mt-5 flex justify-between text-[13px] text-[var(--anda-text-dim)]">
+        {mode === "login" ? (
+          <>
+            <button type="button" className="hover:underline" onClick={() => setForgotMode(!forgotMode)}>
+              {t("forgot")}
             </button>
-          )}
-        </div>
-        </div>
+            <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/register" })}>
+              {t("register")}
+            </button>
+          </>
+        ) : (
+          <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/login" })}>
+            {t("login")}
+          </button>
+        )}
       </div>
-    </div>
+    </MarcoAcceso>
   );
 }

@@ -109,4 +109,8 @@
   //   CF_ACCOUNT_ID + CF_ANALYTICS_TOKEN (opcional; consultas AE)
   //   R2_ACCESS_KEY_ID/SECRET + R2_BUCKET_NAME (opcional; presign S3 directo)
   //   STREAM_ACCOUNT_ID/API_TOKEN (opcional; Cloudflare Stream)
+  //   CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY (opcional; cuentas y planes con
+  //     Clerk, como en andarama.com; sin ellas, cuentas propias sin planes)
+  //   CLERK_JWT_KEY / CLERK_AUTHORIZED_PARTIES (opcional; verificación sin red
+  //     y orígenes admitidos)
 }

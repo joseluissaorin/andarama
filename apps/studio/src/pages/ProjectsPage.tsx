@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { littlePlanetFor } from "../media/littlePlanet";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -30,7 +30,8 @@ import {
   Spinner,
   useToast,
 } from "@andarama/ui";
-import { api } from "../api";
+import { api, ApiRequestError } from "../api";
+import { isClerkMode } from "../clerk";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { Criatura } from "../components/Criatura";
@@ -54,6 +55,8 @@ interface Usage {
   usedBytes: number;
   quotaTours: number;
   usedTours: number;
+  plan?: string | null;
+  fromPlan?: boolean;
 }
 
 export function ProjectsPage(): React.ReactNode {
@@ -176,6 +179,13 @@ export function ProjectsPage(): React.ReactNode {
       setNewTitle("");
       await navigate({ to: "/p/$projectId", params: { projectId: res.id } });
     } catch (err) {
+      // Cuota del plan agotada en la instancia alojada: se lleva a la tabla de planes
+      if (err instanceof ApiRequestError && err.extra?.code === "quota_tours" && isClerkMode()) {
+        setCreateOpen(false);
+        toast.push(`${t("quota_reached")} ${err.detail ?? ""}`.trim(), "error");
+        await navigate({ to: "/plan" });
+        return;
+      }
       toast.push(String(err instanceof Error ? err.message : err), "error");
     } finally {
       setBusy(false);
@@ -206,6 +216,11 @@ export function ProjectsPage(): React.ReactNode {
             <span>
               {usage.data.usedTours} {t("of")} {usage.data.quotaTours} {t("tours")}
             </span>
+            {usage.data.fromPlan === true && (
+              <Link to="/plan" className="ml-3 font-semibold text-[var(--anda-primary)] hover:underline">
+                {usage.data.plan == null ? t("quota_reached_plan") : t("plan")}
+              </Link>
+            )}
           </div>
         )}
         {view === "active" && (

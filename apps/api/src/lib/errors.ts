@@ -44,5 +44,8 @@ export const tooMany = (detail = "Demasiadas peticiones; inténtalo mas tarde"):
   new ApiError(429, "Límite de peticiones", detail, "https://andarama.com/errors/rate-limit");
 export const payloadTooLarge = (detail?: string): ApiError =>
   new ApiError(413, "Contenido demasiado grande", detail, "https://andarama.com/errors/too-large");
+/** Cuota agotada: el cliente sabe por `code` qué cuota y por `plan` cuál es el plan vigente. */
+export const quotaExceeded = (detail: string, extra: { code: "quota_tours" | "quota_bytes"; plan: string | null; limit: number }): ApiError =>
+  new ApiError(403, "Cuota agotada", detail, "https://andarama.com/errors/quota", extra);
 export const serverError = (detail = "Error interno"): ApiError =>
   new ApiError(500, "Error interno", detail, "https://andarama.com/errors/internal");

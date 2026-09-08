@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, eq, inArray, isNotNull, isNull, lt } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, lt } from "drizzle-orm";
 import {
   hotspots as hotspotsTable,
   projectMembers,
@@ -16,6 +16,7 @@ import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { listAccessibleProjects, projectAccess, requireOrgRole } from "../lib/authz.js";
 import { audit, getSettings } from "../lib/helpers.js";
+import { assertTourQuota } from "../lib/quota.js";
 import { resolveNewTourSettings, type OrgDefaults, type UserPrefs } from "../lib/defaults.js";
 import { compileProject } from "../compiler.js";
 
@@ -79,16 +80,10 @@ export function projectRoutes(): Hono<AppEnv> {
     await requireOrgRole(db, body.orgId, auth.user, "editor");
 
     const settings = await getSettings(db);
-    const count = await db
-      .select({ id: projects.id })
-      .from(projects)
-      .where(and(eq(projects.orgId, body.orgId), isNull(projects.deletedAt)));
-    const org = await requireOrgRole(db, body.orgId, auth.user, "editor");
-    void org;
+    // La cuota sale del plan del dueño en la instancia alojada y de la
+    // organización en el self-host; en ambos casos se comprueba aquí
+    await assertTourQuota(db, c.get("config"), body.orgId);
     const orgRow = (await db.select().from((await import("@andarama/db")).orgs).where(eq((await import("@andarama/db")).orgs.id, body.orgId)).limit(1))[0];
-    if (orgRow != null && count.length >= orgRow.quotaTours) {
-      throw forbidden(`La organización ha alcanzado su cuota de ${orgRow.quotaTours} tours`);
-    }
 
     const id = newId();
     let slug = slugify(body.title);
@@ -231,6 +226,7 @@ export function projectRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     const body = z.object({ title: z.string().min(1).max(200).optional() }).parse(await c.req.json().catch(() => ({})));
+    await assertTourQuota(db, c.get("config"), access.project.orgId);
     const id = newId();
     const title = body.title ?? `${access.project.title} (copia)`;
     let slug = slugify(title);

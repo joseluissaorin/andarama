@@ -292,6 +292,47 @@ main h2 {
 .nombre__caja strong { background: var(--amarillo); color: var(--tinta); border-radius: 6px; padding: 0 6px; font-weight: 700; }
 .nombre__caja .susurro { color: rgba(255, 248, 236, 0.75); margin-top: 18px; }
 
+/* ---------- precios ---------- */
+.precios {
+  max-width: 1080px;
+  margin: 100px auto 0;
+  padding: 0 24px;
+}
+.precios > p { max-width: 640px; color: var(--tinta-suave); }
+.precios > p strong { color: var(--tinta); }
+.precios__malla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.precio {
+  display: flex;
+  flex-direction: column;
+  background: var(--papel-2);
+  border: 2px solid var(--borde);
+  border-radius: 18px;
+  padding: 22px 20px 20px;
+}
+.precio:hover { border-color: var(--ambar); }
+.precio h3 { margin: 0; font-size: 19px; }
+.precio__cifra {
+  margin: 10px 0 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.precio__cuando { margin: 4px 0 14px; font-family: "Space Mono", monospace; font-size: 12px; color: var(--tinta-suave); }
+.precio ul { margin: 0 0 18px; padding-left: 18px; font-size: 14px; color: var(--tinta-suave); flex: 1; }
+.precio li { margin: 4px 0; }
+.precio .btn { align-self: flex-start; font-size: 14px; padding: 8px 18px; }
+/* La tarjeta gratis es la nuestra de verdad: amarilla y un pelo torcida */
+.precio--casa { background: var(--amarillo); border-color: var(--amarillo); transform: rotate(-1deg); }
+.precio--casa ul, .precio--casa .precio__cuando { color: var(--tinta); }
+.precio--vida { border-style: dashed; }
+.precios .susurro { margin-top: 18px; max-width: 760px; }
+
 /* ---------- pie ---------- */
 .pie {
   max-width: 1080px;

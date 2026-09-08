@@ -25,6 +25,7 @@ Abre `http://localhost:8788/studio/` y registra el primer usuario (será adminis
 | `OIDC_ISSUER/CLIENT_ID/CLIENT_SECRET/ALLOWED_DOMAINS` | SSO institucional (opcional) |
 | `S3_ENDPOINT/BUCKET/ACCESS_KEY_ID/SECRET_ACCESS_KEY` | Almacenamiento S3/MinIO en lugar del FS local (opcional) |
 | `TURNSTILE_SITE_KEY/SECRET` | Anti-spam en formularios (opcional) |
+| `CLERK_PUBLISHABLE_KEY/SECRET_KEY` | Cuentas y planes con Clerk, como en andarama.com (opcional; el self-host no lo necesita) |
 
 ## TLS automático
 

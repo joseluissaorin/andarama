@@ -8,6 +8,7 @@ import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
+import { assertTourQuota } from "../lib/quota.js";
 import { compileProject } from "../compiler.js";
 import { hmacSign } from "@andarama/adapters";
 
@@ -425,6 +426,7 @@ export function publishRoutes(): Hono<AppEnv> {
         translations: z.array(z.record(z.unknown())),
       })
       .parse(await c.req.json());
+    await assertTourQuota(db, c.get("config"), orgId);
     const projectId = newId();
     let slug = slugify(doc.project.title);
     const taken = await db

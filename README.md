@@ -20,7 +20,7 @@
 
 ---
 
-Andarama es una plataforma de código abierto para **crear, publicar y compartir recorridos virtuales 360**. Se suben fotos esféricas, se conectan como quien dibuja un plano y sale un recorrido que se pasea desde cualquier navegador, también con gafas de realidad virtual. Sin plugins, sin cuenta de pago y sin dejar los datos en casa ajena: corre entero en la capa gratuita de Cloudflare o en un contenedor Docker propio.
+Andarama es una plataforma de código abierto para **crear, publicar y compartir recorridos virtuales 360**. Se suben fotos esféricas, se conectan como quien dibuja un plano y sale un recorrido que se pasea desde cualquier navegador, también con gafas de realidad virtual. Sin plugins y sin dejar los datos en casa ajena: corre entero en la capa gratuita de Cloudflare o en un contenedor Docker propio, y eso es gratis. Quien prefiera no mantener nada tiene la instancia alojada de [andarama.com](https://andarama.com#precios), con planes desde 2 $ al mes.
 
 Nació como **ULL360**, un encargo de la Universidad de La Laguna, y hoy es un proyecto independiente que puede usar cualquier organización.
 
@@ -112,6 +112,19 @@ docker compose up -d
 ```
 
 Guía completa de ambos caminos en [docs.andarama.com](https://docs.andarama.com).
+
+### Lo que cuesta
+
+**El plan gratuito es montárselo en casa.** La instancia alojada de [andarama.com](https://andarama.com#precios) cobra por cuidar el servidor, con cuentas y pagos gestionados por [Clerk](https://clerk.com):
+
+| Plan | Precio | Recorridos | Medios |
+|---|---|---|---|
+| Andar | 2 $ al mes | 1 | 5 GB |
+| Paseo | 20 $ al mes | hasta 100 | 50 GB |
+| Excursión | 500 $ al año | hasta 500 | 100 GB |
+| De por vida | 1000 $, una vez | hasta 1000 | 200 GB |
+
+Todos son de proyectos limitados y con política de uso razonable. Sin `CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY` la instancia usa sus cuentas propias y no enseña planes; el detalle está en la [documentación de administración](https://docs.andarama.com/admin/planes/).
 
 ## Desarrollo
 

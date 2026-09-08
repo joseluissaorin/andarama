@@ -41,6 +41,7 @@
         <span>andarama</span>
       </a>
       <nav class="cabecera__nav" aria-label="Principal">
+        <a href="#precios">precios</a>
         <a href="https://docs.andarama.com">documentación</a>
         <a class="btn btn--chico" href="https://app.andarama.com">Entrar al Studio</a>
       </nav>
@@ -61,7 +62,7 @@
           <a class="btn" href="https://app.andarama.com">Entrar al Studio</a>
           <a class="btn btn--fantasma" href="https://docs.andarama.com">Leer la documentación</a>
         </div>
-        <p class="susurro">gratis · código abierto (EUPL-1.2) · sin cuenta de pago · tus datos en tu servidor si quieres</p>
+        <p class="susurro">código abierto (EUPL-1.2) · gratis en tu servidor · alojado aquí desde 2 $ al mes</p>
 
         <!-- Las criaturas pasan andando: la transgresión sobre la retícula -->
         <div class="paseo" aria-hidden="true">
@@ -128,6 +129,77 @@
             <p>Se despliega en Cloudflare con un comando, o en tu propio servidor con Docker y SQLite.</p>
           </article>
         </div>
+      </section>
+
+      <!-- Lo que cuesta: cinco tarjetas, y la primera es gratis porque es tuya -->
+      <section class="precios" id="precios">
+        <h2>Lo que cuesta</h2>
+        <p>
+          Andarama es de código abierto: <strong>gratis si te lo instalas</strong>. Si prefieres que lo
+          cuidemos nosotros, en andarama.com hay cuatro planes. Todos son de proyectos limitados y
+          con una política de uso razonable.
+        </p>
+        <div class="precios__malla">
+          <article class="precio precio--casa">
+            <h3>En tu casa</h3>
+            <p class="precio__cifra">0 €</p>
+            <p class="precio__cuando">para siempre</p>
+            <ul>
+              <li>Docker y SQLite en tu servidor, o la capa gratuita de Cloudflare</li>
+              <li>Sin cuotas de plan: tantos recorridos como quepan</li>
+              <li>El mismo programa, sin funciones recortadas</li>
+            </ul>
+            <a class="btn btn--fantasma" href="https://docs.andarama.com/despliegue/docker/">Instalarlo</a>
+          </article>
+          <article class="precio">
+            <h3>Andar</h3>
+            <p class="precio__cifra">2 $</p>
+            <p class="precio__cuando">al mes</p>
+            <ul>
+              <li>1 recorrido</li>
+              <li>5 GB de medios</li>
+              <li>Todo el editor, la RV y la exportación</li>
+            </ul>
+            <a class="btn" href="https://app.andarama.com/plan">Empezar</a>
+          </article>
+          <article class="precio">
+            <h3>Paseo</h3>
+            <p class="precio__cifra">20 $</p>
+            <p class="precio__cuando">al mes</p>
+            <ul>
+              <li>Hasta 100 recorridos</li>
+              <li>50 GB de medios</li>
+              <li>Todo el editor, la RV y la exportación</li>
+            </ul>
+            <a class="btn" href="https://app.andarama.com/plan">Empezar</a>
+          </article>
+          <article class="precio">
+            <h3>Excursión</h3>
+            <p class="precio__cifra">500 $</p>
+            <p class="precio__cuando">al año</p>
+            <ul>
+              <li>Hasta 500 recorridos</li>
+              <li>100 GB de medios</li>
+              <li>Todo el editor, la RV y la exportación</li>
+            </ul>
+            <a class="btn" href="https://app.andarama.com/plan">Empezar</a>
+          </article>
+          <article class="precio precio--vida">
+            <h3>De por vida</h3>
+            <p class="precio__cifra">1000 $</p>
+            <p class="precio__cuando">una sola vez</p>
+            <ul>
+              <li>Hasta 1000 recorridos</li>
+              <li>200 GB de medios</li>
+              <li>Todo el editor, la RV y la exportación</li>
+            </ul>
+            <a class="btn" href="https://app.andarama.com/plan">Quedárselo</a>
+          </article>
+        </div>
+        <p class="susurro">
+          la pasarela cobra en dólares; el banco hace el cambio · impuestos según tu país · uso razonable:
+          si el uso deja de ser el de una persona o un equipo pequeño, hablamos antes de cortar nada
+        </p>
       </section>
 
       <!-- El porqué del nombre: la sorpresa es que es literal -->

@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import { KeyRound, Plus, ShieldCheck, Trash2, Users } from "lucide-react";
 import { Badge, Button, Dialog, Field, Input, Select, useToast } from "@andarama/ui";
 import { api } from "../api";
+import { getClerk, isClerkMode } from "../clerk";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { Cabecera } from "../components/Cabecera";
@@ -85,6 +86,17 @@ export function AccountPage(): React.ReactNode {
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       <Cabecera title={me?.user?.name ?? ""} hint={me?.user?.email} />
 
+      {isClerkMode() ? (
+        <section className="anda-bloque p-5">
+          <h2 className="mb-2 flex items-center gap-2 text-[15px] font-semibold">
+            <ShieldCheck className="h-4 w-4" /> {t("clerk_account")}
+          </h2>
+          <p className="mb-3 text-[13.5px] text-[var(--anda-text-dim)]">{t("clerk_account_hint")}</p>
+          <Button variant="outline" onClick={() => getClerk()?.openUserProfile()}>
+            {t("clerk_manage_account")}
+          </Button>
+        </section>
+      ) : (
       <section className="anda-bloque p-5">
         <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold">
           <ShieldCheck className="h-4 w-4" /> {t("security")}
@@ -115,6 +127,7 @@ export function AccountPage(): React.ReactNode {
           </div>
         )}
       </section>
+      )}
 
       <section className="anda-bloque p-5">
         <div className="mb-3 flex items-center justify-between">

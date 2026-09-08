@@ -26,10 +26,21 @@ export const users = sqliteTable(
     avatar: text("avatar"),
     /** Preferencias personales: idioma del editor, valores por defecto al crear. */
     prefsJson: text("prefs_json").notNull().default("{}"),
+    /** Identificador del usuario en Clerk (instancia alojada). */
+    clerkId: text("clerk_id"),
+    /** Plan vigente según Clerk (slug), copiado del token en cada petición. */
+    plan: text("plan"),
+    /** Plan concedido al margen de Clerk (vitalicio, cortesía): manda sobre `plan`. */
+    planOverride: text("plan_override"),
+    planUpdatedAt: integer("plan_updated_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
-  (t) => [uniqueIndex("users_email_idx").on(t.email), index("users_idp_idx").on(t.idpSubject)],
+  (t) => [
+    uniqueIndex("users_email_idx").on(t.email),
+    index("users_idp_idx").on(t.idpSubject),
+    uniqueIndex("users_clerk_idx").on(t.clerkId),
+  ],
 );
 
 export const sessions = sqliteTable(
@@ -95,6 +106,8 @@ export const orgs = sqliteTable(
     quotaBytes: integer("quota_bytes").notNull().default(5368709120),
     quotaTours: integer("quota_tours").notNull().default(100),
     settingsJson: text("settings_json").notNull().default("{}"),
+    /** Quien responde de la organización: en modo alojado su plan fija la cuota. */
+    ownerId: text("owner_id"),
     createdAt: integer("created_at").notNull(),
   },
   (t) => [uniqueIndex("orgs_slug_idx").on(t.slug)],
