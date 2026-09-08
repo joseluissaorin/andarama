@@ -6,6 +6,8 @@ title: Primeros pasos
 
 Abre `/studio/` en tu instancia y pulsa **Crear cuenta**. El primer usuario registrado se convierte automáticamente en administrador de la instancia. Según la política configurada, el registro puede ser abierto, por invitación o limitado a dominios institucionales; si la instancia tiene SSO institucional (OIDC), usa **Entrar con SSO**.
 
+En [app.andarama.com](https://app.andarama.com) la cuenta la gestiona Clerk (correo con código, contraseña o passkey) y para crear recorridos hace falta un plan; en el [ejecutable de escritorio](/docs/despliegue/escritorio/) y en cualquier instalación propia no hay planes ni cuotas de plan.
+
 Cada cuenta pertenece a una o varias **organizaciones**. Los roles por organización son:
 
 | Rol | Puede |

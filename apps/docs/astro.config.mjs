@@ -74,6 +74,7 @@ export default defineConfig({
         },
         { label: "Tutoriales", items: [{ label: "Tu primer tour", slug: "tutoriales/primer-tour" }] },
         { label: "Contribuir", slug: "contribuir" },
+        { label: "Código en GitHub", link: "https://github.com/joseluissaorin/andarama", attrs: { target: "_blank", rel: "noreferrer" } },
       ],
     }),
   ],

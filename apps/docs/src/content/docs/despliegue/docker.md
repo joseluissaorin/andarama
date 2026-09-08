@@ -2,12 +2,14 @@
 title: Self-host con Docker
 ---
 
-Una única imagen (Node.js + SQLite + sistema de ficheros), un volumen (`/data`), un puerto (8788). Requisitos mínimos: **1 vCPU / 1 GB RAM**.
+Una única imagen (Node.js + SQLite + sistema de ficheros), un volumen (`/data`), un puerto (8788). Requisitos mínimos: **1 vCPU / 1 GB RAM**. El `docker-compose.yml` y el `Dockerfile` están en [`deploy/docker`](https://github.com/joseluissaorin/andarama/tree/main/deploy/docker) del repositorio.
+
+Para un solo ordenador, sin Docker, existe el [ejecutable de escritorio](/docs/despliegue/escritorio/): mismos datos, mismo esquema.
 
 ## Arranque
 
 ```bash
-curl -O https://raw.githubusercontent.com/ull/andarama/main/deploy/docker/docker-compose.yml
+curl -O https://raw.githubusercontent.com/joseluissaorin/andarama/main/deploy/docker/docker-compose.yml
 echo "APP_SECRET=$(openssl rand -hex 32)" > .env
 echo "PUBLIC_URL=http://localhost:8788" >> .env
 docker compose up -d

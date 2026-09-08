@@ -102,6 +102,14 @@ pnpm deploy:cloudflare
 
 The script creates any missing resources, applies the migrations and leaves the instance served on your domain.
 
+### Desktop, one executable
+
+A single file for macOS, Windows and Linux with the server, the Studio and the viewer inside: double-click, the browser opens and the data lives in `~/Andarama`. Built with [Bun](https://bun.sh) from any system for the five targets:
+
+```bash
+pnpm build:desktop        # apps/desktop/dist/andarama-{macos-arm64,macos-x64,windows-x64,linux-x64,linux-arm64}
+```
+
 ### Docker, one file
 
 A single image with Node and SQLite that mirrors the Cloudflare behaviour through the adapter layer.

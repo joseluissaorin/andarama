@@ -3,17 +3,20 @@ title: Introducción
 description: Recorridos virtuales 360 de código abierto. ¡anda! andarama me deja andar por panoramas
 ---
 
-Andarama es una plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360 interactivos. Se compone de tres piezas:
+Andarama es una plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360 interactivos. El código vive en [GitHub](https://github.com/joseluissaorin/andarama) bajo licencia EUPL-1.2. Se compone de tres piezas:
 
 1. **Andarama Studio**: editor visual en el navegador para construir tours sin conocimientos técnicos.
 2. **Andarama Viewer**: motor de visualización WebGL embebible y exportable como paquete HTML estático autocontenido.
 3. **Andarama API**: backend ligero (proyectos, usuarios, medios, procesado, analítica, colaboración en tiempo real).
 
-## Dos formas de desplegar
+## Cuatro formas de tenerlo
 
 - **Cloudflare (referencia)**: toda la plataforma corre sobre Workers, D1, R2, KV, Durable Objects y Workers Analytics Engine, dentro del free tier para usos pequeños y medios. `pnpm deploy:cloudflare` y en menos de 10 minutos tienes una instancia.
 - **Self-host**: una única imagen Docker (Node.js + SQLite + sistema de ficheros). `docker compose up -d` es suficiente.
 - **Escritorio**: un solo ejecutable para macOS, Windows y Linux, sin instalar nada. Doble clic y se abre el Studio. Véase [Ejecutable de escritorio](/docs/despliegue/escritorio/).
+- **Alojado en andarama.com**: sin mantener nada, con cuentas y pagos gestionados por Clerk y planes desde 2 $ al mes. Véase [Planes, Clerk y uso razonable](/docs/admin/planes/).
+
+Las tres primeras son gratis y son el mismo programa: el plan gratuito de Andarama es instalárselo en casa.
 
 ## Capacidades principales
 
@@ -32,7 +35,9 @@ Andarama es una plataforma web de código abierto para crear, publicar y distrib
 - Quiz con puntuación y certificado, búsqueda del tesoro, **LTI 1.3** con devolución de calificaciones a Moodle y export **SCORM 1.2/2004**.
 - Analítica propia sin cookies (RGPD): embudo de escenas, hotspots más usados y mapa de calor de orientaciones.
 - Export ZIP autocontenido (también HTML único, kiosko y PWA offline).
+- Modo quiosco desde el propio enlace publicado, con recorridos guiados que entran por el paso que une las escenas y esperan en cada parada.
+- Código de inserción HTML en el hotspot Web (Sketchfab, Genially, H5P…), barra Markdown en los textos, varias preguntas por quiz y comparador de escenas dentro del panel.
 
 ## Licencia
 
-Código bajo [EUPL-1.2](https://joinup.ec.europa.eu/collection/eupl). Nacido como ULL360 en la Universidad de La Laguna; hoy se llama Andarama. Medios de ejemplo bajo CC BY 4.0.
+Código bajo [EUPL-1.2](https://joinup.ec.europa.eu/collection/eupl), en [github.com/joseluissaorin/andarama](https://github.com/joseluissaorin/andarama). Nacido como ULL360 en la Universidad de La Laguna; hoy se llama Andarama. Medios de ejemplo bajo CC BY 4.0. Los errores y las propuestas se abren en las [issues](https://github.com/joseluissaorin/andarama/issues); las vulnerabilidades, según [SECURITY.md](https://github.com/joseluissaorin/andarama/blob/main/SECURITY.md).

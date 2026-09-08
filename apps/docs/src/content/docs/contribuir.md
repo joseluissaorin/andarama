@@ -2,7 +2,7 @@
 title: Contribuir
 ---
 
-Andarama es código abierto bajo **EUPL-1.2** y las contribuciones son bienvenidas. La guía completa está en [CONTRIBUTING.md](https://github.com/joseluissaorin/andarama/blob/main/CONTRIBUTING.md).
+Andarama es código abierto bajo **EUPL-1.2** y las contribuciones son bienvenidas. El repositorio es [github.com/joseluissaorin/andarama](https://github.com/joseluissaorin/andarama); la guía completa está en [CONTRIBUTING.md](https://github.com/joseluissaorin/andarama/blob/main/CONTRIBUTING.md), los errores se abren en las [issues](https://github.com/joseluissaorin/andarama/issues) y las dudas en [SUPPORT.md](https://github.com/joseluissaorin/andarama/blob/main/SUPPORT.md).
 
 ## Resumen
 
@@ -15,6 +15,7 @@ pnpm dev:studio      # Studio con recarga en http://localhost:5173
 pnpm test            # unitarios (Vitest)
 pnpm test:e2e        # E2E (Playwright, incluye una sesión WebXR simulada)
 pnpm lint            # ESLint, sin avisos permitidos
+pnpm build:desktop   # ejecutables de escritorio (hace falta Bun)
 ```
 
 Para comprobar que un paquete exportado funciona en un alojamiento cualquiera:
