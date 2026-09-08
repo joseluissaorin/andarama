@@ -120,5 +120,17 @@
   "kiosk_exploring": "You are exploring on your own",
   "kiosk_resume": "Back to the tour",
   "kiosk_playing": "Playing “{name}”",
-  "kiosk_touch_hint": "Touch the screen to explore yourself"
+  "kiosk_touch_hint": "Touch the screen to explore yourself",
+  "projection_rectilinear_desc": "The normal view: like looking with your eyes.",
+  "projection_littlePlanet_desc": "The whole sphere as a tiny planet seen from above.",
+  "projection_fisheye_desc": "Curved wide angle: much more fits on screen.",
+  "projection_pannini_desc": "Wide without bending vertical lines. Ideal indoors.",
+  "projection_architectural_desc": "Keeps verticals straight when looking up or down.",
+  "quiz_gate_scene": "Answer this scene's question to continue",
+  "kiosk_ended": "The tour has finished",
+  "kiosk_replay": "Watch it again",
+  "kiosk_start": "Watch the tour",
+  "web_open_external": "Open in a new tab",
+  "web_blocked_hint": "If nothing shows here, that site does not allow being embedded in other pages.",
+  "autoplay_finished": "Tour finished"
 }

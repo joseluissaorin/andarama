@@ -62,7 +62,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
 
   const UI_TOGGLES = [
     "titleBar", "sceneMenu", "thumbnails", "compass", "loadingIndicator", "zoomControls",
-    "gyroToggle", "vr", "fullscreen", "share", "mute", "help", "langSelector", "accessibleMode",
+    "gyroToggle", "vr", "fullscreen", "share", "mute", "help", "langSelector", "accessibleMode", "autopilotButton",
   ] as const;
 
   return (
@@ -536,7 +536,8 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
 
       <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("autopilot_routes")} / {t("variables")}</h2>
-        <Field label={`${t("autopilot_routes")} (JSON)`} htmlFor="ap-json" hint='[{"id":"r1","title":"Visita","steps":[{"scene":"...","rotate":6.28,"dwell":2}],"loop":true}]'>
+        <p className="mb-3 text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("autopilot_json_hint")}</p>
+        <Field label={`${t("autopilot_routes")} (JSON)`} htmlFor="ap-json" hint='[{"id":"r1","title":"Visita","steps":[{"scene":"...","dwell":6}],"loop":false}]'>
           <Textarea
             id="ap-json"
             rows={3}

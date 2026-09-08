@@ -259,13 +259,22 @@ export function duplicateScene(draft: EditorSnapshot, sceneId: string, copySuffi
   return id;
 }
 
-/** Recorrido del autopilot guardado en los ajustes del tour. */
+/**
+ * Recorrido del autopilot guardado en los ajustes del tour.
+ *
+ * Los pasos usan los mismos nombres que lee el visor (`dwell`, segundos de
+ * permanencia): el editor guardaba `seconds`, que el visor ignoraba, y los
+ * recorridos publicados saltaban de escena sin detenerse en ninguna.
+ */
 export interface AutopilotRouteDraft {
   id: string;
   title: string;
-  steps: { scene: string; seconds?: number }[];
+  steps: { scene: string; dwell?: number }[];
   loop?: boolean;
 }
+
+/** Permanencia por defecto en cada parada (s). */
+export const DEFAULT_STEP_DWELL = 6;
 
 export function readAutopilot(settings: Record<string, unknown>): AutopilotRouteDraft[] {
   const routes = settings.autopilot;
@@ -278,7 +287,11 @@ export function readAutopilot(settings: Record<string, unknown>): AutopilotRoute
       steps: Array.isArray(r.steps)
         ? (r.steps as Record<string, unknown>[])
             .filter((s) => typeof s?.scene === "string")
-            .map((s) => ({ scene: s.scene as string, seconds: typeof s.seconds === "number" ? s.seconds : undefined }))
+            .map((s) => {
+              // `seconds` es el nombre antiguo del editor: se sigue leyendo
+              const dwell = typeof s.dwell === "number" ? s.dwell : typeof s.seconds === "number" ? s.seconds : undefined;
+              return { scene: s.scene as string, ...(dwell != null ? { dwell } : {}) };
+            })
         : [],
       loop: r.loop === true,
     }));

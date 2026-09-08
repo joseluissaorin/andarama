@@ -245,8 +245,10 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     controlsLeft.appendChild(backBtn);
   }
 
-  // Autopilot
-  if ((tour.autopilot?.length ?? 0) > 0 && options.editMode !== true) {
+  // Autopilot. El botón se puede quitar desde los ajustes del tour (hay
+  // recorridos que solo quieren verse en el quiosco).
+  const enQuiosco = options.kiosk != null && options.kiosk !== false;
+  if ((tour.autopilot?.length ?? 0) > 0 && options.editMode !== true && ui.autopilotButton !== false && !enQuiosco) {
     const apBtn = iconButton("play", t("autoplay_tour"), () => {
       if (viewer.autopilotActive()) viewer.stopAutopilot();
       else viewer.startAutopilot();
@@ -255,6 +257,12 @@ export function mountViewer(options: SkinOptions): MountedSkin {
       apBtn.setAttribute("aria-pressed", String(e.active));
       apBtn.replaceChildren(createIconSvg(e.active ? "pause" : "play", 20));
       apBtn.setAttribute("aria-label", e.active ? t("stop_autoplay") : t("autoplay_tour"));
+      // Una visita que termina sola devuelve al visitante al principio, que
+      // es donde tiene sentido volver a mirar por su cuenta
+      if (!e.active && e.reason === "finished") {
+        toast(container, t("autoplay_finished"));
+        void viewer.goTo(tour.start.scene, { view: tour.start.view, force: true, skipHistory: true });
+      }
     });
     controlsLeft.appendChild(apBtn);
   }
@@ -396,11 +404,18 @@ export function mountViewer(options: SkinOptions): MountedSkin {
       existing.remove();
       return;
     }
-    const pop = el("div", { className: "anda-menu-pop", role: "menu" });
+    const pop = el("div", { className: "anda-menu-pop anda-menu-pop--wide", role: "menu" });
     pop.style.top = `${projBtn.getBoundingClientRect().top - container.getBoundingClientRect().top}px`;
     const projections: Projection[] = ["rectilinear", "littlePlanet", "fisheye", "pannini", "architectural"];
     for (const p of projections) {
-      const b = el("button", { type: "button", role: "menuitem", text: t(`projection_${p}`), "aria-pressed": String(p === viewer.currentProjection()) });
+      // Cada proyección con una línea que dice qué es: «Panini» o
+      // «arquitectónica» no le dicen nada a quien no viene de la fotografía
+      const b = el(
+        "button",
+        { type: "button", role: "menuitem", "aria-pressed": String(p === viewer.currentProjection()) },
+        el("span", { text: t(`projection_${p}`) }),
+        el("span", { className: "anda-menu-pop__desc", text: t(`projection_${p}_desc` as never) }),
+      );
       b.addEventListener("click", () => {
         viewer.setProjection(p);
         pop.remove();
@@ -560,6 +575,16 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   viewer.on("narrationBlock", (e) => {
     if (e.blocked) toast(container, t("narration_wait"));
   });
+  // Intentar salir con algo pendiente: se dice por qué y, si es una pregunta
+  // con compuerta, se abre para que se pueda contestar
+  viewer.on("navBlocked", (e) => {
+    if (e.reason === "quiz") {
+      toast(container, t("quiz_gate_scene"));
+      if (e.hotspotId != null && !panelHost.isOpen) viewer.openHotspot(e.hotspotId);
+    } else {
+      toast(container, t("narration_wait"));
+    }
+  });
 
   // ------- Anuncio de cambio de escena (lectores de pantalla) -------
   const announcer = el("div", { "aria-live": "polite", style: "position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);" });
@@ -606,6 +631,28 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
     let explorando = false;
     let rutaActual: string | null = null;
+    // Terminado: el recorrido se ha visto entero y espera a que alguien lo pida
+    let terminado = false;
+    // Se repite sin fin solo si algún recorrido lo pide; si no, se ve una vez,
+    // acaba en la escena inicial y solo vuelve a empezar cuando alguien pulsa
+    const enBucle = rutas.some((r) => r.loop);
+    const volverAlInicio = (): void => {
+      panelHost.close();
+      void viewer.goTo(tour.start.scene, { view: tour.start.view, force: true, skipHistory: true });
+    };
+    const arrancar = (): void => {
+      explorando = false;
+      terminado = false;
+      // Arrancar a mano desarma el temporizador de inactividad: si no, a los
+      // sesenta segundos cortaba el recorrido que se acababa de pedir
+      if (kioskTimer != null) {
+        clearTimeout(kioskTimer);
+        kioskTimer = null;
+      }
+      panelHost.close();
+      viewer.startAutopilotChain();
+      pintar();
+    };
 
     const pintarLista = (): void => {
       lista.textContent = "";
@@ -619,6 +666,11 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         if (ruta.id === rutaActual) b.classList.add("anda-kiosk__route--on");
         b.addEventListener("click", () => {
           explorando = false;
+          terminado = false;
+          if (kioskTimer != null) {
+            clearTimeout(kioskTimer);
+            kioskTimer = null;
+          }
           panelHost.close();
           viewer.startAutopilot(ruta.id);
           pintar();
@@ -629,18 +681,21 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
     const pintar = (): void => {
       estado.textContent = "";
-      if (explorando) {
+      if (terminado) {
+        const txt = el("span", { className: "anda-kiosk__playing" });
+        txt.textContent = t("kiosk_ended");
+        estado.appendChild(txt);
+        const otraVez = el("button", { className: "anda-kiosk__resume", type: "button" });
+        otraVez.textContent = t("kiosk_replay");
+        otraVez.addEventListener("click", arrancar);
+        estado.appendChild(otraVez);
+      } else if (explorando) {
         const txt = el("span", { className: "anda-kiosk__free" });
         txt.textContent = t("kiosk_exploring");
         estado.appendChild(txt);
         const volver = el("button", { className: "anda-kiosk__resume", type: "button" });
         volver.textContent = t("kiosk_resume");
-        volver.addEventListener("click", () => {
-          explorando = false;
-          panelHost.close();
-          viewer.startAutopilotChain();
-          pintar();
-        });
+        volver.addEventListener("click", arrancar);
         estado.appendChild(volver);
       } else {
         const nombre = rutas.find((r) => r.id === rutaActual);
@@ -659,23 +714,38 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
     viewer.on("autopilotChange", (e) => {
       rutaActual = e.routeId;
+      if (!e.active && e.reason === "finished" && !explorando) {
+        // Se ha visto todo: de vuelta a la escena inicial, a esperar
+        terminado = true;
+        volverAlInicio();
+      }
       if (!explorando) pintar();
     });
 
-    // Interacción del visitante: pasa a explorar por su cuenta; tras la
-    // inactividad configurada, el quiosco vuelve a empezar solo
-    const alInteractuar = (): void => {
+    // Interacción del visitante: pasa a explorar por su cuenta. Tras la
+    // inactividad configurada, el quiosco vuelve a empezar solo si está en
+    // bucle; si no, regresa a la escena inicial y espera a que alguien pulse.
+    const alInteractuar = (e: Event): void => {
+      // Pulsar la propia barra del quiosco no es «explorar»: además, repintar
+      // la barra en el pointerdown se llevaba por delante el botón antes de
+      // que llegara a hacer clic
+      if ((e.target as HTMLElement | null)?.closest?.(".anda-kiosk") != null) return;
       if (!explorando) {
         explorando = true;
+        terminado = false;
         pintar();
       }
       if (kioskTimer != null) clearTimeout(kioskTimer);
       kioskTimer = setTimeout(() => {
-        explorando = false;
-        panelHost.close();
-        void viewer.goTo(tour.start.scene, { view: tour.start.view, force: true, skipHistory: true });
-        viewer.startAutopilotChain();
-        pintar();
+        if (enBucle) {
+          volverAlInicio();
+          arrancar();
+        } else {
+          explorando = false;
+          terminado = true;
+          volverAlInicio();
+          pintar();
+        }
       }, inactivity * 1000);
     };
     for (const evt of ["pointerdown", "keydown", "wheel", "touchstart"]) {

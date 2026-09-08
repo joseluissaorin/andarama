@@ -2,15 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowUp,
   ArrowUpRight,
+  Bold,
   ChevronLeft,
   ChevronRight,
   Crosshair,
+  Heading2,
   ImagePlus,
+  Italic,
+  Link as LinkIcon,
+  List,
   Maximize2,
   Plus,
   Trash2,
 } from "lucide-react";
 import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@andarama/ui";
+import { parseVideoRef, renderMarkdown } from "@andarama/viewer-ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
@@ -467,23 +473,20 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       h.styleJson = JSON.stringify(s);
     });
 
-  const text = (key: string, label: string, opts: { textarea?: boolean; hint?: string } = {}): React.ReactNode => (
+  const text = (key: string, label: string, opts: { textarea?: boolean; hint?: string; placeholder?: string } = {}): React.ReactNode => (
     <Field label={label} htmlFor={`hs-${key}`} hint={opts.hint}>
       {opts.textarea === true ? (
-        <div className="relative">
-          <Textarea id={`hs-${key}`} rows={4} value={String(content[key] ?? "")} disabled={!canEdit} onChange={(e) => setContent({ [key]: e.target.value })} />
-          <button
-            type="button"
-            title={t("expand_editor")}
-            aria-label={t("expand_editor")}
-            className="absolute bottom-1.5 right-1.5 rounded-md p-1 text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)] hover:text-[var(--anda-text)]"
-            onClick={() => setExpand({ key, label })}
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <MarkdownField
+          id={`hs-${key}`}
+          rows={4}
+          value={String(content[key] ?? "")}
+          disabled={!canEdit}
+          placeholder={opts.placeholder}
+          onChange={(v) => setContent({ [key]: v })}
+          onExpand={() => setExpand({ key, label })}
+        />
       ) : (
-        <Input id={`hs-${key}`} value={String(content[key] ?? "")} disabled={!canEdit} onChange={(e) => setContent({ [key]: e.target.value })} />
+        <Input id={`hs-${key}`} value={String(content[key] ?? "")} placeholder={opts.placeholder} disabled={!canEdit} onChange={(e) => setContent({ [key]: e.target.value })} />
       )}
     </Field>
   );
@@ -657,7 +660,20 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             />
           </>
         )}
-        {hotspot.type === "text" && text("body", t("body_text"), { textarea: true, hint: t("markdown_hint") })}
+        {hotspot.type === "text" && (
+          <>
+            {text("body", t("body_text"), { textarea: true, hint: t("markdown_hint") })}
+            {text("title", t("text_title"), { hint: t("text_title_hint") })}
+            <Field label={t("font_size")} htmlFor="hs-fontsize">
+              <Select id="hs-fontsize" value={String(content.fontSize ?? "normal")} disabled={!canEdit} onChange={(e) => setContent({ fontSize: e.target.value === "normal" ? undefined : e.target.value })}>
+                <option value="small">{t("font_size_small")}</option>
+                <option value="normal">{t("font_size_normal")}</option>
+                <option value="large">{t("font_size_large")}</option>
+                <option value="xlarge">{t("font_size_xlarge")}</option>
+              </Select>
+            </Field>
+          </>
+        )}
         {hotspot.type === "image" && (
           <>
             {mediaButton("url", t("hotspot_image"), "image")}
@@ -706,7 +722,37 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 <option value="peertube">PeerTube</option>
               </Select>
             </Field>
-            {text("videoId", t("video_id"))}
+            {content.provider === "peertube" ? (
+              text("videoId", t("video_id"))
+            ) : (
+              <Field
+                label={t("video_ref")}
+                htmlFor="hs-videoId"
+                hint={
+                  String(content.videoId ?? "") !== "" && parseVideoRef(content.provider ?? "youtube", String(content.videoId)) == null
+                    ? t("video_ref_invalid", { provider: content.provider === "vimeo" ? "Vimeo" : "YouTube" })
+                    : t("video_ref_hint")
+                }
+              >
+                <Input
+                  id="hs-videoId"
+                  value={String(content.videoId ?? "")}
+                  placeholder="https://youtu.be/…"
+                  disabled={!canEdit}
+                  onChange={(e) => {
+                    // Se acepta la dirección tal cual; si de ella sale el ID
+                    // (y un segundo de inicio), se guarda ya convertido
+                    const raw = e.target.value;
+                    const ref = parseVideoRef(content.provider ?? "youtube", raw);
+                    if (ref != null && ref.id !== raw.trim()) {
+                      setContent({ videoId: ref.id, ...(ref.start != null && content.start == null ? { start: ref.start } : {}) });
+                    } else {
+                      setContent({ videoId: raw });
+                    }
+                  }}
+                />
+              </Field>
+            )}
             {content.provider === "peertube" && text("host", t("instance_host"))}
             <Field label={t("start_at_s")} htmlFor="hs-start">
               <Input id="hs-start" type="number" min="0" value={String(content.start ?? 0)} disabled={!canEdit}
@@ -763,7 +809,32 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         )}
         {hotspot.type === "web" && (
           <>
-            {text("url", "URL")}
+            <Field label={t("web_mode")} htmlFor="hs-wmode">
+              <Select
+                id="hs-wmode"
+                value={typeof content.html === "string" && content.html !== "" ? "html" : String(content.webMode ?? "url")}
+                disabled={!canEdit}
+                onChange={(e) => setContent({ webMode: e.target.value, ...(e.target.value === "url" ? { html: undefined } : {}) })}
+              >
+                <option value="url">{t("web_mode_url")}</option>
+                <option value="html">{t("web_mode_html")}</option>
+              </Select>
+            </Field>
+            {(typeof content.html === "string" && content.html !== "") || content.webMode === "html" ? (
+              <Field label={t("web_html")} htmlFor="hs-html" hint={t("web_html_hint")}>
+                <Textarea
+                  id="hs-html"
+                  rows={5}
+                  className="font-mono text-xs"
+                  placeholder={'<iframe src="https://sketchfab.com/models/…/embed" …></iframe>'}
+                  value={String(content.html ?? "")}
+                  disabled={!canEdit}
+                  onChange={(e) => setContent({ html: e.target.value })}
+                />
+              </Field>
+            ) : (
+              text("url", "URL", { hint: t("web_url_hint"), placeholder: "https://" })
+            )}
             <Field label={t("height_px")} htmlFor="hs-height">
               <Input id="hs-height" type="number" value={String(content.height ?? 480)} disabled={!canEdit} onChange={(e) => setContent({ height: num(e.target.value, 480) })} />
             </Field>
@@ -779,6 +850,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         )}
         {hotspot.type === "form" && (
           <>
+            <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("form_purpose")}</p>
             {text("title", t("title"))}
             {text("successMessage", t("success_message"))}
             {text("submitLabel", t("submit_label"))}
@@ -795,6 +867,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             </Field>
             {content.mode === "panoramas" ? (
               <>
+                <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("compare_scenes_hint")}</p>
                 <Field label={t("scene_before")} htmlFor="hs-cb">
                   <Select id="hs-cb" value={String(content.before?.sceneId ?? "")} disabled={!canEdit} onChange={(e) => setContent({ before: { ...content.before, sceneId: e.target.value } })}>
                     <option value="">-</option>
@@ -835,10 +908,50 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           </>
         )}
         {hotspot.type === "quiz" && (
-          <QuizEditor content={content} canEdit={canEdit} onChange={setContent} />
+          <>
+            <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("quiz_one_per_hotspot")}</p>
+            <QuizEditor content={content} canEdit={canEdit} onChange={setContent} />
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!canEdit}
+              onClick={() => {
+                // Otra pregunta = otro marcador, al lado de este y con la misma
+                // compuerta; se selecciona para rellenarla de seguido
+                const id = clientId();
+                const pos = readJson<{ yaw?: number; pitch?: number }>(hotspot.positionJson, {});
+                editor.apply((draft) => {
+                  draft.hotspots.push({
+                    id,
+                    sceneId: scene.id,
+                    type: "quiz",
+                    positionJson: JSON.stringify({ yaw: (pos.yaw ?? 0) + 0.18, pitch: pos.pitch ?? 0 }),
+                    styleJson: null,
+                    contentJson: JSON.stringify({
+                      question: "",
+                      kind: "single",
+                      options: [
+                        { id: "a", text: "", correct: true },
+                        { id: "b", text: "" },
+                      ],
+                      points: content.points ?? 1,
+                      altText: "Pregunta",
+                      ...(content.gate === true ? { gate: true } : {}),
+                    }),
+                    conditionsJson: null,
+                    sort: draft.hotspots.filter((h) => h.sceneId === scene.id).length,
+                  });
+                });
+                editor.select(scene.id, id);
+              }}
+            >
+              <Plus className="h-4 w-4" /> {t("quiz_add_question")}
+            </Button>
+          </>
         )}
         {hotspot.type === "polygon" && (
           <>
+            <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("polygon_purpose")}</p>
             <div className="grid grid-cols-2 gap-2">
               <Field label={t("fill")} htmlFor="hs-fill">
                 <Input id="hs-fill" type="color" value={String(content.fill ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ fill: e.target.value })} />
@@ -869,14 +982,41 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 disabled={!canEdit}
                 onChange={(e) => {
                   const kind = e.target.value;
-                  setContent({ action: kind === "none" ? undefined : kind === "goto" ? { kind, target: snapshot.scenes[0]?.id ?? "" } : { kind, url: "https://" } });
+                  setContent({
+                    action:
+                      kind === "none"
+                        ? undefined
+                        : kind === "goto"
+                          ? { kind, target: snapshot.scenes[0]?.id ?? "" }
+                          : kind === "openHotspot"
+                            ? { kind, hotspotId: snapshot.hotspots.find((h) => h.sceneId === scene.id && h.id !== hotspot.id && h.type !== "polygon")?.id ?? "" }
+                            : { kind, url: "https://" },
+                  });
                 }}
               >
                 <option value="none">-</option>
                 <option value="goto">{t("hotspot_navigation")}</option>
                 <option value="openUrl">{t("hotspot_link")}</option>
+                <option value="openHotspot">{t("polygon_action_open_hotspot")}</option>
               </Select>
             </Field>
+            {content.action?.kind === "openHotspot" && (
+              <Field label={t("polygon_target_hotspot")} htmlFor="hs-phs">
+                <Select id="hs-phs" value={String(content.action.hotspotId ?? "")} disabled={!canEdit} onChange={(e) => setContent({ action: { kind: "openHotspot", hotspotId: e.target.value } })}>
+                  <option value="">-</option>
+                  {snapshot.hotspots
+                    .filter((h) => h.sceneId === scene.id && h.id !== hotspot.id && h.type !== "polygon")
+                    .map((h) => {
+                      const c = readJson<Record<string, unknown>>(h.contentJson, {});
+                      return (
+                        <option key={h.id} value={h.id}>
+                          {String(c.label ?? c.altText ?? "") || t(`hotspot_${h.type}`)} · {t(`hotspot_${h.type}`)}
+                        </option>
+                      );
+                    })}
+                </Select>
+              </Field>
+            )}
             {content.action?.kind === "goto" && (
               <Field label={t("target_scene")} htmlFor="hs-ptarget">
                 <Select id="hs-ptarget" value={String(content.action.target ?? "")} disabled={!canEdit} onChange={(e) => setContent({ action: { kind: "goto", target: e.target.value } })}>
@@ -898,7 +1038,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         )}
         {hotspot.type === "tooltip" && (
           <>
-            {text("text", t("body_text"))}
+            {text("text", t("tooltip_text"), { hint: t("tooltip_text_hint") })}
             <Switch id="hs-perm" checked={content.permanent === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ permanent: v })} label={t("permanent")} />
           </>
         )}
@@ -926,13 +1066,14 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
               {t("treasure_count_hint", { n: String(snapshot.hotspots.filter((h) => h.type === "treasure").length) })}
             </p>
             <Field label={t("treasure_reward")} htmlFor="hs-reward" hint={t("treasure_reward_hint")}>
-              <Textarea id="hs-reward" rows={3} value={String(content.reward ?? "")} disabled={!canEdit}
-                onChange={(e) => setContent({ reward: e.target.value || undefined })} />
+              <MarkdownField id="hs-reward" rows={3} value={String(content.reward ?? "")} disabled={!canEdit}
+                onChange={(v) => setContent({ reward: v || undefined })} />
             </Field>
             <Field label={t("treasure_hint_label")} htmlFor="hs-thint" hint={t("treasure_hint_hint")}>
               <Input id="hs-thint" value={String(content.hint ?? "")} disabled={!canEdit}
                 onChange={(e) => setContent({ hint: e.target.value || undefined })} />
             </Field>
+            <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("treasure_marker_hint")}</p>
           </>
         )}
       </Section>
@@ -1172,14 +1313,24 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       >
         {expand != null && (
           <div className="space-y-2">
-            <Textarea
-              rows={18}
-              autoFocus
-              className="font-mono text-[13px] leading-relaxed"
-              value={String(content[expand.key] ?? "")}
-              disabled={!canEdit}
-              onChange={(e) => setContent({ [expand.key]: e.target.value })}
-            />
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <MarkdownField
+                id="hs-expanded"
+                rows={18}
+                autoFocus
+                mono
+                value={String(content[expand.key] ?? "")}
+                disabled={!canEdit}
+                onChange={(v) => setContent({ [expand.key]: v })}
+              />
+              <div className="min-h-0">
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("markdown_preview")}</p>
+                <div
+                  className="anda-md-preview max-h-[60vh] overflow-y-auto rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-4 text-[14px]"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(String(content[expand.key] ?? "")) }}
+                />
+              </div>
+            </div>
             <p className="text-xs text-[var(--anda-text-dim)]">{t("markdown_hint")}</p>
           </div>
         )}
@@ -1239,6 +1390,98 @@ function AiAltButton({ mediaId, onSuggestion }: { mediaId: string; onSuggestion:
     >
       Sugerir con IA
     </Button>
+  );
+}
+
+/**
+ * Área de texto con barra de formato Markdown.
+ *
+ * «¿Cómo pongo negritas?» era la pregunta: las marcas (**así**) están en la
+ * pista, pero nadie las lee. Los botones envuelven la selección con la marca
+ * que toque, y quien prefiera escribirlas a mano puede seguir haciéndolo.
+ */
+function MarkdownField({ id, value, onChange, rows, disabled, placeholder, autoFocus, mono, onExpand }: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  rows: number;
+  disabled?: boolean;
+  placeholder?: string;
+  autoFocus?: boolean;
+  mono?: boolean;
+  onExpand?: () => void;
+}): React.ReactNode {
+  const t = useT();
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  /** Envuelve la selección (o inserta un ejemplo) y devuelve el foco donde estaba. */
+  const wrap = (before: string, after: string, ejemplo: string, linea = false): void => {
+    const el = ref.current;
+    if (el == null || disabled) return;
+    const start = el.selectionStart ?? value.length;
+    const end = el.selectionEnd ?? value.length;
+    const seleccion = value.slice(start, end);
+    let inicio = start;
+    let cuerpo = seleccion !== "" ? seleccion : ejemplo;
+    let prefijo = before;
+    if (linea) {
+      // Las marcas de línea (título, lista) van al principio de la línea
+      inicio = value.lastIndexOf("\n", start - 1) + 1;
+      cuerpo = value.slice(inicio, end) || ejemplo;
+      prefijo = cuerpo.split("\n").map((l) => before + l).join("\n");
+      const next = value.slice(0, inicio) + prefijo + value.slice(end);
+      onChange(next);
+      requestAnimationFrame(() => {
+        el.focus();
+        el.setSelectionRange(inicio, inicio + prefijo.length);
+      });
+      return;
+    }
+    const next = value.slice(0, start) + prefijo + cuerpo + after + value.slice(end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + prefijo.length, start + prefijo.length + cuerpo.length);
+    });
+  };
+
+  const boton = (icon: React.ReactNode, label: string, onClick: () => void): React.ReactNode => (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      disabled={disabled}
+      className="rounded-md p-1 text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)] hover:text-[var(--anda-text)] disabled:opacity-40"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+    >
+      {icon}
+    </button>
+  );
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-0.5" role="toolbar" aria-label={t("markdown_toolbar")}>
+        {boton(<Bold className="h-3.5 w-3.5" />, t("markdown_bold"), () => wrap("**", "**", t("markdown_bold").toLowerCase()))}
+        {boton(<Italic className="h-3.5 w-3.5" />, t("markdown_italic"), () => wrap("*", "*", t("markdown_italic").toLowerCase()))}
+        {boton(<Heading2 className="h-3.5 w-3.5" />, t("markdown_heading"), () => wrap("## ", "", t("markdown_heading"), true))}
+        {boton(<List className="h-3.5 w-3.5" />, t("markdown_list"), () => wrap("- ", "", t("markdown_list"), true))}
+        {boton(<LinkIcon className="h-3.5 w-3.5" />, t("markdown_link"), () => wrap("[", "](https://)", t("markdown_link").toLowerCase()))}
+        <span className="flex-1" />
+        {onExpand != null && boton(<Maximize2 className="h-3.5 w-3.5" />, t("expand_editor"), onExpand)}
+      </div>
+      <Textarea
+        ref={ref}
+        id={id}
+        rows={rows}
+        autoFocus={autoFocus}
+        placeholder={placeholder}
+        className={mono ? "font-mono text-[13px] leading-relaxed" : undefined}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
   );
 }
 
@@ -1399,6 +1642,7 @@ function QuizEditor({ content, canEdit, onChange }: {
         <Input id="qz-fw" value={String(content.feedbackWrong ?? "")} disabled={!canEdit} onChange={(e) => onChange({ feedbackWrong: e.target.value })} />
       </Field>
       <Switch id="qz-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => onChange({ gate: v })} label={t("gate")} />
+      <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("gate_hint")}</p>
     </div>
   );
 }

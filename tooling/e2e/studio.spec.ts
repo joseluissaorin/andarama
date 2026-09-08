@@ -546,6 +546,171 @@ async function csrf(page: Page): Promise<string> {
  */
 let sessionCookies: Awaited<ReturnType<Page["context"]>["cookies"]> extends Promise<infer T> ? T : never = [] as never;
 
+
+test("el tesoro se guarda, se ve en la vista previa y no impide publicar", async ({ page }) => {
+  // Antes ni la API ni el validador conocían el tipo «treasure»: el guardado
+  // fallaba en silencio y publicar dejaba la versión antigua sin los hotspots
+  // nuevos. Es el fallo que más confundió a los probadores.
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  await abrirEscena(page, "Escena E2E");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+
+  await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
+  await page.locator('[role="dialog"] input').first().fill("tesoro");
+  await page.getByRole("button", { name: /^Tesoro/ }).first().click();
+  await page.locator(".anda-viewer").first().click({ position: { x: 640, y: 420 } });
+  await page.fill("#hs-label", "Cofre E2E");
+  await page.fill("#hs-alt", "Cofre escondido");
+  // Se guarda de verdad (nada de «Sin guardar») y el marcador aparece en la vista previa
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".anda-hotspot--treasure").first()).toBeVisible({ timeout: 30_000 });
+
+  // Y se publica con él
+  await page.locator("header").getByRole("button", { name: /Publicar|Republicar/ }).click();
+  const dlg = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
+  await dlg.getByRole("button", { name: /^(Publicar|Republicar)$/ }).click();
+  await expect(dlg.locator('a[href*="/t/"]').first()).toBeVisible({ timeout: 60_000 });
+  const tour = (await (await page.request.get("/t/tour-e2e/tour.json?v=tesoro")).json()) as {
+    treasureHunt?: { enabled: boolean; targets: unknown[] };
+    scenes: { hotspots: { type: string }[] }[];
+  };
+  expect(tour.scenes.some((sc) => sc.hotspots.some((h) => h.type === "treasure"))).toBe(true);
+  expect(tour.treasureHunt?.enabled).toBe(true);
+  expect(tour.treasureHunt?.targets.length).toBe(1);
+});
+
+test("la dirección de YouTube se convierte sola en el ID del vídeo", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  await abrirEscena(page, "Escena E2E");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
+  await page.locator('[role="dialog"] input').first().fill("youtube");
+  await page.getByRole("button", { name: /^YouTube/ }).first().click();
+  await page.locator(".anda-viewer").first().click({ position: { x: 300, y: 500 } });
+  await page.fill("#hs-videoId", "https://youtu.be/5PAIFUrQYOs?si=BmxpoV3sN_m3gGvi&t=90");
+  await expect(page.locator("#hs-videoId")).toHaveValue("5PAIFUrQYOs");
+  // El segundo de inicio de la dirección también se recoge
+  await expect(page.locator("#hs-start")).toHaveValue("90");
+  // Limpieza: que el tour publicado no arrastre este marcador de prueba
+  await page.getByRole("button", { name: "Eliminar", exact: true }).first().click();
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+});
+
+test("con una proyección puesta los hotspots siguen en su sitio y el menú explica cada una", async ({ page }) => {
+  await page.goto("/t/tour-e2e?v=proyeccion");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-hotspot").first()).toBeVisible({ timeout: 30_000 });
+  await page.locator('button[aria-label="Proyección"]').click();
+  const menu = page.locator(".anda-menu-pop");
+  await expect(menu).toContainText("planeta pequeño");
+  await menu.getByRole("menuitem", { name: /Little planet/ }).click();
+  // El pase se asienta y los marcadores pasan a colocarse a mano
+  await expect(page.locator(".anda-projection-active").first()).toBeVisible({ timeout: 30_000 });
+  // Con el zoom por defecto el planeta enseña solo el casquete central y el
+  // horizonte, donde están los marcadores, queda fuera del lienzo: se aleja
+  await page.evaluate(() =>
+    (window as unknown as { Andarama: { instance: { viewer: { setView(v: { fov: number }): void } } } }).Andarama.instance.viewer.setView({ fov: 2.4 }),
+  );
+  await expect
+    .poll(
+      async () =>
+        await page.evaluate(() => {
+          const hs = [...document.querySelectorAll<HTMLElement>(".anda-hotspot")];
+          const stage = document.querySelector<HTMLElement>(".anda-projection-active");
+          if (stage == null || hs.length === 0) return "sin marcadores";
+          const w = stage.clientWidth;
+          const h = stage.clientHeight;
+          const colocado = hs.find((el) => el.style.display !== "none" && el.style.left !== "");
+          if (colocado == null) return "ninguno colocado";
+          const x = parseFloat(colocado.style.left);
+          const y = parseFloat(colocado.style.top);
+          return x >= 0 && x <= w && y >= 0 && y <= h ? "dentro" : `fuera ${x},${y}`;
+        }),
+      { timeout: 30_000 },
+    )
+    .toBe("dentro");
+  // De vuelta a la normal, manda Marzipano otra vez
+  await page.locator('button[aria-label="Proyección"]').click();
+  await page.locator(".anda-menu-pop").getByRole("menuitem", { name: /Normal/ }).click();
+  await expect(page.locator(".anda-projection-active")).toHaveCount(0, { timeout: 30_000 });
+});
+
+test("el quiosco sin bucle termina en la escena inicial y espera a que alguien lo pida", async ({ page }) => {
+  // El recorrido de la prueba de autopilot tiene dos paradas de seis segundos
+  // y, al nacer con «repetir en bucle» apagado, se ve una vez y se detiene
+  await page.goto("/t/tour-e2e?kiosk=1&v=fin");
+  await expect(page.locator(".anda-kiosk")).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator(".anda-kiosk")).toContainText("Reproduciendo", { timeout: 30_000 });
+  await expect(page.locator(".anda-kiosk")).toContainText("El recorrido ha terminado", { timeout: 60_000 });
+  await expect(page.locator(".anda-kiosk").getByRole("button", { name: "Verlo otra vez" })).toBeVisible();
+  // Y al pedirlo, vuelve a reproducirse
+  await page.locator(".anda-kiosk").getByRole("button", { name: "Verlo otra vez" }).click();
+  await expect(page.locator(".anda-kiosk")).toContainText("Reproduciendo", { timeout: 30_000 });
+});
+
+test("la compuerta de una pregunta retiene en la escena hasta acertar", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  await abrirEscena(page, "Escena E2E");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
+  await page.locator('[role="dialog"] input').first().fill("quiz");
+  await page.getByRole("button", { name: /^Quiz/ }).first().click();
+  // Por encima de la bandeja de medios, que ocupa el pie del editor
+  await page.locator(".anda-viewer").first().click({ position: { x: 420, y: 280 } });
+  await page.fill("#hs-label", "Pregunta E2E");
+  await page.fill("#qz-q", "¿Dos y dos?");
+  await page.locator("#qz-gate").click();
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+  await page.locator("header").getByRole("button", { name: /Publicar|Republicar/ }).click();
+  const dlg = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
+  await dlg.getByRole("button", { name: /^(Publicar|Republicar)$/ }).click();
+  await expect(dlg.locator('a[href*="/t/"]').first()).toBeVisible({ timeout: 60_000 });
+
+  await page.goto("/t/tour-e2e?kiosk=0&v=compuerta");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  const escenaActual = (): Promise<string | null> =>
+    page.evaluate(() => (window as unknown as { Andarama: { instance: { viewer: { currentSceneId(): string | null } } } }).Andarama.instance.viewer.currentSceneId());
+  const inicial = await escenaActual();
+  // El paso está a 60° de rumbo, debajo del dique de controles: se centra la
+  // vista sobre él para poder pulsarlo
+  const centrarPaso = (): Promise<void> =>
+    page.evaluate(() =>
+      (window as unknown as { Andarama: { instance: { viewer: { setView(v: { yaw: number; pitch: number }): void } } } }).Andarama.instance.viewer.setView({
+        yaw: Math.PI / 3,
+        pitch: 0,
+      }),
+    );
+  // Los pasos se ven apagados y no sacan de la escena
+  await expect(page.locator(".anda-nav-gated").first()).toBeVisible({ timeout: 30_000 });
+  await centrarPaso();
+  await page.locator(".anda-hotspot--navigation").first().click();
+  await expect(page.locator(".anda-toast")).toContainText("Responde a la pregunta", { timeout: 10_000 });
+  expect(await escenaActual()).toBe(inicial);
+  // Al chocar con la compuerta se abre la pregunta; acertar abre la salida
+  const panel = page.locator(".anda-panel");
+  await expect(panel).toContainText("¿Dos y dos?");
+  await panel.locator(".anda-quiz__option").first().click();
+  await panel.getByRole("button", { name: "Comprobar" }).click();
+  // Era la única pregunta del tour: al acertarla sale el informe final
+  const informe = page.locator(".anda-screen", { hasText: "Informe del cuestionario" });
+  await expect(informe).toBeVisible({ timeout: 10_000 });
+  await expect(informe).toContainText("Puntuación: 1 / 1");
+  await informe.getByRole("button", { name: "Cerrar" }).click();
+  await expect(page.locator(".anda-nav-gated")).toHaveCount(0, { timeout: 10_000 });
+  await centrarPaso();
+  await page.locator(".anda-hotspot--navigation").first().click();
+  await expect.poll(escenaActual, { timeout: 30_000 }).not.toBe(inicial);
+});
+
 async function login(page: Page): Promise<void> {
   if (sessionCookies.length > 0) {
     // Solo las cookies: navegar aqui se pisaba con la navegacion de la prueba

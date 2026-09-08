@@ -120,5 +120,17 @@
   "kiosk_exploring": "Estás explorando por tu cuenta",
   "kiosk_resume": "Volver al recorrido",
   "kiosk_playing": "Reproduciendo «{name}»",
-  "kiosk_touch_hint": "Toca la pantalla para explorar tú"
+  "kiosk_touch_hint": "Toca la pantalla para explorar tú",
+  "projection_rectilinear_desc": "La vista normal: como mirar con los ojos.",
+  "projection_littlePlanet_desc": "Toda la esfera como un planeta pequeño visto desde arriba.",
+  "projection_fisheye_desc": "Gran angular curvo: cabe mucho más en la pantalla.",
+  "projection_pannini_desc": "Ancho sin deformar las rectas verticales. Ideal en interiores.",
+  "projection_architectural_desc": "Mantiene las verticales rectas al mirar arriba o abajo.",
+  "quiz_gate_scene": "Responde a la pregunta de esta escena para poder continuar",
+  "kiosk_ended": "El recorrido ha terminado",
+  "kiosk_replay": "Verlo otra vez",
+  "kiosk_start": "Ver el recorrido",
+  "web_open_external": "Abrir en una pestaña nueva",
+  "web_blocked_hint": "Si aquí no aparece nada, esa web no permite incrustarse en otras páginas.",
+  "autoplay_finished": "Visita terminada"
 }

@@ -136,6 +136,24 @@ describe("validateTour", () => {
     const result = validateTour(tour);
     expect(result.issues.some((i) => i.code === "quiz-no-correct")).toBe(true);
   });
+
+  it("acepta el hotspot de tesoro: colocarlo no puede impedir publicar", () => {
+    // Antes el validador no conocía «treasure» y cualquier tour con un tesoro
+    // dejaba de poder publicarse sin que el editor lo dijera.
+    const tour = sampleTour();
+    tour.scenes[0]!.hotspots.push({ id: "t1", type: "treasure", yaw: 0.2, pitch: -0.3, altText: "Tesoro", reward: "¡Bien!" });
+    const result = validateTour(tour);
+    expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+    expect(result.valid).toBe(true);
+  });
+
+  it("un contenido web sin dirección ni código avisa, pero no bloquea", () => {
+    const tour = sampleTour();
+    tour.scenes[0]!.hotspots.push({ id: "w1", type: "web", yaw: 0, pitch: 0, url: "", altText: "Web" });
+    const result = validateTour(tour);
+    expect(result.issues.some((i) => i.code === "web-no-source" && i.severity === "warning")).toBe(true);
+    expect(result.valid).toBe(true);
+  });
 });
 
 describe("migrateTour", () => {

@@ -107,13 +107,20 @@ También puedes automatizar la publicación desde CI con un token de API (`POST 
 Para una pantalla en una sala, una feria o un vestíbulo: el tour se explica
 solo y cualquiera puede tomar el mando.
 
-- **Encadena todos los recorridos**, uno detrás de otro y vuelta a empezar. No
-  se queda en el primero.
-- **Antes de cambiar de escena mira hacia la puerta** por la que va a salir,
-  de modo que se entienda de dónde a dónde se va.
+- **Encadena todos los recorridos**, uno detrás de otro. No se queda en el
+  primero.
+- **En cada parada se entra como entraría un visitante**: por el paso que une
+  las dos escenas y con la orientación de llegada de ese paso. Se espera los
+  segundos indicados en la parada y, **antes de cambiar de escena, mira hacia
+  la puerta** por la que va a salir, de modo que se entienda de dónde a dónde
+  se va.
+- **Al terminar vuelve a la escena inicial** y espera: aparece «El recorrido ha
+  terminado» con el botón **Verlo otra vez**. Solo se repite sin parar si algún
+  recorrido tiene marcado **Repetir en bucle** (en el grafo, modo Autopilot).
 - **Quien toca la pantalla se queda al mando**: aparece «Estás explorando por
   tu cuenta» y un botón para volver al recorrido. Si nadie toca nada durante
-  un minuto, el quiosco vuelve al principio y sigue solo.
+  un minuto, el quiosco vuelve a la escena inicial; con el bucle puesto,
+  además arranca de nuevo solo.
 - **La lista de recorridos** está siempre abajo: se pulsa uno y empieza ese.
 
 ### Cómo se consigue

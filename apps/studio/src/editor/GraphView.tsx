@@ -39,8 +39,7 @@ import {
   type AutopilotRouteDraft,
   type GraphEdge,
   type GraphIssue,
-  type ReconnectResult,
-} from "./graphModel";
+  type ReconnectResult, DEFAULT_STEP_DWELL } from "./graphModel";
 import {
   areaOfScene,
   areasOf,
@@ -900,10 +899,10 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           if (route == null) {
             // Primer clic sin ruta: se crea sola. Obligar a pulsar antes
             // «Nueva ruta» era una dependencia escondida que nadie descubría.
-            patchRoutes((list) => [...list, { id: `ruta-${list.length + 1}`, title: t("route_n", { n: String(list.length + 1) }), steps: [{ scene: clicked, seconds: 6 }], loop: true }]);
+            patchRoutes((list) => [...list, { id: `ruta-${list.length + 1}`, title: t("route_n", { n: String(list.length + 1) }), steps: [{ scene: clicked, dwell: DEFAULT_STEP_DWELL }], loop: false }]);
             setRouteIndex(routes.length);
           } else {
-            patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, steps: [...r.steps, { scene: clicked, seconds: 6 }] } : r)));
+            patchRoutes((list) => list.map((r, i) => (i === routeIndex ? { ...r, steps: [...r.steps, { scene: clicked, dwell: DEFAULT_STEP_DWELL }] } : r)));
           }
         }
       }
@@ -2220,7 +2219,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
             className="w-full"
             disabled={!canEdit}
             onClick={() => {
-              patchRoutes((list) => [...list, { id: `ruta-${list.length + 1}`, title: t("route_n", { n: String(list.length + 1) }), steps: [], loop: true }]);
+              patchRoutes((list) => [...list, { id: `ruta-${list.length + 1}`, title: t("route_n", { n: String(list.length + 1) }), steps: [], loop: false }]);
               setRouteIndex(routes.length);
             }}
           >
@@ -2240,6 +2239,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 />
               </label>
               <p className="text-xs text-[var(--anda-text-dim)]">{t("autopilot_click_hint")}</p>
+              <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("autopilot_arrival_hint")}</p>
               <ol className="space-y-1">
                 {route.steps.map((step, i) => (
                   <li
@@ -2269,20 +2269,24 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                     <span className="flex-1 truncate">{snapshot.scenes.find((sc) => sc.id === step.scene)?.title ?? step.scene}</span>
                     <Input
                       type="number"
+                      min="0"
                       className="max-w-16"
                       aria-label={t("seconds")}
-                      value={step.seconds != null ? String(step.seconds) : ""}
+                      title={t("step_dwell_hint")}
+                      value={step.dwell != null ? String(step.dwell) : ""}
+                      placeholder={String(DEFAULT_STEP_DWELL)}
                       disabled={!canEdit}
                       onChange={(e) =>
                         patchRoutes((list) =>
                           list.map((r, ri) =>
                             ri === routeIndex
-                              ? { ...r, steps: r.steps.map((st, si) => (si === i ? { ...st, seconds: e.target.value === "" ? undefined : Number(e.target.value) } : st)) }
+                              ? { ...r, steps: r.steps.map((st, si) => (si === i ? { ...st, dwell: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)) } : st)) }
                               : r,
                           ),
                         )
                       }
                     />
+                    <span className="text-[11px] text-[var(--anda-text-dim)]">s</span>
                     <Button
                       size="icon"
                       variant="ghost"
@@ -2307,6 +2311,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 />
                 {t("route_loop")}
               </label>
+              <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{route.loop === true ? t("route_loop_on_hint") : t("route_loop_off_hint")}</p>
               <Button
                 size="sm"
                 variant="outline"

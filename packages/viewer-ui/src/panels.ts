@@ -14,11 +14,13 @@ import type {
   VideoFileHotspot,
   WebHotspot,
 } from "@andarama/schema";
-import { resolveUrl, type TourViewer } from "@andarama/viewer";
+import { resolveUrl, TourViewer } from "@andarama/viewer";
 import { el, trapFocus } from "./dom.js";
 import { renderMarkdown } from "./markdown.js";
 import { createIconSvg } from "@andarama/viewer";
 import type { Translator } from "./i18n.js";
+import { parseVideoRef } from "./video.js";
+import { embedFileName, embedSource } from "./embed.js";
 
 export interface PanelContext {
   viewer: TourViewer;
@@ -204,7 +206,10 @@ function treasurePanel(hs: TreasureHotspot, ctx: PanelContext): PanelContent {
 
 function textPanel(hs: TextHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "anda-panel__body" });
-  const prose = el("div", { className: "anda-prose" });
+  // El tamaño de letra lo decide el autor por panel: una cartela de museo
+  // que se lee de pie no es un pie de foto.
+  const size = hs.fontSize != null && hs.fontSize !== "normal" ? ` anda-prose--${hs.fontSize}` : "";
+  const prose = el("div", { className: `anda-prose${size}` });
   prose.innerHTML = renderMarkdown(ctx.viewer.text(hs.body));
   body.appendChild(prose);
   return { body };
@@ -392,16 +397,20 @@ function embedPanel(hs: EmbedVideoHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
   let src = "";
   const nocookie = hs.nocookie !== false;
+  // Se acepta tanto el ID como la dirección completa del vídeo: es lo que la
+  // gente copia, y un tour antiguo con la URL pegada tiene que seguir sonando.
+  const ref = parseVideoRef(hs.provider, hs.videoId) ?? { id: hs.videoId };
+  const start = hs.start ?? ref.start;
   if (hs.provider === "youtube") {
     const host = nocookie ? "www.youtube-nocookie.com" : "www.youtube.com";
     const params = new URLSearchParams();
     if (hs.autoplay === true) params.set("autoplay", "1");
-    if (hs.start != null) params.set("start", String(hs.start));
-    src = `https://${host}/embed/${encodeURIComponent(hs.videoId)}?${params.toString()}`;
+    if (start != null && start > 0) params.set("start", String(start));
+    src = `https://${host}/embed/${encodeURIComponent(ref.id)}?${params.toString()}`;
   } else if (hs.provider === "vimeo") {
     const params = new URLSearchParams({ dnt: "1" });
     if (hs.autoplay === true) params.set("autoplay", "1");
-    src = `https://player.vimeo.com/video/${encodeURIComponent(hs.videoId)}?${params.toString()}`;
+    src = `https://player.vimeo.com/video/${encodeURIComponent(ref.id)}?${params.toString()}`;
   } else {
     const host = (hs.host ?? "").replace(/\/$/, "");
     src = `${host}/videos/embed/${encodeURIComponent(hs.videoId)}`;
@@ -639,17 +648,47 @@ function webPanel(hs: WebHotspot, ctx: PanelContext): PanelContent {
   const sandbox = Array.isArray(hs.sandbox)
     ? hs.sandbox.join(" ")
     : (hs.sandbox as unknown) === "permissive"
-      ? "allow-scripts allow-same-origin allow-forms allow-popups"
-      : "allow-scripts allow-forms allow-popups";
+      ? "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+      : "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox";
+  const title = ctx.viewer.text(hs.label) || "Web";
+  const height = hs.height ?? 480;
+  // Código de inserción: si es un iframe suelto (Sketchfab, Maps, Genially…)
+  // se usa su fuente tal cual; si trae más, el documento aparte del paquete.
+  const html = typeof hs.html === "string" && hs.html.trim() !== "" ? hs.html : null;
+  const fuente = html != null ? embedSource(html) : null;
+  let src = hs.url;
+  let allow = (hs.allow ?? []).join("; ");
+  let allowFullscreen = false;
+  let externo: string | null = hs.url !== "" && hs.url !== "https://" ? hs.url : null;
+  if (fuente != null) {
+    src = fuente.src;
+    allow = fuente.allow ?? "autoplay; fullscreen; xr-spatial-tracking; accelerometer; gyroscope";
+    allowFullscreen = fuente.allowFullscreen;
+    externo = fuente.src;
+  } else if (html != null) {
+    src = resolveUrl(ctx.baseUrl, embedFileName(hs.id));
+    allow = "autoplay; fullscreen; xr-spatial-tracking; accelerometer; gyroscope";
+    allowFullscreen = true;
+    externo = null;
+  }
   const iframe = el("iframe", {
-    src: hs.url,
+    src,
     sandbox,
-    allow: (hs.allow ?? []).join("; "),
-    style: `width:100%;height:${hs.height ?? 480}px;border:0;display:block;`,
-    title: ctx.viewer.text(hs.label) || "Web",
+    allow,
+    allowfullscreen: allowFullscreen,
+    style: `width:100%;height:${height}px;border:0;display:block;`,
+    title,
     referrerpolicy: "no-referrer",
   });
   body.appendChild(iframe);
+  // Muchas webs se niegan a cargar dentro de otra (X-Frame-Options): no se
+  // puede saber desde fuera, así que el enlace a la pestaña está siempre.
+  if (externo != null) {
+    const pie = el("div", { className: "anda-web__foot" });
+    pie.appendChild(el("span", { text: ctx.t("web_blocked_hint"), style: "flex:1;" }));
+    pie.appendChild(el("a", { href: externo, target: "_blank", rel: "noopener noreferrer", text: ctx.t("web_open_external") }));
+    body.appendChild(pie);
+  }
   return { body, wide: true };
 }
 
@@ -808,9 +847,14 @@ function comparePanel(hs: CompareHotspot, ctx: PanelContext): PanelContent {
 }
 
 /**
- * Comparador de dos panoramas: vista dividida con dos visores sincronizados
- * (dos iframes del propio tour, acoplados por la API postMessage). Arrastrar
- * en uno mueve el otro: la comparación es real, no dos botones.
+ * Comparador de dos escenas: vista dividida con dos motores sincronizados
+ * dentro del propio panel. Arrastrar en uno mueve el otro.
+ *
+ * Antes eran dos iframes de la página publicada entera —con su barra, sus
+ * miniaturas y su pantalla de bienvenida cada uno—, que además no existían
+ * en la vista previa del editor. Ahora son dos lienzos limpios del mismo tour
+ * (sin hotspots ni cromo), que funcionan igual publicados, exportados y en
+ * el Studio.
  */
 function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "anda-panel__body anda-panel__body--flush" });
@@ -818,44 +862,65 @@ function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
   const afterLabel = ctx.viewer.text(hs.after.label) || ctx.t("after");
   const split = el("div", { className: "anda-split" });
   const v = ctx.viewer.view();
-  const frames: HTMLIFrameElement[] = [];
+  const tour = ctx.viewer.tour;
+  const visores: TourViewer[] = [];
   const mkPane = (sceneId: string | undefined, label: string): HTMLElement => {
     const pane = el("div", { className: "anda-split__pane" });
-    if (sceneId == null) return pane;
-    const iframe = el("iframe", {
-      src: `${location.pathname}${location.search}#s=${encodeURIComponent(sceneId)}&y=${v.yaw.toFixed(3)}&p=${v.pitch.toFixed(3)}&f=${v.fov.toFixed(3)}`,
-      title: label,
-      allow: "fullscreen; gyroscope",
-    });
-    frames.push(iframe);
-    pane.append(iframe, el("span", { className: "anda-compare__tag", text: label, style: "left:10px;top:10px;bottom:auto;" }));
+    if (sceneId == null || !tour.scenes.some((s) => s.id === sceneId)) return pane;
+    const lienzo = el("div", { className: "anda-split__viewer" });
+    pane.append(lienzo, el("span", { className: "anda-compare__tag", text: label, style: "left:10px;top:10px;bottom:auto;" }));
+    // Un tour recortado: solo las escenas, sin marcadores que se pisen con el
+    // arrastre, y arrancando en la escena que toca con la vista actual
+    const recorte = {
+      ...tour,
+      scenes: tour.scenes.map((s) => ({ ...s, hotspots: [] })),
+      start: { scene: sceneId, view: { yaw: v.yaw, pitch: v.pitch, fov: v.fov }, intro: "none" as const },
+      autorotate: undefined,
+      autopilot: undefined,
+      ui: { ...tour.ui, welcome: undefined },
+    };
+    visores.push(
+      new TourViewer({
+        container: lienzo,
+        tour: recorte,
+        baseUrl: ctx.baseUrl,
+        lang: ctx.viewer.currentLang(),
+        deepLinks: false,
+        analyticsEndpoint: null,
+        editMode: true,
+      }),
+    );
     return pane;
   };
   split.append(mkPane(hs.before.sceneId, beforeLabel), mkPane(hs.after.sceneId, afterLabel));
   body.appendChild(split);
 
   // Sincronía bidireccional con supresión de eco
-  let lastPush = 0;
-  const onMessage = (e: MessageEvent): void => {
-    const data = e.data as { andarama?: string; view?: { yaw: number; pitch: number; fov: number } };
-    if (data?.andarama !== "viewChange" || data.view == null) return;
-    const from = frames.find((f) => f.contentWindow === e.source);
-    if (from == null) return;
-    if (Date.now() - lastPush < 120) return;
-    lastPush = Date.now();
-    for (const f of frames) {
-      if (f !== from) f.contentWindow?.postMessage({ andarama: "setView", view: data.view }, "*");
-    }
-  };
-  window.addEventListener("message", onMessage);
+  let empujando = false;
+  for (const origen of visores) {
+    origen.on("viewChange", (vista) => {
+      if (empujando) return;
+      empujando = true;
+      for (const otro of visores) if (otro !== origen) otro.setView(vista);
+      empujando = false;
+    });
+  }
   const observer = new MutationObserver(() => {
     if (!document.contains(split)) {
-      window.removeEventListener("message", onMessage);
+      for (const vw of visores) vw.destroy();
       observer.disconnect();
     }
   });
   observer.observe(ctx.container, { childList: true, subtree: true });
-  return { body, wide: true };
+  return {
+    body,
+    wide: true,
+    // Los motores se crean antes de que el panel esté en el documento, con
+    // los lienzos a 0×0: en cuanto se monta, que midan de verdad
+    onMounted: () => {
+      for (const vw of visores) vw.marzipanoViewer().updateSize?.();
+    },
+  };
 }
 
 function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
@@ -908,9 +973,11 @@ function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
     if (finished) {
       check.disabled = true;
       ctx.viewer.reportQuizAnswer(hs.id, isCorrect, hs.points ?? 1);
-      if (hs.gate === true && isCorrect) ctx.viewer.setNavigationBlocked(false);
+      // La compuerta se abre al acertar; y también al agotar los intentos,
+      // porque dejar a alguien encerrado en una sala no enseña nada.
+      if (hs.gate === true) ctx.viewer.setNavigationBlocked(false);
     }
-    if (hs.gate === true && !isCorrect) {
+    if (hs.gate === true && !finished) {
       ctx.viewer.setNavigationBlocked(true);
       feedback.append(el("p", { text: ctx.t("quiz_gate_message"), style: "margin:6px 0 0;font-size:13px;" }));
     }

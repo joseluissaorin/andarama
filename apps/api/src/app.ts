@@ -56,7 +56,9 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
           "img-src 'self' data: blob: https://tile.openstreetmap.org",
           "media-src 'self' blob: data:",
           "connect-src 'self' https://tile.openstreetmap.org",
-          "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://challenges.cloudflare.com",
+          // La vista previa del Studio incrusta lo mismo que el tour publicado:
+          // vídeos, webs externas y los códigos de inserción servidos aquí.
+          "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://challenges.cloudflare.com https:",
           "worker-src 'self' blob:",
           "frame-ancestors 'self'",
           "base-uri 'self'",

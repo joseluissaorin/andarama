@@ -584,9 +584,9 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
             type: "polygon",
             positionJson: JSON.stringify({ yaw: mode.points[0]!.yaw, pitch: mode.points[0]!.pitch, points: mode.points }),
             styleJson: null,
-            contentJson: JSON.stringify({ altText: "Polígono" }),
+            contentJson: JSON.stringify({ altText: "Zona" }),
             conditionsJson: null,
-            sort: 0,
+            sort: draft.hotspots.filter((h) => h.sceneId === sceneId).length,
           });
         });
         editor.select(sceneId, id);
@@ -741,6 +741,9 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
           className={`absolute inset-0 bg-[#0b1020] ${placement.kind !== "none" ? "cursor-crosshair" : ""}`}
         />
         <SaltoDeHotspot contenedor={containerRef} sceneId={sceneId} />
+        {placement.kind === "polygon" && (
+          <PoligonoEnCurso contenedor={containerRef} puntos={placement.points} viewer={skinRef} />
+        )}
       </div>
 
       <HotspotPalette
@@ -749,6 +752,110 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         onPick={(type) => setPlacementMode(type === "polygon" ? { kind: "polygon", points: [] } : { kind: "hotspot", type })}
       />
     </>
+  );
+}
+
+/**
+ * El contorno que se está dibujando, vértice a vértice, encima del panorama.
+ *
+ * Antes no se veía nada hasta cerrar con doble clic: cada clic era un acto de
+ * fe. Ahora los vértices, las aristas y la línea hasta el ratón se pintan en
+ * cada fotograma, reproyectados con la vista actual, para que dibujar una zona
+ * sea dibujar y no adivinar.
+ */
+function PoligonoEnCurso({ contenedor, puntos, viewer }: {
+  contenedor: React.RefObject<HTMLDivElement>;
+  puntos: { yaw: number; pitch: number }[];
+  viewer: React.MutableRefObject<MountedSkin | null>;
+}): React.ReactNode {
+  const [pantalla, setPantalla] = useState<{ pts: ({ x: number; y: number } | null)[]; raton: { x: number; y: number } | null; w: number; h: number }>({
+    pts: [],
+    raton: null,
+    w: 0,
+    h: 0,
+  });
+  const ratonRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const caja = contenedor.current;
+    if (caja == null) return;
+    let vivo = true;
+    let frame = 0;
+    const onMove = (e: PointerEvent): void => {
+      const r = caja.getBoundingClientRect();
+      ratonRef.current = { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+    const onLeave = (): void => {
+      ratonRef.current = null;
+    };
+    caja.addEventListener("pointermove", onMove);
+    caja.addEventListener("pointerleave", onLeave);
+    const seguir = (): void => {
+      if (!vivo) return;
+      const view = viewer.current?.viewer.marzipanoViewer().view();
+      const pts = puntos.map((p) => {
+        try {
+          return (view?.coordinatesToScreen?.({ yaw: p.yaw, pitch: p.pitch }) as { x: number; y: number } | null) ?? null;
+        } catch {
+          return null;
+        }
+      });
+      setPantalla((prev) => {
+        const next = { pts, raton: ratonRef.current, w: caja.clientWidth, h: caja.clientHeight };
+        const igual =
+          prev.w === next.w &&
+          prev.h === next.h &&
+          prev.raton?.x === next.raton?.x &&
+          prev.raton?.y === next.raton?.y &&
+          prev.pts.length === next.pts.length &&
+          prev.pts.every((p, i) => p?.x === next.pts[i]?.x && p?.y === next.pts[i]?.y);
+        return igual ? prev : next;
+      });
+      frame = requestAnimationFrame(seguir);
+    };
+    frame = requestAnimationFrame(seguir);
+    return () => {
+      vivo = false;
+      cancelAnimationFrame(frame);
+      caja.removeEventListener("pointermove", onMove);
+      caja.removeEventListener("pointerleave", onLeave);
+    };
+  }, [contenedor, puntos, viewer]);
+
+  const visibles = pantalla.pts.filter((p): p is { x: number; y: number } => p != null);
+  const d = visibles.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+  const ultimo = visibles[visibles.length - 1];
+  const primero = visibles[0];
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 z-10"
+      width={pantalla.w}
+      height={pantalla.h}
+      viewBox={`0 0 ${Math.max(1, pantalla.w)} ${Math.max(1, pantalla.h)}`}
+      aria-hidden="true"
+    >
+      {visibles.length >= 3 && <path d={`${d} Z`} fill="var(--anda-primary)" fillOpacity={0.18} stroke="none" />}
+      {visibles.length >= 2 && <path d={d} fill="none" stroke="var(--anda-primary)" strokeWidth={2.5} strokeLinejoin="round" />}
+      {ultimo != null && pantalla.raton != null && (
+        <path
+          d={`M ${ultimo.x.toFixed(1)} ${ultimo.y.toFixed(1)} L ${pantalla.raton.x.toFixed(1)} ${pantalla.raton.y.toFixed(1)}${
+            visibles.length >= 2 && primero != null ? ` L ${primero.x.toFixed(1)} ${primero.y.toFixed(1)}` : ""
+          }`}
+          fill="none"
+          stroke="var(--anda-primary)"
+          strokeWidth={1.5}
+          strokeDasharray="6 5"
+        />
+      )}
+      {visibles.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r={7} fill="#fff" stroke="var(--anda-primary)" strokeWidth={2.5} />
+          <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--anda-primary)">
+            {i + 1}
+          </text>
+        </g>
+      ))}
+    </svg>
   );
 }
 
@@ -880,7 +987,7 @@ function defaultContent(type: string, otherSceneId?: string): Record<string, unk
     case "model3d":
       return { url: "", format: "glb", altText: "Modelo 3D" };
     case "web":
-      return { url: "https://", altText: "Contenido web" };
+      return { url: "", altText: "Contenido web" };
     case "form":
       return {
         fields: [{ id: "nombre", type: "text", label: "Nombre", required: true }],
@@ -901,7 +1008,9 @@ function defaultContent(type: string, otherSceneId?: string): Record<string, unk
         altText: "Pregunta",
       };
     case "tooltip":
-      return { text: "Etiqueta", permanent: true };
+      // El texto de la burbuja es el único contenido: se deja vacío para que
+      // no salga un «Etiqueta» de relleno al pulsar
+      return { text: "", permanent: true, altText: "Etiqueta" };
     case "link":
       return { url: "https://", altText: "Enlace" };
     case "state":

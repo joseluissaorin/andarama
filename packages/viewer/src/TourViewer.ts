@@ -23,7 +23,7 @@ import { AudioEngine } from "./engine/audio.js";
 import { evalConditions, VariableStore } from "./engine/state.js";
 import { buildDeepLink, parseDeepLink, replaceHash } from "./engine/deeplink.js";
 import { DeviceOrientationControlMethod } from "./engine/gyro.js";
-import { littlePlanetIntroParams, ProjectionPass } from "./engine/projections.js";
+import { littlePlanetIntroParams, ProjectionPass, projectToScreen, type ProjectionFrameState } from "./engine/projections.js";
 import { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
 import { VRManager, type VrEnvironment, type VrHotspot } from "./engine/vr.js";
 import { SceneMarkers } from "./hotspots/markers.js";
@@ -60,6 +60,10 @@ export class TourViewer {
   private analytics: AnalyticsClient;
   private reducedMotion: boolean;
   private navBlocked = false;
+  /** Pregunta con compuerta pendiente en la escena actual: nadie sale sin acertarla. */
+  private gateId: string | null = null;
+  /** Estado del último fotograma del pase de proyección. */
+  private projectionState: ProjectionFrameState = { mode: "rectilinear", mix: 0, settled: true };
   private videoRaf = 0;
   private sceneEnterTime = 0;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
@@ -111,7 +115,17 @@ export class TourViewer {
 
     this.autopilotCtl = new Autopilot({
       goToScene: async (sceneId, opts) => {
-        await this.goTo(sceneId, { view: opts?.view as ViewParams | undefined, force: true });
+        if (opts?.view != null) {
+          await this.goTo(sceneId, { view: opts.view as ViewParams, force: true });
+          return;
+        }
+        // Sin vista propia, se entra como entraría el visitante que pulsa el
+        // paso: por la puerta que une las dos escenas y con la orientación de
+        // llegada que el autor ajustó para ese camino. Antes se caía en la
+        // vista por defecto de la escena y el recorrido no se parecía al tour.
+        const actual = this.currentScene();
+        const paso = actual?.hotspots.find((h): h is NavigationHotspot => h.type === "navigation" && h.target === sceneId);
+        await this.goTo(sceneId, { fromHotspot: paso, entry: paso?.entry, force: true });
       },
       rotateBy: (deltaYaw, durationMs) => this.rotateBy(deltaYaw, durationMs),
       openHotspotPanel: (hotspotId) => {
@@ -134,7 +148,7 @@ export class TourViewer {
       },
       turnTo: (yaw, durationMs) => this.turnTo(yaw, durationMs),
     });
-    this.autopilotCtl.onChange = (active, routeId) => this.emit("autopilotChange", { active, routeId });
+    this.autopilotCtl.onChange = (active, routeId, reason) => this.emit("autopilotChange", { active, routeId, reason });
 
     this.vr = new VRManager(this.container, {
       getEnvironment: () => this.buildVrEnvironment(),
@@ -198,6 +212,7 @@ export class TourViewer {
             return null;
           }
         },
+        onFrame: (state) => this.syncProjectionMarkers(state),
       });
     }
 
@@ -474,7 +489,13 @@ export class TourViewer {
     } = {},
   ): Promise<void> {
     if (this.destroyed) return;
-    if (this.navBlocked && opts.force !== true) return;
+    if ((this.navBlocked || this.gateId != null) && opts.force !== true) {
+      // Se avisa de por qué no se sale: una narración que aún suena o una
+      // pregunta con compuerta sin acertar. Callarse dejaba al visitante
+      // pulsando un paso que no hacía nada.
+      this.emit("navBlocked", this.gateId != null ? { reason: "quiz", hotspotId: this.gateId } : { reason: "narration" });
+      return;
+    }
     const previousId = this.currentId;
     const previousView = this.view();
     let entry: LoadedScene;
@@ -554,7 +575,10 @@ export class TourViewer {
     entry.markers.updateVisibility(this.currentVideoTime());
     entry.markers.updatePolygons();
     this.sceneUse.set(sceneId, Date.now());
+    if (previousId != null && previousId !== sceneId) this.loaded.get(previousId)?.markers.setProjector(null);
+    this.applyProjectionToMarkers();
     this.projectionPass?.invalidateEnvironment();
+    this.updateGate(entry.scene);
     this.evictStaleScenes();
     this.preloadNeighbors(sceneId);
     this.applyIdleBehaviors();
@@ -863,7 +887,37 @@ export class TourViewer {
   /** Compuerta de quiz: bloquear/desbloquear la navegacion. */
   setNavigationBlocked(blocked: boolean): void {
     this.navBlocked = blocked;
+    if (!blocked) this.setGate(null);
     this.emit("narrationBlock", { blocked });
+  }
+
+  /** Pregunta con compuerta que retiene al visitante en esta escena, si la hay. */
+  gateHotspotId(): string | null {
+    return this.gateId;
+  }
+
+  /**
+   * Al entrar en una escena, una pregunta marcada como compuerta que aún no
+   * se ha acertado cierra la salida. Antes la compuerta solo actuaba después
+   * de fallar: quien no abría la pregunta se iba sin más, y eso no es una
+   * compuerta.
+   */
+  private updateGate(scene: Scene): void {
+    if (this.options.editMode === true) {
+      this.setGate(null);
+      return;
+    }
+    const pendiente = scene.hotspots.find(
+      (h) => h.type === "quiz" && h.gate === true && this.quizAnswers.get(h.id)?.correct !== true,
+    );
+    this.setGate(pendiente?.id ?? null);
+  }
+
+  private setGate(hotspotId: string | null): void {
+    if (hotspotId === this.gateId) return;
+    this.gateId = hotspotId;
+    this.container.classList.toggle("anda-nav-gated", hotspotId != null);
+    this.emit("gateChange", { hotspotId });
   }
 
   /**
@@ -930,14 +984,18 @@ export class TourViewer {
   }
 
   /** Todas las rutas del tour, para el quiosco y su lista. */
-  autopilotRoutes(): { id: string; title?: unknown }[] {
-    return (this.tour.autopilot ?? []).map((r) => ({ id: r.id, title: r.title }));
+  autopilotRoutes(): { id: string; title?: unknown; loop: boolean }[] {
+    return (this.tour.autopilot ?? []).map((r) => ({ id: r.id, title: r.title, loop: r.loop === true }));
   }
 
-  /** Encadena todas las rutas sin fin (modo quiosco). */
+  /**
+   * Encadena todas las rutas (modo quiosco). Se repite sin fin solo si alguna
+   * ruta lo pide con «repetir en bucle»; si no, termina y avisa con
+   * `autopilotChange` (reason «finished»).
+   */
   startAutopilotChain(): void {
     const rutas = this.tour.autopilot ?? [];
-    if (rutas.length > 0) void this.autopilotCtl.startChain(rutas);
+    if (rutas.length > 0) void this.autopilotCtl.startChain(rutas, { loop: rutas.some((r) => r.loop === true) });
   }
 
   startAutopilot(routeId?: string): void {
@@ -1104,14 +1162,54 @@ export class TourViewer {
   setProjection(projection: Projection): void {
     if (this.projectionPass == null || !this.projectionPass.supported) return;
     if (projection !== "rectilinear" && this.currentScene()?.source.kind === "flat") return;
-    // Los hotspots se ocultan mientras la proyeccion esta activa (sus
-    // posiciones de pantalla ya no corresponden a lo que se ve).
-    this.container.classList.toggle("anda-projection-active", projection !== "rectilinear");
     this.projectionPass.setProjection(projection, !this.reducedMotion);
+    // Sin animación el pase no da fotogramas de transición: se aplica ya
+    if (this.reducedMotion) this.syncProjectionMarkers(this.projectionPass.frameState);
   }
 
   currentProjection(): Projection {
     return this.projectionPass?.currentProjection ?? "rectilinear";
+  }
+
+  /**
+   * Los marcadores siguen a la proyección. Con el little planet (o el ojo de
+   * pez, Panini, arquitectónica) asentado, cada hotspot se recoloca donde el
+   * shader dibuja su dirección; durante el fundido se esconden, porque en
+   * medio no están en ningún sitio; y en rectilínea vuelve a mandar Marzipano.
+   */
+  private syncProjectionMarkers(state: ProjectionFrameState): void {
+    this.projectionState = state;
+    const activa = state.mode !== "rectilinear" && state.mix >= 0.999;
+    const transicion = !activa && state.mix > 0.001;
+    this.container.classList.toggle("anda-projection-active", activa);
+    this.container.classList.toggle("anda-projection-transition", transicion);
+    this.applyProjectionToMarkers();
+  }
+
+  /** Proyector en uso, uno por proyección: se reutiliza fotograma a fotograma. */
+  private projector: { mode: Projection; fn: (yaw: number, pitch: number) => { x: number; y: number } | null } | null = null;
+
+  private applyProjectionToMarkers(): void {
+    const markers = this.currentMarkers();
+    if (markers == null) return;
+    const state = this.projectionState;
+    if (state.mode !== "rectilinear" && state.mix >= 0.999) {
+      const mode = state.mode;
+      if (this.projector?.mode !== mode) {
+        this.projector = {
+          mode,
+          fn: (yaw, pitch) => {
+            const w = this.container.clientWidth;
+            const h = this.container.clientHeight;
+            return projectToScreen(mode, this.view(), w / Math.max(1, h), { yaw, pitch });
+          },
+        };
+      }
+      markers.setProjector(this.projector.fn);
+      markers.updateProjectedPositions();
+    } else {
+      markers.setProjector(null);
+    }
   }
 
   // -----------------------------------------------------------------------

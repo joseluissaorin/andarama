@@ -121,8 +121,11 @@ describe("grafo basado en hotspots", () => {
 
   it("las rutas de autopilot se leen y escriben en los ajustes", () => {
     const settings: Record<string, unknown> = {};
-    writeAutopilot(settings, [{ id: "r1", title: "Visita", steps: [{ scene: "a", seconds: 5 }], loop: true }]);
-    expect(readAutopilot(settings)).toEqual([{ id: "r1", title: "Visita", steps: [{ scene: "a", seconds: 5 }], loop: true }]);
+    writeAutopilot(settings, [{ id: "r1", title: "Visita", steps: [{ scene: "a", dwell: 5 }], loop: true }]);
+    expect(readAutopilot(settings)).toEqual([{ id: "r1", title: "Visita", steps: [{ scene: "a", dwell: 5 }], loop: true }]);
+    // El nombre antiguo del editor (`seconds`) se sigue leyendo como permanencia
+    settings.autopilot = [{ id: "r2", title: "Vieja", steps: [{ scene: "a", seconds: 4 }] }];
+    expect(readAutopilot(settings)[0]?.steps[0]).toEqual({ scene: "a", dwell: 4 });
     writeAutopilot(settings, []);
     expect(settings.autopilot).toBeUndefined();
   });

@@ -321,3 +321,15 @@ body {
   .anda-cameo { display: none; }
   .anda-tarjeta:hover { transform: none; }
 }
+
+/* Vista previa del Markdown de los paneles de texto (mismo aire que el visor) */
+.anda-md-preview { line-height: 1.6; }
+.anda-md-preview h2 { font-size: 1.25em; margin: .2em 0 .5em; font-weight: 700; }
+.anda-md-preview h3 { font-size: 1.1em; margin: .6em 0 .4em; font-weight: 700; }
+.anda-md-preview p { margin: 0 0 .7em; }
+.anda-md-preview ul, .anda-md-preview ol { padding-left: 1.4em; margin: 0 0 .7em; }
+.anda-md-preview a { color: var(--anda-primary); text-decoration: underline; }
+.anda-md-preview blockquote { border-left: 3px solid var(--anda-primary); margin: .6em 0; padding: .1em 0 .1em .9em; color: var(--anda-text-dim); }
+.anda-md-preview code { background: var(--anda-surface); padding: 1px 5px; border-radius: 5px; font-size: .9em; }
+.anda-md-preview table { border-collapse: collapse; width: 100%; margin: 0 0 .7em; }
+.anda-md-preview td, .anda-md-preview th { border: 1px solid var(--anda-border); padding: 4px 8px; text-align: left; }

@@ -21,7 +21,7 @@ precision highp float;
 varying vec2 vUv;
 uniform sampler2D uTex;   // entorno equirectangular (fila 0 = cenit)
 uniform float uYaw;
-uniform float uPitch;     // positivo = mirar hacia arriba (convencion Marzipano)
+uniform float uPitch;     // positivo = mirar hacia arriba (el visor invierte el pitch de Marzipano, que es positivo hacia abajo)
 uniform float uFov;       // fov vertical actual (rad)
 uniform float uAspect;    // ancho/alto del canvas
 uniform int uMode;        // 1 littlePlanet 2 fisheye 3 panini 4 arquitectonica
@@ -56,13 +56,14 @@ void main() {
 
   vec3 world;
   if (uMode == 1) {
-    // Little planet: estereografica desde el nadir; el arrastre gira y ladea el planeta.
+    // Little planet: estereografica desde el nadir (el suelo en el centro y el
+    // cielo en el borde); el arrastre gira y ladea el planeta.
     float r = length(vec2(x, y));
     float theta = 2.0 * atan(r * S * 0.9);
     // Con el eje en el nadir la quiralidad de pantalla se conserva con phi directa.
     float phi = atan(y, x);
     vec3 cam = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
-    world = camToWorld(cam, uYaw, 1.57079632679 + uPitch * 0.5);
+    world = camToWorld(cam, uYaw, -1.57079632679 + uPitch * 0.5);
   } else if (uMode == 2) {
     // Ojo de pez equidistante: theta proporcional al radio.
     float r = length(vec2(x, y));
@@ -108,6 +109,118 @@ export interface ProjectionPassOptions {
   getView: () => { yaw: number; pitch: number; fov: number } | null;
   /** Textura de entorno equirectangular de la escena actual. */
   getEnvironment: () => Promise<ProjectionEnvironment | null>;
+  /**
+   * Se llama en cada fotograma del pase con el estado de la mezcla. El visor
+   * lo usa para recolocar los marcadores: con la proyección puesta, un
+   * hotspot ya no está donde lo pone la cámara rectilínea.
+   */
+  onFrame?: (state: ProjectionFrameState) => void;
+}
+
+export interface ProjectionFrameState {
+  mode: Projection;
+  /** 0 = rectilínea pura; 1 = proyección pura. */
+  mix: number;
+  /** La mezcla ha llegado a su destino (no hay fundido en curso). */
+  settled: boolean;
+}
+
+/** Vista de cámara tal como la entiende el shader. */
+export interface ProjectionView {
+  yaw: number;
+  pitch: number;
+  fov: number;
+}
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v));
+}
+
+/** Inversa exacta de `camToWorld` del shader. */
+function worldToCam(d: { x: number; y: number; z: number }, yaw: number, pitch: number): { x: number; y: number; z: number } {
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
+  const cp = Math.cos(pitch);
+  const sp = Math.sin(pitch);
+  const qx = d.x * cy - d.z * sy;
+  const qy = d.y;
+  const qz = d.x * sy + d.z * cy;
+  return { x: qx, y: qy * cp - qz * sp, z: qy * sp + qz * cp };
+}
+
+/**
+ * Dónde cae en pantalla una dirección de la esfera con una proyección puesta.
+ *
+ * Es la inversa, punto a punto, de lo que dibuja el shader: con esto los
+ * hotspots siguen en su sitio en el little planet, el ojo de pez, Panini y la
+ * arquitectónica, en vez de esconderse. Devuelve fracciones [0,1] del lienzo
+ * (0,0 arriba a la izquierda) o null si esa dirección no se representa.
+ */
+export function projectToScreen(
+  mode: Projection,
+  view: ProjectionView,
+  aspect: number,
+  coords: { yaw: number; pitch: number },
+): { x: number; y: number } | null {
+  // Dirección en el mundo con la convención del entorno equirectangular
+  // (Marzipano: pitch positivo mira hacia abajo).
+  const d = {
+    x: Math.cos(coords.pitch) * Math.sin(coords.yaw),
+    y: -Math.sin(coords.pitch),
+    z: Math.cos(coords.pitch) * Math.cos(coords.yaw),
+  };
+  const fov = clamp(view.fov, 0.3, 2.4);
+  const S = Math.tan(fov * 0.5);
+  // El shader recibe el pitch con el signo de «positivo = arriba»
+  const pitch = -view.pitch;
+  let x: number;
+  let y: number;
+  switch (mode) {
+    case "littlePlanet": {
+      const c = worldToCam(d, view.yaw, -Math.PI / 2 + pitch * 0.5);
+      const theta = Math.acos(clamp(c.z, -1, 1));
+      // El borde del planeta se va al infinito: lo que queda fuera no se pinta
+      if (theta > 2.75) return null;
+      const r = Math.tan(theta / 2) / (S * 0.9);
+      const phi = Math.atan2(c.y, c.x);
+      x = r * Math.cos(phi);
+      y = r * Math.sin(phi);
+      break;
+    }
+    case "fisheye": {
+      const c = worldToCam(d, view.yaw, pitch);
+      const theta = Math.acos(clamp(c.z, -1, 1));
+      const r = theta / (fov * 0.75);
+      const phi = Math.atan2(c.y, c.x);
+      x = r * Math.cos(phi);
+      y = r * Math.sin(phi);
+      break;
+    }
+    case "pannini": {
+      const c = worldToCam(d, view.yaw, pitch);
+      const phi = Math.atan2(c.x, c.z);
+      if (Math.abs(phi) > 2.6) return null;
+      const h = Math.hypot(c.x, c.z);
+      if (h < 1e-6) return null;
+      const tv = c.y / h;
+      x = (2 * Math.tan(phi / 2)) / S;
+      y = (2 * tv) / (1 + Math.cos(phi)) / S;
+      break;
+    }
+    case "architectural": {
+      const c = worldToCam(d, view.yaw, pitch);
+      if (c.z <= 1e-6) return null;
+      const vphi = Math.atan(c.y / c.z);
+      if (Math.abs(vphi) > 1.45) return null;
+      x = c.x / c.z / S;
+      y = vphi / (fov * 0.5);
+      break;
+    }
+    default:
+      return null;
+  }
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  return { x: (x / aspect + 1) / 2, y: (1 - y) / 2 };
 }
 
 const MAX_TEX = 4096;
@@ -134,9 +247,14 @@ export class ProjectionPass {
   ) {
     this.canvas = document.createElement("canvas");
     this.canvas.style.cssText =
-      "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none;opacity:0;z-index:5;";
+      "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none;opacity:0;";
     this.canvas.setAttribute("aria-hidden", "true");
-    container.appendChild(this.canvas);
+    // Justo encima del lienzo de Marzipano y por debajo de su capa de
+    // hotspots: con un z-index propio tapaba los marcadores, que estaban bien
+    // colocados pero no se veían
+    const stage = container.firstElementChild;
+    if (stage != null) container.insertBefore(this.canvas, stage.nextSibling);
+    else container.appendChild(this.canvas);
     this.gl = this.canvas.getContext("webgl", { premultipliedAlpha: false });
     if (this.gl != null) this.setup(this.gl);
   }
@@ -253,13 +371,15 @@ export class ProjectionPass {
       if (this.env.dynamic) this.uploadEnv();
       gl.uniform1i(this.uniforms.uTex ?? null, 0);
       gl.uniform1f(this.uniforms.uYaw ?? null, view.yaw);
-      gl.uniform1f(this.uniforms.uPitch ?? null, view.pitch);
+      // Marzipano: pitch positivo mira hacia abajo; el shader lo quiere al revés
+      gl.uniform1f(this.uniforms.uPitch ?? null, -view.pitch);
       gl.uniform1f(this.uniforms.uFov ?? null, Math.min(2.4, Math.max(0.3, view.fov)));
       gl.uniform1f(this.uniforms.uAspect ?? null, w / Math.max(1, h));
       gl.uniform1i(this.uniforms.uMode ?? null, MODE_INDEX[this.mode]);
       gl.uniform1f(this.uniforms.uMix ?? null, this.mix);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
+    this.options.onFrame?.({ mode: this.mode, mix: this.mix, settled: this.mix === this.targetMix });
     if (this.mode === "rectilinear" && this.mix === 0) {
       this.active = false;
       this.canvas.style.display = "none";
@@ -267,6 +387,11 @@ export class ProjectionPass {
     }
     this.raf = requestAnimationFrame(this.loop);
   };
+
+  /** Estado actual de la mezcla, para quien no pueda esperar al siguiente frame. */
+  get frameState(): ProjectionFrameState {
+    return { mode: this.mode, mix: this.mix, settled: this.mix === this.targetMix };
+  }
 
   destroy(): void {
     this.active = false;

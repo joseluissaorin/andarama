@@ -2,6 +2,7 @@ import type { MultiresSource, Tour } from "@andarama/schema";
 import { resolveL10n } from "@andarama/schema";
 import { ZipWriter } from "./zip.js";
 import {
+  embedDocuments,
   renderAccessibleHtml,
   renderHtaccess,
   renderIndexHtml,
@@ -283,6 +284,9 @@ export async function runExport(
       onProgress?.({ phase: "viewer", done: ++done, total: splitFiles.length });
     }
     await add("tour.json", enc.encode(JSON.stringify(tour)));
+    // Los códigos de inserción con más que un iframe viajan como documentos
+    // aparte, que el visor abre en un marco aislado
+    for (const doc of embedDocuments(tour, lang)) await add(doc.path, enc.encode(doc.html));
     const assetPaths = await assets.list();
     done = 0;
     for (const path of assetPaths) {

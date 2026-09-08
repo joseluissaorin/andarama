@@ -4,7 +4,28 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Corregido tras la primera ronda de pruebas
+
+- **El tesoro rompía el guardado y la publicación.** Ni la API ni el validador conocían el tipo «treasure»: el primer tesoro hacía fallar el guardado automático en silencio (nada de lo posterior llegaba al servidor) y publicar dejaba la versión anterior, sin los hotspots nuevos. Ahora se acepta, se ve en la vista previa y el editor avisa en rojo cuando algo no se guarda, y el diálogo de publicar lista los errores que lo impiden.
+- **Los recorridos del quiosco no se parecían al tour.** El editor guardaba la permanencia como `seconds` y el visor leía `dwell`: cada parada era un salto sin pausa. Además se entraba en cada escena por su vista por defecto. Ahora se entra por el paso que une las dos escenas, con su orientación de llegada, se espera lo indicado y se mira hacia la salida antes de cruzar.
+- **El quiosco ya no repite sin fin por defecto.** Se ve una vez, termina en la escena inicial y espera con «Verlo otra vez». Solo se repite si algún recorrido tiene «Repetir en bucle», que los nuevos traen apagado.
+- **Las proyecciones (little planet, ojo de pez, Panini, arquitectónica) conservan los hotspots.** Cada marcador se recoloca donde el shader dibuja su dirección, en vez de esconderse. El menú explica en una línea qué es cada proyección.
+- **La compuerta del quiz es una compuerta.** Al entrar en una escena con una pregunta de compuerta sin acertar, los pasos se apagan y no sacan de la escena; al pulsarlos se abre la pregunta. Antes solo actuaba después de fallar.
+- **El importador de cámara ordena por nombre** (con los números como números, que es la numeración de la cámara) y permite elegir nombre o fecha, ascendente o descendente. El arrastre para reordenar se quedaba en nada: ahora la fila se suelta donde se indica y el orden pasa a manual.
+- **YouTube acepta la dirección del vídeo**, no solo el ID: `youtu.be/…`, `watch?v=…`, `shorts/…` se convierten solos, y `t=90` se recoge como segundo de inicio. Lo mismo con Vimeo.
+- **El polígono se ve mientras se dibuja** (vértices numerados, aristas y la línea hasta el ratón), el panel explica para qué sirve una zona y añade la acción «abrir otro hotspot de esta escena».
+- **La etiqueta flotante tiene un solo texto**: el de la burbuja, que es también el que se ve al pasar el ratón. Ya no sale un «Etiqueta» de relleno al pulsar.
+- **Web/iframe**: la vista previa del Studio bloqueaba por política de seguridad cualquier web externa; ahora se permite. El panel ofrece siempre «Abrir en una pestaña nueva», porque muchas webs se niegan a cargar dentro de otra.
+- **El comparador de escenas** abre las dos escenas lado a lado dentro del propio panel, sincronizadas, sin cargar dos tours enteros con su cromo; funciona también en la vista previa del editor.
+- El texto largo de un panel se desplaza correctamente en cualquier navegador.
+
 ### Añadido
+
+- **Renombrar el tour**: pulsando su nombre en la cabecera del editor, o desde el menú de la tarjeta en «Proyectos».
+- **Código de inserción (HTML) en el hotspot Web**: el «embed» de Sketchfab, Genially, Google Maps, H5P… Si es un iframe se usa directamente; si trae scripts, se sirve como documento aparte aislado (`embed/{id}.html`, también en los paquetes exportados).
+- **Texto**: barra de formato Markdown (negrita, cursiva, título, lista, enlace), vista previa en el editor ampliado, título del panel y tamaño de letra.
+- **Quiz**: botón «Añadir otra pregunta» y explicación de que cada marcador es una pregunta; el formulario y el comparador de escenas también explican qué hacen y a dónde van los datos.
+- Ajuste **Botón de visita automática** para quitar el «play» de abajo a la izquierda.
 
 - **Modo de apertura en la publicación**: al publicar se elige si el enlace abre el recorrido normal o el modo quiosco, y el otro enlace queda siempre a mano con `?kiosk=1` o `?kiosk=0`. El quiosco dejó de ser cosa exclusiva del ZIP exportado: una pantalla de vestíbulo puede apuntar a la URL de siempre.
 - Giro del icono de los hotspots (`style.icon.rotation`): deslizador, número y ocho ángulos de un toque. Gira el dibujo y no el fondo circular, que es lo que permite apuntar una flecha a un pasillo concreto.

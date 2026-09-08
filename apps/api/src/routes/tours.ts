@@ -10,6 +10,7 @@ import { notFound } from "../lib/errors.js";
 import { parseJson, sha256Hex } from "../lib/util.js";
 import { resolveAssetKey, guessContentType } from "./projects.js";
 import type { PublicationPointer } from "./publish.js";
+import { embedResponse } from "../lib/embed.js";
 
 /**
  * Servido de tours publicados (/t/{slug}): todo desde el almacenamiento y
@@ -259,6 +260,24 @@ export function tourRoutes(): Hono<AppEnv> {
     res.headers.delete("x-frame-options");
     res.headers.set("cache-control", pointer.visibility === "public" ? "public, max-age=60" : "private, no-store");
     return res;
+  });
+
+  /**
+   * Documento aparte de un código de inserción (hotspot web con HTML). Va con
+   * la directiva `sandbox` en la propia cabecera: aunque alguien lo abra
+   * suelto en una pestaña, nunca corre con el origen del sitio.
+   */
+  r.get("/t/:slug/embed/:file", async (c) => {
+    const slug = c.req.param("slug");
+    const pointer = await loadPointer(c, slug);
+    if (pointer == null) throw notFound();
+    const block = await checkAccess(c, slug, pointer);
+    if (block != null) return block;
+    const runtime = c.get("runtime");
+    const tourBytes = await runtime.storage.getBytes(`pub/${slug}/${pointer.version}/tour.json`);
+    if (tourBytes == null) throw notFound();
+    const tour = JSON.parse(new TextDecoder().decode(tourBytes)) as Tour;
+    return embedResponse(tour, c.req.param("file"), c.req.query("lang") ?? pointer.defaultLang);
   });
 
   // tour.json y assets congelados

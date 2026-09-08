@@ -514,7 +514,10 @@
         },
         {
           "if": { "properties": { "type": { "const": "text" } } },
-          "then": { "required": ["body"] }
+          "then": {
+            "required": ["body"],
+            "properties": { "fontSize": { "enum": ["small", "normal", "large", "xlarge"] } }
+          }
         },
         {
           "if": { "properties": { "type": { "const": "image" } } },
@@ -546,7 +549,10 @@
         },
         {
           "if": { "properties": { "type": { "const": "web" } } },
-          "then": { "required": ["url"] }
+          "then": {
+            "required": ["url"],
+            "properties": { "html": { "type": "string" } }
+          }
         },
         {
           "if": { "properties": { "type": { "const": "form" } } },
@@ -598,6 +604,7 @@
       "type": "object",
       "properties": {
         "titleBar": { "type": "boolean" },
+        "autopilotButton": { "type": "boolean" },
         "sceneMenu": { "type": "boolean" },
         "thumbnails": { "type": "boolean" },
         "compass": { "type": "boolean" },

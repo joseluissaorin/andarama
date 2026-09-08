@@ -304,6 +304,8 @@ export interface TextHotspot extends HotspotBase {
   /** Markdown (saneado al renderizar). */
   body: L10n;
   title?: L10n;
+  /** Tamaño de letra del panel; «normal» si no se indica. */
+  fontSize?: "small" | "normal" | "large" | "xlarge";
 }
 
 export interface ImageHotspot extends HotspotBase {
@@ -376,7 +378,14 @@ export interface Model3dHotspot extends HotspotBase {
 
 export interface WebHotspot extends HotspotBase {
   type: "web";
+  /** Dirección de la página a incrustar (modo «url»). */
   url: string;
+  /**
+   * Código de inserción pegado tal cual (el `<iframe>` de Sketchfab, Genially,
+   * Google Maps, H5P…). Si es un único iframe se usa su `src`; si trae más
+   * marcado se sirve como documento aparte, aislado en un sandbox.
+   */
+  html?: string;
   /** Flags de sandbox del iframe. */
   sandbox?: string[];
   allow?: string[];
@@ -591,6 +600,10 @@ export interface AutopilotRoute {
   steps: AutopilotStep[];
   /** Reanudar tras n segundos de inactividad del usuario. */
   resumeAfter?: number;
+  /**
+   * Repetir sin fin. Si no, el recorrido se ve una vez, termina en la escena
+   * inicial y solo vuelve a empezar cuando alguien lo pide.
+   */
   loop?: boolean;
 }
 
@@ -656,6 +669,8 @@ export interface UIConfig {
   /** Tamaño en px del botón de los hotspots (por defecto 44). */
   hotspotSize?: number;
   titleBar?: boolean;
+  /** Botón de visita automática (abajo a la izquierda) cuando hay recorridos. */
+  autopilotButton?: boolean;
   sceneMenu?: boolean;
   thumbnails?: boolean;
   compass?: boolean;

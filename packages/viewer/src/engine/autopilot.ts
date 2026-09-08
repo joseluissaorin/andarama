@@ -23,12 +23,18 @@ export interface AutopilotHost {
   turnTo?(yaw: number, durationMs: number): Promise<void>;
 }
 
+/** Por qué cambia el estado del autopilot. */
+export type AutopilotChangeReason = "start" | "next" | "finished" | "stopped" | "paused";
+
+/** Permanencia por defecto en cada parada (s): el tiempo de mirar alrededor. */
+const DEFAULT_DWELL = 6;
+
 export class Autopilot {
   private route: AutopilotRoute | null = null;
   private running = false;
   private cancelled = false;
   private resumeTimer: ReturnType<typeof setTimeout> | null = null;
-  onChange: ((active: boolean, routeId: string | null) => void) | null = null;
+  onChange: ((active: boolean, routeId: string | null, reason: AutopilotChangeReason) => void) | null = null;
 
   constructor(private host: AutopilotHost) {}
 
@@ -37,22 +43,31 @@ export class Autopilot {
   }
 
   /**
-   * Encadena varias rutas, una tras otra, sin fin. Es lo que hace falta en un
-   * quiosco: enseñar TODO lo que hay, no solo el primer recorrido.
+   * Encadena varias rutas, una tras otra. Es lo que hace falta en un quiosco:
+   * enseñar TODO lo que hay, no solo el primer recorrido.
+   *
+   * Con `loop` la cadena vuelve a empezar sin fin; sin él, se ve una vez y
+   * avisa de que ha terminado (`onChange` con «finished»), para que quien la
+   * monta decida qué hacer: volver a la escena inicial y esperar a que alguien
+   * la pida otra vez.
    */
-  async startChain(routes: AutopilotRoute[]): Promise<void> {
+  async startChain(routes: AutopilotRoute[], opts: { loop?: boolean } = {}): Promise<void> {
     if (routes.length === 0) return;
     this.chain = routes;
     this.cancelledChain = false;
     let i = 0;
-    // Cada vuelta arranca la siguiente ruta; start() ya respeta cancelled
     while (!this.cancelledChain) {
       const route = routes[i % routes.length]!;
+      const last = i === routes.length - 1;
       // Dentro de la cadena, cada ruta se reproduce una vez aunque tenga
       // `loop`: quedarse en la primera para siempre sería no enseñar el resto
-      await this.start({ ...route, loop: false });
+      await this.start({ ...route, loop: false }, { inChain: true, lastInChain: last && opts.loop !== true });
       if (this.cancelledChain || this.cancelled) return;
       i++;
+      if (i >= routes.length && opts.loop !== true) {
+        this.chain = null;
+        return;
+      }
       // Un respiro entre recorridos. Además de dar tiempo a leer el rótulo,
       // impide que una cadena de rutas sin pausas gire en vacío y se coma la
       // CPU del quiosco sin ceder nunca el hilo.
@@ -63,12 +78,12 @@ export class Autopilot {
   private chain: AutopilotRoute[] | null = null;
   private cancelledChain = false;
 
-  async start(route: AutopilotRoute): Promise<void> {
+  async start(route: AutopilotRoute, opts: { inChain?: boolean; lastInChain?: boolean } = {}): Promise<void> {
     this.stopCurrent();
     this.route = route;
     this.cancelled = false;
     this.running = true;
-    this.onChange?.(true, route.id);
+    this.onChange?.(true, route.id, "start");
     try {
       do {
         for (let si = 0; si < route.steps.length; si++) {
@@ -84,10 +99,13 @@ export class Autopilot {
             await sleep(400);
           }
           if (step.rotate != null && step.rotate !== 0) {
-            const duration = Math.abs(step.rotate) * 9000 / (2 * Math.PI);
+            const duration = (Math.abs(step.rotate) * 9000) / (2 * Math.PI);
             await this.host.rotateBy(step.rotate, duration);
           }
-          if (step.dwell != null && step.dwell > 0) await sleep(step.dwell * 1000);
+          // La permanencia es lo que da tiempo a mirar: sin ella el recorrido
+          // era una sucesión de giros y saltos que nadie llegaba a ver
+          const dwell = step.dwell ?? DEFAULT_DWELL;
+          if (dwell > 0) await sleep(dwell * 1000);
           // Antes de saltar, mirar hacia la puerta por la que se sale: así se
           // ve de dónde a dónde se va en vez de aparecer de golpe en otro sitio
           const siguiente = route.steps[si + 1];
@@ -104,19 +122,26 @@ export class Autopilot {
     } finally {
       if (!this.cancelled) {
         this.running = false;
-        this.onChange?.(false, null);
+        // En medio de una cadena que sigue, el final de una ruta es solo un
+        // «siguiente»; el «terminado» de verdad es el de la última
+        const reason: AutopilotChangeReason = opts.inChain === true && opts.lastInChain !== true ? "next" : "finished";
+        this.onChange?.(false, null, reason);
       }
     }
   }
 
-  /** Pausa por interaccion del usuario; reanuda tras la inactividad configurada. */
+  /**
+   * Pausa por interaccion del usuario. Solo se reanuda sola si la ruta lo
+   * pide con `resumeAfter`: a quien toca la pantalla no se le arrebata el
+   * control a los veinte segundos.
+   */
   pauseForInteraction(): void {
     if (this.route == null || !this.running) return;
     this.cancelled = true;
     this.running = false;
-    this.onChange?.(false, this.route.id);
+    this.onChange?.(false, this.route.id, "paused");
     if (this.resumeTimer != null) clearTimeout(this.resumeTimer);
-    const resumeAfter = this.route.resumeAfter ?? 20;
+    const resumeAfter = this.route.resumeAfter ?? 0;
     if (resumeAfter > 0) {
       const route = this.route;
       this.resumeTimer = setTimeout(() => {
@@ -139,12 +164,13 @@ export class Autopilot {
     this.cancelledChain = true;
     this.chain = null;
     this.cancelled = true;
+    const wasRunning = this.running;
     this.running = false;
     if (this.resumeTimer != null) {
       clearTimeout(this.resumeTimer);
       this.resumeTimer = null;
     }
-    if (this.route != null) this.onChange?.(false, null);
+    if (this.route != null && wasRunning) this.onChange?.(false, null, "stopped");
     this.route = null;
   }
 }

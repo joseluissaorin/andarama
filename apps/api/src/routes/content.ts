@@ -11,7 +11,7 @@ import { audit } from "../lib/helpers.js";
 
 const HOTSPOT_TYPES = [
   "navigation", "text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf",
-  "model3d", "web", "form", "compare", "quiz", "polygon", "tooltip", "link", "state",
+  "model3d", "web", "form", "compare", "quiz", "polygon", "tooltip", "link", "state", "treasure",
 ] as const;
 
 const clientId = z.string().regex(/^[A-Za-z0-9_-]{8,40}$/);
