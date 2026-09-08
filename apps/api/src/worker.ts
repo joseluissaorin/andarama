@@ -201,6 +201,11 @@ export default {
     }
 
     if (url.host === apexHost) {
+      // Las rutas de la app que Clerk conoce como relativas (acceso, alta,
+      // plan) viven en el subdominio de la app: el apex las acompaña
+      if (/^\/(login|register|reset|invite|plan|account)$/.test(path)) {
+        return Response.redirect(`https://${appHost}${path}${url.search}`, 302);
+      }
       // Las secciones viven en sus subdominios: las URL viejas acompanan
       if ((path === "/studio" || path.startsWith("/studio/")) && esPagina) {
         const resto = path.slice("/studio".length) || "/";
