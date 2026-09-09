@@ -211,6 +211,60 @@ describe("instancia alojada con Clerk", () => {
     expect(billing).toMatchObject({ plan: "vitalicio", planOverride: "vitalicio", quota: { quotaTours: 1000 } });
   });
 
+  it("una tanda de cupones se genera, se canjea una sola vez y no rebaja a nadie", async () => {
+    // Solo el administrador de la instancia los genera
+    expect((await call("tok-ana", "/api/v1/admin/coupons", { method: "POST", body: { count: 2 } })).status).toBe(403);
+
+    const res = await call("tok-bruno", "/api/v1/admin/coupons", {
+      method: "POST",
+      body: { count: 3, plan: "vitalicio", batch: "lanzamiento", note: "Primeros cien" },
+    });
+    expect(res.status).toBe(201);
+    const { codes } = (await res.json()) as { codes: string[] };
+    expect(codes).toHaveLength(3);
+    expect(new Set(codes).size).toBe(3);
+    for (const code of codes) expect(code).toMatch(/^ANDA-[ACDEFGHJKMNPQRTUVWXY2346789]{4}-[ACDEFGHJKMNPQRTUVWXY2346789]{4}$/);
+
+    // Ana tiene Paseo por Clerk: el cupón la sube a De por vida
+    const canje = await call("tok-ana", "/api/v1/billing/coupon", { method: "POST", body: { code: codes[0]! } });
+    expect(canje.status).toBe(200);
+    expect(await canje.json()).toMatchObject({ plan: "vitalicio", planName: "De por vida", keptPrevious: false, previousPlan: "paseo" });
+    const billing = (await (await call("tok-ana", "/api/v1/billing/me")).json()) as { plan: string; quota: { quotaTours: number } };
+    expect(billing).toMatchObject({ plan: "vitalicio", quota: { quotaTours: 1000 } });
+
+    // Un cupón, un uso: ni ella ni nadie lo repite
+    expect((await call("tok-ana", "/api/v1/billing/coupon", { method: "POST", body: { code: codes[0]! } })).status).toBe(409);
+    expect((await call("tok-clara", "/api/v1/billing/coupon", { method: "POST", body: { code: codes[0]! } })).status).toBe(409);
+
+    // Se acepta tecleado a mano: minúsculas, espacios y sin el prefijo
+    const suelto = codes[1]!.replace("ANDA-", "").toLowerCase().replace("-", " ");
+    expect((await call("tok-clara", "/api/v1/billing/coupon", { method: "POST", body: { code: suelto } })).status).toBe(200);
+
+    // Un cupón menor no rebaja a quien ya tiene uno mejor, pero se gasta
+    const menores = (await (await call("tok-bruno", "/api/v1/admin/coupons", {
+      method: "POST",
+      body: { count: 1, plan: "andar" },
+    })).json()) as { codes: string[] };
+    const bajada = await call("tok-ana", "/api/v1/billing/coupon", { method: "POST", body: { code: menores.codes[0]! } });
+    expect(await bajada.json()).toMatchObject({ plan: "andar", keptPrevious: true, previousPlan: "vitalicio" });
+    const tras = (await (await call("tok-ana", "/api/v1/billing/me")).json()) as { plan: string };
+    expect(tras.plan).toBe("vitalicio");
+
+    // Un código inventado no existe
+    expect((await call("tok-ana", "/api/v1/billing/coupon", { method: "POST", body: { code: "ANDA-XXXX-XXXX" } })).status).toBe(404);
+
+    // El listado del panel cuenta lo canjeado y el sin canjear se puede retirar
+    const lista = (await (await call("tok-bruno", "/api/v1/admin/coupons?batch=lanzamiento")).json()) as {
+      total: number;
+      redeemed: number;
+      coupons: { code: string; email: string | null }[];
+    };
+    expect(lista).toMatchObject({ total: 3, redeemed: 2 });
+    expect(lista.coupons.find((x) => x.code === codes[0])?.email).toBe("ana@ejemplo.es");
+    expect((await call("tok-bruno", `/api/v1/admin/coupons/${codes[2]!}`, { method: "DELETE" })).status).toBe(200);
+    expect((await call("tok-bruno", `/api/v1/admin/coupons/${codes[0]!}`, { method: "DELETE" })).status).toBe(409);
+  });
+
   it("sin plan de pago no se puede crear ningún recorrido", async () => {
     people["tok-clara"]!.plan = "u:free_user";
     const clara = (await (await call("tok-clara", "/api/v1/me")).json()) as { user: { id: string }; orgs: { id: string }[] };

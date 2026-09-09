@@ -41,6 +41,12 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/config": { get: p("Puerta de la instancia (cuentas propias o Clerk)", "auth") },
       "/billing/plans": { get: p("Catálogo de planes de la instancia alojada", "billing") },
       "/billing/me": { get: p("Plan y cuota del usuario", "billing") },
+      "/billing/coupon": { post: p("Canjear un cupón: concede su plan a quien lo canjea", "billing") },
+      "/admin/coupons": {
+        get: p("Cupones de la instancia con su estado", "admin"),
+        post: p("Generar una tanda de cupones", "admin"),
+      },
+      "/admin/coupons/{code}": { delete: p("Retirar un cupón sin canjear", "admin") },
       "/me/prefs": { put: p("Preferencias personales (idioma, valores por defecto)", "auth") },
       "/orgs/{id}/defaults": { get: p("Valores por defecto de la organización", "orgs"), put: p("Fijar valores por defecto y propagarlos a los borradores", "orgs") },
       "/orgs": { post: p("Crear organización", "orgs") },

@@ -26,6 +26,22 @@ La pasarela cobra en dólares estadounidenses porque Clerk Billing todavía no a
 - El administrador de la instancia no se cobra a sí mismo: su cuota es la que fija en la organización, como en el self-host.
 - Un plan se puede **conceder a mano** desde el panel de administración (`PATCH /api/v1/admin/users/:id` con `planOverride`): sirve para cortesías, transferencias bancarias o el plan vitalicio si alguien lo paga por otra vía. Lo concedido a mano manda sobre lo que diga Clerk.
 
+## Cupones
+
+Un **cupón** es un código de un solo uso que concede un plan sin pasar por la pasarela: al canjearlo se escribe en la cuenta el mismo `plan_override` que concede el administrador a mano, así que manda sobre lo que diga Clerk y no caduca con la suscripción. Sirve para licencias vitalicias de un lanzamiento, cortesías, patrocinios o quien paga por transferencia.
+
+Se generan en **Administración → Cupones**: se elige cuántos, qué plan, un lote para agruparlos y una nota. Los códigos aparecen enteros al generarlos, con botones para copiarlos y descargarlos en CSV, y siempre se pueden volver a consultar en la tabla, que además dice quién ha canjeado cada uno.
+
+Quien recibe un código lo canjea en **Plan → ¿Tienes un cupón?**. Detalles que conviene conocer:
+
+- El código tiene la forma `ANDA-XXXX-XXXX`, sin letras ni cifras que se confundan al dictado (ni `O`, ni `0`, ni `1`, ni `I`). Se acepta tecleado en minúsculas, con espacios o sin el prefijo.
+- **Un cupón, un solo uso.** El reparto es atómico: si dos personas canjean el mismo código a la vez, solo una se lo lleva.
+- Un cupón **nunca rebaja** a quien ya tiene un plan igual o mejor; en ese caso se da por gastado y se conserva el plan que ya tenía.
+- Los cupones se pueden retirar mientras nadie los haya canjeado.
+- Cada canje queda en la auditoría de la instancia.
+
+Por API: `POST /api/v1/admin/coupons` genera una tanda, `GET /api/v1/admin/coupons` la lista y `POST /api/v1/billing/coupon` canjea. Solo tienen sentido en la instancia alojada: en el self-host y en el ejecutable de escritorio no hay cuotas de plan que conceder.
+
 ## Qué hace Clerk y qué no
 
 Con Clerk delante, la instancia cierra sus cuentas propias: registro, contraseña, verificación en dos pasos, passkeys y correos de acceso los lleva Clerk; el SSO OIDC propio y el TOTP dejan de ofrecerse. Los datos (usuarios, organizaciones, recorridos, medios) siguen viviendo en la base de datos de Andarama: Clerk solo aporta la llave y el cobro. La primera vez que alguien entra con Clerk se le crea su cuenta local y su organización; si ya existía una cuenta con ese correo, se enlaza.

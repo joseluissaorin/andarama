@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Activity, Download, ExternalLink, Globe, Plus, RefreshCcw, Send, Trash2, Upload, UserPlus } from "lucide-react";
+import { Activity, Copy, Download, ExternalLink, Globe, Plus, RefreshCcw, Send, Ticket, Trash2, Upload, UserPlus } from "lucide-react";
 import { Badge, Button, Dialog, Field, Input, Select, Spinner, Switch, Tabs, TabList, TabTrigger, Textarea, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useT } from "../i18n";
@@ -24,6 +24,7 @@ export function AdminPage(): React.ReactNode {
           <TabTrigger value="audit">{t("audit_log")}</TabTrigger>
           <TabTrigger value="hooks">{t("webhooks")}</TabTrigger>
           <TabTrigger value="lti">LTI</TabTrigger>
+          <TabTrigger value="coupons">{t("coupons")}</TabTrigger>
           <TabTrigger value="backup">{t("backup")}</TabTrigger>
         </TabList>
         <div className="mt-5">
@@ -53,6 +54,9 @@ export function AdminPage(): React.ReactNode {
           </Tabs.Content>
           <Tabs.Content value="lti">
             <LtiPanel />
+          </Tabs.Content>
+          <Tabs.Content value="coupons">
+            <CouponsPanel />
           </Tabs.Content>
           <Tabs.Content value="backup">
             <BackupPanel />
@@ -920,6 +924,181 @@ function BackupPanel(): React.ReactNode {
         </label>
       </div>
       <p className="text-xs text-[var(--anda-text-dim)]">{t("backup_hint")}</p>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Cupones: tandas de códigos canjeables que conceden un plan
+// ---------------------------------------------------------------------------
+
+interface CouponRow {
+  code: string;
+  plan: string;
+  batch: string | null;
+  note: string | null;
+  expiresAt: number | null;
+  redeemedAt: number | null;
+  redeemedBy: string | null;
+  email: string | null;
+  createdAt: number;
+}
+
+function CouponsPanel(): React.ReactNode {
+  const t = useT();
+  const toast = useToast();
+  const mutate = useMutate();
+  const queryClient = useQueryClient();
+  const [count, setCount] = useState("100");
+  const [plan, setPlan] = useState("vitalicio");
+  const [batch, setBatch] = useState("");
+  const [note, setNote] = useState("");
+  /** Los códigos recién generados: es la única vez que se enseñan juntos. */
+  const [fresh, setFresh] = useState<string[] | null>(null);
+
+  const list = useQuery({
+    queryKey: ["coupons"],
+    queryFn: () => api<{ coupons: CouponRow[]; total: number; redeemed: number }>("/admin/coupons"),
+  });
+
+  const generar = (): void => {
+    mutate(
+      async () => {
+        const res = await api<{ codes: string[] }>("/admin/coupons", {
+          method: "POST",
+          body: {
+            count: intOr(count, 1),
+            plan,
+            batch: batch.trim() || undefined,
+            note: note.trim() || undefined,
+          },
+        });
+        setFresh(res.codes);
+        toast.push(t("coupons_created", { count: String(res.codes.length) }), "ok");
+      },
+      () => void queryClient.invalidateQueries({ queryKey: ["coupons"] }),
+    );
+  };
+
+  const descargar = (codes: string[]): void => {
+    const filas = ["codigo,plan,lote", ...codes.map((c) => `${c},${plan},${batch.trim()}`)];
+    const url = URL.createObjectURL(new Blob([filas.join("\n")], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cupones-${batch.trim() || plan}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="anda-bloque p-5">
+        <h3 className="mb-1 flex items-center gap-2 text-[15px] font-semibold">
+          <Ticket className="h-4 w-4" /> {t("coupons_new")}
+        </h3>
+        <p className="mb-4 max-w-2xl text-[13px] text-[var(--anda-text-dim)]">{t("coupons_hint")}</p>
+        <div className="flex flex-wrap items-end gap-3">
+          <Field label={t("coupons_count")} htmlFor="cp-count">
+            <Input id="cp-count" inputMode="numeric" value={count} onChange={(e) => setCount(e.target.value)} className="w-24" />
+          </Field>
+          <Field label={t("plan")} htmlFor="cp-plan">
+            <Select id="cp-plan" value={plan} onChange={(e) => setPlan(e.target.value)} className="w-44">
+              <option value="vitalicio">De por vida</option>
+              <option value="excursion">Excursión</option>
+              <option value="paseo">Paseo</option>
+              <option value="andar">Andar</option>
+            </Select>
+          </Field>
+          <Field label={t("coupons_batch")} htmlFor="cp-batch">
+            <Input id="cp-batch" value={batch} onChange={(e) => setBatch(e.target.value)} className="w-48" placeholder="lanzamiento" />
+          </Field>
+          <Field label={t("coupons_note")} htmlFor="cp-note">
+            <Input id="cp-note" value={note} onChange={(e) => setNote(e.target.value)} className="w-60" />
+          </Field>
+          <Button onClick={generar}>
+            <Plus className="h-4 w-4" /> {t("coupons_generate")}
+          </Button>
+        </div>
+
+        {fresh != null && (
+          <div className="mt-5 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-4">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="text-[13px] font-semibold">{t("coupons_fresh", { count: String(fresh.length) })}</span>
+              <div className="flex-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void navigator.clipboard.writeText(fresh.join("\n")).then(() => toast.push(t("copied"), "ok"));
+                }}
+              >
+                <Copy className="h-4 w-4" /> {t("copy")}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => descargar(fresh)}>
+                <Download className="h-4 w-4" /> CSV
+              </Button>
+            </div>
+            <pre className="max-h-60 overflow-auto font-mono text-[12.5px] leading-relaxed">{fresh.join("\n")}</pre>
+          </div>
+        )}
+      </div>
+
+      <div className="anda-bloque p-5">
+        <h3 className="mb-3 text-[15px] font-semibold">
+          {t("coupons")}{" "}
+          {list.data != null && (
+            <span className="font-normal text-[var(--anda-text-dim)]">
+              ({t("coupons_redeemed_of", { redeemed: String(list.data.redeemed), total: String(list.data.total) })})
+            </span>
+          )}
+        </h3>
+        <div className="max-h-[28rem] overflow-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="sticky top-0 bg-[var(--anda-surface)] text-xs uppercase text-[var(--anda-text-dim)]">
+              <tr>
+                <th className="py-2">{t("coupons_code")}</th>
+                <th>{t("plan")}</th>
+                <th>{t("coupons_batch")}</th>
+                <th>{t("status")}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {(list.data?.coupons ?? []).map((cp) => (
+                <tr key={cp.code} className="border-t border-[var(--anda-border)]">
+                  <td className="py-2 font-mono text-[12.5px]">{cp.code}</td>
+                  <td>{cp.plan}</td>
+                  <td className="text-[var(--anda-text-dim)]">{cp.batch ?? "—"}</td>
+                  <td>
+                    {cp.redeemedAt != null ? (
+                      <Badge tone="ok">{cp.email ?? t("coupons_redeemed")}</Badge>
+                    ) : (
+                      <Badge>{t("coupons_free")}</Badge>
+                    )}
+                  </td>
+                  <td className="text-right">
+                    {cp.redeemedAt == null && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t("delete")}
+                        onClick={() =>
+                          mutate(
+                            () => api(`/admin/coupons/${cp.code}`, { method: "DELETE" }),
+                            () => void queryClient.invalidateQueries({ queryKey: ["coupons"] }),
+                          )
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { desc, eq, isNull, sql } from "drizzle-orm";
-import { auditLog, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@andarama/db";
+import { auditLog, coupons, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { hmacSign } from "@andarama/adapters";
@@ -9,6 +9,7 @@ import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
 import { isInstanceAdmin } from "../lib/authz.js";
 import { audit, getSettings, saveSettings } from "../lib/helpers.js";
+import { createCoupons, normalizeCouponCode } from "../lib/coupons.js";
 
 /** Panel de administracion global de la instancia (§3.7). */
 export function adminRoutes(): Hono<AppEnv> {
@@ -214,6 +215,72 @@ export function adminRoutes(): Hono<AppEnv> {
       .parse(await c.req.json());
     await db.update(orgs).set(body).where(eq(orgs.id, c.req.param("orgId")));
     await audit(c, "admin.org_quota", "org", c.req.param("orgId"), body);
+    return c.json({ ok: true });
+  });
+
+  // ------- Cupones -------
+
+  /** Tanda nueva: devuelve los códigos en claro, que es cuando se reparten. */
+  r.post("/coupons", async (c) => {
+    const db = c.get("db");
+    const auth = requireAuth(c);
+    const body = z
+      .object({
+        count: z.number().int().min(1).max(500),
+        plan: z.enum(["andar", "paseo", "excursion", "vitalicio"]).default("vitalicio"),
+        batch: z.string().max(60).optional(),
+        note: z.string().max(200).optional(),
+        expiresAt: z.number().int().positive().nullable().optional(),
+      })
+      .parse(await c.req.json());
+    const codes = await createCoupons(db, {
+      count: body.count,
+      plan: body.plan,
+      batch: body.batch,
+      note: body.note,
+      expiresAt: body.expiresAt ?? undefined,
+      createdBy: auth.user.id,
+    });
+    await audit(c, "admin.coupons_create", "coupon", body.batch ?? null, { count: codes.length, plan: body.plan });
+    return c.json({ codes, plan: body.plan, batch: body.batch ?? null }, 201);
+  });
+
+  r.get("/coupons", async (c) => {
+    const db = c.get("db");
+    const batch = c.req.query("batch");
+    const rows = await db
+      .select({
+        code: coupons.code,
+        plan: coupons.plan,
+        batch: coupons.batch,
+        note: coupons.note,
+        expiresAt: coupons.expiresAt,
+        redeemedAt: coupons.redeemedAt,
+        redeemedBy: coupons.redeemedBy,
+        email: users.email,
+        createdAt: coupons.createdAt,
+      })
+      .from(coupons)
+      .leftJoin(users, eq(coupons.redeemedBy, users.id))
+      .where(batch != null && batch !== "" ? eq(coupons.batch, batch) : undefined)
+      .orderBy(desc(coupons.createdAt))
+      .limit(1000);
+    return c.json({
+      coupons: rows,
+      total: rows.length,
+      redeemed: rows.filter((row) => row.redeemedAt != null).length,
+    });
+  });
+
+  /** Retira un cupón que aún no se ha canjeado. */
+  r.delete("/coupons/:code", async (c) => {
+    const db = c.get("db");
+    const code = normalizeCouponCode(c.req.param("code"));
+    const row = (await db.select().from(coupons).where(eq(coupons.code, code)).limit(1))[0];
+    if (row == null) throw notFound("Ese cupón no existe");
+    if (row.redeemedBy != null) throw conflict("Ese cupón ya está canjeado: no se puede retirar");
+    await db.delete(coupons).where(eq(coupons.code, code));
+    await audit(c, "admin.coupon_delete", "coupon", code);
     return c.json({ ok: true });
   });
 

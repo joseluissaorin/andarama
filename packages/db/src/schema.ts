@@ -93,6 +93,25 @@ export const apiTokens = sqliteTable(
   (t) => [uniqueIndex("api_tokens_hash_idx").on(t.hash), index("api_tokens_user_idx").on(t.userId)],
 );
 
+export const coupons = sqliteTable(
+  "coupons",
+  {
+    /** Código canónico en mayúsculas, con guiones: ANDA-XXXX-XXXX. */
+    code: text("code").primaryKey(),
+    /** Plan que concede (slug de PLANS). */
+    plan: text("plan").notNull(),
+    /** Tanda en la que se generó: agrupa los de un mismo lanzamiento. */
+    batch: text("batch"),
+    note: text("note"),
+    expiresAt: integer("expires_at"),
+    redeemedBy: text("redeemed_by").references(() => users.id, { onDelete: "set null" }),
+    redeemedAt: integer("redeemed_at"),
+    createdBy: text("created_by"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("coupons_batch_idx").on(t.batch), index("coupons_redeemed_idx").on(t.redeemedBy)],
+);
+
 // ---------------------------------------------------------------------------
 // Organizaciones y pertenencia
 // ---------------------------------------------------------------------------

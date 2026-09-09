@@ -1,6 +1,10 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import type { AppEnv } from "../lib/context.js";
 import { requireAuth } from "../lib/session.js";
+import { notFound } from "../lib/errors.js";
+import { redeemCoupon } from "../lib/coupons.js";
+import { audit } from "../lib/helpers.js";
 import { PLANS, effectivePlan, quotaForPlan } from "../lib/plans.js";
 
 /**
@@ -43,6 +47,16 @@ export function billingRoutes(): Hono<AppEnv> {
       quota: hosted ? quotaForPlan(plan) : null,
       instanceAdmin: auth.user.roleGlobal === "admin",
     });
+  });
+
+  /** Canje de un cupón: concede el plan sin pasar por la pasarela. */
+  r.post("/coupon", async (c) => {
+    const auth = requireAuth(c);
+    if (c.get("config").clerk == null) throw notFound("Esta instancia no tiene planes: los cupones no hacen falta");
+    const { code } = z.object({ code: z.string().min(4).max(40) }).parse(await c.req.json());
+    const res = await redeemCoupon(c.get("db"), code, auth.user.id);
+    await audit(c, "billing.coupon_redeem", "coupon", res.code, { plan: res.plan, keptPrevious: res.keptPrevious });
+    return c.json(res);
   });
 
   return r;
