@@ -6,8 +6,7 @@ de trabajo del proyecto, que se conservan porque explican de dónde viene lo que
 hay hoy:
 
 - [`Andarama-especificacion-v2.md`](Andarama-especificacion-v2.md): la
-  especificación original con la que nació el proyecto, cuando era un encargo
-  de la Universidad de La Laguna. La trazabilidad de
+  especificación original con la que nació el proyecto. La trazabilidad de
   cada requisito a su implementación está en
   [`REQUIREMENTS.md`](../REQUIREMENTS.md).
 - [`CRITICA-BETA1.md`](CRITICA-BETA1.md): la auditoría crítica que se hizo a la
