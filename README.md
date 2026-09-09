@@ -22,7 +22,7 @@
 
 Andarama es una plataforma de código abierto para **crear, publicar y compartir recorridos virtuales 360**. Se suben fotos esféricas, se conectan como quien dibuja un plano y sale un recorrido que se pasea desde cualquier navegador, también con gafas de realidad virtual. Sin plugins y sin dejar los datos en casa ajena: corre entero en la capa gratuita de Cloudflare o en un contenedor Docker propio, y eso es gratis. Quien prefiera no mantener nada tiene la instancia alojada de [andarama.com](https://andarama.com#precios), con planes desde 2 $ al mes.
 
-Nació como **ULL360**, un encargo de la Universidad de La Laguna, y hoy es un proyecto independiente que puede usar cualquier organización.
+Nació como un encargo de la Universidad de La Laguna y hoy es un proyecto independiente que puede usar cualquier organización.
 
 ## Qué trae dentro
 

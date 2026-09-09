@@ -1,8 +1,8 @@
-# ULL360 — Especificación Funcional y Técnica
+# Andarama — Especificación Funcional y Técnica
 
 **Versión:** 2.0 (borrador)
 **Fecha:** 9 de agosto de 2026
-**Producto:** ULL360 — Plataforma de Tours Virtuales 360°
+**Producto:** Andarama — Plataforma de Tours Virtuales 360°
 **Institución:** Universidad de La Laguna (ULL)
 **Naturaleza:** Código abierto, self-hosteable, con despliegue de referencia en Cloudflare
 
@@ -12,11 +12,11 @@
 
 ### 1.1 Descripción
 
-ULL360 es una plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360° interactivos. Se compone de tres piezas:
+Andarama es una plataforma web de código abierto para crear, publicar y distribuir tours virtuales 360° interactivos. Se compone de tres piezas:
 
-1. **ULL360 Studio** — editor visual en el navegador (SPA) para construir tours sin conocimientos técnicos.
-2. **ULL360 Viewer** — motor de visualización WebGL embebible y exportable como paquete HTML estático autocontenido.
-3. **ULL360 API** — backend ligero (gestión de proyectos, usuarios, medios, procesado, analítica, colaboración en tiempo real).
+1. **Andarama Studio** — editor visual en el navegador (SPA) para construir tours sin conocimientos técnicos.
+2. **Andarama Viewer** — motor de visualización WebGL embebible y exportable como paquete HTML estático autocontenido.
+3. **Andarama API** — backend ligero (gestión de proyectos, usuarios, medios, procesado, analítica, colaboración en tiempo real).
 
 El diseño persigue dos objetivos de despliegue simultáneos y no negociables:
 
@@ -25,9 +25,9 @@ El diseño persigue dos objetivos de despliegue simultáneos y no negociables:
 
 ### 1.2 Objetivo de paridad funcional
 
-La especificación toma como referencia las plataformas líderes del sector y define ULL360 para alcanzar paridad en las capacidades relevantes para el ámbito académico:
+La especificación toma como referencia las plataformas líderes del sector y define Andarama para alcanzar paridad en las capacidades relevantes para el ámbito académico:
 
-| Capacidad | 3DVista | Pano2VR | krpano | Kuula | Marzipano | **ULL360 (objetivo)** |
+| Capacidad | 3DVista | Pano2VR | krpano | Kuula | Marzipano | **Andarama (objetivo)** |
 |---|---|---|---|---|---|---|
 | Panoramas multiresolución (tiles) | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ hasta 32K |
 | Vídeo 360 (incl. streaming adaptativo) | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
@@ -234,7 +234,7 @@ Todos los hotspots comparten: posición esférica (yaw/pitch), icono/estilo (bib
 
 ---
 
-## 3. Requisitos funcionales — Editor (ULL360 Studio)
+## 3. Requisitos funcionales — Editor (Andarama Studio)
 
 ### 3.1 Gestión de proyectos y organización
 
@@ -311,7 +311,7 @@ Decisión de arquitectura clave para el objetivo Cloudflare (ver §6.5): **el tr
 - Panel de administración global: usuarios, organizaciones, cuotas, tours publicados, uso de almacenamiento, cola de trabajos, registros de auditoría (quién publicó/borró qué y cuándo).
 - Autenticación: email+contraseña (con verificación), y **OIDC/SAML** para SSO institucional (la ULL podrá conectar su IdP); creación JIT de cuentas por dominio permitido; 2FA TOTP opcional.
 - Ajustes de instancia: nombre, logo, idiomas por defecto, política de registro (abierto/por invitación/por dominio), límites de subida, retención de papelera, textos legales (privacidad/cookies).
-- Copias de seguridad: export/import completo de instancia (DB + manifiestos; los medios se sincronizan por herramienta de almacenamiento) y export/import de un tour individual como archivo `.ull360` (portabilidad entre instancias).
+- Copias de seguridad: export/import completo de instancia (DB + manifiestos; los medios se sincronizan por herramienta de almacenamiento) y export/import de un tour individual como archivo `.andarama` (portabilidad entre instancias).
 
 ---
 
@@ -361,8 +361,8 @@ Decisión de arquitectura clave para el objetivo Cloudflare (ver §6.5): **el tr
 1. **Cloudflare-nativo, no Cloudflare-cautivo.** Toda dependencia de plataforma pasa por una interfaz de adaptador (`StorageAdapter`, `DatabaseAdapter`, `QueueAdapter`, `RealtimeAdapter`, `AnalyticsAdapter`). El despliegue de referencia usa los servicios de Cloudflare; el self-host usa implementaciones locales. Ningún módulo de dominio importa APIs de Cloudflare directamente.
 2. **El cómputo pesado vive en el cliente.** Tiling de imágenes, generación de ZIPs y previsualización se ejecutan en el navegador. El servidor solo coordina, valida y persiste. Esto hace viable el despliegue 100 % Workers (límites de CPU) y el free tier.
 3. **Publicación = artefacto estático.** Publicar un tour materializa un manifiesto inmutable + assets en el almacenamiento. Servir un tour es servir ficheros: barato, cacheable, indestructible.
-4. **El visor es una librería.** El mismo paquete `@ull360/viewer` alimenta la vista previa del Studio, los tours publicados y los ZIP exportados. Cero divergencia.
-5. **Un esquema, una fuente de verdad.** El formato `tour.json` (JSON Schema versionado en `@ull360/schema`) define el contrato entre editor, visor, exportador y API.
+4. **El visor es una librería.** El mismo paquete `@andarama/viewer` alimenta la vista previa del Studio, los tours publicados y los ZIP exportados. Cero divergencia.
+5. **Un esquema, una fuente de verdad.** El formato `tour.json` (JSON Schema versionado en `@andarama/schema`) define el contrato entre editor, visor, exportador y API.
 
 ### 5.2 Diagrama (despliegue Cloudflare)
 
@@ -371,7 +371,7 @@ Decisión de arquitectura clave para el objetivo Cloudflare (ver §6.5): **el tr
                                   │                CLOUDFLARE                    │
   Navegador (autor)               │                                              │
  ┌──────────────────┐   HTTPS     │  ┌─ Worker "app" (Hono) ──────────────────┐  │
- │ ULL360 Studio    │────────────▶│  │  · Assets estáticos (Studio + Viewer)  │  │
+ │ Andarama Studio    │────────────▶│  │  · Assets estáticos (Studio + Viewer)  │  │
  │  · Editor SPA    │             │  │  · API REST /api/v1/*  (Hono + Zod)    │  │
  │  · Tiler WASM    │   subida    │  │  · Auth (better-auth / OIDC)           │  │
  │  · Exportador ZIP│──presigned─▶│  │  · Servido de tours /t/{slug}/*        │  │
@@ -379,7 +379,7 @@ Decisión de arquitectura clave para el objetivo Cloudflare (ver §6.5): **el tr
                                   │      │         │          │           │      │
   Navegador (visitante)           │   ┌──▼──┐   ┌──▼───┐  ┌───▼────┐  ┌───▼───┐  │
  ┌──────────────────┐             │   │ D1  │   │  R2  │  │   KV   │  │Queues │  │
- │ ULL360 Viewer    │────────────▶│   │ SQL │   │media/│  │ caché  │  │trabajo│  │
+ │ Andarama Viewer    │────────────▶│   │ SQL │   │media/│  │ caché  │  │trabajo│  │
  │ /t/{slug}        │  tiles/CDN  │   └─────┘   │tiles/│  │sesión  │  └───┬───┘  │
  └──────────────────┘             │             │ pub/ │  └────────┘      │      │
                                   │             └──────┘                  ▼      │
@@ -398,7 +398,7 @@ En **self-host**, el mismo código corre como un proceso Node.js (adaptador Hono
 ### 5.3 Monorepo
 
 ```
-ull360/
+andarama/
 ├─ apps/
 │  ├─ studio/            # Editor SPA (React 18 + Vite + TanStack Query/Router + Zustand)
 │  ├─ api/               # Worker Hono: API + auth + servido de tours + assets
@@ -482,7 +482,7 @@ Autenticación de API por sesión (Studio) o token personal con scopes (automati
 
 **Cloudflare (referencia):**
 ```bash
-git clone https://github.com/ull/ull360 && cd ull360
+git clone https://github.com/joseluissaorin/andarama && cd andarama
 pnpm install
 pnpm deploy:cloudflare   # script bootstrap interactivo
 ```
@@ -492,7 +492,7 @@ El script crea (vía API de Cloudflare/wrangler): base D1 + migraciones, bucket 
 ```bash
 curl -O https://.../docker-compose.yml && docker compose up -d
 ```
-Una imagen (`ghcr.io/ull/ull360`), un volumen (`/data` con SQLite + medios), variables de entorno documentadas (URL pública, SMTP opcional, OIDC opcional, S3 opcional). Caddy embebido u opcional para TLS automático. Mismo binario sirve Studio, API, visor y realtime. Requisitos mínimos: 1 vCPU / 1 GB RAM. Actualización = cambiar tag y reiniciar (migraciones automáticas con backup previo).
+Una imagen (`ghcr.io/joseluissaorin/andarama`), un volumen (`/data` con SQLite + medios), variables de entorno documentadas (URL pública, SMTP opcional, OIDC opcional, S3 opcional). Caddy embebido u opcional para TLS automático. Mismo binario sirve Studio, API, visor y realtime. Requisitos mínimos: 1 vCPU / 1 GB RAM. Actualización = cambiar tag y reiniciar (migraciones automáticas con backup previo).
 
 **Matriz de adaptadores:**
 
@@ -514,7 +514,7 @@ Una imagen (`ghcr.io/ull/ull360`), un volumen (`/data` con SQLite + medios), var
 
 ```jsonc
 {
-  "$schema": "https://ull360.dev/schema/tour-1.json",
+  "$schema": "https://andarama.com/schema/tour-1.json",
   "version": 1,
   "meta": { "title": {"es": "Campus de Guajara", "en": "Guajara Campus"},
             "defaultLang": "es", "langs": ["es", "en"], "theme": "ull" },
@@ -539,7 +539,7 @@ Una imagen (`ghcr.io/ull/ull360`), un volumen (`/data` con SQLite + medios), var
 }
 ```
 
-El esquema es versionado; `@ull360/schema` incluye migradores automáticos entre versiones para que tours antiguos siempre abran.
+El esquema es versionado; `@andarama/schema` incluye migradores automáticos entre versiones para que tours antiguos siempre abran.
 
 ---
 

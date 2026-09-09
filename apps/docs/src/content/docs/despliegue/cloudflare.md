@@ -25,7 +25,7 @@ El script bootstrap (interactivo e idempotente):
 4. Genera y guarda el secreto **APP_SECRET**; pregunta por los opcionales (email, Turnstile, SSO, Clerk).
 5. Compila los paquetes, la documentación, el visor y el Studio, y **despliega el Worker** con los assets.
 
-Todo queda descrito en [`deploy/cloudflare/wrangler.jsonc`](https://github.com/joseluissaorin/andarama/blob/main/deploy/cloudflare/wrangler.jsonc) (infraestructura como código); el script es [`deploy/cloudflare/bootstrap.mjs`](https://github.com/joseluissaorin/andarama/blob/main/deploy/cloudflare/bootstrap.mjs). Los recursos de la instancia de referencia conservan el nombre histórico `ull360`; son identificadores internos. Actualizar la instancia = volver a ejecutar `pnpm deploy:cloudflare`.
+Todo queda descrito en [`deploy/cloudflare/wrangler.jsonc`](https://github.com/joseluissaorin/andarama/blob/main/deploy/cloudflare/wrangler.jsonc) (infraestructura como código); el script es [`deploy/cloudflare/bootstrap.mjs`](https://github.com/joseluissaorin/andarama/blob/main/deploy/cloudflare/bootstrap.mjs). Actualizar la instancia = volver a ejecutar `pnpm deploy:cloudflare`.
 
 Tras el primer despliegue: abre la URL `*.workers.dev` mostrada, registra el primer usuario (será administrador) y fija `PUBLIC_URL` en las vars de `wrangler.jsonc`.
 

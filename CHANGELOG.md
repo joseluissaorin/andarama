@@ -57,4 +57,4 @@ Primera versión completa, desplegada en [andarama.com](https://andarama.com).
 - Realidad virtual con WebXR (manos de 25 articulaciones y mandos) y modo cartón para móviles sin WebXR.
 - Publicación con enlace público, incrustado, dominio propio, contraseña y caducidad; exportación a ZIP estático, HTML único, SCORM 1.2 y 2004, quiosco y PWA.
 - Despliegue en Cloudflare con un comando y self-host con una imagen Docker.
-- Renombrado de ULL360 a Andarama, con identidad propia.
+- Nombre e identidad propios: Andarama, la criatura y la paleta.

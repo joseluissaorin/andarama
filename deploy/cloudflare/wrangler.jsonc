@@ -31,14 +31,13 @@
     { "pattern": "docs.andarama.com", "custom_domain": true }
   ],
 
-  // Los nombres de los recursos (D1, R2, dataset) conservan el nombre
-  // historico del proyecto, ull360: los datos de la instancia viven ahi y
-  // renombrarlos exigiria migrarlos. Solo son identificadores internos.
+  // El bucket R2 conserva el nombre con el que se creó la instancia de
+  // referencia: R2 no permite renombrar y es un identificador interno.
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "ull360",
-      "database_id": "2f1cd3a6-5255-45e4-a60e-ea90d2dfe525",
+      "database_name": "andarama",
+      "database_id": "76514a8e-2d28-4806-a0be-3e26f9c431cb",
       "migrations_dir": "../../packages/db/migrations"
     }
   ],
@@ -73,7 +72,7 @@
   // Workers Analytics Engine (§2.14). Con ANALYTICS_BACKEND=d1 se usa la
   // tabla D1 en su lugar (consultable sin token de API).
   "analytics_engine_datasets": [
-    { "binding": "ANALYTICS", "dataset": "ull360_events" }
+    { "binding": "ANALYTICS", "dataset": "andarama_events" }
   ],
 
   // Workers AI: sugerencia de texto alternativo en el editor (§2.11)
@@ -93,7 +92,7 @@
 
   "vars": {
     "ANALYTICS_BACKEND": "d1",
-    "ANALYTICS_DATASET": "ull360_events",
+    "ANALYTICS_DATASET": "andarama_events",
     "PUBLIC_URL": "https://andarama.com"
   },
 

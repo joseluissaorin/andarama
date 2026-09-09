@@ -73,7 +73,7 @@ function buildRuntime(env: Env, publicUrl: string, waitUntil: (p: Promise<unknow
     ? createAeAnalytics(
         env.ANALYTICS!,
         env.CF_ACCOUNT_ID != null && env.CF_ANALYTICS_TOKEN != null
-          ? { accountId: env.CF_ACCOUNT_ID, apiToken: env.CF_ANALYTICS_TOKEN, datasetName: env.ANALYTICS_DATASET ?? "ull360_events" }
+          ? { accountId: env.CF_ACCOUNT_ID, apiToken: env.CF_ANALYTICS_TOKEN, datasetName: env.ANALYTICS_DATASET ?? "andarama_events" }
           : null,
       )
     : createSqlAnalytics(db);

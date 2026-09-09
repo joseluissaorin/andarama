@@ -41,6 +41,12 @@ const wrangler = (args, opts = {}) => {
 const log = (msg) => console.log(`\n== ${msg}`);
 
 log("Comprobando autenticación de Cloudflare");
+// Nombres de los recursos. El bucket R2 conserva el nombre con el que se creó
+// la instancia de referencia: R2 no permite renombrar y mover 16 000 objetos
+// no compensa; es un identificador interno que nadie ve.
+const D1_NAME = "andarama";
+const BUCKET_NAME = "ull360";
+
 const who = wrangler(["whoami"], { capture: true, allowFail: true });
 if (who.includes("not authenticated") || who.includes("You are logged in") === false && !who.includes("Account")) {
   console.log("Inicia sesión en Cloudflare:");
@@ -52,32 +58,32 @@ let config = readFileSync(configPath, "utf8");
 // ---------------------------------------------------------------------------
 log("Base de datos D1");
 if (config.includes("REPLACE_D1_ID")) {
-  const out = wrangler(["d1", "create", "ull360"], { capture: true, allowFail: true });
+  const out = wrangler(["d1", "create", D1_NAME], { capture: true, allowFail: true });
   let id = /"database_id":\s*"([a-f0-9-]{36})"/.exec(out)?.[1] ?? /database_id\s*=\s*"([a-f0-9-]{36})"/.exec(out)?.[1];
   if (id == null) {
     // Ya existia: recuperar el id del listado
     const list = wrangler(["d1", "list", "--json"], { capture: true });
     const entries = JSON.parse(list.slice(list.indexOf("[")));
-    id = entries.find((d) => d.name === "ull360")?.uuid;
+    id = entries.find((d) => d.name === D1_NAME)?.uuid;
   }
   if (id == null) throw new Error("No se pudo obtener el ID de la base D1");
   config = config.replace("REPLACE_D1_ID", id);
   writeFileSync(configPath, config);
-  console.log(`D1 ull360: ${id}`);
+  console.log(`D1 ${D1_NAME}: ${id}`);
 } else {
   console.log("D1 ya configurada");
 }
 
 log("Migraciones D1");
-wrangler(["d1", "migrations", "apply", "ull360", "--remote", "-c", configPath]);
+wrangler(["d1", "migrations", "apply", D1_NAME, "--remote", "-c", configPath]);
 
 // ---------------------------------------------------------------------------
 log("Bucket R2");
 const buckets = wrangler(["r2", "bucket", "list"], { capture: true, allowFail: true });
-if (!buckets.includes("ull360")) {
-  wrangler(["r2", "bucket", "create", "ull360"]);
+if (!buckets.includes(BUCKET_NAME)) {
+  wrangler(["r2", "bucket", "create", BUCKET_NAME]);
 } else {
-  console.log("Bucket ull360 ya existe");
+  console.log(`Bucket ${BUCKET_NAME} ya existe`);
 }
 
 // ---------------------------------------------------------------------------

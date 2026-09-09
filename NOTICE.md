@@ -4,9 +4,9 @@ El código de Andarama se distribuye bajo la licencia [EUPL-1.2](LICENSE). Este 
 
 ## Origen del proyecto
 
-Andarama nació como **ULL360**, un proyecto desarrollado para la Universidad de
-La Laguna. La marca y la tipografía institucionales de la ULL que acompañaban a
-aquella versión se han retirado del repositorio; la identidad actual (la
+Andarama nació como un proyecto desarrollado para la Universidad de La Laguna.
+La marca y la tipografía institucionales de la ULL que acompañaban a aquella
+primera versión se han retirado del repositorio; la identidad actual (la
 criatura, el logotipo y la paleta de Andarama) es propia del proyecto y se
 distribuye con él.
 

@@ -40,4 +40,4 @@ Las tres primeras son gratis y son el mismo programa: el plan gratuito de Andara
 
 ## Licencia
 
-Código bajo [EUPL-1.2](https://joinup.ec.europa.eu/collection/eupl), en [github.com/joseluissaorin/andarama](https://github.com/joseluissaorin/andarama). Nacido como ULL360 en la Universidad de La Laguna; hoy se llama Andarama. Medios de ejemplo bajo CC BY 4.0. Los errores y las propuestas se abren en las [issues](https://github.com/joseluissaorin/andarama/issues); las vulnerabilidades, según [SECURITY.md](https://github.com/joseluissaorin/andarama/blob/main/SECURITY.md).
+Código bajo [EUPL-1.2](https://joinup.ec.europa.eu/collection/eupl), en [github.com/joseluissaorin/andarama](https://github.com/joseluissaorin/andarama). Nacido en la Universidad de La Laguna; hoy es un proyecto independiente. Medios de ejemplo bajo CC BY 4.0. Los errores y las propuestas se abren en las [issues](https://github.com/joseluissaorin/andarama/issues); las vulnerabilidades, según [SECURITY.md](https://github.com/joseluissaorin/andarama/blob/main/SECURITY.md).
