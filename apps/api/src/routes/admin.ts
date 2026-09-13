@@ -10,6 +10,11 @@ import { requireAuth } from "../lib/session.js";
 import { isInstanceAdmin } from "../lib/authz.js";
 import { audit, getSettings, saveSettings } from "../lib/helpers.js";
 import { createCoupons, normalizeCouponCode } from "../lib/coupons.js";
+import { PLANS, type PlanSlug } from "../lib/plans.js";
+import { attributionCsv, type Attribution } from "../lib/attribution.js";
+
+/** Slugs de plan que se pueden conceder a mano o por cupón. */
+const PLAN_SLUGS = Object.keys(PLANS) as [PlanSlug, ...PlanSlug[]];
 
 /** Panel de administracion global de la instancia (§3.7). */
 export function adminRoutes(): Hono<AppEnv> {
@@ -80,6 +85,7 @@ export function adminRoutes(): Hono<AppEnv> {
         clerk: u.clerkId != null,
         plan: u.plan,
         planOverride: u.planOverride,
+        trialEndsAt: u.trialEndsAt,
         createdAt: u.createdAt,
       })),
     );
@@ -127,7 +133,9 @@ export function adminRoutes(): Hono<AppEnv> {
         roleGlobal: z.enum(["admin", "user"]).optional(),
         name: z.string().optional(),
         /** Plan concedido a mano (vitalicio, cortesía); null lo retira. */
-        planOverride: z.enum(["andar", "paseo", "excursion", "vitalicio"]).nullable().optional(),
+        planOverride: z.enum(PLAN_SLUGS).nullable().optional(),
+        /** Fin de la prueba gratuita (epoch ms); null la retira, una fecha futura la alarga. */
+        trialEndsAt: z.number().int().nullable().optional(),
       })
       .parse(await c.req.json());
     const auth = requireAuth(c);
@@ -141,6 +149,7 @@ export function adminRoutes(): Hono<AppEnv> {
         ...(body.roleGlobal != null ? { roleGlobal: body.roleGlobal } : {}),
         ...(body.name != null ? { name: body.name } : {}),
         ...(body.planOverride !== undefined ? { planOverride: body.planOverride, planUpdatedAt: nowMs() } : {}),
+        ...(body.trialEndsAt !== undefined ? { trialEndsAt: body.trialEndsAt } : {}),
         updatedAt: nowMs(),
       })
       .where(eq(users.id, userId));
@@ -220,6 +229,40 @@ export function adminRoutes(): Hono<AppEnv> {
 
   // ------- Cupones -------
 
+  /**
+   * Atribución publicitaria en CSV: usuario, plan, alta, primer pago, gclid
+   * y utm_*. Para subir conversiones a Google Ads y Microsoft Ads a mano.
+   * `?since=` (epoch ms) acota por fecha de alta; `?only=attributed` deja
+   * solo a quienes llegaron con algún identificador.
+   */
+  r.get("/attribution/export", async (c) => {
+    const db = c.get("db");
+    if (c.get("config").clerk == null) throw notFound("Esta instancia no tiene planes: no hay atribución que exportar");
+    const since = Number(c.req.query("since") ?? "0") || 0;
+    const soloAtribuidos = c.req.query("only") === "attributed";
+    const rows = await db.select().from(users).orderBy(desc(users.createdAt));
+    const filas = rows
+      .filter((u) => u.createdAt >= since && (!soloAtribuidos || u.attributionJson != null))
+      .map((u) => ({
+        userId: u.id,
+        email: u.email,
+        plan: u.plan,
+        planOverride: u.planOverride,
+        createdAt: u.createdAt,
+        planUpdatedAt: u.planUpdatedAt,
+        attributedAt: u.attributedAt,
+        attribution: u.attributionJson != null ? parseJson<Attribution | null>(u.attributionJson, null) : null,
+      }));
+    await audit(c, "admin.attribution_export", "users", "*", { count: filas.length, since });
+    return new Response(attributionCsv(filas), {
+      headers: {
+        "content-type": "text/csv; charset=utf-8",
+        "content-disposition": `attachment; filename="atribucion-${new Date().toISOString().slice(0, 10)}.csv"`,
+        "cache-control": "private, no-store",
+      },
+    });
+  });
+
   /** Tanda nueva: devuelve los códigos en claro, que es cuando se reparten. */
   r.post("/coupons", async (c) => {
     const db = c.get("db");
@@ -227,7 +270,7 @@ export function adminRoutes(): Hono<AppEnv> {
     const body = z
       .object({
         count: z.number().int().min(1).max(500),
-        plan: z.enum(["andar", "paseo", "excursion", "vitalicio"]).default("vitalicio"),
+        plan: z.enum(PLAN_SLUGS).default("vitalicio"),
         batch: z.string().max(60).optional(),
         note: z.string().max(200).optional(),
         expiresAt: z.number().int().positive().nullable().optional(),

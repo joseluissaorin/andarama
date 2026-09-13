@@ -1,8 +1,12 @@
 import { create } from "zustand";
 import { api } from "./api";
 import { getClerk } from "./clerk";
+import { onMeLoaded } from "./growth";
 
 /** Sesion y organizacion activa. */
+
+/** Capacidades que un plan enciende en la instancia alojada (misma lista que la API). */
+export type PlanCapability = "classroom" | "scorm" | "lti" | "whiteLabel" | "customDomain" | "team" | "invoice";
 
 export interface Me {
   user: {
@@ -14,10 +18,29 @@ export interface Me {
     totpEnabled: boolean;
     ssoLinked: boolean;
     clerkLinked?: boolean;
+    createdAt?: number;
   } | null;
   orgs: { id: string; name: string; slug: string; role: string; ownerId?: string | null }[];
   /** Plan en la instancia alojada; en el self-host, mode "local". */
-  billing?: { mode: "clerk" | "local"; plan: string | null; planName: string | null };
+  billing?: {
+    mode: "clerk" | "local";
+    plan: string | null;
+    planName: string | null;
+    planFromClerk?: string | null;
+    /** null en el self-host: allí todo está permitido. */
+    capabilities?: PlanCapability[] | null;
+    trialEndsAt?: number | null;
+    attributionPending?: boolean;
+  };
+}
+
+/** ¿Puede este usuario usar la capacidad? En el self-host, siempre. */
+export function canUse(me: Me | null, capability: PlanCapability): boolean {
+  const caps = me?.billing?.capabilities;
+  if (me?.billing?.mode !== "clerk" || caps == null) return true;
+  // Quien administra la instancia no tiene límites de plan
+  if (me.user?.roleGlobal === "admin") return true;
+  return caps.includes(capability);
 }
 
 interface AuthState {
@@ -49,6 +72,8 @@ export const useAuth = create<AuthState>((set, get) => ({
       const current = get().currentOrgId;
       const validOrg = me.orgs.find((o) => o.id === current) ?? me.orgs[0] ?? null;
       set({ me, loaded: true, currentOrgId: validOrg?.id ?? null });
+      // Instancia alojada: eventos de alta y pago, y la atribución del primer toque
+      onMeLoaded(me);
     } catch {
       set({ me: { user: null, orgs: [] }, loaded: true });
     }

@@ -5,7 +5,7 @@ import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from
 import type { Tour } from "@andarama/schema";
 import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
 import { api, ApiRequestError, authHeaders } from "../api";
-import { useEditor } from "../stores";
+import { canUse, useAuth, useEditor } from "../stores";
 import { useT } from "../i18n";
 import { captureShareImage } from "./shareCapture";
 import type { ProjectInfo } from "./EditorPage";
@@ -33,6 +33,9 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [kiosk, setKiosk] = useState(project.publication?.kiosk === true);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] } | null>(null);
+  // El dominio propio es de los planes altos en la instancia alojada
+  const me = useAuth((s) => s.me);
+  const dominioPermitido = canUse(me, "customDomain");
   /** Errores que impiden publicar, con su lista: antes solo salía un aviso genérico. */
   const [blockers, setBlockers] = useState<string[] | null>(null);
 
@@ -141,8 +144,14 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               <Textarea id="pb-domains" rows={3} value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="tours.museodelaciudad.es" />
             </Field>
           )}
-          <Field label={t("custom_domain")} htmlFor="pb-cdom" hint={t("custom_domain_hint")}>
-            <Input id="pb-cdom" value={customDomain} onChange={(e) => setCustomDomain(e.target.value)} placeholder="tour.midominio.es" />
+          <Field label={t("custom_domain")} htmlFor="pb-cdom" hint={dominioPermitido ? t("custom_domain_hint") : t("capability_custom_domain_hint")}>
+            <Input
+              id="pb-cdom"
+              value={customDomain}
+              disabled={!dominioPermitido}
+              onChange={(e) => setCustomDomain(e.target.value)}
+              placeholder="tour.midominio.es"
+            />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("publish_at")} htmlFor="pb-at">
@@ -333,6 +342,9 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
   const [kiosk, setKiosk] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // En la instancia alojada el SCORM es del plan Formación; en el self-host, de todos
+  const me = useAuth((s) => s.me);
+  const scormPermitido = canUse(me, "scorm");
 
   const doExport = async (): Promise<void> => {
     setBusy(true);
@@ -445,8 +457,8 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
           label={t("export_single")}
         />
         {hasMultires && <p className="-mt-2 pl-1 text-xs text-[var(--anda-text-dim)]">{t("export_single_multires")}</p>}
-        <Field label={t("export_scorm")} htmlFor="ex-scorm">
-          <Select id="ex-scorm" value={scorm} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
+        <Field label={t("export_scorm")} htmlFor="ex-scorm" hint={scormPermitido ? undefined : t("capability_scorm_hint")}>
+          <Select id="ex-scorm" value={scorm} disabled={!scormPermitido} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
             <option value="">-</option>
             <option value="1.2">SCORM 1.2</option>
             <option value="2004">SCORM 2004 (3rd Ed.)</option>

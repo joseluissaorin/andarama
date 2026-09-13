@@ -38,6 +38,9 @@ const people: Record<string, FakeUser> = {
   "tok-ana": { email: "ana@ejemplo.es", name: "Ana Pérez", plan: "u:andar" },
   "tok-bruno": { email: "bruno@ejemplo.es", name: "Bruno", plan: "u:free_user" },
   "tok-clara": { email: "clara@ejemplo.es", name: "Clara", plan: "u:paseo" },
+  // Dani llega sin plan: catorce días de prueba
+  "tok-dani": { email: "dani@ejemplo.es", name: "Dani", plan: null },
+  "tok-eva": { email: "eva@ejemplo.es", name: "Eva", plan: "u:formacion" },
 };
 
 const verifier: ClerkVerifier = {
@@ -104,7 +107,8 @@ describe("instancia alojada con Clerk", () => {
     expect(cfg.clerkPublishableKey).toBe("pk_test_x");
     const plans = (await (await call(null, "/api/v1/billing/plans")).json()) as { mode: string; plans: { slug: string }[] };
     expect(plans.mode).toBe("clerk");
-    expect(plans.plans.map((p) => p.slug)).toEqual(["andar", "paseo", "excursion", "vitalicio"]);
+    expect(plans.plans.map((p) => p.slug)).toEqual(["andar", "aula", "paseo", "excursion", "formacion", "vitalicio"]);
+    expect((plans as unknown as { trial: { days: number } }).trial.days).toBe(14);
   });
 
   it("cierra el registro y el inicio de sesión propios", async () => {
@@ -132,7 +136,7 @@ describe("instancia alojada con Clerk", () => {
     expect(first.user.email).toBe("bruno@ejemplo.es");
     expect(first.user.roleGlobal).toBe("admin");
     expect(first.orgs).toHaveLength(1);
-    expect(first.billing).toEqual({ mode: "clerk", plan: null, planName: null });
+    expect(first.billing).toMatchObject({ mode: "clerk", plan: null, planName: null, trialEndsAt: null });
 
     const me = (await (await call("tok-ana", "/api/v1/me")).json()) as {
       user: { email: string; name: string; roleGlobal: string; clerkLinked: boolean };
@@ -142,7 +146,7 @@ describe("instancia alojada con Clerk", () => {
     expect(me.user).toMatchObject({ email: "ana@ejemplo.es", name: "Ana Pérez", roleGlobal: "user", clerkLinked: true });
     expect(me.orgs).toHaveLength(1);
     expect(me.orgs[0]!.role).toBe("admin");
-    expect(me.billing).toEqual({ mode: "clerk", plan: "andar", planName: "Andar" });
+    expect(me.billing).toMatchObject({ mode: "clerk", plan: "andar", planName: "Andar", capabilities: [], attributionPending: true });
   });
 
   it("acuña una cookie de lectura a cambio del token, válida solo para GET", async () => {
@@ -273,5 +277,150 @@ describe("instancia alojada con Clerk", () => {
     expect(res.status).toBe(403);
     const problem = (await res.json()) as { code: string; plan: string | null; limit: number };
     expect(problem).toMatchObject({ code: "quota_tours", plan: null, limit: 0 });
+  });
+
+  /** Un proyecto con una escena, lo mínimo que se puede publicar. */
+  async function publicar(token: string, orgId: string, title: string): Promise<{ projectId: string; slug: string }> {
+    const creado = await call(token, "/api/v1/projects", { method: "POST", body: { orgId, title } });
+    expect(creado.status).toBe(201);
+    const { id } = (await creado.json()) as { id: string };
+    const escena = await call(token, `/api/v1/projects/${id}/scenes`, {
+      method: "POST",
+      body: { title: "Entrada", sourceJson: { kind: "equirect", url: "media:falso" } },
+    });
+    const sceneId = ((await escena.json()) as { id: string }).id;
+    await call(token, `/api/v1/projects/${id}/scenes/${sceneId}`, { method: "PATCH", body: { meta: { altText: "Entrada" } } });
+    const pub = await call(token, `/api/v1/projects/${id}/publish`, { method: "POST", body: { visibility: "public" } });
+    expect(pub.status).toBe(201);
+    return { projectId: id, slug: ((await pub.json()) as { slug: string }).slug };
+  }
+
+  it("quien llega sin plan tiene catorce días de prueba: un recorrido, y lo creado se conserva al caducar", async () => {
+    const dani = (await (await call("tok-dani", "/api/v1/me")).json()) as {
+      user: { id: string };
+      orgs: { id: string }[];
+      billing: { plan: string; planName: string; trialEndsAt: number };
+    };
+    expect(dani.billing.plan).toBe("prueba");
+    expect(dani.billing.planName).toBe("Prueba gratuita");
+    expect(dani.billing.trialEndsAt).toBeGreaterThan(Date.now() + 13 * 86_400_000);
+    const billing = (await (await call("tok-dani", "/api/v1/billing/me")).json()) as {
+      plan: string;
+      trialDaysLeft: number;
+      quota: { quotaTours: number; quotaBytes: number };
+      capabilities: string[];
+    };
+    expect(billing).toMatchObject({ plan: "prueba", trialDaysLeft: 14, quota: { quotaTours: 1, quotaBytes: 500 * 1024 * 1024 }, capabilities: [] });
+
+    const orgId = dani.orgs[0]!.id;
+    const uno = await call("tok-dani", "/api/v1/projects", { method: "POST", body: { orgId, title: "En prueba" } });
+    expect(uno.status).toBe(201);
+    const dos = await call("tok-dani", "/api/v1/projects", { method: "POST", body: { orgId, title: "Otro" } });
+    expect(dos.status).toBe(403);
+    expect(await dos.json()).toMatchObject({ code: "quota_tours", plan: "prueba", limit: 1 });
+
+    // Caduca la prueba: cuota cero, pero el recorrido sigue ahí
+    const patch = await call("tok-bruno", `/api/v1/admin/users/${dani.user.id}`, { method: "PATCH", body: { trialEndsAt: Date.now() - 1000 } });
+    expect(patch.status).toBe(200);
+    const tras = (await (await call("tok-dani", "/api/v1/billing/me")).json()) as { plan: string | null; trialDaysLeft: number; quota: { quotaTours: number } };
+    expect(tras).toMatchObject({ plan: null, trialDaysLeft: 0, quota: { quotaTours: 0 } });
+    const lista = (await (await call("tok-dani", `/api/v1/projects?org=${orgId}`)).json()) as { title: string }[];
+    expect(lista.some((p) => p.title === "En prueba")).toBe(true);
+
+    // Un cupón en prueba (o tras ella) siempre mejora: la prueba no es un plan previo
+    await call("tok-bruno", `/api/v1/admin/users/${dani.user.id}`, { method: "PATCH", body: { trialEndsAt: Date.now() + 86_400_000 } });
+    const { codes } = (await (await call("tok-bruno", "/api/v1/admin/coupons", { method: "POST", body: { count: 1, plan: "andar" } })).json()) as { codes: string[] };
+    const canje = await call("tok-dani", "/api/v1/billing/coupon", { method: "POST", body: { code: codes[0]! } });
+    expect(await canje.json()).toMatchObject({ plan: "andar", keptPrevious: false, previousPlan: null });
+    // Vuelta a la prueba para las pruebas siguientes
+    await call("tok-bruno", `/api/v1/admin/users/${dani.user.id}`, { method: "PATCH", body: { planOverride: null } });
+  });
+
+  it("guarda la atribución del alta una sola vez y la exporta en CSV para el administrador", async () => {
+    const antes = (await (await call("tok-dani", "/api/v1/me")).json()) as { billing: { attributionPending: boolean } };
+    expect(antes.billing.attributionPending).toBe(true);
+
+    // Sin nada que atribuir no se guarda
+    const vacio = await call("tok-dani", "/api/v1/me/attribution", { method: "POST", body: { landing: "/" } });
+    expect(await vacio.json()).toMatchObject({ ok: false, reason: "empty" });
+    // Campos que no son los esperados se rechazan (nunca datos personales)
+    expect((await call("tok-dani", "/api/v1/me/attribution", { method: "POST", body: { gclid: "abc", email: "x@y.z" } })).status).toBe(400);
+
+    const ok = await call("tok-dani", "/api/v1/me/attribution", {
+      method: "POST",
+      body: { gclid: "Cj0KCQjw-abc", utm_source: "google", utm_medium: "cpc", utm_campaign: "recorridos-360", utm_term: "tour virtual 360", landing: "/", touchedAt: Date.now() - 60_000 },
+    });
+    expect(await ok.json()).toEqual({ ok: true });
+    const despues = (await (await call("tok-dani", "/api/v1/me")).json()) as { billing: { attributionPending: boolean } };
+    expect(despues.billing.attributionPending).toBe(false);
+    // El primer toque gana: un segundo envío se ignora sin error
+    const otra = await call("tok-dani", "/api/v1/me/attribution", { method: "POST", body: { msclkid: "otro" } });
+    expect(await otra.json()).toMatchObject({ ok: false, reason: "already" });
+
+    // Solo el administrador exporta
+    expect((await call("tok-dani", "/api/v1/admin/attribution/export")).status).toBe(403);
+    const csv = await call("tok-bruno", "/api/v1/admin/attribution/export?only=attributed");
+    expect(csv.status).toBe(200);
+    expect(csv.headers.get("content-type")).toContain("text/csv");
+    const texto = await csv.text();
+    const lineas = texto.trim().split("\r\n");
+    expect(lineas[0]).toContain("Google Click ID");
+    expect(lineas[0]).toContain("Microsoft Click Id");
+    expect(lineas).toHaveLength(2);
+    expect(lineas[1]).toContain("dani@ejemplo.es");
+    expect(lineas[1]).toContain("Cj0KCQjw-abc");
+    expect(lineas[1]).toContain("recorridos-360");
+    expect(lineas[1]).toContain("tour virtual 360");
+    // Sin plan de pago, la columna del primer pago va vacía
+    const columnas = lineas[1]!.split(",");
+    expect(columnas[5]).toBe("");
+
+    // Todos los usuarios, sin filtro
+    const todos = (await (await call("tok-bruno", "/api/v1/admin/attribution/export")).text()).trim().split("\r\n");
+    expect(todos.length).toBeGreaterThan(2);
+  });
+
+  it("la insignia «Hecho con Andarama» va en los planes sin marca blanca, y el dominio propio en los que lo incluyen", async () => {
+    // Dani (en prueba) publica: insignia
+    const dani = (await (await call("tok-dani", "/api/v1/me")).json()) as { orgs: { id: string }[] };
+    const enPrueba = await call("tok-dani", `/api/v1/projects?org=${dani.orgs[0]!.id}`);
+    const proyecto = ((await enPrueba.json()) as { id: string }[])[0]!;
+    const escena = await call("tok-dani", `/api/v1/projects/${proyecto.id}/scenes`, {
+      method: "POST",
+      body: { title: "Entrada", sourceJson: { kind: "equirect", url: "media:falso" } },
+    });
+    const sceneId = ((await escena.json()) as { id: string }).id;
+    await call("tok-dani", `/api/v1/projects/${proyecto.id}/scenes/${sceneId}`, { method: "PATCH", body: { meta: { altText: "Entrada" } } });
+    const pub = await call("tok-dani", `/api/v1/projects/${proyecto.id}/publish`, { method: "POST", body: { visibility: "public" } });
+    expect(pub.status).toBe(201);
+    const { slug } = (await pub.json()) as { slug: string };
+    const html = await (await call(null, `/t/${slug}`)).text();
+    expect(html).toContain("utm_source=insignia");
+    expect(html).toContain('"badge":{"url":"https://andarama.com/?utm_source=insignia&utm_medium=tour&utm_campaign=hecho-con"}');
+
+    // El dominio propio no está en la prueba
+    const dominio = await call("tok-dani", `/api/v1/projects/${proyecto.id}/publish`, {
+      method: "POST",
+      body: { visibility: "public", customDomain: "tour.ejemplo.es" },
+    });
+    expect(dominio.status).toBe(403);
+    expect(await dominio.json()).toMatchObject({ code: "capability", capability: "customDomain", plan: "prueba" });
+
+    // Eva (Formación) tiene marca blanca y dominio propio
+    const eva = (await (await call("tok-eva", "/api/v1/me")).json()) as { orgs: { id: string }[]; billing: { capabilities: string[] } };
+    expect(eva.billing.capabilities).toEqual(expect.arrayContaining(["scorm", "lti", "whiteLabel", "customDomain", "team", "invoice"]));
+    const { projectId, slug: slugEva } = await publicar("tok-eva", eva.orgs[0]!.id, "Curso");
+    const htmlEva = await (await call(null, `/t/${slugEva}`)).text();
+    expect(htmlEva).not.toContain("utm_source=insignia");
+    const conDominio = await call("tok-eva", `/api/v1/projects/${projectId}/publish`, {
+      method: "POST",
+      body: { visibility: "public", customDomain: "curso.ejemplo.es" },
+    });
+    expect(conDominio.status).toBe(201);
+
+    // El administrador de la instancia no tiene límites
+    const bruno = (await (await call("tok-bruno", "/api/v1/me")).json()) as { orgs: { id: string }[] };
+    const { slug: slugBruno } = await publicar("tok-bruno", bruno.orgs[0]!.id, "Demo pública");
+    expect(await (await call(null, `/t/${slugBruno}`)).text()).not.toContain("utm_source=insignia");
   });
 });

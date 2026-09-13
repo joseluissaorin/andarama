@@ -9,6 +9,7 @@ import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
 import { assertTourQuota } from "../lib/quota.js";
+import { orgHas, requireOrgCapability } from "../lib/capabilities.js";
 import { compileProject } from "../compiler.js";
 import { hmacSign } from "@andarama/adapters";
 
@@ -35,6 +36,11 @@ export interface PublicationPointer {
   turnstile?: boolean;
   /** El enlace abre el recorrido en modo quiosco (bucle y liberación). */
   kiosk?: boolean;
+  /**
+   * Insignia «Hecho con Andarama» (instancia alojada, planes sin marca
+   * blanca). Se decide al publicar porque el servido no toca la base de datos.
+   */
+  badge?: boolean;
 }
 
 const publishSchema = z.object({
@@ -134,6 +140,11 @@ export function publishRoutes(): Hono<AppEnv> {
     // Dominio propio: unicidad + mapeo host->slug en KV para resolucion rapida
     const customDomain =
       body.customDomain === undefined ? (existingPub?.customDomain ?? null) : body.customDomain?.toLowerCase() ?? null;
+    // El dominio propio es de los planes altos (solo en modo alojado). Se
+    // exige al fijarlo; uno ya puesto no se rompe al republicar el contenido.
+    if (customDomain != null && customDomain !== existingPub?.customDomain) {
+      await requireOrgCapability(db, c.get("config"), access.project.orgId, "customDomain");
+    }
     if (customDomain != null) {
       const domainOwner = (await db.select().from(publications).where(eq(publications.customDomain, customDomain)).limit(1))[0];
       if (domainOwner != null && domainOwner.projectId !== access.project.id) {
@@ -166,6 +177,8 @@ export function publishRoutes(): Hono<AppEnv> {
       analytics: (compiled.tour.analytics?.enabled ?? true) !== false,
       turnstile: c.get("config").turnstileSiteKey != null,
       kiosk: kiosk ? true : undefined,
+      // Sin marca blanca, el recorrido lleva la insignia; en el self-host, nunca
+      badge: (await orgHas(db, c.get("config"), access.project.orgId, "whiteLabel")) ? undefined : true,
     };
     await runtime.storage.put(`pub/${slug}/current.json`, JSON.stringify(pointer), { contentType: "application/json" });
     // Invalidar cache KV del puntero
