@@ -20,6 +20,7 @@ import { AccountPage } from "./pages/AccountPage";
 import { AdminPage } from "./pages/AdminPage";
 import { PlanPage } from "./pages/PlanPage";
 import { AndaClerkProvider, isClerkMode, loadInstanceConfig } from "./clerk";
+import { captureAttributionFromBrowser } from "./attribution";
 import { EditorPage } from "./editor/EditorPage";
 
 const queryClient = new QueryClient({
@@ -131,6 +132,8 @@ setupPwa();
 // La instancia dice qué puerta usa antes de pintar nada: con Clerk, el
 // Studio entero vive dentro de su proveedor; sin él, como siempre.
 void loadInstanceConfig().then(() => {
+  // De dónde viene la visita (gclid, utm_*): solo tiene sentido con planes
+  if (isClerkMode()) captureAttributionFromBrowser();
   const app = (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

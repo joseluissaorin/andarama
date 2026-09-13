@@ -192,6 +192,9 @@ export default {
     const appHost = `app.${apexHost}`;
     const docsHost = `docs.${apexHost}`;
     const path = url.pathname;
+    // Solo la instancia alojada mide el Studio con Plausible (dominio app.)
+    const medirStudio = env.CLERK_PUBLISHABLE_KEY != null && env.CLERK_SECRET_KEY != null;
+    const studioHtml = (res: Response): Promise<Response> => (medirStudio ? conPlausible(res, appHost) : Promise.resolve(res));
     // Un fichero lleva extension; una pagina, no. Distinguirlo permite
     // redirigir las paginas a su URL limpia sin tocar los assets.
     const esPagina = !/\.[a-z0-9]+$/i.test(path.split("/").pop() ?? "");
@@ -253,14 +256,18 @@ export default {
     if (new URL(effectiveRequest.url).pathname === "/" && env.ASSETS != null) {
       const portada =
         url.host === appHost ? "/studio/index.html" : url.host === docsHost ? "/docs/index.html" : "/landing/index.html";
-      return env.ASSETS.fetch(new Request(`${url.origin}${portada}`, { headers: request.headers }));
+      const res = await env.ASSETS.fetch(new Request(`${url.origin}${portada}`, { headers: request.headers }));
+      return url.host === appHost ? studioHtml(res) : res;
     }
 
     const response = await app.fetch(effectiveRequest, env as never, ctx as never);
     // Rutas no manejadas: assets estaticos (Studio + visor + docs + landing)
     if (response.status === 404 && env.ASSETS != null && request.method === "GET" && !path.startsWith("/api/")) {
       const assetRes = await env.ASSETS.fetch(request);
-      if (assetRes.status !== 404) return assetRes;
+      if (assetRes.status !== 404) {
+        // /studio y /studio/ sirven el index del Studio como asset: medirlo también
+        return path === "/studio" || path === "/studio/" || path === "/studio/index.html" ? studioHtml(assetRes) : assetRes;
+      }
       // En los subdominios, las rutas limpias se resuelven contra su seccion
       const prefijo = url.host === appHost ? "/studio" : url.host === docsHost ? "/docs" : url.host === apexHost ? "/landing" : null;
       const esSeccion = path.startsWith("/studio") || path.startsWith("/docs") || path.startsWith("/viewer") || path.startsWith("/landing");
@@ -272,7 +279,7 @@ export default {
       // limpias). Solo para paginas: un fichero con extension que no existe
       // debe ser un 404, no un index.html disfrazado.
       if (esPagina && (path.startsWith("/studio") || url.host === appHost)) {
-        return env.ASSETS.fetch(new Request(`${url.origin}/studio/index.html`, { headers: request.headers }));
+        return studioHtml(await env.ASSETS.fetch(new Request(`${url.origin}/studio/index.html`, { headers: request.headers })));
       }
     }
     return response;
@@ -304,6 +311,28 @@ export default {
     }
   },
 };
+
+/**
+ * Plausible en el Studio de la instancia alojada.
+ *
+ * El `index.html` del Studio es un asset estático de Vite: no pasa por Hono
+ * ni lleva CSP con nonce, así que la forma limpia de medir sin tocar el
+ * build es inyectar el script al servirlo desde aquí. Solo en modo Clerk
+ * (con las dos claves): el self-host no habla con nadie. La cola
+ * `window.plausible` evita perder los eventos que el Studio dispare antes
+ * de que cargue el script.
+ */
+async function conPlausible(res: Response, dominio: string): Promise<Response> {
+  if (res.status !== 200 || !(res.headers.get("content-type") ?? "").includes("text/html")) return res;
+  const html = await res.text();
+  if (html.includes("plausible.io/js/")) return new Response(html, res);
+  const script =
+    `<script>window.plausible=window.plausible||function(){(window.plausible.q=window.plausible.q||[]).push(arguments)}</script>\n` +
+    `<script defer data-domain="${dominio}" src="https://plausible.io/js/script.js"></script>`;
+  const headers = new Headers(res.headers);
+  headers.delete("content-length");
+  return new Response(html.replace("</head>", `${script}\n</head>`), { status: res.status, headers });
+}
 
 function randomRoomCode(): string {
   const alphabet = "abcdefghjkmnpqrstuvwxyz23456789";

@@ -18,6 +18,9 @@ import { embedResponse } from "../lib/embed.js";
  * publico, no listado, contrasena, organizacion, dominios de embebido.
  */
 
+/** Adónde lleva la insignia «Hecho con Andarama» de los planes sin marca blanca. */
+const BADGE_URL = "https://andarama.com/?utm_source=insignia&utm_medium=tour&utm_campaign=hecho-con";
+
 /** Web component embebible: <script src=".../embed.js"></script> + <anda-tour slug="..."> */
 const EMBED_JS = `(() => {
   const scriptOrigin = (() => { try { return new URL(document.currentScript.src).origin; } catch { return ""; } })();
@@ -239,6 +242,8 @@ export function tourRoutes(): Hono<AppEnv> {
       formEndpoint: `/api/v1/public/forms/${slug}`,
       turnstileSiteKey: c.get("config").turnstileSiteKey ?? null,
       accessibleHtml: renderAccessibleHtml(tour, lang, `/t/${slug}`),
+      // La insignia la decidió la publicación (plan sin marca blanca)
+      badge: pointer.badge === true ? { url: BADGE_URL } : undefined,
       nonce,
     });
     const res = await c.html(html);

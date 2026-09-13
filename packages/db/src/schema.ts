@@ -33,6 +33,11 @@ export const users = sqliteTable(
     /** Plan concedido al margen de Clerk (vitalicio, cortesía): manda sobre `plan`. */
     planOverride: text("plan_override"),
     planUpdatedAt: integer("plan_updated_at"),
+    /** Fin de la prueba gratuita (instancia alojada); null si nunca la tuvo. */
+    trialEndsAt: integer("trial_ends_at"),
+    /** JSON con gclid, msclkid y utm_* del primer toque; nunca datos personales. */
+    attributionJson: text("attribution_json"),
+    attributedAt: integer("attributed_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },

@@ -41,6 +41,8 @@ export interface IndexHtmlOptions {
   };
   /** Adaptador SCORM. */
   scorm?: boolean;
+  /** Insignia «Hecho con Andarama» (instancia alojada, planes sin marca blanca). */
+  badge?: { url: string };
 }
 
 function esc(s: string): string {
@@ -87,6 +89,7 @@ export function renderIndexHtml(opts: IndexHtmlOptions): string {
     formEndpoint: opts.formEndpoint ?? null,
     turnstileSiteKey: opts.turnstileSiteKey ?? null,
     kiosk: opts.kiosk === true ? true : undefined,
+    badge: opts.badge,
   };
   const configJs =
     opts.inlineConfig != null
