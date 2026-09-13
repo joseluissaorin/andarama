@@ -1,0 +1,78 @@
+---
+import { getEntry, render, type CollectionEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import VsTabla from "../components/VsTabla.astro";
+import Alternativas from "../components/Alternativas.astro";
+import CtaRegistro from "../components/CtaRegistro.astro";
+import { articleJsonLd, breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { authorPath, pagePath, t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  entry: CollectionEntry<"blog">;
+  alternates: { lang: Lang; path: string }[];
+  path: string;
+}
+const { lang, entry, alternates, path } = Astro.props;
+const { Content, remarkPluginFrontmatter } = await render(entry);
+const autor = await getEntry("autores", entry.data.autor);
+const nombreAutor = autor?.data.nombre ?? "José Luis Saorín";
+const rutaAutor = authorPath(lang, entry.data.autor);
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "blog.h1"), path: pagePath(lang, "blog") },
+  { name: entry.data.title, path },
+];
+const fecha = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
+const palabras = (entry.body ?? "").split(/\s+/).length;
+const minutos = Math.max(1, Math.round(palabras / 220));
+void remarkPluginFrontmatter;
+---
+
+<Base
+  lang={lang}
+  title={`${entry.data.title} | andarama`}
+  description={entry.data.description}
+  path={path}
+  alternates={alternates}
+  ogType="article"
+  ogImage={entry.data.imagen}
+  jsonld={[
+    organizationJsonLd(),
+    breadcrumbJsonLd(migas),
+    articleJsonLd({
+      lang,
+      title: entry.data.title,
+      description: entry.data.description,
+      path,
+      published: entry.data.fecha,
+      updated: entry.data.actualizado,
+      author: { name: nombreAutor, path: rutaAutor, url: autor?.data.web },
+      image: entry.data.imagen,
+    }),
+  ]}
+>
+  <Migas items={migas} />
+  <article class="articulo">
+    <p class="susurro">{entry.data.cluster}</p>
+    <h1>{entry.data.title}</h1>
+    <p class="lead">{entry.data.description}</p>
+    <div class="firma">
+      <div>
+        <a href={rutaAutor} rel="author">{nombreAutor}</a>
+        <p class="susurro" style="margin: 2px 0 0">
+          {t(lang, "comunes.publicado")} {fecha.format(entry.data.fecha)}
+          {entry.data.actualizado != null && ` · ${t(lang, "comunes.actualizado")} ${fecha.format(entry.data.actualizado)}`}
+          {" · "}{t(lang, "comunes.minutos", { n: minutos })}
+        </p>
+      </div>
+    </div>
+    {entry.data.plantilla === "vs" && entry.data.competidor != null && <VsTabla lang={lang} competidor={entry.data.competidor} />}
+    {entry.data.plantilla === "alternativas" && entry.data.competidores != null && <Alternativas lang={lang} competidores={entry.data.competidores} />}
+    <div class="prosa">
+      <Content />
+    </div>
+    <CtaRegistro lang={lang} />
+  </article>
+</Base>

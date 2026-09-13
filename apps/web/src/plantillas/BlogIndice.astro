@@ -1,0 +1,42 @@
+---
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { publishedPosts } from "../data/rutas";
+import { blogPostPath, pagePath, rssPath, t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const path = pagePath(lang, "blog");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "blog.h1"), path },
+];
+const posts = (await publishedPosts()).filter((p) => p.data.lang === lang);
+const fecha = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
+---
+
+<Base lang={lang} title={t(lang, "blog.title")} description={t(lang, "blog.description")} path={path} pageKey="blog" jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>
+  <link slot="head" rel="alternate" type="application/rss+xml" title={t(lang, "blog.title")} href={rssPath(lang)} />
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.blog")} · <a href={rssPath(lang)}>RSS</a></p>
+      <h1>{t(lang, "blog.h1")}</h1>
+      <p class="lead">{t(lang, "blog.lead")}</p>
+    </div>
+    {posts.length === 0 && <p class="susurro" style="margin-top: 32px">…</p>}
+    <ul class="entradas">
+      {posts.map((p) => (
+        <li>
+          <span class="susurro">{p.data.cluster}</span>
+          <h2><a href={blogPostPath(lang, p.data.slug)}>{p.data.title}</a></h2>
+          <p>{p.data.description}</p>
+          <span class="susurro">{fecha.format(p.data.fecha)}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

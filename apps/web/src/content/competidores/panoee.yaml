@@ -1,0 +1,30 @@
+nombre: Panoee
+web: https://panoee.com
+pais: "VN"
+tipo: saas
+gratis: true
+gratis_detalle: "Plan gratuito con proyectos ilimitados y 3 GB de almacenamiento"
+planes:
+  - nombre: Pro
+    precio: 22
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: 200
+    verificado: true
+cuotas: "Gratis: proyectos ilimitados con 3 GB; Pro: más almacenamiento y funciones avanzadas"
+rv: true
+scorm: false
+lti: false
+exportacion: parcial
+exportacion_detalle: "Exportación del tour para uso sin conexión solo en el plan Pro"
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: true
+analitica_sin_cookies: null
+street_view: false
+verificado: true
+descripcion:
+  es: "SaaS con plan gratuito generoso (proyectos ilimitados, 3 GB) y editor moderno."
+  en: "SaaS with a generous free plan (unlimited projects, 3 GB) and a modern editor."
+notas: "Pro cuesta 22 $/mes o 200 $/año. Sin plan educativo conocido."

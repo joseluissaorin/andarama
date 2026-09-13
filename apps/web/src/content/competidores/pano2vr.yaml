@@ -1,0 +1,37 @@
+nombre: Pano2VR
+web: https://ggnome.com/pano2vr/
+pais: "AT"
+tipo: desktop
+gratis: false
+gratis_detalle: "Versión de prueba con marca de agua; no hay plan gratuito"
+planes:
+  - nombre: Pano2VR
+    precio: 149
+    moneda: EUR
+    periodo: once
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+  - nombre: Pano2VR pro
+    precio: 359
+    moneda: EUR
+    periodo: once
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+cuotas: "Sin límite de proyectos (licencia de escritorio); el alojamiento corre por cuenta del usuario"
+rv: true
+scorm: false
+lti: false
+exportacion: true
+exportacion_detalle: "Genera HTML5 autónomo para alojarlo en cualquier servidor"
+codigo_abierto: false
+marca_blanca: true
+dominio_propio: true
+analitica_sin_cookies: null
+street_view: true
+verificado: false
+descripcion:
+  es: "Software de escritorio de pago único de Garden Gnome (Austria), potente y técnico, apreciado por fotógrafos de panoramas."
+  en: "One-time-fee desktop software by Garden Gnome (Austria), powerful and technical, popular with panorama photographers."
+notas: "Los precios son de memoria y deben comprobarse en la web oficial. Ofrece descuentos educativos. Sin funciones de LMS ni SCORM."

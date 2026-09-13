@@ -1,0 +1,15 @@
+---
+/** Migas de pan visibles; el BreadcrumbList JSON-LD lo genera `breadcrumbJsonLd`. */
+interface Props {
+  items: { name: string; path: string }[];
+}
+const { items } = Astro.props;
+---
+
+<nav class="migas" aria-label="Migas">
+  <ol>
+    {items.map((it, i) => (
+      <li>{i < items.length - 1 ? <a href={it.path}>{it.name}</a> : <span aria-current="page">{it.name}</span>}</li>
+    ))}
+  </ol>
+</nav>

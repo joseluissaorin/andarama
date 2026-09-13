@@ -1,0 +1,70 @@
+---
+/**
+ * La tabla «Andarama vs X» a partir de la ficha YAML del competidor. Las
+ * columnas de Andarama salen de lo que ya sabemos de la propia aplicación.
+ */
+import { getEntry } from "astro:content";
+import { t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  competidor: string;
+}
+const { lang, competidor } = Astro.props;
+const entry = await getEntry("competidores", competidor);
+if (entry == null) throw new Error(`Competidor desconocido: ${competidor}`);
+const c = entry.data;
+const k = "blog.vs";
+
+type Valor = boolean | "parcial" | null;
+const celda = (v: Valor): { clase: string; texto: string } => {
+  if (v === true) return { clase: "si", texto: t(lang, `${k}.si`) };
+  if (v === false) return { clase: "no", texto: t(lang, `${k}.no`) };
+  if (v === "parcial") return { clase: "parcial", texto: t(lang, `${k}.parcial`) };
+  return { clase: "parcial", texto: t(lang, `${k}.sin_datos`) };
+};
+
+const simbolo = (m: string): string => (m === "EUR" ? "€" : m === "GBP" ? "£" : "$");
+const periodo = (p: string): string => (p === "month" ? t(lang, "precios.periodo.month") : p === "year" ? t(lang, "precios.periodo.year") : t(lang, "precios.periodo.once"));
+const precio = (p: (typeof c.planes)[number]): string => `${p.nombre}: ${p.precio} ${simbolo(p.moneda)} ${periodo(p.periodo)}${p.precio_mes_anual != null ? ` (${p.precio_mes_anual} ${simbolo(p.moneda)} ${t(lang, "precios.periodo.month")}, ${t(lang, "precios.periodo.year")})` : ""}${p.precio_anual != null ? ` (${p.precio_anual} ${simbolo(p.moneda)} ${t(lang, "precios.periodo.year")})` : ""}${p.verificado ? "" : " *"}`;
+
+const pagados = c.planes.filter((p) => p.precio > 0);
+const desde = pagados.length > 0 ? precio(pagados.reduce((a, b) => (a.precio / (a.periodo === "year" ? 12 : 1) <= b.precio / (b.periodo === "year" ? 12 : 1) ? a : b))) : t(lang, `${k}.sin_datos`);
+const hayNoVerificado = !c.verificado || c.planes.some((p) => !p.verificado);
+
+const filas: { nombre: string; andarama: { clase: string; texto: string }; otro: { clase: string; texto: string } }[] = [
+  { nombre: t(lang, `${k}.gratis`), andarama: { clase: "si", texto: t(lang, `${k}.andarama_desde`) }, otro: { clase: c.gratis ? "si" : "no", texto: c.gratis_detalle ?? celda(c.gratis).texto } },
+  { nombre: t(lang, `${k}.precio_desde`), andarama: { clase: "", texto: "2 $ " + t(lang, "precios.periodo.month") }, otro: { clase: "", texto: desde } },
+  { nombre: t(lang, `${k}.planes`), andarama: { clase: "", texto: "Andar · Aula · Paseo · Excursión · Formación · De por vida" }, otro: { clase: "", texto: c.planes.length > 0 ? c.planes.map(precio).join(" · ") : t(lang, `${k}.sin_datos`) } },
+  { nombre: t(lang, `${k}.cuotas`), andarama: { clase: "", texto: t(lang, `${k}.andarama_cuotas`) }, otro: { clase: "", texto: c.cuotas ?? t(lang, `${k}.sin_datos`) } },
+  { nombre: t(lang, `${k}.rv`), andarama: celda(true), otro: celda(c.rv) },
+  { nombre: t(lang, `${k}.scorm`), andarama: celda(true), otro: { clase: celda(c.scorm).clase, texto: `SCORM: ${celda(c.scorm).texto} · LTI: ${celda(c.lti).texto}` } },
+  { nombre: t(lang, `${k}.exportacion`), andarama: { clase: "si", texto: "ZIP, HTML, PWA, SCORM" }, otro: { clase: celda(c.exportacion).clase, texto: c.exportacion_detalle ?? celda(c.exportacion).texto } },
+  { nombre: t(lang, `${k}.codigo_abierto`), andarama: { clase: "si", texto: "EUPL-1.2" }, otro: celda(c.codigo_abierto) },
+  { nombre: t(lang, `${k}.marca_blanca`), andarama: { clase: "si", texto: "Excursión, Formación, De por vida" }, otro: celda(c.marca_blanca) },
+  { nombre: t(lang, `${k}.dominio`), andarama: { clase: "si", texto: "Excursión, Formación, De por vida" }, otro: celda(c.dominio_propio) },
+  { nombre: t(lang, `${k}.analitica`), andarama: celda(true), otro: celda(c.analitica_sin_cookies) },
+  { nombre: t(lang, `${k}.street_view`), andarama: celda(false), otro: celda(c.street_view) },
+];
+---
+
+<h2>{t(lang, `${k}.titulo`, { nombre: c.nombre })}</h2>
+<table class="comparativa">
+  <thead>
+    <tr>
+      <th scope="col">{t(lang, `${k}.caracteristica`)}</th>
+      <th scope="col" class="andarama">Andarama</th>
+      <th scope="col">{c.nombre}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filas.map((f) => (
+      <tr>
+        <th scope="row">{f.nombre}</th>
+        <td class:list={["andarama", f.andarama.clase]}>{f.andarama.texto}</td>
+        <td class={f.otro.clase}>{f.otro.texto}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+<p class="susurro">{t(lang, `${k}.verificado`)} {hayNoVerificado && t(lang, `${k}.no_verificado`)} · <a href={c.web} rel="nofollow noopener">{c.web.replace(/^https?:\/\//, "")}</a></p>

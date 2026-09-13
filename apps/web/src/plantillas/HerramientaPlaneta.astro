@@ -1,0 +1,48 @@
+---
+import HerramientaBase from "../components/HerramientaBase.astro";
+import { t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "herramientas.planeta";
+---
+
+<HerramientaBase lang={lang} key="planeta">
+  <div class="zona">
+    <label class="btn" for="planeta-fichero">{t(lang, "herramientas.comunes.abrir")}</label>
+    <input id="planeta-fichero" type="file" accept="image/jpeg,image/png,image/webp" />
+    <p>{t(lang, "herramientas.comunes.arrastrar")}</p>
+  </div>
+  <p class="herramienta__aviso" role="status" aria-live="polite"></p>
+  <div class="lienzo"></div>
+  <div class="herramienta__barra oculto">
+    <label>{t(lang, `${k}.giro`)} <input type="range" min="-180" max="180" step="1" value="0" data-giro /></label>
+    <label>{t(lang, `${k}.apertura`)} <input type="range" min="0.5" max="2" step="0.05" value="1" data-apertura /></label>
+    <label>{t(lang, `${k}.fondo`)}
+      <select data-fondo>
+        <option value="transparente">{t(lang, `${k}.fondo_transparente`)}</option>
+        <option value="blanco">{t(lang, `${k}.fondo_blanco`)}</option>
+        <option value="negro">{t(lang, `${k}.fondo_negro`)}</option>
+        <option value="papel">{t(lang, `${k}.fondo_papel`)}</option>
+      </select>
+    </label>
+    <label>{t(lang, `${k}.tamano`)}
+      <select data-tamano>
+        <option value="512">512 px</option>
+        <option value="1024">1024 px</option>
+        <option value="2048" selected>2048 px</option>
+        <option value="4096">4096 px</option>
+      </select>
+    </label>
+    <button type="button" class="btn empuje" data-descargar>{t(lang, `${k}.descargar`)}</button>
+    <button type="button" class="btn btn--fantasma" data-otra>{t(lang, "herramientas.comunes.otra")}</button>
+  </div>
+</HerramientaBase>
+
+<script>
+  import { montarPlaneta } from "../tools/planeta";
+  const root = document.querySelector<HTMLElement>("[data-herramienta=planeta]");
+  if (root != null) montarPlaneta(root);
+</script>

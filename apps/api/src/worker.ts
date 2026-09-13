@@ -218,6 +218,12 @@ export default {
         const resto = path.slice("/docs".length) || "/";
         return Response.redirect(`https://${docsHost}${resto}${url.search}`, 301);
       }
+      // El sitio público (apps/web) vive en /landing dentro de los assets,
+      // pero sus URL limpias son las de la raíz del apex: /en/, /blog/...
+      if ((path === "/landing" || path.startsWith("/landing/")) && esPagina) {
+        const resto = path.slice("/landing".length) || "/";
+        return Response.redirect(`https://${apexHost}${resto}${url.search}`, 301);
+      }
     }
     if (url.host === appHost || url.host === docsHost) {
       const prefijo = url.host === appHost ? "/studio" : "/docs";
@@ -273,6 +279,12 @@ export default {
       const esSeccion = path.startsWith("/studio") || path.startsWith("/docs") || path.startsWith("/viewer") || path.startsWith("/landing");
       if (prefijo != null && !esSeccion) {
         const traducida = await env.ASSETS.fetch(new Request(`${url.origin}${prefijo}${path}`, { headers: request.headers }));
+        // Workers Assets redirige «/en» a «/landing/en/» para poner la barra
+        // final: la redirección se devuelve sin el prefijo, que es interno
+        const destino = traducida.headers.get("location");
+        if (traducida.status >= 300 && traducida.status < 400 && destino != null && destino.startsWith(`${prefijo}/`)) {
+          return Response.redirect(`${url.origin}${destino.slice(prefijo.length)}`, traducida.status as 301 | 302 | 307 | 308);
+        }
         if (traducida.status !== 404) return traducida;
       }
       // SPA fallback del Studio (rutas del editor, tanto /studio/... como

@@ -367,7 +367,21 @@ export function tourRoutes(): Hono<AppEnv> {
   });
 
   // ------- Sitemap y robots (SEO §2.12) -------
-  r.get("/sitemap.xml", async (c) => {
+  // /sitemap.xml es un índice con dos sitemaps: el del sitio público
+  // (apps/web, servido como asset estático en /sitemap-web.xml, con todas las
+  // páginas e idiomas) y el de los tours publicados, que se genera aquí.
+  r.get("/sitemap.xml", (c) => {
+    const base = c.get("config").publicUrl;
+    const hoy = new Date().toISOString().slice(0, 10);
+    const entradas = [`${base}/sitemap-web.xml`, `${base}/sitemap-tours.xml`]
+      .map((loc) => `  <sitemap><loc>${loc}</loc><lastmod>${hoy}</lastmod></sitemap>`)
+      .join("\n");
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entradas}\n</sitemapindex>`, {
+      headers: { "content-type": "application/xml", "cache-control": "public, max-age=3600" },
+    });
+  });
+
+  r.get("/sitemap-tours.xml", async (c) => {
     const db = c.get("db");
     const pubs = await db
       .select()

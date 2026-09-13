@@ -1,0 +1,40 @@
+---
+/** La lista «Alternativas a X»: una tarjeta por competidor, desde el YAML. */
+import { getEntries } from "astro:content";
+import { t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  competidores: string[];
+}
+const { lang, competidores } = Astro.props;
+const entradas = await getEntries(competidores.map((id) => ({ collection: "competidores" as const, id })));
+const simbolo = (m: string): string => (m === "EUR" ? "€" : m === "GBP" ? "£" : "$");
+const periodo = (p: string): string => t(lang, `precios.periodo.${p}`);
+
+// Todo el cálculo aquí: el compilador de Astro se lía con «<=» dentro de la plantilla
+const tarjetas = entradas
+  .filter((e) => e != null)
+  .map((e) => {
+    const c = e!.data;
+    const pagados = c.planes.filter((p) => p.precio > 0);
+    let barato = pagados[0] ?? null;
+    for (const p of pagados) if (barato != null && p.precio < barato.precio) barato = p;
+    const gratis = `${t(lang, "blog.vs.gratis")}: ${t(lang, c.gratis ? "blog.vs.si" : "blog.vs.no")}`;
+    const desde = barato != null ? `${t(lang, "blog.alternativas.desde")} ${barato.precio} ${simbolo(barato.moneda)} ${periodo(barato.periodo)}${barato.verificado ? "" : " *"}` : null;
+    return { nombre: c.nombre, pais: c.pais, web: c.web, descripcion: c.descripcion[lang] ?? c.descripcion.es ?? "", gratis, desde };
+  });
+---
+
+<h2>{t(lang, "blog.alternativas.titulo")}</h2>
+<ol class="alternativas">
+  {tarjetas.map((c) => (
+    <li>
+      <b>{c.nombre}</b>{c.pais != null && <span class="susurro"> · {c.pais}</span>}
+      <p>{c.descripcion}</p>
+      <p class="susurro">
+        {c.gratis}{c.desde != null && ` · ${c.desde}`} · <a href={c.web} rel="nofollow noopener">{t(lang, "blog.alternativas.web")}</a>
+      </p>
+    </li>
+  ))}
+</ol>

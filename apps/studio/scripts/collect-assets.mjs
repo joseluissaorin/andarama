@@ -23,8 +23,15 @@ try {
 } catch {
   console.warn("apps/docs sin construir; se omite /docs");
 }
-// La landing de andarama.com (estatica, sin build)
-await cp(resolve(root, "../landing"), join(out, "landing"), { recursive: true });
+// La portada de andarama.com: el sitio Astro de apps/web (portada en siete
+// idiomas, blog y herramientas). Si no está construido se avisa y se cae a la
+// landing a mano de apps/landing, que sigue en disco como copia de seguridad.
+try {
+  await cp(resolve(root, "../web/dist"), join(out, "landing"), { recursive: true });
+} catch {
+  console.warn("apps/web sin construir; se usa la landing estática de apps/landing");
+  await cp(resolve(root, "../landing"), join(out, "landing"), { recursive: true });
+}
 // Service worker: aquí es donde se saben los nombres con hash de esta
 // compilación, así que es aquí donde se escribe la lista de precarga y la
 // versión. Solo entra el armazón —el JavaScript principal, los estilos, el
@@ -93,10 +100,14 @@ await writeFile(
   Cache-Control: public, max-age=604800
 /docs/_astro/*
   Cache-Control: public, max-age=31536000, immutable
+/landing/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+/landing/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
 /landing/index.html
   Cache-Control: no-cache
-/landing/estilo.css
-  Cache-Control: no-cache
+/landing/sitemap-web.xml
+  Cache-Control: public, max-age=3600
 `,
 );
 console.log(`Assets listos en ${out}`);
