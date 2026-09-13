@@ -22,3 +22,4 @@ test-results/
 playwright-report/
 apps/desktop/dist/
 docs/seo/datos/crudo/
+apps/api/data/
