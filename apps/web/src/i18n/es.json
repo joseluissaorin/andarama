@@ -330,7 +330,7 @@
     },
     "aula": {
       "title": "Andarama para docentes: escape room 360, salidas virtuales y quiz | andarama",
-      "description": "Para docentes: escape rooms en 360, salidas virtuales y quiz con nota. Plan Aula a 39 € al año por docente, con alumnado ilimitado por código de clase.",
+      "description": "Para docentes: escape rooms en 360, salidas virtuales y quiz con nota. Plan Aula a 42 $ al año por docente, con alumnado ilimitado por código de clase.",
       "h1": "Para el aula: se anda, se busca, se aprende",
       "lead": "Recorridos 360 que el alumnado explora como un juego: escape rooms, salidas virtuales al museo o al yacimiento, y preguntas que puntúan. Sin cuentas para los alumnos: un código de clase y a andar.",
       "bloques": [
@@ -341,7 +341,7 @@
         { "titulo": "Visitas guiadas en vivo", "texto": "Toda la clase en la misma sala: el docente mueve la escena y señala con el puntero; cada alumno puede soltarse y volver a sincronizar." },
         { "titulo": "Con gafas o con cartón", "texto": "El mismo recorrido funciona en gafas de realidad virtual y en cualquier móvil con unas gafas de cartón. Y en la pizarra digital, claro." }
       ],
-      "cta": { "titulo": "El plan Aula", "texto": "39 € al año por docente: 5 recorridos, 10 GB, alumnado ilimitado con código de clase, quiz con nota, escape room y búsqueda del tesoro.", "boton": "Empezar con Aula", "secundario": "Ver todos los planes" }
+      "cta": { "titulo": "El plan Aula", "texto": "42 $ al año por docente: 5 recorridos, 10 GB, alumnado ilimitado con código de clase, quiz con nota, escape room y búsqueda del tesoro.", "boton": "Empezar con Aula", "secundario": "Ver todos los planes" }
     },
     "wordpress": {
       "title": "Plugin de WordPress para recorridos virtuales 360 | andarama",

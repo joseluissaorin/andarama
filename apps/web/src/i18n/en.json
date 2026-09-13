@@ -331,7 +331,7 @@
     },
     "aula": {
       "title": "Andarama for teachers: 360 escape rooms, virtual field trips and quizzes | andarama",
-      "description": "For teachers: 360 escape rooms, virtual field trips and graded quizzes. The Aula plan at €39 a year per teacher, with unlimited students through a class code.",
+      "description": "For teachers: 360 escape rooms, virtual field trips and graded quizzes. The Aula plan at $42 a year per teacher, with unlimited students through a class code.",
       "h1": "For the classroom: walk, search, learn",
       "lead": "360 tours that students explore like a game: escape rooms, virtual field trips to the museum or the dig site, and questions that count. No student accounts: one class code and off they go.",
       "bloques": [
@@ -342,7 +342,7 @@
         { "titulo": "Live guided visits", "texto": "The whole class in the same room: the teacher moves the scene and points with the pointer; each student can wander off and sync back." },
         { "titulo": "With a headset or with cardboard", "texto": "The same tour works on VR headsets and on any phone with cardboard goggles. And on the interactive whiteboard, of course." }
       ],
-      "cta": { "titulo": "The Aula plan", "texto": "€39 a year per teacher: 5 tours, 10 GB, unlimited students with a class code, graded quiz, escape room and treasure hunt.", "boton": "Start with Aula", "secundario": "See all plans" }
+      "cta": { "titulo": "The Aula plan", "texto": "$42 a year per teacher: 5 tours, 10 GB, unlimited students with a class code, graded quiz, escape room and treasure hunt.", "boton": "Start with Aula", "secundario": "See all plans" }
     },
     "wordpress": {
       "title": "WordPress plugin for 360 virtual tours | andarama",

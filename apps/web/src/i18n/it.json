@@ -330,7 +330,7 @@
     },
     "aula": {
       "title": "Andarama per docenti: escape room 360, uscite virtuali e quiz | andarama",
-      "description": "Per docenti: escape room in 360, uscite virtuali e quiz con voto. Piano Aula a 39 € all'anno per docente, con studenti illimitati tramite codice di classe.",
+      "description": "Per docenti: escape room in 360, uscite virtuali e quiz con voto. Piano Aula a 42 $ all'anno per docente, con studenti illimitati tramite codice di classe.",
       "h1": "Per l'aula: si va, si cerca, si impara",
       "lead": "Tour 360 che gli studenti esplorano come un gioco: escape room, uscite virtuali al museo o al sito archeologico, e domande che danno punti. Senza account per gli studenti: un codice di classe e si parte.",
       "bloques": [
@@ -341,7 +341,7 @@
         { "titulo": "Visite guidate dal vivo", "texto": "Tutta la classe nella stessa stanza: il docente sposta la scena e indica con il puntatore; ogni studente può staccarsi e risincronizzarsi." },
         { "titulo": "Con il visore o con il cartone", "texto": "Lo stesso tour funziona con un visore di realtà virtuale e su qualsiasi telefono con un visore di cartone. E sulla lavagna digitale, ovviamente." }
       ],
-      "cta": { "titulo": "Il piano Aula", "texto": "39 € all'anno per docente: 5 tour, 10 GB, studenti illimitati con codice di classe, quiz con voto, escape room e caccia al tesoro.", "boton": "Inizia con Aula", "secundario": "Vedi tutti i piani" }
+      "cta": { "titulo": "Il piano Aula", "texto": "42 $ all'anno per docente: 5 tour, 10 GB, studenti illimitati con codice di classe, quiz con voto, escape room e caccia al tesoro.", "boton": "Inizia con Aula", "secundario": "Vedi tutti i piani" }
     },
     "wordpress": {
       "title": "Plugin WordPress per tour virtuali 360 | andarama",

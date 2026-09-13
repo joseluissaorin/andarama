@@ -14,8 +14,6 @@ import { t, tv, type Lang } from "../i18n";
 /** Duración de la prueba gratuita (la misma que aplica la API). */
 export const TRIAL_DAYS: number = API_TRIAL_DAYS;
 
-/** Precio con el que se anuncia Aula, en euros al año por docente. */
-export const AULA_EUR_YEAR = 39;
 
 export type PlanCardKind = "casa" | PlanSlug;
 
@@ -57,7 +55,8 @@ function eur(lang: Lang, n: number): string {
 
 function tarjetaAlojada(lang: Lang, plan: PlanInfo): PlanCard {
   const esAula = plan.slug === "aula";
-  const figure = esAula ? eur(lang, AULA_EUR_YEAR) : usd(lang, plan.amountCents);
+  // Aula se cobra en dólares como todo lo demás (42 $ al año por docente): sin equivalentes en euros que no cobre nadie
+  const figure = usd(lang, plan.amountCents);
   const periodo = t(lang, `precios.periodo.${plan.period}`);
   const when = esAula ? `${periodo} ${t(lang, "precios.periodo.por_docente")}` : periodo;
   const yearly = plan.yearlyAmountCents != null ? t(lang, "precios.periodo.o_anual", { precio: usd(lang, plan.yearlyAmountCents) }) : undefined;

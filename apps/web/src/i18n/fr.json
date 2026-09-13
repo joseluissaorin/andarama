@@ -330,7 +330,7 @@
     },
     "aula": {
       "title": "Andarama pour les enseignants : escape game 360, sorties virtuelles et quiz | andarama",
-      "description": "Pour les enseignants : escape games en 360, sorties virtuelles et quiz notés. Plan Aula à 39 € par an et par enseignant, avec élèves illimités grâce au code de classe.",
+      "description": "Pour les enseignants : escape games en 360, sorties virtuelles et quiz notés. Plan Aula à 42 $ par an et par enseignant, avec élèves illimités grâce au code de classe.",
       "h1": "Pour la classe : on marche, on cherche, on apprend",
       "lead": "Des visites 360 que les élèves explorent comme un jeu : escape games, sorties virtuelles au musée ou sur le site archéologique, et des questions qui comptent. Pas de comptes pour les élèves : un code de classe, et en avant.",
       "bloques": [
@@ -341,7 +341,7 @@
         { "titulo": "Visites guidées en direct", "texto": "Toute la classe dans la même salle : l’enseignant déplace la scène et montre avec le pointeur ; chaque élève peut se détacher et se resynchroniser." },
         { "titulo": "Avec un casque ou un carton", "texto": "La même visite fonctionne dans un casque de réalité virtuelle et sur n’importe quel téléphone avec des lunettes en carton. Et au tableau numérique, bien sûr." }
       ],
-      "cta": { "titulo": "Le plan Aula", "texto": "39 € par an et par enseignant : 5 visites, 10 Go, élèves illimités avec code de classe, quiz noté, escape game et chasse au trésor.", "boton": "Commencer avec Aula", "secundario": "Voir tous les plans" }
+      "cta": { "titulo": "Le plan Aula", "texto": "42 $ par an et par enseignant : 5 visites, 10 Go, élèves illimités avec code de classe, quiz noté, escape game et chasse au trésor.", "boton": "Commencer avec Aula", "secundario": "Voir tous les plans" }
     },
     "wordpress": {
       "title": "Extension WordPress pour visites virtuelles 360 | andarama",

@@ -5,7 +5,7 @@
  */
 import { PLANS, type PlanSlug } from "../../../api/src/lib/plans";
 import { absolute, SITE, t, type Lang } from "../i18n";
-import { AULA_EUR_YEAR, planHref } from "./planes";
+import { planHref } from "./planes";
 
 const CONTEXT = "https://schema.org";
 
@@ -83,12 +83,11 @@ function ofertas(lang: Lang): object[] {
   };
   const alojados = (Object.keys(PLANS) as PlanSlug[]).map((slug) => {
     const plan = PLANS[slug];
-    const esAula = slug === "aula";
     return {
       "@type": "Offer",
       name: plan.name,
-      price: esAula ? AULA_EUR_YEAR : plan.amountCents / 100,
-      priceCurrency: esAula ? "EUR" : "USD",
+      price: plan.amountCents / 100,
+      priceCurrency: "USD",
       url: planHref(slug),
       availability: "https://schema.org/InStock",
       description: `${t(lang, "precios.recorridos." + (plan.quotaTours === 1 ? "uno" : "varios"), { n: plan.quotaTours })} · ${t(lang, `precios.periodo.${plan.period}`)}`,

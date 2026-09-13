@@ -330,7 +330,7 @@
     },
     "aula": {
       "title": "Andarama für Lehrkräfte: Escape Room 360, virtuelle Exkursionen und Quiz | andarama",
-      "description": "Für Lehrkräfte: Escape Rooms in 360 Grad, virtuelle Exkursionen und Quiz mit Note. Plan Aula für 39 € im Jahr je Lehrkraft, mit unbegrenzt vielen Lernenden per Klassencode.",
+      "description": "Für Lehrkräfte: Escape Rooms in 360 Grad, virtuelle Exkursionen und Quiz mit Note. Plan Aula für 42 $ im Jahr je Lehrkraft, mit unbegrenzt vielen Lernenden per Klassencode.",
       "h1": "Fürs Klassenzimmer: gehen, suchen, lernen",
       "lead": "360-Grad-Rundgänge, die die Lernenden wie ein Spiel erkunden: Escape Rooms, virtuelle Exkursionen ins Museum oder zur Ausgrabungsstätte und Fragen, die zählen. Ohne Konten für die Schülerinnen und Schüler: ein Klassencode, und los geht's.",
       "bloques": [
@@ -341,7 +341,7 @@
         { "titulo": "Geführte Live-Touren", "texto": "Die ganze Klasse im selben Raum: Die Lehrkraft bewegt die Szene und zeigt mit dem Zeiger; jeder Lernende kann sich lösen und wieder synchronisieren." },
         { "titulo": "Mit VR-Brille oder Cardboard", "texto": "Derselbe Rundgang funktioniert in der VR-Brille und auf jedem Handy mit einer Cardboard-Brille. Und auf der digitalen Tafel, klar." }
       ],
-      "cta": { "titulo": "Der Plan Aula", "texto": "39 € im Jahr je Lehrkraft: 5 Rundgänge, 10 GB, unbegrenzt viele Lernende per Klassencode, Quiz mit Note, Escape Room und Schatzsuche.", "boton": "Mit Aula loslegen", "secundario": "Alle Pläne ansehen" }
+      "cta": { "titulo": "Der Plan Aula", "texto": "42 $ im Jahr je Lehrkraft: 5 Rundgänge, 10 GB, unbegrenzt viele Lernende per Klassencode, Quiz mit Note, Escape Room und Schatzsuche.", "boton": "Mit Aula loslegen", "secundario": "Alle Pläne ansehen" }
     },
     "wordpress": {
       "title": "WordPress-Plugin für virtuelle 360-Grad-Rundgänge | andarama",

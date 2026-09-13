@@ -76,7 +76,7 @@ export const PLANS: Record<PlanSlug, PlanInfo> = {
   aula: {
     slug: "aula",
     name: "Aula",
-    // Se anuncia a 39 € al año; Clerk cobra en dólares
+    // En Clerk (13-09-2026): 42 $/año, y también 4 $/mes; aquí se anuncia el anual
     amountCents: 4200,
     period: "year",
     quotaTours: 5,
@@ -89,6 +89,7 @@ export const PLANS: Record<PlanSlug, PlanInfo> = {
     name: "Paseo",
     amountCents: 2000,
     period: "month",
+    // Clerk cobra el anual como 16,67 $/mes × 12 = 200,04 $
     yearlyAmountCents: 20000,
     quotaTours: 10,
     quotaBytes: 50 * GB,
@@ -98,6 +99,7 @@ export const PLANS: Record<PlanSlug, PlanInfo> = {
   excursion: {
     slug: "excursion",
     name: "Excursión",
+    // En Clerk también existe el mensual a 50 $ (el anual son 41,67 $/mes × 12 = 500,04 $)
     amountCents: 50000,
     period: "year",
     quotaTours: 500,
