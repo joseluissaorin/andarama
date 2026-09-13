@@ -1,0 +1,5 @@
+# Ficheros que no deben subirse a wordpress.org (los usa `wp dist-archive`).
+.distignore
+README.md
+languages/*.po~
+.DS_Store
