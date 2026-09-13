@@ -10,3 +10,11 @@ export {
   type TileCallbacks,
 } from "./browser.js";
 export { TileUploadQueue, type PendingTile } from "./queue.js";
+export {
+  planetSample,
+  renderLittlePlanet,
+  littlePlanetFor,
+  prefetchLittlePlanets,
+  PLANET_RADIUS,
+  type LittlePlanetOptions,
+} from "./littlePlanet.js";

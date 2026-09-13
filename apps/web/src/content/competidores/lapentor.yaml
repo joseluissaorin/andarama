@@ -1,0 +1,37 @@
+nombre: Lapentor
+web: https://lapentor.com
+pais: "VN"
+tipo: saas
+gratis: true
+gratis_detalle: "Plan gratuito con 3 proyectos y marca de Lapentor"
+planes:
+  - nombre: Pro
+    precio: 25
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: 250
+    verificado: true
+  - nombre: Exportación de proyecto
+    precio: 10
+    moneda: USD
+    periodo: once
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+cuotas: "Gratis: 3 proyectos; Pro: proyectos ilimitados"
+rv: true
+scorm: false
+lti: false
+exportacion: parcial
+exportacion_detalle: "Exportar un proyecto para alojarlo fuera cuesta 10 $ por proyecto"
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: true
+analitica_sin_cookies: null
+street_view: false
+verificado: true
+descripcion:
+  es: "SaaS asequible con plan gratuito de 3 proyectos y plugins; cobra 10 $ por cada proyecto exportado."
+  en: "Affordable SaaS with a 3-project free plan and plugins; charges $10 per exported project."
+notas: "Pro cuesta 25 $/mes o 250 $/año. La exportación se paga por proyecto (10 $ cada uno), incluso con suscripción Pro. Sin plan educativo."

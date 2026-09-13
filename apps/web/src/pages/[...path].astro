@@ -1,0 +1,42 @@
+---
+/**
+ * Un solo generador para todas las páginas del sitio, en todos los idiomas.
+ * Cada ruta trae su clase y su idioma; aquí solo se elige la plantilla.
+ */
+import type { GetStaticPaths } from "astro";
+import { allRoutes, toParam, type Ruta } from "../data/rutas";
+import Inicio from "../plantillas/Inicio.astro";
+import Formacion from "../plantillas/Formacion.astro";
+import Universidades from "../plantillas/Universidades.astro";
+import Aula from "../plantillas/Aula.astro";
+import WordPress from "../plantillas/WordPress.astro";
+import Privacidad from "../plantillas/Privacidad.astro";
+import Herramientas from "../plantillas/Herramientas.astro";
+import HerramientaVisor from "../plantillas/HerramientaVisor.astro";
+import HerramientaPlaneta from "../plantillas/HerramientaPlaneta.astro";
+import HerramientaCubemap from "../plantillas/HerramientaCubemap.astro";
+import BlogIndice from "../plantillas/BlogIndice.astro";
+import BlogEntrada from "../plantillas/BlogEntrada.astro";
+import BlogAutor from "../plantillas/BlogAutor.astro";
+
+export const getStaticPaths = (async () => {
+  const rutas = await allRoutes();
+  return rutas.map((ruta) => ({ params: { path: toParam(ruta.path) }, props: { ruta } }));
+}) satisfies GetStaticPaths;
+
+const { ruta } = Astro.props as { ruta: Ruta };
+---
+
+{ruta.kind === "pagina" && ruta.key === "home" && <Inicio lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "formacion" && <Formacion lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "universidades" && <Universidades lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "aula" && <Aula lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "wordpress" && <WordPress lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "privacidad" && <Privacidad lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "herramientas" && <Herramientas lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "visor" && <HerramientaVisor lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "planeta" && <HerramientaPlaneta lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "cubemap" && <HerramientaCubemap lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "blog" && <BlogIndice lang={ruta.lang} />}
+{ruta.kind === "post" && <BlogEntrada lang={ruta.lang} entry={ruta.entry} alternates={ruta.alternates} path={ruta.path} />}
+{ruta.kind === "autor" && <BlogAutor lang={ruta.lang} entry={ruta.entry} />}

@@ -1,0 +1,51 @@
+---
+/**
+ * El pie de la portada más tres columnas: secciones, herramientas gratuitas
+ * e idiomas (enlaces a las portadas de cada idioma, que ayudan a los
+ * buscadores a descubrirlas).
+ */
+import { LANGS, langName, pagePath, t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+---
+
+<footer class="pie">
+  <div class="pie__linea">
+    <img src="/logo-andarama.svg" alt="" width="26" height="26" loading="lazy" />
+    <span>andarama</span>
+  </div>
+  <p class="susurro" set:html={t(lang, "pie.linea")} />
+  <p class="susurro"><a href="https://app.andarama.com">app.andarama.com</a> · <a href="https://docs.andarama.com">docs.andarama.com</a></p>
+  <div class="pie__cols">
+    <div>
+      <h2>{t(lang, "pie.secciones")}</h2>
+      <ul>
+        <li><a href={pagePath(lang, "aula")}>{t(lang, "nav.aula")}</a></li>
+        <li><a href={pagePath(lang, "formacion")}>{t(lang, "nav.formacion")}</a></li>
+        <li><a href={pagePath(lang, "universidades")}>{t(lang, "nav.universidades")}</a></li>
+        <li><a href={pagePath(lang, "wordpress")}>{t(lang, "nav.wordpress")}</a></li>
+        <li><a href={pagePath(lang, "blog")}>{t(lang, "nav.blog")}</a></li>
+        <li><a href={pagePath(lang, "privacidad")}>{t(lang, "nav.privacidad")}</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2>{t(lang, "pie.herramientas")}</h2>
+      <ul>
+        <li><a href={pagePath(lang, "visor")}>{t(lang, "herramientas.visor.h1").split(":")[0]}</a></li>
+        <li><a href={pagePath(lang, "planeta")}>{t(lang, "herramientas.planeta.h1").split(":")[0]}</a></li>
+        <li><a href={pagePath(lang, "cubemap")}>{t(lang, "herramientas.cubemap.h1").split(" (")[0]}</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2>{t(lang, "pie.idiomas")}</h2>
+      <ul>
+        {LANGS.map((l) => (
+          <li><a href={pagePath(l, "home")} hreflang={l} lang={l}>{langName(l)}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</footer>

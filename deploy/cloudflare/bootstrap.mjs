@@ -138,6 +138,8 @@ log("Compilando paquetes y Studio");
 execFileSync("pnpm", ["build:packages"], { cwd: root, stdio: "inherit" });
 // La documentación va antes que el Studio: collect-assets la recoge de apps/docs/dist
 execFileSync("pnpm", ["--filter", "@andarama/docs", "build"], { cwd: root, stdio: "inherit" });
+// Y el sitio público (portada, blog, herramientas), que también recoge collect-assets
+execFileSync("pnpm", ["--filter", "@andarama/web", "build"], { cwd: root, stdio: "inherit" });
 execFileSync("pnpm", ["--filter", "@andarama/studio", "build"], { cwd: root, stdio: "inherit" });
 
 log("Desplegando Worker");

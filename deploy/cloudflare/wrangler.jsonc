@@ -16,8 +16,8 @@
     // manifiesto pasa porque en app.andarama.com se sirve el gemelo con
     // ambito raiz. Los assets con hash se sirven directos.
     "run_worker_first": [
-      "/api/*", "/t/*", "/ingest/*", "/rt/*", "/sitemap.xml", "/robots.txt", "/",
-      "/studio", "/studio/", "/studio/manifest.webmanifest", "/docs", "/docs/*", "/embed.js"
+      "/api/*", "/t/*", "/ingest/*", "/rt/*", "/sitemap.xml", "/sitemap-tours.xml", "/robots.txt", "/",
+      "/studio", "/studio/", "/studio/manifest.webmanifest", "/docs", "/docs/*", "/landing", "/landing/*", "/embed.js"
     ]
   },
 

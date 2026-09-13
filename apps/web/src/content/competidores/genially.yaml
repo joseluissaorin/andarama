@@ -1,0 +1,37 @@
+nombre: Genially
+web: https://genially.com
+pais: "ES"
+tipo: saas
+gratis: true
+gratis_detalle: "Plan gratuito con marca de Genially y plantillas limitadas"
+planes:
+  - nombre: Pro
+    precio: 12.49
+    moneda: EUR
+    periodo: month
+    precio_mes_anual: 7.49
+    precio_anual: null
+    verificado: false
+  - nombre: Master
+    precio: 29.99
+    moneda: EUR
+    periodo: month
+    precio_mes_anual: 20.82
+    precio_anual: null
+    verificado: false
+cuotas: null
+rv: false
+scorm: parcial
+lti: parcial
+exportacion: parcial
+exportacion_detalle: "Exportación HTML y SCORM solo en planes de pago"
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: false
+analitica_sin_cookies: null
+street_view: false
+verificado: false
+descripcion:
+  es: "Herramienta española de contenidos interactivos (presentaciones, infografías, juegos); no es específica de 360 aunque admite imágenes panorámicas."
+  en: "Spanish interactive content tool (presentations, infographics, games); not 360-specific, though it supports panoramic images."
+notas: "Empresa de Córdoba (España) con fuerte implantación educativa y planes para centros. Precios de memoria; las funciones de LMS (SCORM, LTI) dependen del plan."

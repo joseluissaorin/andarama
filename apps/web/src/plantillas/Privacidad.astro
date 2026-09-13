@@ -1,0 +1,36 @@
+---
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "paginas.privacidad";
+const path = pagePath(lang, "privacidad");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "nav.privacidad"), path },
+];
+const secciones = tv<{ titulo: string; html: string }[]>(lang, `${k}.secciones`);
+---
+
+<Base lang={lang} title={t(lang, `${k}.title`)} description={t(lang, `${k}.description`)} path={path} pageKey="privacidad" jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <h1>{t(lang, `${k}.h1`)}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+    </div>
+    <div class="prosa">
+      {secciones.map((s) => (
+        <>
+          <h2>{s.titulo}</h2>
+          <Fragment set:html={s.html} />
+        </>
+      ))}
+    </div>
+  </section>
+</Base>

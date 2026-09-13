@@ -1,0 +1,23 @@
+---
+import Base from "../layouts/Base.astro";
+import Portada from "../components/Portada.astro";
+import { faqJsonLd, organizationJsonLd, softwareJsonLd } from "../data/jsonld";
+import { pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const faq = tv<{ q: string; a: string }[]>(lang, "home.faq.lista");
+---
+
+<Base
+  lang={lang}
+  title={t(lang, "home.title")}
+  description={t(lang, "home.description")}
+  path={pagePath(lang, "home")}
+  pageKey="home"
+  jsonld={[organizationJsonLd(), softwareJsonLd(lang), faqJsonLd(faq)]}
+>
+  <Portada lang={lang} />
+</Base>
