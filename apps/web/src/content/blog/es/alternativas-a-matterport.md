@@ -1,6 +1,6 @@
 ---
 title: "7 alternativas a Matterport para hacer recorridos virtuales 360 (2026)"
-description: "Matterport es caro y ata los tours a su nube. Siete alternativas con precios comprobados: desde el código abierto de Andarama hasta Kuula, 3DVista, Panoee, Lapentor, CloudPano y Pano2VR. Cuál conviene según lo que necesites."
+description: "Matterport es caro y ata los tours a su nube. Siete alternativas con precios comprobados: Andarama, Kuula, 3DVista, Panoee, Lapentor, CloudPano y Pano2VR."
 lang: es
 slug: alternativas-a-matterport
 cluster: competidores

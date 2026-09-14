@@ -32,6 +32,8 @@ const blog = defineCollection({
     /** Para «alternativas»: ids de los competidores, en orden. */
     competidores: z.array(z.string()).optional(),
     imagen: z.string().optional(),
+    /** Preguntas frecuentes al final del artículo; salen también como FAQPage en JSON-LD. */
+    faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
     borrador: z.boolean().default(false),
   }),
 });

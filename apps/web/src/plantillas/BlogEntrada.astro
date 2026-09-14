@@ -5,7 +5,8 @@ import Migas from "../components/Migas.astro";
 import VsTabla from "../components/VsTabla.astro";
 import Alternativas from "../components/Alternativas.astro";
 import CtaRegistro from "../components/CtaRegistro.astro";
-import { articleJsonLd, breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import Preguntas from "../components/Preguntas.astro";
+import { articleJsonLd, breadcrumbJsonLd, faqJsonLd, organizationJsonLd } from "../data/jsonld";
 import { authorPath, pagePath, t, type Lang } from "../i18n";
 
 interface Props {
@@ -27,6 +28,7 @@ const migas = [
 const fecha = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
 const palabras = (entry.body ?? "").split(/\s+/).length;
 const minutos = Math.max(1, Math.round(palabras / 220));
+const faq = entry.data.faq ?? [];
 void remarkPluginFrontmatter;
 ---
 
@@ -51,6 +53,7 @@ void remarkPluginFrontmatter;
       author: { name: nombreAutor, path: rutaAutor, url: autor?.data.web },
       image: entry.data.imagen,
     }),
+    ...(faq.length > 0 ? [faqJsonLd(faq)] : []),
   ]}
 >
   <Migas items={migas} />
@@ -73,6 +76,7 @@ void remarkPluginFrontmatter;
     <div class="prosa">
       <Content />
     </div>
+    {faq.length > 0 && <Preguntas titulo={t(lang, "herramientas.comunes.faq_titulo")} lista={faq} />}
     <CtaRegistro lang={lang} />
   </article>
 </Base>
