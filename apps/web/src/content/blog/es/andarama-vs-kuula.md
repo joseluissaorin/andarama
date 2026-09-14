@@ -1,6 +1,6 @@
 ---
 title: "Andarama vs Kuula: qué cambia cuando el software es de código abierto"
-description: "Kuula es la plataforma de tours 360 que más usan los fotógrafos: gratis para empezar, 24 $ al mes en Pro. Andarama es de código abierto y se instala gratis o se aloja desde 2 $. Comparamos precios, exportación, realidad virtual y docencia, con cifras comprobadas."
+description: "Kuula es la plataforma 360 de los fotógrafos: gratis para empezar, 24 $ al mes en Pro. Andarama es de código abierto y se aloja desde 2 $. Comparativa."
 lang: es
 slug: andarama-vs-kuula
 cluster: competidores
@@ -30,7 +30,7 @@ Los de Andarama:
 
 - **En tu casa**: 0 €. El programa entero, en tu ordenador o en tu servidor, sin límite de recorridos.
 - **Andar**: 2 $ al mes por 1 recorrido y 5 GB.
-- **Aula**: 39 € al año por docente, con 5 recorridos, alumnado ilimitado por código de clase, quiz con nota y escape room.
+- **Aula**: 42 $ al año por docente, con 5 recorridos, alumnado ilimitado por código de clase, quiz con nota y escape room.
 - **Paseo**: 20 $ al mes o 200 $ al año por 10 recorridos y 50 GB.
 - **Excursión**: 500 $ al año por 500 recorridos y 100 GB, sin insignia y con dominio propio.
 - **Formación**: 99 $ al mes o 990 $ al año, con SCORM, LTI, marca blanca, equipo y factura.
@@ -58,7 +58,7 @@ Los dos tienen modo RV. Kuula ofrece un modo para gafas y para cartón. Andarama
 
 ## Docencia y formación
 
-Aquí no hay comparación posible, y lo decimos sin presumir: Kuula no está pensado para el aula. Andarama trae de serie quiz con nota, mínimo para aprobar, intentos, informe final y certificado PDF; búsqueda del tesoro y escape room con variables de estado; visitas guiadas en vivo con una sala y un código; LTI 1.3 para insertar el tour desde Moodle, Canvas o Blackboard con la nota de vuelta al libro de calificaciones; y SCORM 1.2 y 2004 para cualquier otro campus. El plan Aula cuesta 39 € al año por docente, con alumnado ilimitado.
+Aquí no hay comparación posible, y lo decimos sin presumir: Kuula no está pensado para el aula. Andarama trae de serie quiz con nota, mínimo para aprobar, intentos, informe final y certificado PDF; búsqueda del tesoro y escape room con variables de estado; visitas guiadas en vivo con una sala y un código; LTI 1.3 para insertar el tour desde Moodle, Canvas o Blackboard con la nota de vuelta al libro de calificaciones; y SCORM 1.2 y 2004 para cualquier otro campus. El plan Aula cuesta 42 $ al año por docente, con alumnado ilimitado.
 
 ## Street View y comunidad
 

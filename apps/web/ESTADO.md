@@ -43,6 +43,15 @@ Sitio Astro 5 estático con i18n por ruta que sustituye a la landing a mano de `
   (`Alternativas.astro`), que se insertan tras la entradilla según el frontmatter. Dos
   artículos en español (`content/blog/es/`), página de autor, índice por idioma y RSS
   (`/blog/rss.xml`, `/en/blog/rss.xml`…).
+- **Artículos (14-9-2026)**: 22 en español. A los dos primeros se suman los 20 del orden
+  editorial de `docs/seo/ESTUDIO-RESULTADOS.md` §8 (5 de herramientas, 6 de docencia, 3 de
+  museos e instituciones, 4 de comparativas y precios, 2 de inmobiliaria), fechados cada dos
+  días del 14-9 al 22-10 de 2026, 1000–1300 palabras cada uno, con enlaces a las herramientas,
+  a `/aula/`, `/formacion/`, `/universidades/`, `/wordpress/` y a docs.andarama.com. El
+  frontmatter admite `faq:` (lista de `q`/`a`): `BlogEntrada.astro` lo pinta con
+  `Preguntas.astro` y emite `FAQPage` en JSON-LD. `scripts/comprobar-blog.mjs` cuenta
+  palabras, valida frontmatter (`description` ≤ 155), ortotipografía (rayas con espacios) y
+  que todos los enlaces internos resuelven contra `dist` y `apps/docs/src/content/docs`.
 - **Herramientas** (`src/tools/*.ts`, islas en TypeScript sin framework):
   - visor 360 online: monta `@andarama/viewer-ui` (carga perezosa) con la foto como
     `blob:`; pantalla completa y botón de RV del propio visor; aviso si no hay WebXR.
