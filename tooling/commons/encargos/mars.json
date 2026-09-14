@@ -1,0 +1,107 @@
+{
+  "slug": "mars",
+  "lang": "en",
+  "title": "TODO: título SEO con el nombre del lugar (3 a 120 caracteres), por ejemplo «Mars en 360: recorrido virtual»",
+  "description": "TODO: un párrafo de 300 a 600 caracteres sobre el lugar y lo que se ve en las escenas; solo hechos comprobados, sin inventar",
+  "placeName": "Mars",
+  "placeCountry": "TODO",
+  "lat": null,
+  "lng": null,
+  "startScene": "360-projected-image-domoni-crater-343288",
+  "scenes": [
+    {
+      "id": "360-projected-image-domoni-crater-343288",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/c/cd/360%CB%9A_Projected_Image-_Domoni_Crater_%2834328838116%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_Projected_Image-_Domoni_Crater_(34328838116).jpg",
+      "title": "TODO: título corto de la escena (fichero: 360˚ Projected Image- Domoni Crater (34328838116))",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Kevin M. Gill",
+      "license": "CC BY 2.0",
+      "width": 8192,
+      "height": 4096,
+      "categories": [
+        "360° panoramas of Mars",
+        "CC-BY-2.0",
+        "Domoni (martian crater)",
+        "Flickr images reviewed by FlickreviewR 2",
+        "Photographs by Kevin M. Gill",
+        "Photographs taken on 2017-04-30"
+      ]
+    },
+    {
+      "id": "360-view-crater-in-western-arabia-terra",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/a/a4/360%CB%9A_View-_Crater_in_Western_Arabia_Terra_with_Stair-Stepped_Hills_and_Dark_Dunes_%2832974048184%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_View-_Crater_in_Western_Arabia_Terra_with_Stair-Stepped_Hills_and_Dark_Dunes_(32974048184).jpg",
+      "title": "TODO: título corto de la escena (fichero: 360˚ View- Crater in Western Arabia Terra with Stair-Stepped Hills and Dark Dunes (32974048184))",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Kevin M. Gill",
+      "license": "Public domain",
+      "width": 8192,
+      "height": 4096,
+      "categories": [
+        "360° panoramas of Mars",
+        "Arabia Terra",
+        "CC-BY-2.0",
+        "Flickr images reviewed by FlickreviewR 2",
+        "Impact craters in Oxia Palus quadrangle",
+        "PD NASA"
+      ]
+    },
+    {
+      "id": "360-view-very-well-preserved-9-kilometer",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/0/0c/360%CB%9A_View-_Very_Well-Preserved_9-Kilometer_Diameter_Impact_Crater_%2833432247000%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_View-_Very_Well-Preserved_9-Kilometer_Diameter_Impact_Crater_(33432247000).jpg",
+      "title": "TODO: título corto de la escena (fichero: 360˚ View- Very Well-Preserved 9-Kilometer Diameter Impact Crater (33432247000))",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Kevin M. Gill",
+      "license": "Public domain",
+      "width": 8192,
+      "height": 4096,
+      "categories": [
+        "360° panoramas of Mars",
+        "CC-BY-2.0",
+        "Flickr images reviewed by FlickreviewR 2",
+        "PD NASA",
+        "Photographs by Kevin M. Gill",
+        "Photographs taken on 2017-04-03"
+      ]
+    },
+    {
+      "id": "360-view-within-rauna-crater-on-mars-336",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/9/9c/360%CB%9A_View_within_Rauna_Crater_on_Mars_%2833660895232%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_View_within_Rauna_Crater_on_Mars_(33660895232).jpg",
+      "title": "TODO: título corto de la escena (fichero: 360˚ View within Rauna Crater on Mars (33660895232))",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Kevin M. Gill",
+      "license": "Public domain",
+      "width": 8000,
+      "height": 4000,
+      "categories": [
+        "2017 on Mars",
+        "360° panoramas of Mars",
+        "CC-BY-2.0",
+        "Flickr images reviewed by FlickreviewR 2",
+        "PD NASA"
+      ]
+    }
+  ],
+  "_demanda": {
+    "total": 120,
+    "mercados": {
+      "en-US": 90,
+      "de-DE": 10,
+      "en-GB": 10,
+      "fr-FR": 10
+    },
+    "idiomas": {
+      "en": 100,
+      "de": 10,
+      "fr": 10
+    }
+  },
+  "_notas": "Revisa placeName (acentos y forma oficial), placeCountry (ISO-2) y pon lat/lng del lugar. Sustituye todos los TODO. Quita las escenas que no sean del lugar o no sean panoramas esféricos completos. Otras 0 panorámicas coincidentes quedan fuera del encargo."
+}
