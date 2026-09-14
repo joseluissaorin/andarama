@@ -14,10 +14,12 @@
     // "/studio", "/studio/", "/docs" y "/docs/*" pasan por el worker para que
     // los subdominios (app., docs.) puedan redirigir a sus URL limpias; el
     // manifiesto pasa porque en app.andarama.com se sirve el gemelo con
-    // ambito raiz. Los assets con hash se sirven directos.
+    // ambito raiz. La galería (/explorar) es dinámica: la monta el worker.
+    // Los assets con hash se sirven directos.
     "run_worker_first": [
       "/api/*", "/t/*", "/ingest/*", "/rt/*", "/sitemap.xml", "/sitemap-tours.xml", "/robots.txt", "/",
-      "/studio", "/studio/", "/studio/manifest.webmanifest", "/docs", "/docs/*", "/landing", "/landing/*", "/embed.js"
+      "/studio", "/studio/", "/studio/manifest.webmanifest", "/docs", "/docs/*", "/landing", "/landing/*", "/embed.js",
+      "/explorar", "/explorar/*"
     ]
   },
 

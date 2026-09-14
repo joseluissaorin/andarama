@@ -22,6 +22,7 @@ import { tokenRoutes } from "./routes/tokens.js";
 import { liveRoutes } from "./routes/live.js";
 import { aiRoutes } from "./routes/ai.js";
 import { billingRoutes } from "./routes/billing.js";
+import { galleryApiRoutes, galleryPageRoutes } from "./routes/gallery.js";
 import { createClerkVerifier, type ClerkVerifier } from "./lib/clerk.js";
 import { effectivePlan, planCapabilities, planName } from "./lib/plans.js";
 import { attributionSchema, hasAttribution } from "./lib/attribution.js";
@@ -127,6 +128,8 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/live", liveRoutes(opts.createLiveRoom ?? null));
   api.route("/ai", aiRoutes(opts.getAi ?? (() => null)));
   api.route("/billing", billingRoutes());
+  // Galería pública: listado y ficha, sin sesión
+  api.route("/gallery", galleryApiRoutes());
   api.route("/", analyticsRoutes());
   api.route("/", formRoutes());
   api.get("/openapi.json", (c) => c.json(openApiSpec(c.get("config").publicUrl)));
@@ -228,6 +231,8 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
 
   // Visor publicado, ingest de analitica y sitemap (sin sesion)
   app.route("/", tourRoutes());
+  // Galería pública en HTML (/explorar/), servida por el worker en el apex
+  app.route("/", galleryPageRoutes());
 
   return app;
 }

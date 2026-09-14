@@ -43,6 +43,125 @@ export interface PublicationPointer {
   badge?: boolean;
 }
 
+/**
+ * Lo que pide una ficha de la galería. Los límites son los del buscador: un
+ * título corto con el nombre del lugar y una descripción de un párrafo (300 a
+ * 600 caracteres), en un solo idioma. Con `enabled: false` solo se apaga; los
+ * textos se guardan por si se vuelve a encender.
+ */
+export const gallerySchema = z
+  .object({
+    enabled: z.boolean(),
+    title: z.string().trim().min(3).max(120).optional(),
+    description: z.string().trim().min(300).max(600).optional(),
+    credits: z.string().trim().max(1000).optional(),
+    placeName: z.string().trim().min(2).max(120).optional(),
+    placeCountry: z.string().trim().toUpperCase().regex(/^[A-Z]{2}$/, "País en ISO 3166-1 alfa-2").optional(),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
+    lang: z.string().trim().regex(/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/).optional(),
+  })
+  .refine((g) => (g.lat == null) === (g.lng == null), { message: "Las coordenadas van juntas: latitud y longitud" });
+
+export type GalleryInput = z.infer<typeof gallerySchema>;
+
+/** Columnas de la galería tal como van a la tabla `publications`. */
+export interface GalleryColumns {
+  inGallery: boolean;
+  galleryTitle: string | null;
+  galleryDescription: string | null;
+  galleryCredits: string | null;
+  placeName: string | null;
+  placeCountry: string | null;
+  placeLat: number | null;
+  placeLng: number | null;
+  galleryLang: string | null;
+}
+
+/**
+ * Resuelve las columnas de la galería para esta publicación: lo que manda el
+ * cuerpo, si manda algo; si no, lo que ya había. Solo una publicación pública
+ * puede estar en la galería: al cambiar la visibilidad se apaga sola.
+ */
+export function resolveGallery(
+  body: GalleryInput | undefined,
+  existing: GalleryColumns | undefined,
+  visibility: string,
+  defaultLang: string,
+): GalleryColumns {
+  // Solo las columnas de la galería: `existing` suele ser la fila entera de
+  // `publications`, y esparcirla en el `.set()` machacaría versión y slug
+  const base: GalleryColumns = {
+    inGallery: existing?.inGallery ?? false,
+    galleryTitle: existing?.galleryTitle ?? null,
+    galleryDescription: existing?.galleryDescription ?? null,
+    galleryCredits: existing?.galleryCredits ?? null,
+    placeName: existing?.placeName ?? null,
+    placeCountry: existing?.placeCountry ?? null,
+    placeLat: existing?.placeLat ?? null,
+    placeLng: existing?.placeLng ?? null,
+    galleryLang: existing?.galleryLang ?? null,
+  };
+  if (body == null) return { ...base, inGallery: base.inGallery && visibility === "public" };
+  if (body.enabled && visibility !== "public") {
+    throw badRequest("Solo un tour público puede mostrarse en la galería");
+  }
+  const merged: GalleryColumns = {
+    inGallery: body.enabled,
+    galleryTitle: body.title ?? base.galleryTitle,
+    galleryDescription: body.description ?? base.galleryDescription,
+    galleryCredits: body.credits === undefined ? base.galleryCredits : body.credits === "" ? null : body.credits,
+    placeName: body.placeName ?? base.placeName,
+    placeCountry: body.placeCountry ?? base.placeCountry,
+    placeLat: body.lat === undefined ? base.placeLat : body.lat,
+    placeLng: body.lng === undefined ? base.placeLng : body.lng,
+    galleryLang: body.lang ?? base.galleryLang ?? defaultLang,
+  };
+  // Se exige sobre lo fusionado: volver a encender la ficha con solo
+  // `enabled: true` reutiliza los textos guardados
+  if (
+    merged.inGallery &&
+    (merged.galleryTitle == null || merged.galleryDescription == null || merged.placeName == null || merged.placeCountry == null)
+  ) {
+    throw badRequest("La ficha de la galería necesita título, descripción, lugar y país");
+  }
+  return merged;
+}
+
+/** La ficha de la galería tal como la ve el Studio (para rellenar el diálogo). */
+export function galleryInfo(g: GalleryColumns): {
+  enabled: boolean;
+  title: string | null;
+  description: string | null;
+  credits: string | null;
+  placeName: string | null;
+  placeCountry: string | null;
+  lat: number | null;
+  lng: number | null;
+  lang: string | null;
+} {
+  return {
+    enabled: g.inGallery,
+    title: g.galleryTitle,
+    description: g.galleryDescription,
+    credits: g.galleryCredits,
+    placeName: g.placeName,
+    placeCountry: g.placeCountry,
+    lat: g.placeLat,
+    lng: g.placeLng,
+    lang: g.galleryLang,
+  };
+}
+
+/**
+ * Las páginas y el listado de la galería se cachean en KV bajo una
+ * «generación»; publicar o despublicar la cambia y las entradas viejas
+ * caducan solas. Evita tener que enumerar claves por idioma, país y página.
+ */
+export async function bumpGalleryGeneration(kv: { put(key: string, value: string): Promise<void> }): Promise<void> {
+  await kv.put("gallery:gen", String(Date.now()));
+}
+
 const publishSchema = z.object({
   slug: z.string().min(3).max(80).regex(/^[a-z0-9-]+$/).optional(),
   visibility: z.enum(["public", "unlisted", "password", "org", "domains"]).default("public"),
@@ -66,6 +185,8 @@ const publishSchema = z.object({
     .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/)
     .max(2_000_000)
     .optional(),
+  /** Ficha en la galería pública (/explorar/). Si falta, se conserva la anterior. */
+  gallery: gallerySchema.optional(),
 });
 
 export function publishRoutes(): Hono<AppEnv> {
@@ -92,6 +213,9 @@ export function publishRoutes(): Hono<AppEnv> {
 
     // Slug de publicacion
     const existingPub = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
+    // La ficha de la galería se valida antes de congelar nada: un cuerpo
+    // incoherente no debe dejar artefactos a medias en el almacenamiento
+    const gallery = resolveGallery(body.gallery, existingPub, body.visibility, compiled.tour.meta.defaultLang);
     let slug = body.slug ?? existingPub?.slug ?? slugify(access.project.title);
     const slugOwner = (await db.select().from(publications).where(eq(publications.slug, slug)).limit(1))[0];
     if (slugOwner != null && slugOwner.projectId !== access.project.id) {
@@ -115,11 +239,15 @@ export function publishRoutes(): Hono<AppEnv> {
     await runtime.storage.put(mapKey, JSON.stringify({ assets: compiled.assets, prefixes: compiled.prefixes }), {
       contentType: "application/json",
     });
+    // La portada capturada sirve también de cartel en la galería; si esta vez
+    // no llega captura, la ficha conserva la de la versión anterior
+    let posterKey = existingPub?.posterKey ?? null;
     if (body.shareImage != null) {
       const binario = atob(body.shareImage.split(",", 2)[1]!);
       const bytes = new Uint8Array(binario.length);
       for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
-      await runtime.storage.put(`pub/${slug}/${number}/share.jpg`, bytes, { contentType: "image/jpeg" });
+      posterKey = `pub/${slug}/${number}/share.jpg`;
+      await runtime.storage.put(posterKey, bytes, { contentType: "image/jpeg" });
     }
 
     const versionId = newId();
@@ -197,6 +325,8 @@ export function publishRoutes(): Hono<AppEnv> {
           publishAt: body.publishAt ?? null,
           expireAt: body.expireAt ?? null,
           kiosk,
+          ...gallery,
+          posterKey,
           publishedAt: nowMs(),
           publishedBy: auth.user.id,
         })
@@ -213,10 +343,14 @@ export function publishRoutes(): Hono<AppEnv> {
         publishAt: body.publishAt ?? null,
         expireAt: body.expireAt ?? null,
         kiosk,
+        ...gallery,
+        posterKey,
         publishedAt: nowMs(),
         publishedBy: auth.user.id,
       });
     }
+    // La galería se cachea por generación: publicar la cambia
+    await bumpGalleryGeneration(runtime.kv);
     await db.update(projects).set({ status: "published", updatedAt: nowMs() }).where(eq(projects.id, access.project.id));
     await audit(c, "project.publish", "project", access.project.id, { slug, version: number }, access.project.orgId);
     await fireWebhooks(c, access.project.orgId, access.project.id, "publish", { slug, version: number });
@@ -230,6 +364,8 @@ export function publishRoutes(): Hono<AppEnv> {
       kioskUrl: `${c.get("config").publicUrl}/t/${slug}${kiosk ? "" : "?kiosk=1"}`,
       tourUrl: `${c.get("config").publicUrl}/t/${slug}${kiosk ? "?kiosk=0" : ""}`,
       kiosk,
+      gallery: galleryInfo(gallery),
+      galleryUrl: gallery.inGallery ? `${c.get("config").publicUrl}/explorar/${slug}/` : null,
       warnings: compiled.issues.filter((i) => i.severity === "warning"),
     }, 201);
   });
@@ -247,6 +383,7 @@ export function publishRoutes(): Hono<AppEnv> {
     await runtime.kv.delete(`pub:${pub.slug}`);
     if (pub.customDomain != null) await runtime.kv.delete(`domain:${pub.customDomain}`);
     await db.delete(publications).where(eq(publications.projectId, access.project.id));
+    if (pub.inGallery) await bumpGalleryGeneration(runtime.kv);
     await db.update(projects).set({ status: "draft", updatedAt: nowMs() }).where(eq(projects.id, access.project.id));
     await audit(c, "project.unpublish", "project", access.project.id, { slug: pub.slug }, access.project.orgId);
     await fireWebhooks(c, access.project.orgId, access.project.id, "unpublish", { slug: pub.slug });

@@ -33,6 +33,7 @@ import { AnalyticsView } from "./AnalyticsView";
 import { CommentsView } from "./CommentsView";
 import { VersionsView } from "./VersionsView";
 import { ExportDialog, LiveDialog, PublishDialog, ShareDialog } from "./dialogs";
+import type { GalleryInfo } from "./gallery";
 import { CommandPalette } from "./CommandPalette";
 import { CriaturaCameo } from "../components/Criatura";
 
@@ -42,7 +43,7 @@ export interface ProjectInfo {
   title: string;
   slug: string;
   permissions: { canEdit: boolean; canPublish: boolean; canManage: boolean; role: string };
-  publication: { slug: string; visibility: string; hasPassword: boolean; kiosk?: boolean } | null;
+  publication: { slug: string; visibility: string; hasPassword: boolean; kiosk?: boolean; gallery?: GalleryInfo | null } | null;
 }
 
 type EditorTab = "scenes" | "graph" | "preview" | "translations" | "settings" | "analytics" | "comments" | "versions";

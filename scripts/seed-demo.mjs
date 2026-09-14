@@ -292,9 +292,37 @@ await call(`/api/v1/projects/${projectId}`, {
   },
 });
 
+// La ficha en la galería pública (/explorar/recorrido-real/): el título con
+// los lugares, un párrafo de 300 a 600 caracteres, el lugar de la escena
+// inicial con sus coordenadas y las atribuciones de Commons en texto plano.
+const creditosPlanos = SCENES.map((s) => {
+  const a = atrib[s.file];
+  return `${s.title}: fotografía de ${a.artist}, ${a.license}, ${a.url}`;
+}).join("\n");
+const galeria = {
+  enabled: true,
+  title: "Recorrido real 360: catedral de Geisenheim, Alte Nationalgalerie, Duisburg-Nord y San Diego",
+  description:
+    "Cuatro lugares reales en un solo recorrido virtual 360: el interior neogótico de la catedral de Geisenheim, en el Rheingau; " +
+    "una sala de la Alte Nationalgalerie de Berlín, con sus esculturas de mármol y sus paredes rojas; el alto horno del parque " +
+    "industrial de Duisburg-Nord, hoy parque público; y el paseo marítimo de la bahía de San Diego. Las fotografías esféricas son " +
+    "de Wikimedia Commons (CC BY-SA). Sirve para probar el visor de Andarama: la navegación entre escenas, el menú, la brújula, " +
+    "las proyecciones y el modo de realidad virtual.",
+  credits: creditosPlanos,
+  placeName: "Geisenheim (Rheingau)",
+  placeCountry: "DE",
+  lat: 49.9843,
+  lng: 7.9673,
+  lang: "es",
+};
+if (galeria.description.length < 300 || galeria.description.length > 600) {
+  throw new Error(`La descripción de la galería tiene ${galeria.description.length} caracteres; debe tener entre 300 y 600`);
+}
+
 const pub = await call(`/api/v1/projects/${projectId}/publish`, {
   method: "POST",
-  body: { slug: "recorrido-real", visibility: "public", note: "Demo con fotografias reales" },
+  body: { slug: "recorrido-real", visibility: "public", note: "Demo con fotografias reales", gallery: galeria },
 });
 log(`PUBLICADO: ${pub.url}`);
+if (pub.galleryUrl) log(`EN LA GALERÍA: ${pub.galleryUrl}`);
 if (pub.warnings?.length > 0) console.log("Avisos:", pub.warnings.map((w) => w.message).join(" | "));

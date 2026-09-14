@@ -32,6 +32,12 @@ try {
   console.warn("apps/web sin construir; se usa la landing estática de apps/landing");
   await cp(resolve(root, "../landing"), join(out, "landing"), { recursive: true });
 }
+// Las hojas de estilo del sitio, con su nombre y sin hash: la galería
+// (/explorar/, montada por el worker) las enlaza como /landing/estilo.css y
+// /landing/sitio.css para vestir igual que la portada.
+for (const hoja of ["estilo.css", "sitio.css"]) {
+  await cp(resolve(root, "../web/src/styles", hoja), join(out, "landing", hoja)).catch(() => console.warn(`apps/web/src/styles/${hoja} no encontrada`));
+}
 // Service worker: aquí es donde se saben los nombres con hash de esta
 // compilación, así que es aquí donde se escribe la lista de precarga y la
 // versión. Solo entra el armazón —el JavaScript principal, los estilos, el
@@ -107,6 +113,10 @@ await writeFile(
 /landing/index.html
   Cache-Control: no-cache
 /landing/sitemap-web.xml
+  Cache-Control: public, max-age=3600
+/landing/estilo.css
+  Cache-Control: public, max-age=3600
+/landing/sitio.css
   Cache-Control: public, max-age=3600
 `,
 );
