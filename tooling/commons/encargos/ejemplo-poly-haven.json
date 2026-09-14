@@ -1,0 +1,40 @@
+{
+  "slug": "hamburgo-poly-haven",
+  "lang": "es",
+  "title": "Hamburgo en 360: estación central, Hansaplatz y un canal de la ciudad",
+  "description": "Tres panorámicas esféricas de Hamburgo, la gran ciudad portuaria del norte de Alemania, a orillas del Elba. El recorrido empieza en la estación central (Hauptbahnhof), uno de los nudos ferroviarios con más tráfico del país; sigue por la Hansaplatz, la plaza del barrio de St. Georg, a pocos pasos de la estación, y termina junto a uno de los canales que cruzan la ciudad. Las fotografías son de Greg Zaal (Poly Haven) y están publicadas en Wikimedia Commons bajo CC0, lo que permite montar el recorrido y reutilizarlo libremente.",
+  "placeName": "Hamburgo",
+  "placeCountry": "DE",
+  "lat": 53.5528,
+  "lng": 10.0067,
+  "startScene": "estacion-central",
+  "scenes": [
+    {
+      "id": "estacion-central",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Hamburg_hbf_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Hamburg_hbf_%E2%80%93_Panorama_(Greg_Zaal_via_Poly_Haven.jpg",
+      "title": "Estación central de Hamburgo",
+      "alt": "Panorámica esférica del interior de la estación central de Hamburgo (Hauptbahnhof)",
+      "desc": "Estación central de Hamburgo (Hauptbahnhof). Vista esférica completa.",
+      "view": { "yaw": 0, "pitch": 0.05, "fov": 1.2 }
+    },
+    {
+      "id": "hansaplatz",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/6/60/Hansaplatz_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Hansaplatz_%E2%80%93_Panorama_(Greg_Zaal_via_Poly_Haven).jpg",
+      "title": "Hansaplatz",
+      "alt": "Panorámica esférica de la Hansaplatz, en el barrio de St. Georg de Hamburgo",
+      "desc": "Plaza Hansaplatz, en St. Georg (Hamburgo). Vista esférica completa.",
+      "view": { "yaw": 0, "pitch": 0, "fov": 1.2 }
+    },
+    {
+      "id": "canal",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Hamburg_canal_%E2%80%93_Panorama_%28Greg_Zaal_via_Poly_Haven%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Hamburg_canal_%E2%80%93_Panorama_(Greg_Zaal_via_Poly_Haven).jpg",
+      "title": "Canal de Hamburgo",
+      "alt": "Panorámica esférica junto a un canal de Hamburgo",
+      "desc": "Uno de los canales de Hamburgo. Vista esférica completa.",
+      "view": { "yaw": 0, "pitch": 0, "fov": 1.2 }
+    }
+  ]
+}
