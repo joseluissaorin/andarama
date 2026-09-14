@@ -52,6 +52,18 @@ Sitio Astro 5 estático con i18n por ruta que sustituye a la landing a mano de `
   `Preguntas.astro` y emite `FAQPage` en JSON-LD. `scripts/comprobar-blog.mjs` cuenta
   palabras, valida frontmatter (`description` ≤ 155), ortotipografía (rayas con espacios) y
   que todos los enlaces internos resuelven contra `dist` y `apps/docs/src/content/docs`.
+- **Museos (14-9-2026)**: `/museos/` (`/en/museums/`, `/pt/museus/`, `/fr/musees/`, `/de/museen/`,
+  `/it/musei/`, `/ja/museums/`), hermana de `/universidades/` para museos, archivos, bibliotecas,
+  patrimonio y cabildos (`src/plantillas/Museos.astro`, `paginas.museos` en cada JSON). H2 con las
+  palabras clave del estudio §7 («visita virtual museo», «museum virtual tour», «museu virtual»,
+  «visite virtuelle musée», «tour virtuale musei»), FAQ con `FAQPage`, enlaces a universidades,
+  formación, aula, `/explorar/` y a los artículos `visita-virtual-museo` y
+  `recorrido-360-archivo-biblioteca` (en el idioma de la página si existe la traducción; si no, el
+  original en español, marcado con `hreflang`), y el mismo formulario `mailto:` que universidades con
+  asunto propio y evento `contacto_museos`. Los textos del JSON admiten marcadores `{explorar}`,
+  `{formacion}`, `{universidades}`, `{aula}`, `{articulo_museo}` y `{articulo_archivo}` que la
+  plantilla vuelve rutas. Enlazada desde el pie, desde una caja en `/universidades/` y desde la
+  sección de docencia de la portada. Todo lo que afirma está en `README.md` o en `apps/docs`.
 - **Herramientas** (`src/tools/*.ts`, islas en TypeScript sin framework):
   - visor 360 online: monta `@andarama/viewer-ui` (carga perezosa) con la foto como
     `blob:`; pantalla completa y botón de RV del propio visor; aviso si no hay WebXR.
@@ -80,7 +92,8 @@ Sitio Astro 5 estático con i18n por ruta que sustituye a la landing a mano de `
 
 ## Verificaciones
 
-- `pnpm --filter @andarama/web build`: 86 páginas (7 idiomas), `sitemap-web.xml`, 7 RSS.
+- `pnpm --filter @andarama/web build`: 113 páginas (7 idiomas, 22 artículos y la página de museos),
+  `sitemap-web.xml`, 7 RSS.
 - `pnpm build` completo y `pnpm --filter @andarama/studio build`:
   `dist-root/landing/index.html` sale del sitio nuevo (título «andarama | ¡anda! tours 360
   open source», `/landing/en/`, `/landing/herramientas/...`).

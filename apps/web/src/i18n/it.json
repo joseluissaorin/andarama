@@ -9,6 +9,7 @@
   "slugs": {
     "formacion": "formazione",
     "universidades": "universita",
+    "museos": "musei",
     "aula": "aula",
     "wordpress": "wordpress",
     "privacidad": "privacy",
@@ -47,6 +48,7 @@
     "aula": "aula",
     "formacion": "formazione",
     "universidades": "università",
+    "museos": "musei",
     "wordpress": "WordPress",
     "privacidad": "privacy"
   },
@@ -326,6 +328,72 @@
         "mensaje": "Di che cosa avete bisogno?",
         "enviar": "Invia per email",
         "asunto": "Andarama per {institucion}"
+      }
+    },
+    "museos": {
+      "title": "Tour virtuale musei, archivi e patrimonio in 360 | andarama",
+      "description": "Tour virtuale 360 per musei: didascalie, audioguida, PDF e 3D, visite guidate dal vivo per le scuole, quiz, accessibilità ed esportazione libera. Open source e GDPR.",
+      "h1": "Tour virtuale musei: tour 360 per musei, archivi e patrimonio culturale",
+      "lead": "Un tour 360 tra le sale, il deposito o il monumento, con le didascalie, l'audioguida e le opere in alta risoluzione ancorate dove si trovano. Per musei, archivi, biblioteche, centri del patrimonio ed enti locali. Open source, conforme al GDPR e con un tour che è del museo, non della piattaforma.",
+      "cta": {
+        "contacto": "Richiedi una proposta",
+        "explorar": "Guarda la galleria dei tour"
+      },
+      "usos": {
+        "titulo": "Per chi è",
+        "texto": "Qualsiasi istituzione che custodisca un luogo e voglia mostrarlo a chi non può venire, o preparare la visita a chi invece sì.",
+        "lista": [
+          "<strong>Musei e centri d'arte</strong>: le sale, la mostra temporanea che sta per chiudere e i depositi che non si aprono al pubblico.",
+          "<strong>Archivi e biblioteche</strong>: depositi chiusi, documenti in gigapixel con zoom a mappa e PDF completi ancorati allo scaffale.",
+          "<strong>Patrimonio e monumenti</strong>: chiese, castelli, siti archeologici ed edifici in restauro o con capienza limitata.",
+          "<strong>Comuni, Province e Regioni</strong>: la rete di musei e monumenti di un territorio, con una scheda propria per ogni luogo e account per dipartimento."
+        ]
+      },
+      "bloques": [
+        { "titulo": "Un tour virtuale 360 navigabile, con le informazioni dove stanno", "texto": "Foto 360 di ogni sala collegate da passaggi di navigazione, una pianta per piano per orientarsi e un menu delle scene per aree. Accanto a ogni pezzo, un hotspot con la didascalia in testo, l'audioguida, l'opera in alta risoluzione con zoom, il catalogo in PDF o il modello 3D in glTF, che sul telefono si apre anche in realtà aumentata. E nelle lingue dei visitatori: ogni scena e ogni hotspot si traducono direttamente nell'editor." },
+        { "titulo": "Visita guidata dal vivo per i gruppi scolastici", "texto": "L'educatore crea una stanza con codice e condivide il link: tutta la classe vede la scena e l'orientamento che lui imposta, indica con il puntatore e scrive in chat; ogni studente può staccarsi per guardarsi intorno da solo e risincronizzarsi. La voce passa dalla videochiamata che la scuola già usa. Niente da installare: dal browser, sulla lavagna digitale o sui tablet." },
+        { "titulo": "Quiz e caccia al tesoro per il pubblico dei più piccoli", "texto": "Domande distribuite tra le sale, con feedback, punti e un blocco che trattiene nella scena finché non si indovina. Oggetti nascosti con l'hotspot Tesoro e il contatore dei trovati sempre in vista. Variabili di stato che aprono una porta quando si è trovato tutto. E alla fine, rapporto e certificato PDF con il nome del partecipante. Le scuole possono costruire la stessa cosa con il <a href=\"{aula}\">piano Aula</a>." },
+        { "titulo": "Accessibile dal primo giorno", "texto": "Ogni scena porta un testo alternativo obbligatorio e il visualizzatore offre una modalità di contenuto accessibile lineare: l'intero tour si legge come testo, con il lettore di schermo o senza mouse. Sottotitoli WebVTT per il video 360 e gli hotspot video, focus visibile, bersagli tattili di 44 px e <code>prefers-reduced-motion</code> rispettato. WCAG 2.1 AA." },
+        { "titulo": "Il tour è del museo: esportazione libera", "texto": "Con un clic si esporta uno ZIP statico e autonomo (HTML, visualizzatore, <code>tour.json</code>, tasselli e media) che funziona su qualsiasi server senza Andarama dietro. Anche come HTML unico, come PWA che si vede offline o in modalità chiosco per lo schermo dell'atrio, con autopilot e riavvio dopo un periodo di inattività. Il formato è documentato: se il museo smette di usare Andarama, si porta via la visita intera." },
+        { "titulo": "Una pagina propria su andarama.com/explorar/", "texto": "Un tour pubblico dell'istanza in hosting può chiedere la sua pagina nella <a href=\"{explorar}\">galleria pubblica</a>: titolo con il nome del luogo, descrizione, paese e coordinate, dati strutturati di luogo e voce nella sitemap. Un URL che i motori di ricerca trovano con il nome del museo e che porta al suo sito. L'indice si filtra per paese." },
+        { "titulo": "GDPR e open source", "texto": "L'analitica dei visitatori non usa cookie né salva indirizzi IP: dà le visite, il tempo per sala e dove guarda la gente senza tracciare nessuno. Il programma è open source con licenza EUPL-1.2, la licenza della Commissione Europea: si può leggere, verificare e installare sull'infrastruttura del museo o dell'amministrazione da cui dipende." },
+        { "titulo": "Istanza propria con supporto o piano Formación", "texto": "Due strade. Il <a href=\"{formacion}\">piano Formación</a> in hosting su andarama.com: fino a 100 tour, 200 GB, senza marchio, dominio proprio, team e fattura con i dati fiscali dell'istituzione. Oppure la stessa applicazione distribuita sul Cloudflare o sul Docker del museo, con supporto, aggiornamenti e accompagnamento al personale. Le condizioni per le istituzioni sono nella <a href=\"{universidades}\">pagina delle università</a>." }
+      ],
+      "faq": {
+        "titulo": "Domande frequenti sulla visita virtuale di un museo",
+        "lista": [
+          { "q": "Che cosa serve per fare la visita virtuale di un museo?", "a": "Foto 360 delle sale, con qualsiasi fotocamera che produca un'immagine equirettangolare o con il telefono; i testi, gli audio e le immagini che il museo ha già, e un pomeriggio nell'editor per collegare tutto. Il costo lo fa la fotografia: il software può costare zero, installato su un server proprio, oppure il piano che corrisponde. Le voci di spesa, con le cifre, sono in <a href=\"{articulo_museo}\">Visita virtuale di un museo: come si fa e quanto costa</a>." },
+          { "q": "Si può mettere su uno schermo dentro il museo?", "a": "Sì. La modalità chiosco percorre le sale da sola, lascia che qualsiasi visitatore prenda il comando e torna all'inizio dopo un po' di inattività, con l'uscita bloccata. E il pacchetto PWA funziona offline, così lo schermo dell'atrio non dipende dalla rete." },
+          { "q": "Come si fa una visita guidata con una scuola?", "a": "L'educatore pubblica il tour, crea una stanza dall'editor e condivide il link per i partecipanti. Tutto ciò che fa (cambiare sala, ruotare la vista, avvicinare) si replica sugli schermi della classe; con il puntatore indica e con la chat risponde. La voce passa dalla videochiamata che la scuola già usa. Le stanze sono effimere: spariscono quando la guida se ne va." },
+          { "q": "Va bene per un archivio o una biblioteca?", "a": "Sì. Oltre alle scene 360, ci sono scene gigapixel 2D per esplorare un documento o un'opera digitalizzata con zoom a mappa e annotazioni ancorate sul foglio stesso, e hotspot PDF con visualizzatore integrato. Lo raccontiamo passo per passo in <a href=\"{articulo_archivo}\">Tour 360 per un archivio o una biblioteca</a>." },
+          { "q": "E se il museo smette di usare Andarama?", "a": "Si porta via la visita intera. Lo ZIP esportato è statico e autonomo: HTML, visualizzatore, <code>tour.json</code>, tasselli e media. Si carica via FTP su qualsiasi hosting, su GitHub Pages o su Cloudflare Pages e continua a funzionare senza la piattaforma dietro. Il formato è documentato e il programma è open source con licenza EUPL-1.2." },
+          { "q": "È conforme al GDPR?", "a": "Sì. L'analitica dei visitatori non usa cookie né conserva indirizzi IP; l'identificativo di sessione è effimero e i dati sono aggregati. I dati vivono dove decide l'istituzione: sul suo server, nel suo account Cloudflare o su andarama.com, con il relativo accordo per il trattamento dei dati." },
+          { "q": "Si può vedere con un visore di realtà virtuale?", "a": "Lo stesso tour si apre su Meta Quest, Pico o Vision Pro dal loro browser, con i pannelli di testo, l'audio e il quiz dentro la sessione. E in modalità cartone con qualsiasi telefono, che è quello che di solito c'è in un'aula." }
+        ]
+      },
+      "enlaces": {
+        "titulo": "Continua a leggere",
+        "texto": "Le pagine e gli articoli che di solito si leggono insieme a questa.",
+        "universidades": "Andarama per università e istituzioni",
+        "formacion": "Il piano Formación: SCORM, LTI, fattura e dominio proprio",
+        "explorar": "La galleria pubblica dei tour su andarama.com/explorar/",
+        "articulo_museo": "Visita virtuale di un museo: come si fa e quanto costa",
+        "articulo_archivo": "Tour 360 per un archivio o una biblioteca: guida pratica"
+      },
+      "enlace_desde": {
+        "titulo": "Museo, archivio, biblioteca o patrimonio?",
+        "texto": "Per musei, archivi, biblioteche, monumenti ed enti locali c'è una pagina dedicata: visita virtuale navigabile, visite guidate dal vivo per le scuole, quiz, accessibilità ed esportazione libera.",
+        "boton": "Andarama per i musei"
+      },
+      "contacto": {
+        "titulo": "Parliamo della vostra visita virtuale",
+        "texto": "Raccontaci quale luogo volete mostrare e come, e ti rispondiamo con una proposta. Il modulo apre il tuo programma di posta con il messaggio già pronto.",
+        "institucion": "Museo o istituzione",
+        "nombre": "Nome",
+        "email": "Email",
+        "mensaje": "Che cosa volete mostrare?",
+        "enviar": "Invia per email",
+        "asunto": "Visita virtuale per {institucion}"
       }
     },
     "aula": {

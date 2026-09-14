@@ -9,6 +9,7 @@
   "slugs": {
     "formacion": "schulung",
     "universidades": "hochschulen",
+    "museos": "museen",
     "aula": "klassenzimmer",
     "wordpress": "wordpress",
     "privacidad": "datenschutz",
@@ -47,6 +48,7 @@
     "aula": "Klassenzimmer",
     "formacion": "Schulung",
     "universidades": "Hochschulen",
+    "museos": "Museen",
     "wordpress": "WordPress",
     "privacidad": "Datenschutz"
   },
@@ -326,6 +328,72 @@
         "mensaje": "Was braucht ihr?",
         "enviar": "Per E-Mail senden",
         "asunto": "Andarama für {institucion}"
+      }
+    },
+    "museos": {
+      "title": "Virtueller Museumsrundgang in 360 Grad für Museen, Archive und Kulturerbe | andarama",
+      "description": "Virtueller Museumsrundgang in 360 Grad: Beschriftungen, Audioguide, PDF, 3D, Live-Touren für Schulen, Quiz, Barrierefreiheit und freier Export. Open Source, DSGVO.",
+      "h1": "Virtueller Museumsrundgang: 360-Grad-Rundgänge für Museen, Archive und Kulturerbe",
+      "lead": "Ein 360-Grad-Rundgang durch die Säle, das Depot oder das Baudenkmal, mit den Beschriftungen, dem Audioguide und den Werken in hoher Auflösung genau dort verankert, wo sie sich befinden. Für Museen, Archive, Bibliotheken, Einrichtungen der Denkmalpflege und Kommunen. Open Source, DSGVO-konform und mit einem Rundgang, der dem Museum gehört, nicht der Plattform.",
+      "cta": {
+        "contacto": "Angebot anfragen",
+        "explorar": "Galerie der Rundgänge ansehen"
+      },
+      "usos": {
+        "titulo": "Für wen es gedacht ist",
+        "texto": "Jede Institution, die einen Ort bewahrt und ihn denen zeigen möchte, die nicht kommen können, oder denen den Besuch vorbereiten will, die kommen.",
+        "lista": [
+          "<strong>Museen und Kunsthäuser</strong>: die Säle, die Sonderausstellung, die bald zu Ende geht, und die Depots, die nie für das Publikum geöffnet werden.",
+          "<strong>Archive und Bibliotheken</strong>: geschlossene Magazine, Dokumente in Gigapixel mit kartenartigem Zoom und vollständige PDFs, direkt im Regal verankert.",
+          "<strong>Kulturerbe und Baudenkmäler</strong>: Kirchen, Burgen, Ausgrabungsstätten und Gebäude, die gerade restauriert werden oder nur begrenzt Besucher zulassen.",
+          "<strong>Kommunen, Landkreise und Regionalverwaltungen</strong>: das ganze Netz der Museen und Denkmäler eines Gebiets, mit eigener Seite je Ort und Konten je Fachbereich."
+        ]
+      },
+      "bloques": [
+        { "titulo": "Begehbarer 360-Grad-Rundgang, mit den Informationen dort, wo sie hingehören", "texto": "360-Grad-Fotos jedes Saals, über Navigationsschritte verbunden, ein Grundriss je Etage zur Orientierung und ein Szenenmenü nach Bereichen. Neben jedem Exponat ein Hotspot mit der Beschriftung als Text, dem Audioguide, dem Werk in hoher Auflösung mit Zoom, dem Katalog als PDF oder dem 3D-Modell in glTF, das sich auf dem Handy auch in Augmented Reality öffnet. Und in den Sprachen der Besucher: Jede Szene und jeder Hotspot wird direkt im Editor übersetzt." },
+        { "titulo": "Geführte Live-Tour für Schulklassen", "texto": "Der Guide erstellt einen Raum mit Code und teilt den Link: Die ganze Klasse sieht die Szene und den Blickwinkel, die er vorgibt; er zeigt mit dem Zeiger und schreibt im Chat. Jeder Lernende kann sich lösen, sich selbst umsehen und wieder synchronisieren. Die Stimme läuft über die Videokonferenz, die die Schule ohnehin nutzt. Nichts zu installieren: im Browser, auf der digitalen Tafel oder auf den Tablets." },
+        { "titulo": "Quiz und Schatzsuche für junge Besucher", "texto": "Fragen über die Säle verteilt, mit Feedback, Punkten und einer Sperre, die in der Szene festhält, bis die Antwort stimmt. Versteckte Objekte mit dem Schatz-Hotspot und einem sichtbaren Zähler der gefundenen Stücke. Zustandsvariablen, die eine Tür öffnen, sobald alles gefunden ist. Und zum Schluss Bericht und PDF-Zertifikat mit dem Namen des Teilnehmenden. Schulen bauen dasselbe mit dem <a href=\"{aula}\">Plan Aula</a>." },
+        { "titulo": "Barrierefrei vom ersten Tag an", "texto": "Jede Szene trägt einen verpflichtenden Alternativtext, und der Viewer bietet einen linearen, barrierefreien Inhaltsmodus: Der ganze Rundgang lässt sich als Text lesen, mit Screenreader oder ohne Maus. WebVTT-Untertitel für 360-Grad-Video und Video-Hotspots, sichtbarer Fokus, Touch-Ziele von 44 px und <code>prefers-reduced-motion</code> wird respektiert. WCAG 2.1 AA." },
+        { "titulo": "Der Rundgang gehört dem Museum: freier Export", "texto": "Ein Klick exportiert ein statisches, in sich geschlossenes ZIP (HTML, Viewer, <code>tour.json</code>, Kacheln und Medien), das auf jedem Server läuft, ganz ohne Andarama dahinter. Auch als einzelne HTML-Datei, als PWA zum Ansehen ohne Internet oder im Kiosk-Modus für den Bildschirm im Foyer, mit Autopilot und Neustart nach Inaktivität. Das Format ist dokumentiert: Wenn das Museum Andarama nicht mehr nutzt, nimmt es den ganzen Rundgang mit." },
+        { "titulo": "Eigene Seite auf andarama.com/explorar/", "texto": "Ein öffentlicher Rundgang auf der gehosteten Instanz kann seine eigene Seite in <a href=\"{explorar}\">der öffentlichen Galerie</a> beantragen: Titel mit dem Namen des Ortes, Beschreibung, Land und Koordinaten, strukturierte Ortsdaten und ein Eintrag in der Sitemap. Eine URL, die Suchmaschinen über den Namen des Museums finden und die auf seine Website führt. Der Index lässt sich nach Land filtern." },
+        { "titulo": "DSGVO und Open Source", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen: Sie zeigt Besuche, Zeit je Saal und wohin die Leute schauen, ohne jemanden zu tracken. Das Programm ist Open Source unter EUPL-1.2, der Lizenz der Europäischen Kommission: Es lässt sich lesen, prüfen und auf der Infrastruktur des Museums oder seines Trägers installieren." },
+        { "titulo": "Eigene Instanz mit Support oder Plan Formación", "texto": "Zwei Wege. Der gehostete <a href=\"{formacion}\">Plan Formación</a> auf andarama.com: bis zu 100 Rundgänge, 200 GB, ohne Badge, eigene Domain, Team und Rechnung mit den Steuerdaten der Institution. Oder dieselbe Anwendung, ausgerollt auf dem Cloudflare oder Docker des Museums, mit Support, Updates und Begleitung des Personals. Die Bedingungen für Institutionen stehen auf <a href=\"{universidades}\">der Seite für Hochschulen</a>." }
+      ],
+      "faq": {
+        "titulo": "Häufige Fragen zum virtuellen Museumsrundgang",
+        "lista": [
+          { "q": "Was braucht man, um einen virtuellen Rundgang durch ein Museum zu erstellen?", "a": "Wer einen virtuellen Rundgang erstellen will, braucht 360-Grad-Fotos der Säle, mit jeder Kamera, die ein equirektanguläres Bild liefert, oder mit dem Handy; die Texte, Audios und Bilder, die das Museum ohnehin hat; und einen Nachmittag im Editor, um alles zu verknüpfen. Die Kosten bestimmt die Fotografie: Die Software kann nichts kosten, auf dem eigenen Server installiert, oder der passende Plan. Die einzelnen Posten, mit Zahlen, stehen in <a href=\"{articulo_museo}\">Virtueller Rundgang durch ein Museum: Wie er entsteht und was er kostet</a>." },
+          { "q": "Lässt sich das auf einem Bildschirm im Museum zeigen?", "a": "Ja. Der Kiosk-Modus geht die Säle von allein durch, lässt jeden Besucher die Steuerung übernehmen und kehrt nach einer Weile ohne Aktivität zum Anfang zurück, mit gesperrtem Ausgang. Und das PWA-Paket funktioniert ohne Internet, sodass der Bildschirm im Foyer nicht vom Netz abhängt." },
+          { "q": "Wie läuft eine geführte Tour mit einer Schule ab?", "a": "Der Guide veröffentlicht den Rundgang, erstellt im Editor einen Raum und teilt den Teilnehmerlink. Alles, was er tut (Saal wechseln, Blick drehen, zoomen), erscheint auf den Bildschirmen der Klasse; mit dem Zeiger zeigt er, im Chat antwortet er. Die Stimme läuft über die Videokonferenz, die die Schule ohnehin nutzt. Die Räume sind flüchtig: Sie verschwinden, sobald der Guide geht." },
+          { "q": "Eignet es sich für ein Archiv oder eine Bibliothek?", "a": "Ja. Neben den 360-Grad-Szenen gibt es 2D-Gigapixel-Szenen, um ein digitalisiertes Dokument oder Werk mit kartenartigem Zoom und direkt auf dem Blatt verankerten Anmerkungen zu erkunden, dazu PDF-Hotspots mit eingebautem Viewer. Schritt für Schritt erklärt in <a href=\"{articulo_archivo}\">360-Grad-Rundgang für ein Archiv oder eine Bibliothek</a>." },
+          { "q": "Und wenn das Museum Andarama nicht mehr nutzt?", "a": "Dann nimmt es den ganzen Rundgang mit. Das exportierte ZIP ist statisch und in sich geschlossen: HTML, Viewer, <code>tour.json</code>, Kacheln und Medien. Per FTP auf ein beliebiges Hosting, auf GitHub Pages oder auf Cloudflare Pages hochladen, und es läuft weiter, ohne Plattform dahinter. Das Format ist dokumentiert, und das Programm ist Open Source unter EUPL-1.2." },
+          { "q": "Ist es DSGVO-konform?", "a": "Ja. Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen; die Sitzungskennung ist flüchtig, und die Daten werden aggregiert. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit dem passenden Auftragsverarbeitungsvertrag." },
+          { "q": "Lässt es sich mit einer VR-Brille ansehen?", "a": "Derselbe Rundgang öffnet sich auf Meta Quest, Pico oder Vision Pro direkt im Browser der Brille, mit den Textpanels, dem Audio und dem Quiz innerhalb der Sitzung. Und im Cardboard-Modus mit jedem Handy, was in einem Klassenzimmer meist vorhanden ist." }
+        ]
+      },
+      "enlaces": {
+        "titulo": "Weiterlesen",
+        "texto": "Die Seiten und Artikel, die meist zusammen mit dieser gelesen werden.",
+        "universidades": "Andarama für Hochschulen und Institutionen",
+        "formacion": "Der Plan Formación: SCORM, LTI, Rechnung und eigene Domain",
+        "explorar": "Die öffentliche Galerie der Rundgänge auf andarama.com/explorar/",
+        "articulo_museo": "Virtueller Rundgang durch ein Museum: Wie er entsteht und was er kostet",
+        "articulo_archivo": "360-Grad-Rundgang für ein Archiv oder eine Bibliothek: ein praktischer Leitfaden"
+      },
+      "enlace_desde": {
+        "titulo": "Museum, Archiv, Bibliothek oder Kulturerbe?",
+        "texto": "Für Museen, Archive, Bibliotheken, Baudenkmäler und Kommunen gibt es eine eigene Seite: begehbarer virtueller Rundgang, geführte Live-Touren für Schulen, Quiz, Barrierefreiheit und freier Export.",
+        "boton": "Andarama für Museen"
+      },
+      "contacto": {
+        "titulo": "Lass uns über euren virtuellen Rundgang reden",
+        "texto": "Erzähl uns, welchen Ort ihr zeigen wollt und wie, und wir antworten mit einem Vorschlag. Das Formular öffnet dein E-Mail-Programm mit der vorbereiteten Nachricht.",
+        "institucion": "Museum oder Institution",
+        "nombre": "Name",
+        "email": "E-Mail-Adresse",
+        "mensaje": "Was wollt ihr zeigen?",
+        "enviar": "Per E-Mail senden",
+        "asunto": "Virtueller Rundgang für {institucion}"
       }
     },
     "aula": {
