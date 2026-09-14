@@ -9,6 +9,7 @@
   "slugs": {
     "formacion": "training",
     "universidades": "universities",
+    "museos": "museums",
     "aula": "classroom",
     "wordpress": "wordpress",
     "privacidad": "privacy",
@@ -47,6 +48,7 @@
     "aula": "classroom",
     "formacion": "training",
     "universidades": "universities",
+    "museos": "museums",
     "wordpress": "WordPress",
     "privacidad": "privacy"
   },
@@ -327,6 +329,72 @@
         "mensaje": "What do you need?",
         "enviar": "Send by email",
         "asunto": "Andarama for {institucion}"
+      }
+    },
+    "museos": {
+      "title": "Museum virtual tour software for museums, archives and heritage | andarama",
+      "description": "Museum virtual tour in 360 with labels, audio guide, PDFs and 3D models, live guided tours for schools, quizzes, accessibility and free export. Open source, GDPR.",
+      "h1": "Museum virtual tour: 360 tours for museums, archives and heritage sites",
+      "lead": "A 360 tour through the galleries, the stacks or the monument, with the labels, the audio guide and the works in high resolution anchored right where they are. For museums, archives, libraries, heritage bodies and local councils. Open source, GDPR-compliant, and a tour that belongs to the museum, not to the platform.",
+      "cta": {
+        "contacto": "Request a proposal",
+        "explorar": "Browse the tour gallery"
+      },
+      "usos": {
+        "titulo": "Who it is for",
+        "texto": "Any institution that looks after a place and wants to show it to those who cannot come, or to prepare the visit for those who can.",
+        "lista": [
+          "<strong>Museums and art centres</strong>: the galleries, the temporary exhibition that is about to close and the storerooms that never open to the public.",
+          "<strong>Archives and libraries</strong>: closed stacks, gigapixel documents with map-style zoom and complete PDFs anchored on the shelf.",
+          "<strong>Heritage and monuments</strong>: churches, castles, archaeological sites and buildings under restoration or with limited capacity.",
+          "<strong>Councils, city halls and regional governments</strong>: a territory's whole network of museums and monuments, with its own page per place and accounts per department."
+        ]
+      },
+      "bloques": [
+        { "titulo": "A navigable virtual tour, with the information where it belongs", "texto": "360 photos of every room linked by navigation steps, a floor plan per level to find your way and a scene menu by area. Next to each piece, a hotspot with the label as text, the audio guide, the work in high resolution with zoom, the catalogue as PDF or the 3D model in glTF, which on a phone also opens in augmented reality. And in your visitors' languages: every scene and every hotspot is translated inside the editor itself." },
+        { "titulo": "Live guided tour for school groups", "texto": "The educator creates a room with a code and shares the link: the whole class sees the scene and the viewing angle they set, they point with the pointer and write in the chat; each pupil can break away to look around on their own and sync back up. Voice goes over whatever video call the school already uses. Nothing to install: from the browser, on the interactive whiteboard or on tablets." },
+        { "titulo": "Quiz and treasure hunt for young visitors", "texto": "Questions scattered through the galleries, with feedback, points and a gate that keeps the visitor in the scene until they get it right. Hidden objects with the Treasure hotspot and a visible count of those found. State variables that open a door once everything has been found. And at the end, a report and a PDF certificate with the participant's name. Schools can build the same thing on the <a href=\"{aula}\">Aula plan</a>." },
+        { "titulo": "Accessible from day one", "texto": "Every scene carries mandatory alternative text and the viewer offers a linear accessible-content mode: the whole tour reads as text, with a screen reader or without a mouse. WebVTT subtitles for 360 video and video hotspots, visible focus, 44 px touch targets and <code>prefers-reduced-motion</code> respected. WCAG 2.1 AA." },
+        { "titulo": "The tour belongs to the museum: free export", "texto": "One click exports a static, self-contained ZIP (HTML, viewer, <code>tour.json</code>, tiles and media) that runs on any server with no Andarama behind it. Also as a single HTML file, as a PWA that works offline or in kiosk mode for the lobby screen, with autopilot and reset after inactivity. The format is documented: if the museum stops using Andarama, it takes the whole tour with it." },
+        { "titulo": "Its own page on andarama.com/explorar/", "texto": "A public tour on the hosted instance can request its own page in <a href=\"{explorar}\">the public gallery</a>: a title with the name of the place, description, country and coordinates, structured place data and an entry in the sitemap. A URL that search engines find by the museum's name and that leads to its website. The index is filtered by country." },
+        { "titulo": "GDPR and open source", "texto": "Visitor analytics use no cookies and store no IP addresses: they give visits, time per room and where people look without tracking anyone. The program is open source under EUPL-1.2, the European Commission's licence: it can be read, audited and installed on the infrastructure of the museum or of the authority it belongs to." },
+        { "titulo": "Your own instance with support, or the Formación plan", "texto": "Two ways. The hosted <a href=\"{formacion}\">Formación plan</a> on andarama.com: up to 100 tours, 200 GB, no badge, your own domain, a team and an invoice with the institution's tax details. Or the very same application deployed on the museum's Cloudflare or Docker, with support, updates and onboarding for staff. The terms for institutions are on <a href=\"{universidades}\">the universities page</a>." }
+      ],
+      "faq": {
+        "titulo": "Frequently asked questions about museum virtual tours",
+        "lista": [
+          { "q": "What does it take to make a virtual tour of a museum?", "a": "360 photos of the rooms, from any camera that produces an equirectangular image or from a phone; the texts, audio and images the museum already has; and an afternoon in the editor to link it all together. Photography sets the cost: the software can be free, installed on your own server, or whichever plan fits. The line items, with figures, are in <a href=\"{articulo_museo}\">Museum virtual tour: how it is made and what it costs</a>." },
+          { "q": "Can it run on a screen inside the museum?", "a": "Yes. Kiosk mode walks through the rooms on its own, lets any visitor take control and returns to the start after a while without activity, with exit locked. And the PWA package works offline, so the lobby screen does not depend on the network." },
+          { "q": "How do you run a guided tour with a school?", "a": "The educator publishes the tour, creates a room from the editor and shares the attendee link. Everything they do (changing room, turning the view, zooming) is mirrored on the class's screens; they point with the pointer and answer in the chat. Voice goes over the video call the school already uses. Rooms are ephemeral: they vanish when the guide leaves." },
+          { "q": "Does it work for an archive or a library?", "a": "Yes. Besides 360 scenes there are 2D gigapixel scenes to explore a digitised document or artwork with map-style zoom and annotations anchored on the page itself, plus PDF hotspots with a built-in viewer. We walk through it step by step in <a href=\"{articulo_archivo}\">A 360 tour for an archive or a library</a>." },
+          { "q": "What if the museum stops using Andarama?", "a": "It takes the whole tour with it. The exported ZIP is static and self-contained: HTML, viewer, <code>tour.json</code>, tiles and media. Upload it by FTP to any hosting, to GitHub Pages or to Cloudflare Pages and it keeps working with no platform behind it. The format is documented and the program is open source under EUPL-1.2." },
+          { "q": "Is it GDPR-compliant?", "a": "Yes. Visitor analytics use no cookies and store no IP addresses; the session identifier is ephemeral and the data is aggregated. Data lives wherever the institution says: on its server, in its Cloudflare account or on andarama.com, with the corresponding data-processing agreement." },
+          { "q": "Can it be viewed with a VR headset?", "a": "The same tour opens on Meta Quest, Pico or Vision Pro straight from their browser, with the text panels, audio and quiz inside the session. And in cardboard mode on any phone, which is what a classroom usually has." }
+        ]
+      },
+      "enlaces": {
+        "titulo": "Keep reading",
+        "texto": "The pages and articles usually read alongside this one.",
+        "universidades": "Andarama for universities and institutions",
+        "formacion": "The Formación plan: SCORM, LTI, invoicing and your own domain",
+        "explorar": "The public tour gallery at andarama.com/explorar/",
+        "articulo_museo": "Museum virtual tour: how it is made and what it costs",
+        "articulo_archivo": "A 360 tour for an archive or a library: a practical guide"
+      },
+      "enlace_desde": {
+        "titulo": "A museum, an archive, a library or a heritage site?",
+        "texto": "Museums, archives, libraries, monuments and local councils have a page of their own: a navigable virtual tour, live guided tours for schools, quizzes, accessibility and a free export.",
+        "boton": "Andarama for museums"
+      },
+      "contacto": {
+        "titulo": "Let's talk about your virtual tour",
+        "texto": "Tell us which place you want to show and how, and we will reply with a proposal. The form opens your email program with the message ready.",
+        "institucion": "Museum or institution",
+        "nombre": "Name",
+        "email": "Email",
+        "mensaje": "What do you want to show?",
+        "enviar": "Send by email",
+        "asunto": "Virtual tour for {institucion}"
       }
     },
     "aula": {

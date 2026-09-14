@@ -11,7 +11,7 @@ import proyectos from "../assets/proyectos.png";
 import visor from "../assets/visor.jpg";
 import Precios from "./Precios.astro";
 import Preguntas from "./Preguntas.astro";
-import { t, tv, type Lang } from "../i18n";
+import { pagePath, t, tv, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
@@ -196,6 +196,10 @@ const iconos = [
       </article>
     ))}
   </div>
+  <p class="susurro">
+    {t(lang, "paginas.museos.enlace_desde.texto")}
+    <a href={pagePath(lang, "museos")}>{t(lang, "paginas.museos.enlace_desde.boton")}</a>
+  </p>
 </section>
 
 <!-- Publicar -->

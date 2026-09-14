@@ -4,7 +4,7 @@
  * el RSS del blog.
  *
  * Tres clases de ruta:
- *  - «pagina»: las páginas fijas (portada, formación, universidades, aula,
+ *  - «pagina»: las páginas fijas (portada, formación, universidades, museos, aula,
  *    WordPress, privacidad, índice de herramientas, las tres herramientas y
  *    el índice del blog). Sus slugs salen traducidos de cada JSON de i18n.
  *  - «post»: una entrada del blog en su idioma. Las traducciones de un mismo
@@ -53,6 +53,7 @@ export const PAGE_KEYS: PageKey[] = [
   "home",
   "formacion",
   "universidades",
+  "museos",
   "aula",
   "wordpress",
   "privacidad",

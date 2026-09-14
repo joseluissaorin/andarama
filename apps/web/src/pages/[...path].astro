@@ -8,6 +8,7 @@ import { allRoutes, toParam, type Ruta } from "../data/rutas";
 import Inicio from "../plantillas/Inicio.astro";
 import Formacion from "../plantillas/Formacion.astro";
 import Universidades from "../plantillas/Universidades.astro";
+import Museos from "../plantillas/Museos.astro";
 import Aula from "../plantillas/Aula.astro";
 import WordPress from "../plantillas/WordPress.astro";
 import Privacidad from "../plantillas/Privacidad.astro";
@@ -30,6 +31,7 @@ const { ruta } = Astro.props as { ruta: Ruta };
 {ruta.kind === "pagina" && ruta.key === "home" && <Inicio lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "formacion" && <Formacion lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "universidades" && <Universidades lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "museos" && <Museos lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "aula" && <Aula lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "wordpress" && <WordPress lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "privacidad" && <Privacidad lang={ruta.lang} />}

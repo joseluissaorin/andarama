@@ -34,6 +34,13 @@ const c = `${k}.contacto`;
         </article>
       ))}
     </div>
+    <section class="caja caja--naranja">
+      <h2>{t(lang, "paginas.museos.enlace_desde.titulo")}</h2>
+      <p>{t(lang, "paginas.museos.enlace_desde.texto")}</p>
+      <div class="acciones">
+        <a class="btn" href={pagePath(lang, "museos")}>{t(lang, "paginas.museos.enlace_desde.boton")}</a>
+      </div>
+    </section>
     <section class="caja" id="contacto">
       <h2>{t(lang, `${c}.titulo`)}</h2>
       <p>{t(lang, `${c}.texto`)}</p>

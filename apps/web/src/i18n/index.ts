@@ -71,6 +71,7 @@ export type PageKey =
   | "home"
   | "formacion"
   | "universidades"
+  | "museos"
   | "aula"
   | "wordpress"
   | "privacidad"
