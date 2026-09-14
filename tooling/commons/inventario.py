@@ -14,7 +14,9 @@ API = "https://commons.wikimedia.org/w/api.php"
 UA = "Andarama/1.0 (https://andarama.com; inventario de panorámicas para la galería)"
 OUT = pathlib.Path(__file__).resolve().parents[2] / "docs/seo/datos/commons"; OUT.mkdir(parents=True, exist_ok=True)
 INV = OUT / "inventario.jsonl"; CATS = OUT / "categorias.json"; HECHAS = OUT / "categorias_vistas.txt"
-RAICES = ["Category:360° panoramas", "Category:Equirectangular panoramas", "Category:Spherical panoramas"]
+RAICES = ["Category:360° panoramas", "Category:Equirectangular panoramas", "Category:Spherical panoramas",
+          "Category:Panoramas from Poly Haven as JPG"]  # Poly Haven (CC0) no cuelga del árbol 360°
+RAICES_CON_FICHEROS = {"Category:Panoramas from Poly Haven as JPG"}
 LIBRES = re.compile(r"^(cc0|cc-by(-sa)?-[0-9.]+|pd|public domain|cc-zero)", re.I)
 MAX_CATS = int(sys.argv[1]) if len(sys.argv) > 1 else 3000
 
@@ -65,11 +67,11 @@ with open(INV, "a") as inv, open(HECHAS, "a") as hech:
         if cat in vistas: continue
         vistas.add(cat); hech.write(cat + "\n"); n_cats += 1
         # Las raíces tienen decenas de miles de ficheros sueltos sin lugar: solo se piden sus subcategorías
-        subcats, ficheros = miembros(cat, "subcat") if cat in RAICES else miembros(cat)
+        subcats, ficheros = miembros(cat, "subcat") if (cat in RAICES and cat not in RAICES_CON_FICHEROS) else miembros(cat)
         # Solo bajamos por subcategorías que sigan hablando de panorámicas (evita colarse en «Paris» entero)
         for s in subcats:
             if re.search(r"360|panoram|equirect|spherical|photo sphere", s, re.I) and s not in vistas: cola.append(s)
-        utiles = info(ficheros[:400]) if ficheros else []
+        utiles = info(ficheros[:800]) if ficheros else []
         for f in utiles: inv.write(json.dumps(f, ensure_ascii=False) + "\n")
         inv.flush(); n_files += len(utiles); conteo[cat] = len(utiles)
         print(f"{n_cats:5} {len(utiles):3} útiles / {len(ficheros):4} ficheros · cola {len(cola):4} · {cat}", file=sys.stderr)
