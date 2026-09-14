@@ -28,10 +28,10 @@ def api(params):
             time.sleep(2 * (intento + 1))
     return {}
 
-def miembros(cat):
+def miembros(cat, tipo="subcat|file"):
     subcats, ficheros, cont = [], [], {}
     while True:
-        r = api({"action": "query", "list": "categorymembers", "cmtitle": cat, "cmtype": "subcat|file", "cmlimit": 500, **cont})
+        r = api({"action": "query", "list": "categorymembers", "cmtitle": cat, "cmtype": tipo, "cmlimit": 500, **cont})
         for m in r.get("query", {}).get("categorymembers", []):
             (subcats if m["ns"] == 14 else ficheros).append(m["title"])
         cont = r.get("continue", {})
@@ -64,15 +64,15 @@ with open(INV, "a") as inv, open(HECHAS, "a") as hech:
         cat = cola.popleft()
         if cat in vistas: continue
         vistas.add(cat); hech.write(cat + "\n"); n_cats += 1
-        subcats, ficheros = miembros(cat)
+        # Las raíces tienen decenas de miles de ficheros sueltos sin lugar: solo se piden sus subcategorías
+        subcats, ficheros = miembros(cat, "subcat") if cat in RAICES else miembros(cat)
         # Solo bajamos por subcategorías que sigan hablando de panorámicas (evita colarse en «Paris» entero)
         for s in subcats:
             if re.search(r"360|panoram|equirect|spherical|photo sphere", s, re.I) and s not in vistas: cola.append(s)
-        utiles = info(ficheros) if ficheros else []
+        utiles = info(ficheros[:400]) if ficheros else []
         for f in utiles: inv.write(json.dumps(f, ensure_ascii=False) + "\n")
-        n_files += len(utiles); conteo[cat] = len(utiles)
-        if n_cats % 20 == 0:
-            json.dump(conteo, open(CATS, "w"), ensure_ascii=False, indent=0); inv.flush()
-            print(f"{n_cats} categorías, {n_files} panorámicas útiles, cola {len(cola)}", file=sys.stderr)
+        inv.flush(); n_files += len(utiles); conteo[cat] = len(utiles)
+        print(f"{n_cats:5} {len(utiles):3} útiles / {len(ficheros):4} ficheros · cola {len(cola):4} · {cat}", file=sys.stderr)
+        if n_cats % 20 == 0: json.dump(conteo, open(CATS, "w"), ensure_ascii=False, indent=0)
 json.dump(conteo, open(CATS, "w"), ensure_ascii=False, indent=0)
 print(f"hecho: {n_cats} categorías nuevas, {n_files} panorámicas útiles nuevas; cola pendiente {len(cola)}")
