@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Crosshair, DoorOpen, RotateCcw } from "lucide-react";
 import { Button, Spinner, Tooltip, useToast } from "@andarama/ui";
-import { mountViewer, type MountedSkin } from "@andarama/viewer-ui";
+import { ensureUiLang, mountViewer, type MountedSkin } from "@andarama/viewer-ui";
 import type { Tour } from "@andarama/schema";
 import { api } from "../api";
 import { useEditor } from "../stores";
@@ -46,6 +46,9 @@ export function PreviewView({ project, canEdit }: { project: ProjectInfo; canEdi
       skinRef.current = null;
       if (tour.scenes.length === 0) return;
       anterior.current = null;
+      // El cromo de la previsualización habla el idioma del tour, como lo verá el visitante
+      await ensureUiLang(tour.meta.defaultLang);
+      if (containerRef.current == null) return;
       const mounted = mountViewer({
         container: containerRef.current,
         tour,

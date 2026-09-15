@@ -1,5 +1,7 @@
 import { mountViewer } from "./skin.js";
 import type { Tour } from "@andarama/schema";
+import { parseDeepLink } from "@andarama/viewer";
+import { ensureUiLang } from "./i18n.js";
 import { baseFromTourUrl } from "./url.js";
 
 /**
@@ -52,6 +54,11 @@ async function boot(): Promise<void> {
   }
   const params = new URLSearchParams(location.search);
   const liveRoom = params.get("live");
+  // El cromo habla el idioma del tour (o el que pida el enlace, si el tour lo
+  // tiene); si no hay diccionario para él, el del navegador. Se pide antes de
+  // montar para que la interfaz no parpadee en inglés.
+  const linkLang = parseDeepLink(location.href).lang;
+  await ensureUiLang(linkLang != null && tour.meta.langs.includes(linkLang) ? linkLang : tour.meta.defaultLang);
   // La instancia queda accesible en window.Andarama.instance: los integradores
   // (y las pruebas) pueden pilotar el visor ya montado sin volver a montarlo.
   window.Andarama!.instance = mountViewer({

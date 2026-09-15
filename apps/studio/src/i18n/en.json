@@ -926,5 +926,8 @@
   "coupon_code": "Coupon code",
   "coupon_redeem": "Redeem",
   "coupon_ok": "Coupon redeemed: you now have the {plan} plan.",
-  "coupon_kept_previous": "Coupon redeemed, but your current plan was already better: you keep the one you had."
+  "coupon_kept_previous": "Coupon redeemed, but your current plan was already better: you keep the one you had.",
+  "preferences": "Preferences",
+  "ui_language": "Interface language",
+  "ui_language_hint": "Saved to your account and applied on all your devices."
 }
