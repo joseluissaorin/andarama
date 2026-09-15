@@ -1,0 +1,570 @@
+{
+  "meta": {
+    "code": "de",
+    "name": "Deutsch",
+    "dir": "ltr",
+    "ogLocale": "de_DE",
+    "hreflang": "de"
+  },
+  "slugs": {
+    "formacion": "schulung",
+    "universidades": "hochschulen",
+    "museos": "museen",
+    "aula": "klassenzimmer",
+    "wordpress": "wordpress",
+    "privacidad": "datenschutz",
+    "herramientas": "werkzeuge",
+    "visor": "360-grad-bilder-viewer",
+    "planeta": "little-planet-erstellen",
+    "cubemap": "equirectangular-zu-cubemap",
+    "blog": "blog",
+    "autor": "autor"
+  },
+  "comunes": {
+    "saltar": "Zum Inhalt springen",
+    "marca_aria": "Andarama, Startseite",
+    "idioma": "Sprache",
+    "entrar": "Zum Studio",
+    "documentacion": "Dokumentation lesen",
+    "prueba": "14 Tage testen, ohne Kreditkarte",
+    "registro_cta": "Konto anlegen (14 Tage gratis)",
+    "migas_inicio": "Start",
+    "leer_mas": "Weiterlesen",
+    "por": "von",
+    "publicado": "Veröffentlicht am",
+    "actualizado": "aktualisiert am",
+    "minutos": "{n} Min. Lesezeit"
+  },
+  "nav": {
+    "editor": "Editor",
+    "visor": "Viewer",
+    "gafas": "VR-Brille",
+    "docencia": "Lehre",
+    "precios": "Preise",
+    "herramientas": "Werkzeuge",
+    "blog": "Blog",
+    "documentacion": "Dokumentation",
+    "github": "GitHub",
+    "aula": "Klassenzimmer",
+    "formacion": "Schulung",
+    "universidades": "Hochschulen",
+    "museos": "Museen",
+    "wordpress": "WordPress",
+    "privacidad": "Datenschutz"
+  },
+  "pie": {
+    "linea": "Open Source unter EUPL-1.2 · von Hand gemacht von <a href=\"https://joseluissaorin.com\">José Luis Saorín</a> · der Code liegt auf <a href=\"https://github.com/joseluissaorin/andarama\">GitHub</a>",
+    "secciones": "Bereiche",
+    "herramientas": "Kostenlose Werkzeuge",
+    "idiomas": "Sprachen"
+  },
+  "home": {
+    "title": "andarama | ¡anda! Open-Source-Touren in 360 Grad",
+    "description": "¡anda! andarama lässt mich durch Panoramen gehen. Erstelle, veröffentliche und teile virtuelle 360-Grad-Rundgänge mit visuellem Editor, WebGL-Viewer mit Virtual Reality, Quiz, LTI, SCORM und offenem Export. Open Source (EUPL-1.2): kostenlos auf deinem Server, gehostet ab 2 $ im Monat.",
+    "og_description": "andarama lässt mich durch Panoramen gehen. Lade deine 360-Grad-Fotos hoch, verbinde sie, als würdest du einen Grundriss zeichnen, und veröffentliche einen Rundgang, der sich in jedem Browser begehen lässt, auch mit VR-Brille.",
+    "og_alt": "„¡anda!“ in riesigen Buchstaben auf knochenfarbenem Papier, mit drei gelben Wesen, die auf einer Linie entlanggehen",
+    "portada": {
+      "subtitulo": "andarama lässt mich durch Panoramen <em>gehen</em>",
+      "explica": "Lade deine 360-Grad-Fotos hoch, verbinde sie, als würdest du einen Grundriss zeichnen, und veröffentliche einen Rundgang, der sich in jedem Browser begehen lässt, auch mit einer VR-Brille.",
+      "susurro": "Open Source (EUPL-1.2) · kostenlos auf deinem Server · hier gehostet ab 2 $ im Monat"
+    },
+    "demo": {
+      "titulo": "Geh durch einen echten",
+      "texto": "Das ist kein Video: Das ist ein mit Andarama veröffentlichter Rundgang. Zieh, um dich umzusehen, tipp auf die Pfeile, um zu gehen. Probier das Projektionsmenü und den Brillen-Button aus.",
+      "iframe": "Demo-Rundgang in 360 Grad",
+      "susurro": "Kugelpanoramen von Wikimedia Commons (CC BY-SA) · die Nachweise stehen in der Tour selbst"
+    },
+    "pasos": {
+      "titulo": "Ein Rundgang in vier Schritten",
+      "lista": [
+        { "titulo": "Fotos hochladen", "texto": "Von jeder 360-Grad-Kamera oder vom Handy. Der Importer liest einen ganzen Stapel ein, sortiert nach der Nummerierung der Kamera, benennt nach Muster um und zerlegt die Panoramen direkt in deinem Browser in Kacheln, bis 32K, ohne auf einen Server zu warten." },
+        { "titulo": "Verbinden", "texto": "Zieh eine Szene auf eine andere, und schon gibt es einen Übergang, samt Rückweg. Im Graphen <em>ist</em> jeder Pfeil ein Navigations-Hotspot: Es gibt keine parallelen Daten, die aus dem Takt geraten könnten." },
+        { "titulo": "Erzählen", "texto": "Texte, Fotos, Videos, Audio, PDF, 3D-Modelle, Fragen, Formulare, Grundrisse, Erzählung mit räumlichem Audio und Übersetzungen. Siebzehn Hotspot-Typen, alle auch in der VR-Brille bedienbar." },
+        { "titulo": "Veröffentlichen", "texto": "Ein Link, ein iframe, eine eigene Domain oder ein ZIP, das auf jedem Hosting läuft. Im Kiosk-Modus für einen Fernseher, als SCORM für Moodle, als PWA zum Ansehen ohne Internet." }
+      ]
+    },
+    "editor": {
+      "susurro": "der Editor",
+      "titulo": "Bearbeitet wird mit dem Blick, nicht mit Formularen",
+      "p1": "Die Vorschau ist der echte Viewer im Bearbeitungsmodus: Was du siehst, wird veröffentlicht. Ein Klick aufs Foto setzt einen Hotspot, Ziehen verschiebt ihn, ein Polygon wird Punkt für Punkt gezeichnet.",
+      "p2": "Die Blickrichtung, mit der man einen Raum betritt, <strong>gehört nicht zum Raum, sondern zum Weg</strong>: Vom Flur ins Wohnzimmer zu kommen und aus der Küche sind zwei verschiedene Ankünfte, und jede merkt sich ihre Ansicht. Das Panel „Wie man hierherkommt“ versammelt sie alle dort, wo man sie beurteilen kann: in der Zielszene.",
+      "tics": [
+        "Unbegrenztes Rückgängig und Wiederholen, automatisches Speichern mit Hinweis, falls etwas den Server nicht erreicht",
+        "Versionsverlauf mit Unterschieden je Szene und Hotspot, und Wiederherstellung",
+        "Befehlspalette, Tastaturkürzel und Eigenschaften-Panel mit Reitern",
+        "Anwesenheit und sanfte Sperre je Szene, wenn mehrere bearbeiten, verankerte Kommentare mit Threads",
+        "Übersetzungen nebeneinander mit Fortschritt in Prozent, XLIFF und CSV"
+      ],
+      "alt": "Der Andarama-Editor mit einer Szene aus dem Rheingauer Dom in Geisenheim, der Szenenliste links und dem Ankunfts-Panel rechts"
+    },
+    "grafo": {
+      "susurro": "der Graph",
+      "titulo": "Der Plan des Rundgangs, gezeichnet",
+      "p1": "Eine Leinwand mit Miniaturen, Andockpunkten, Auswahlrahmen, Minimap und automatischer Anordnung. Verbunden wird durch Ziehen vom Rand des Knotens, und der Rückweg entsteht gleich mit. Sie warnt vor Übergängen ohne Ziel, ohne Rückweg, ohne Position und vor Szenen, die nicht erreichbar sind.",
+      "p2": "Im Autopilot-Modus zeichnet dieselbe Leinwand die geführten Rundgänge: Haltepunkte mit Verweildauer, Eintritt über den Übergang, der beide Szenen verbindet, und Drehung zum Ausgang vor dem Wechsel. Genau das spielen der Kiosk und der Button für die automatische Tour ab.",
+      "alt": "Der Graph des Rundgangs mit den Szenen nach Bereichen gruppiert und den Verbindungen als Pfeile gezeichnet"
+    },
+    "tablero": {
+      "susurro": "das Dashboard und die Mediathek",
+      "titulo": "Alles griffbereit, wie auf einem Schreibtisch",
+      "p1": "Ordner, Tags, Vorlagen, Papierkorb mit dreißig Tagen Frist und Suche. Das Titelbild jeder Tour ist das Panorama ihrer Startszene. Duplizieren, umbenennen, mit einer Kollegin oder einem Kollegen samt Rolle teilen.",
+      "p2": "Die Mediathek zeigt beim Überfahren mit der Maus einen <em>Little Planet</em> jedes Panoramas, lokal berechnet, ohne das Netz zu bemühen, und ein Doppelklick öffnet das Foto in 360 Grad, um es vor dem Einsatz zu prüfen. Ein Medium, eine Auswahl oder ein ganzer Ordner lassen sich auf den Graphen ziehen und werden zu Szenen.",
+      "tics": [
+        "Direkter, mehrteiliger und wiederaufnehmbarer Upload, ohne Duplikate dank Inhalts-Hash",
+        "Auslesen von GPano- und EXIF-Metadaten mit GPS, Horizontausrichtung und Nadir-Korrektur, ohne das Original zu zerstören",
+        "Kaskadierende Voreinstellungen: Instanz, Organisation, Nutzer, Vorlage und Tour"
+      ],
+      "alt": "Das Projekt-Dashboard von Andarama mit den Titelbildern von vier Rundgängen"
+    },
+    "hotspots": {
+      "titulo": "Siebzehn Arten, das Foto anzufassen",
+      "texto": "Jeder Hotspot hat Position, Icon, Beschriftung, Skalierung nach Entfernung und Bedingungen (Sprache, Variablen, Zeitpunkt im Video). Und alle erscheinen in der VR-Brille als Piktogramme, die man mit der Hand berührt.",
+      "lista": [
+        { "b": "Navigation", "t": "Übergang zu einer anderen Szene, mit Bodenpfeil und Ankunftsrichtung." },
+        { "b": "Text", "t": "Markdown mit Formatleiste, Titel und Schriftgröße." },
+        { "b": "Bild", "t": "Mit tiefem Zoom über Kacheln und Download." },
+        { "b": "Galerie", "t": "Mehrere Bilder mit Bildunterschriften und Navigation." },
+        { "b": "Video", "t": "Im Fenster oder perspektivisch auf eine Wand projiziert." },
+        { "b": "YouTube und Vimeo", "t": "Einfach die Adresse einfügen; ohne Cookies, bis man klickt." },
+        { "b": "Audio", "t": "Player oder räumliche Quelle, die von dort klingt, wo sie steht." },
+        { "b": "PDF", "t": "Seitenweise, mit Zoom und Download." },
+        { "b": "3D-Modell", "t": "glTF, OBJ und STL, mit Augmented Reality auf dem Handy." },
+        { "b": "Web", "t": "Eine Seite oder ein Einbettungscode (Sketchfab, Genially, H5P …)." },
+        { "b": "Formular", "t": "Vollständige Felder, Antworten in Andarama, Webhook und E-Mail." },
+        { "b": "Vergleich", "t": "Zwei Bilder oder zwei ganze Panoramen, synchronisiert." },
+        { "b": "Quiz", "t": "Einfach-, Mehrfachauswahl oder Wahr/Falsch, mit Punkten, Schranke und Versuchen." },
+        { "b": "Polygon", "t": "Eine frei geformte Zone, die hervorhebt und reagiert." },
+        { "b": "Beschriftung", "t": "Ein verankertes Schild, um zu benennen, was man sieht." },
+        { "b": "Link", "t": "Webadresse, Telefon oder E-Mail." },
+        { "b": "Schatz und Zustand", "t": "Objekte zum Sammeln und Zähler, die Türen öffnen." }
+      ]
+    },
+    "visor": {
+      "susurro": "der Viewer",
+      "titulo": "Dunkles Glas über dem Foto, und nichts, was es verdeckt",
+      "p1": "Multiresolution mit eigener Kachelung bis 32K, Teilpanoramen, Cubemaps, Stereo und Gigapixel-Flachbilder. 360-Grad-Video mono und stereo (MP4, WebM, HLS) mit Hotspots je Zeitpunkt. Umgebungston mit Überblendung, Erzählung, Musik mit Absenkung und räumliches Audio, das sich mit dem Kopf dreht.",
+      "tics": [
+        "Projektionen Little Planet, Fischauge, Panini und Architektur, mit den Hotspots an ihrem Platz",
+        "Kompass mit echtem Norden, Grundriss mit Radar über mehrere Etagen und Karte auf OpenStreetMap",
+        "Maus, Touch, komplette Tastatur, Gamepad und Gyroskop mit Blick-Fadenkreuz",
+        "Helles und dunkles Design, Farbe, Schrift und eigenes CSS; Begrüßungs- und Abschlussbildschirme",
+        "Deep Links auf Szene, Blickrichtung und Sprache; Szenenmenü mit Suche",
+        "Hundertsechzehn Kilobyte komprimiert, mit eingebauter Virtual-Reality-Engine"
+      ],
+      "alt": "Der Andarama-Viewer zeigt das Innere einer Kathedrale, mit der Bedienleiste rechts und dem Miniaturenstreifen unten"
+    },
+    "gafas": {
+      "susurro": "Virtual Reality",
+      "titulo": "Adresse in der Brille öffnen, fertig",
+      "cols": [
+        { "titulo": "Mit VR-Brille", "texto": "Echtes WebXR: Beide Ansichten werden gleichzeitig gezeichnet, die Hände mit ihren fünfundzwanzig Gelenken, der Pinch aus Daumen und Zeigefinger, die direkte Berührung der Panels und die Controller mit Strahl. Hände und Controller funktionieren in derselben Sitzung nebeneinander." },
+        { "titulo": "Mit Cardboard", "texto": "Jedes Handy ohne WebXR: geteilter Bildschirm, Ausrichtung per Gyroskop mit iOS-Freigabe, Auswahl per Blick mit Verweilring und der physische Knopf der Cardboard-Brille." },
+        { "titulo": "Freihändig", "texto": "Mit Gyroskop erscheint ein Fadenkreuz, das öffnet, was man ansieht. Die immersiven Panels werden innerhalb der Sitzung gezeichnet: Text, Bild, Galerie, Video mit Steuerung, Audio mit Transkript, bewertbares Quiz und Vergleich mit Schieber." }
+      ],
+      "susurro_final": "der Export behält die Virtual Reality: die Engine ist eigenständig und das Paket bringt die Hosting-Voraussetzungen mit"
+    },
+    "docencia": {
+      "titulo": "Zum Lehren, zum Prüfen, zum Festhalten",
+      "texto": "Was ein Klassenzimmer braucht, ist schon drin.",
+      "lista": [
+        { "titulo": "Quiz mit Note", "texto": "Fragen über die Tour verteilt, Punktzahl, Bestehensgrenze, Zufallsreihenfolge, Versuche, Abschlussbericht und PDF-Zertifikat mit dem Namen des Lernenden." },
+        { "titulo": "Schatzsuche", "texto": "In den Szenen versteckte Objekte, sichtbarer Fortschritt und Zustandsvariablen, die Türen öffnen, wenn alle gefunden sind." },
+        { "titulo": "Moodle und Co.", "texto": "LTI 1.3 Advantage: Die Tour wird direkt aus Moodle eingebunden, mit Inhaltsauswahl, und gibt die Note ans Bewertungsbuch zurück. Und SCORM 1.2 und 2004 für jeden anderen Campus." },
+        { "titulo": "Geführte Live-Touren", "texto": "Ein Raum mit Code: Der Guide bewegt Szene und Blick aller, zeigt mit dem Zeiger, chattet; jeder Teilnehmende kann sich lösen und wieder synchronisieren." },
+        { "titulo": "Formulare", "texto": "Anmeldung, Umfrage oder Kontakt direkt im Rundgang. Die Antworten werden gespeichert und als CSV heruntergeladen oder an einen Webhook weitergeleitet." },
+        { "titulo": "Analytik ohne Cookies", "texto": "Besuche, Szenen-Trichter, meistgenutzte Hotspots, Zeit je Szene und Heatmap, wohin die Leute schauen. Ohne jemanden zu tracken: DSGVO-konform ab Werk." }
+      ]
+    },
+    "publicar": {
+      "titulo": "Veröffentlichen, teilen, exportieren",
+      "cols": [
+        { "titulo": "Ein Link", "tics": [
+          "Öffentlich, ungelistet, mit Passwort, nur für deine Organisation oder nur auf deinen Domains",
+          "Geplante Veröffentlichung und Ablaufdatum",
+          "Eigene Domain per CNAME: die Tour im Stammverzeichnis deiner Website",
+          "Social-Media-Karte mit der echten Projektion der Szene, Titel und Text übersetzbar",
+          "Öffnet den normalen Rundgang oder den Kiosk-Modus für einen Fernseher im Foyer",
+          "QR-Code, druckfertig"
+        ] },
+        { "titulo": "In einer anderen Website", "tics": [
+          "Ein iframe oder die Komponente <code>&lt;anda-tour&gt;</code> mit einer Zeile Script",
+          "API per postMessage: zu einer Szene springen, den Blick drehen, die Sprache wechseln, Ereignisse abhören",
+          "Sitemap, robots und vorgerenderte Klartextversion für die Suchmaschinen",
+          "Webhooks beim Veröffentlichen und mit OpenAPI dokumentierte REST-API, mit Tokens je Geltungsbereich"
+        ] },
+        { "titulo": "Ohne Andarama im Hintergrund", "tics": [
+          "Statisches, eigenständiges ZIP: läuft auf jedem Hosting, mit relativen Pfaden",
+          "Einzelne HTML-Datei zum Öffnen vom USB-Stick",
+          "PWA mit Service Worker zum Ansehen ohne Internet",
+          "SCORM 1.2 und 2004 mit Abschlussbericht und Note",
+          "Kiosk in Endlosschleife, mit Freigabe bei Berührung und automatischer Rückkehr",
+          "Export direkt aus dem Browser, mit Sprachen, Auflösung und Downloads nach Wahl"
+        ] }
+      ]
+    },
+    "nube": {
+      "titulo": "Deine Cloud oder gar keine",
+      "texto": "Kein Modul von Andarama spricht direkt mit Cloudflare: Alles läuft über eine Adapterschicht. Deshalb ist Self-Hosting keine abgespeckte Version, sondern <strong>dieselbe Anwendung</strong>.",
+      "lista": [
+        { "titulo": "Cloudflare, ein Befehl", "texto": "Workers, D1, R2, KV, Durable Objects und Analytics Engine, für kleine und mittlere Nutzung innerhalb des kostenlosen Kontingents. <code>pnpm deploy:cloudflare</code>, und in zehn Minuten steht die Instanz." },
+        { "titulo": "Desktop, eine ausführbare Datei", "texto": "Eine einzige Datei für macOS, Windows und Linux mit Server, Studio und Viewer drin. Doppelklick, der Browser öffnet sich, und die Daten bleiben in deinem persönlichen Ordner. Ohne Docker, ohne Node, ohne Konto bei irgendwem." },
+        { "titulo": "Docker, eine Datei", "texto": "Node und SQLite in einem einzigen Image, ein Volume und ein Port. <code>docker compose up -d</code>. Backups mit einem Script und der portablen Datei <code>.andarama</code>." },
+        { "titulo": "Sicherheit ab Werk", "texto": "CSP mit Nonces, HSTS, sichere Sitzungen, CSRF mit doppeltem Token, Anfragelimits, Turnstile, Bereinigung von SVG, Markdown und CSS, Audit-Log und serverseitig geprüfte Berechtigungen auf jeder Route." },
+        { "titulo": "Konten und Teams", "texto": "Organisationen mit Rollen (verwalten, bearbeiten, mitarbeiten, lesen), Freigabe je Projekt, Einladungen, institutionelles SSO per OIDC mit automatischer Anmeldung nach Domain, Zwei-Faktor-Authentifizierung und Admin-Panel mit Kontingenten und Nutzung." },
+        { "titulo": "Barrierefrei und international", "texto": "Vollständige Tastaturbedienung, sichtbarer Fokus, Zielflächen von 44 Pixeln, Ansagen beim Szenenwechsel, verpflichtender Alternativtext mit prüfbarem KI-Vorschlag, <code>prefers-reduced-motion</code>, WebVTT-Untertitel und Übersetzungen je Szene und je Hotspot." },
+        { "titulo": "Open Source", "texto": "EUPL-1.2, striktes TypeScript im ganzen Monorepo, Hunderte Unit- und End-to-End-Tests, Continuous Integration mit Abhängigkeits-Audit. Das Format <code>tour.json</code> garantiert, dass sich Exportiertes auch künftig öffnen lässt. Code, Issues und Downloads liegen auf <a href=\"https://github.com/joseluissaorin/andarama\">github.com/joseluissaorin/andarama</a>." }
+      ],
+      "susurro": "auf andarama.com übernimmt Clerk die Konten und Zahlungen · die Daten bleiben in der Datenbank von Andarama"
+    },
+    "nombre": {
+      "titulo": "Warum „andarama“?",
+      "p1": "<em>Panorama</em> wurde 1791 erfunden, um „die Sicht auf alles“ zu benennen. Seitdem steht die Endung <em>-rama</em> für Arten des Sehens: Diorama, Cyclorama, Cinerama.",
+      "p2": "Wir haben nur das Verb getauscht („andar“ heißt auf Spanisch gehen): Ein Panorama schaut man an, ein <strong>andarama geht man ab</strong>.",
+      "susurro": "aus „andar“ (gehen) + „-rama“ · und ja, das gelbe Wesen geht auch"
+    },
+    "faq": {
+      "titulo": "Was oft gefragt wird",
+      "lista": [
+        { "q": "Wo ist der Code?", "a": "Auf <a href=\"https://github.com/joseluissaorin/andarama\">GitHub</a>, unter EUPL-1.2. Man kann ihn lesen, installieren, verändern und beitragen. Die Desktop-Programme und die Versionshinweise erscheinen in den Releases desselben Repositorys." },
+        { "q": "Welche Kamera brauche ich?", "a": "Jede, die ein equirektanguläres Foto liefert (Insta360, Ricoh Theta, GoPro Max, Kandao …), oder das Handy mit einer Panorama-App. Auch Cubemaps, Teilpanoramen und flache Gigapixel-Fotos gehen. Die Kachelung passiert bis 32K in deinem Browser; darüber auf dem Server." },
+        { "q": "Funktionieren die Rundgänge weiter, wenn Andarama verschwindet?", "a": "Ja. Das exportierte ZIP ist statisch und eigenständig: HTML, der Viewer und die Kacheln. Es lässt sich auf jedes Hosting laden, mit der einzelnen HTML-Datei vom USB-Stick öffnen und behält die Virtual Reality. Und das Format <code>tour.json</code> ist dokumentiert und versioniert." },
+        { "q": "Wo liegen meine Daten?", "a": "Wenn du es selbst installierst, auf deinem Server oder in deinem Cloudflare-Konto. Auf andarama.com in der Datenbank von Andarama; Clerk speichert nur Konto und Zahlung. Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen." },
+        { "q": "Funktioniert es mit Moodle?", "a": "Mit LTI 1.3: Andarama wird als externes Tool registriert, die Tour wird direkt in Moodle ausgewählt, und die Quiz-Note landet im Bewertungsbuch. Für andere Lernplattformen gibt es das SCORM-Paket 1.2 oder 2004." },
+        { "q": "Kann ich mit mehreren Leuten an derselben Tour arbeiten?", "a": "Ja. Organisationen mit Rollen, Freigabe je Projekt, Anwesenheit und sanfte Sperre je Szene, damit ihr euch nicht in die Quere kommt, im Foto verankerte Kommentare und Versionsverlauf zum Zurückspringen." },
+        { "q": "Welche VR-Brillen gehen?", "a": "Jede mit WebXR-Browser (Meta Quest, Pico, Vision Pro mit Safari, PC mit Headset). Man öffnet die Adresse der Tour im Browser der Brille und drückt den Virtual-Reality-Button. Ohne Brille läuft der Cardboard-Modus auf jedem Handy." },
+        { "q": "Was bedeutet „angemessene Nutzung“?", "a": "Dass die Pläne für eine Person oder ein kleines Team gedacht sind. Wenn die Nutzung nicht mehr danach aussieht, reden wir, bevor irgendetwas abgeschaltet wird. Und wenn du etwas ohne Kontingente brauchst: Die eigene Installation ist kostenlos und dasselbe Programm." }
+      ]
+    }
+  },
+  "precios": {
+    "titulo": "Was es kostet",
+    "texto": "Andarama ist Open Source: <strong>kostenlos, wenn du es selbst installierst</strong>. Wenn du lieber uns die Pflege überlässt, gibt es auf andarama.com sechs Pläne. Alle haben eine begrenzte Anzahl an Projekten und eine Richtlinie zur angemessenen Nutzung.",
+    "prueba": "14 Tage testen, ohne Kreditkarte, direkt beim Anlegen des Kontos.",
+    "formato": { "usd": "{n} $", "eur": "{n} €" },
+    "periodo": { "month": "im Monat", "year": "im Jahr", "once": "einmalig", "o_anual": "oder {precio} im Jahr", "por_docente": "je Lehrkraft" },
+    "todo": "Der ganze Editor, VR und Export",
+    "recorridos": { "uno": "1 Rundgang", "varios": "Bis zu {n} Rundgänge" },
+    "medios": "{n} GB Medien",
+    "planes": {
+      "casa": {
+        "nombre": "Bei dir zu Hause",
+        "cifra": "0 €",
+        "cuando": "für immer",
+        "items": [
+          "Eine ausführbare Datei für macOS, Windows und Linux: Doppelklick, fertig",
+          "Oder Docker auf deinem Server, oder das kostenlose Kontingent von Cloudflare",
+          "Keine Plan-Kontingente: so viele Rundgänge, wie hineinpassen",
+          "Dasselbe Programm, ohne beschnittene Funktionen"
+        ],
+        "cta": "Installieren"
+      },
+      "andar": { "items": [], "cta": "Loslegen" },
+      "aula": {
+        "items": [
+          "Unbegrenzt viele Lernende per Klassencode",
+          "Quiz mit Note, Escape Room und Schatzsuche",
+          "Gedacht für eine Lehrkraft und ihre Gruppen"
+        ],
+        "cta": "Loslegen"
+      },
+      "paseo": { "items": [], "cta": "Loslegen" },
+      "excursion": { "items": ["Ohne das Abzeichen „Erstellt mit Andarama“", "Eigene Domain für deine Rundgänge"], "cta": "Loslegen" },
+      "formacion": {
+        "items": [
+          "SCORM und LTI für deinen Campus",
+          "White Label und eigene Domain",
+          "Team mit mehreren Bearbeitenden",
+          "Zahlung auf Rechnung"
+        ],
+        "cta": "Loslegen"
+      },
+      "vitalicio": { "items": ["Ohne Abzeichen und mit eigener Domain"], "cta": "Für immer sichern" }
+    },
+    "susurro": "abgerechnet wird in Dollar; die Bank rechnet um · Steuern je nach Land · angemessene Nutzung: wenn die Nutzung nicht mehr der einer Person oder eines kleinen Teams entspricht, reden wir, bevor irgendetwas abgeschaltet wird"
+  },
+  "paginas": {
+    "formacion": {
+      "title": "Immersive Schulung mit 360-Grad-Rundgängen | andarama",
+      "description": "Immersive Schulung für Unternehmen, Berufsschulen und Hochschulen: 360-Grad-Rundgänge mit Quiz, SCORM, LTI und Virtual Reality. Arbeitsschutz, Onboarding und simulierte Übungen mit Andarama.",
+      "h1": "Immersive Schulung: Der Lernort ist der echte Ort",
+      "lead": "Ein 360-Grad-Rundgang durch die Halle, das Labor oder die Baustelle, mit Fragen an jeder Ecke und der Note zurück in deinem Campus. Für Unternehmen, Berufsschulen und Hochschulen.",
+      "bloques": [
+        { "titulo": "Arbeitsschutz", "texto": "Man geht durch die echte Halle, markiert Ausgänge, Feuerlöscher und Gefahrenzonen und stellt vor jedem davon eine Frage. Die Lernenden zeigen, dass sie hingesehen haben, nicht nur gelesen. Mit PDF-Zertifikat auf ihren Namen zum Abschluss." },
+        { "titulo": "Einarbeitung und Abläufe", "texto": "Wer neu kommt, geht durch die Räume, bevor er sie betritt: wo alles ist, was an jedem Arbeitsplatz passiert, wen man fragt. Video auf die Wände projiziert, PDF mit den Abläufen und Audio mit Erzählung." },
+        { "titulo": "Simulierte Übungen", "texto": "Szenarien mit Variablen: die fünf Sicherheitsmängel finden, die Schritte eines Protokolls ordnen, das richtige Werkzeug wählen. Objekte werden gesammelt, Türen öffnen sich, wenn erledigt ist, was ansteht." },
+        { "titulo": "Virtual Reality ohne Installation", "texto": "Derselbe Rundgang öffnet sich auf Meta Quest, Pico oder Vision Pro direkt im Browser. Hände, Controller und Blick; Panels, Quiz und Vergleich innerhalb der Sitzung. Und im Cardboard-Modus mit jedem Handy." }
+      ],
+      "scorm": {
+        "titulo": "SCORM, LTI und dein Campus",
+        "texto": "Der Rundgang wird als SCORM-Paket 1.2 oder 2004 mit Abschlussbericht und Note exportiert, für Moodle, Canvas, Blackboard, Sakai oder jedes andere LMS. Mit LTI 1.3 Advantage muss man nicht einmal exportieren: Die Tour wird direkt im Campus ausgewählt, und die Bewertung kehrt ins Notenbuch zurück.",
+        "tics": [
+          "SCORM 1.2 und 2004 mit Abschlussstatus, Note und Zeit",
+          "LTI 1.3 Advantage mit Inhaltsauswahl und Notenrückgabe",
+          "Abschlussbericht mit Treffern je Frage und PDF-Zertifikat",
+          "Analytik ohne Cookies: Zeit je Szene und wohin jede Gruppe schaut"
+        ]
+      },
+      "cta": { "titulo": "Der Plan Formación", "texto": "100 Rundgänge, 200 GB, SCORM und LTI, White Label, eigene Domain, Team und Zahlung auf Rechnung. 99 $ im Monat oder 990 $ im Jahr.", "boton": "Mit Formación loslegen", "secundario": "Alle Pläne ansehen" }
+    },
+    "universidades": {
+      "title": "Andarama für Hochschulen und Institutionen | andarama",
+      "description": "Virtuelle 360-Grad-Rundgänge für Hochschulen und Institutionen: Open Source, DSGVO, LTI mit Moodle, Canvas und Blackboard, Rechnung und eigene Instanz mit Support.",
+      "h1": "Für Hochschulen und Institutionen",
+      "lead": "Ein Open-Source-Programm, das sich prüfen, auf der eigenen Infrastruktur installieren oder gehostet auf Rechnung buchen lässt. Ohne Abhängigkeit von irgendwem und ohne Überraschungen.",
+      "bloques": [
+        { "titulo": "Wirklich Open Source", "texto": "EUPL-1.2, die Lizenz der Europäischen Kommission. Der vollständige Code liegt auf GitHub: Er lässt sich lesen, prüfen, verändern und ausrollen, ohne jemanden zu fragen. Und das Format <code>tour.json</code> ist dokumentiert: Was heute entsteht, öffnet sich auch morgen noch." },
+        { "titulo": "DSGVO ab Werk", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit dem passenden Auftragsverarbeitungsvertrag." },
+        { "titulo": "LTI mit Moodle, Canvas und Blackboard", "texto": "Andarama wird per LTI 1.3 Advantage als externes Tool registriert. Die Lehrenden wählen den Rundgang mit der Inhaltsauswahl direkt im Campus, und die Quiz-Noten kehren ins Bewertungsbuch zurück. SCORM 1.2 und 2004 für alles andere." },
+        { "titulo": "Institutionelle Konten", "texto": "SSO per OIDC mit automatischer Anmeldung nach E-Mail-Domain, Organisationen mit Rollen, Zwei-Faktor-Authentifizierung und Admin-Panel mit Kontingenten und Nutzung je Fachbereich." },
+        { "titulo": "Rechnung und Vertrag", "texto": "Der Plan Formación wird auf Rechnung mit den Steuerdaten der Institution bezahlt. Für größere Volumen oder besondere Bedingungen erstellen wir ein individuelles Angebot." },
+        { "titulo": "Eigene Instanz mit Support", "texto": "Wenn die Institution es lieber im Haus haben möchte, wird dieselbe Anwendung auf ihrem Cloudflare oder in Docker ausgerollt, mit Support, Updates und Begleitung der Lehrenden im Vertrag." }
+      ],
+      "contacto": {
+        "titulo": "Lass uns reden",
+        "texto": "Erzähl uns, was deine Institution braucht, und wir antworten mit einem Vorschlag. Das Formular öffnet dein E-Mail-Programm mit der vorbereiteten Nachricht.",
+        "institucion": "Institution",
+        "nombre": "Name",
+        "email": "E-Mail-Adresse",
+        "mensaje": "Was braucht ihr?",
+        "enviar": "Per E-Mail senden",
+        "asunto": "Andarama für {institucion}"
+      }
+    },
+    "museos": {
+      "title": "Virtueller Museumsrundgang in 360 Grad für Museen, Archive und Kulturerbe | andarama",
+      "description": "Virtueller Museumsrundgang in 360 Grad: Beschriftungen, Audioguide, PDF, 3D, Live-Touren für Schulen, Quiz, Barrierefreiheit und freier Export. Open Source, DSGVO.",
+      "h1": "Virtueller Museumsrundgang: 360-Grad-Rundgänge für Museen, Archive und Kulturerbe",
+      "lead": "Ein 360-Grad-Rundgang durch die Säle, das Depot oder das Baudenkmal, mit den Beschriftungen, dem Audioguide und den Werken in hoher Auflösung genau dort verankert, wo sie sich befinden. Für Museen, Archive, Bibliotheken, Einrichtungen der Denkmalpflege und Kommunen. Open Source, DSGVO-konform und mit einem Rundgang, der dem Museum gehört, nicht der Plattform.",
+      "cta": {
+        "contacto": "Angebot anfragen",
+        "explorar": "Galerie der Rundgänge ansehen"
+      },
+      "usos": {
+        "titulo": "Für wen es gedacht ist",
+        "texto": "Jede Institution, die einen Ort bewahrt und ihn denen zeigen möchte, die nicht kommen können, oder denen den Besuch vorbereiten will, die kommen.",
+        "lista": [
+          "<strong>Museen und Kunsthäuser</strong>: die Säle, die Sonderausstellung, die bald zu Ende geht, und die Depots, die nie für das Publikum geöffnet werden.",
+          "<strong>Archive und Bibliotheken</strong>: geschlossene Magazine, Dokumente in Gigapixel mit kartenartigem Zoom und vollständige PDFs, direkt im Regal verankert.",
+          "<strong>Kulturerbe und Baudenkmäler</strong>: Kirchen, Burgen, Ausgrabungsstätten und Gebäude, die gerade restauriert werden oder nur begrenzt Besucher zulassen.",
+          "<strong>Kommunen, Landkreise und Regionalverwaltungen</strong>: das ganze Netz der Museen und Denkmäler eines Gebiets, mit eigener Seite je Ort und Konten je Fachbereich."
+        ]
+      },
+      "bloques": [
+        { "titulo": "Begehbarer 360-Grad-Rundgang, mit den Informationen dort, wo sie hingehören", "texto": "360-Grad-Fotos jedes Saals, über Navigationsschritte verbunden, ein Grundriss je Etage zur Orientierung und ein Szenenmenü nach Bereichen. Neben jedem Exponat ein Hotspot mit der Beschriftung als Text, dem Audioguide, dem Werk in hoher Auflösung mit Zoom, dem Katalog als PDF oder dem 3D-Modell in glTF, das sich auf dem Handy auch in Augmented Reality öffnet. Und in den Sprachen der Besucher: Jede Szene und jeder Hotspot wird direkt im Editor übersetzt." },
+        { "titulo": "Geführte Live-Tour für Schulklassen", "texto": "Der Guide erstellt einen Raum mit Code und teilt den Link: Die ganze Klasse sieht die Szene und den Blickwinkel, die er vorgibt; er zeigt mit dem Zeiger und schreibt im Chat. Jeder Lernende kann sich lösen, sich selbst umsehen und wieder synchronisieren. Die Stimme läuft über die Videokonferenz, die die Schule ohnehin nutzt. Nichts zu installieren: im Browser, auf der digitalen Tafel oder auf den Tablets." },
+        { "titulo": "Quiz und Schatzsuche für junge Besucher", "texto": "Fragen über die Säle verteilt, mit Feedback, Punkten und einer Sperre, die in der Szene festhält, bis die Antwort stimmt. Versteckte Objekte mit dem Schatz-Hotspot und einem sichtbaren Zähler der gefundenen Stücke. Zustandsvariablen, die eine Tür öffnen, sobald alles gefunden ist. Und zum Schluss Bericht und PDF-Zertifikat mit dem Namen des Teilnehmenden. Schulen bauen dasselbe mit dem <a href=\"{aula}\">Plan Aula</a>." },
+        { "titulo": "Barrierefrei vom ersten Tag an", "texto": "Jede Szene trägt einen verpflichtenden Alternativtext, und der Viewer bietet einen linearen, barrierefreien Inhaltsmodus: Der ganze Rundgang lässt sich als Text lesen, mit Screenreader oder ohne Maus. WebVTT-Untertitel für 360-Grad-Video und Video-Hotspots, sichtbarer Fokus, Touch-Ziele von 44 px und <code>prefers-reduced-motion</code> wird respektiert. WCAG 2.1 AA." },
+        { "titulo": "Der Rundgang gehört dem Museum: freier Export", "texto": "Ein Klick exportiert ein statisches, in sich geschlossenes ZIP (HTML, Viewer, <code>tour.json</code>, Kacheln und Medien), das auf jedem Server läuft, ganz ohne Andarama dahinter. Auch als einzelne HTML-Datei, als PWA zum Ansehen ohne Internet oder im Kiosk-Modus für den Bildschirm im Foyer, mit Autopilot und Neustart nach Inaktivität. Das Format ist dokumentiert: Wenn das Museum Andarama nicht mehr nutzt, nimmt es den ganzen Rundgang mit." },
+        { "titulo": "Eigene Seite auf andarama.com/explorar/", "texto": "Ein öffentlicher Rundgang auf der gehosteten Instanz kann seine eigene Seite in <a href=\"{explorar}\">der öffentlichen Galerie</a> beantragen: Titel mit dem Namen des Ortes, Beschreibung, Land und Koordinaten, strukturierte Ortsdaten und ein Eintrag in der Sitemap. Eine URL, die Suchmaschinen über den Namen des Museums finden und die auf seine Website führt. Der Index lässt sich nach Land filtern." },
+        { "titulo": "DSGVO und Open Source", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen: Sie zeigt Besuche, Zeit je Saal und wohin die Leute schauen, ohne jemanden zu tracken. Das Programm ist Open Source unter EUPL-1.2, der Lizenz der Europäischen Kommission: Es lässt sich lesen, prüfen und auf der Infrastruktur des Museums oder seines Trägers installieren." },
+        { "titulo": "Eigene Instanz mit Support oder Plan Formación", "texto": "Zwei Wege. Der gehostete <a href=\"{formacion}\">Plan Formación</a> auf andarama.com: bis zu 100 Rundgänge, 200 GB, ohne Badge, eigene Domain, Team und Rechnung mit den Steuerdaten der Institution. Oder dieselbe Anwendung, ausgerollt auf dem Cloudflare oder Docker des Museums, mit Support, Updates und Begleitung des Personals. Die Bedingungen für Institutionen stehen auf <a href=\"{universidades}\">der Seite für Hochschulen</a>." }
+      ],
+      "faq": {
+        "titulo": "Häufige Fragen zum virtuellen Museumsrundgang",
+        "lista": [
+          { "q": "Was braucht man, um einen virtuellen Rundgang durch ein Museum zu erstellen?", "a": "Wer einen virtuellen Rundgang erstellen will, braucht 360-Grad-Fotos der Säle, mit jeder Kamera, die ein equirektanguläres Bild liefert, oder mit dem Handy; die Texte, Audios und Bilder, die das Museum ohnehin hat; und einen Nachmittag im Editor, um alles zu verknüpfen. Die Kosten bestimmt die Fotografie: Die Software kann nichts kosten, auf dem eigenen Server installiert, oder der passende Plan. Die einzelnen Posten, mit Zahlen, stehen in <a href=\"{articulo_museo}\">Virtueller Rundgang durch ein Museum: Wie er entsteht und was er kostet</a>." },
+          { "q": "Lässt sich das auf einem Bildschirm im Museum zeigen?", "a": "Ja. Der Kiosk-Modus geht die Säle von allein durch, lässt jeden Besucher die Steuerung übernehmen und kehrt nach einer Weile ohne Aktivität zum Anfang zurück, mit gesperrtem Ausgang. Und das PWA-Paket funktioniert ohne Internet, sodass der Bildschirm im Foyer nicht vom Netz abhängt." },
+          { "q": "Wie läuft eine geführte Tour mit einer Schule ab?", "a": "Der Guide veröffentlicht den Rundgang, erstellt im Editor einen Raum und teilt den Teilnehmerlink. Alles, was er tut (Saal wechseln, Blick drehen, zoomen), erscheint auf den Bildschirmen der Klasse; mit dem Zeiger zeigt er, im Chat antwortet er. Die Stimme läuft über die Videokonferenz, die die Schule ohnehin nutzt. Die Räume sind flüchtig: Sie verschwinden, sobald der Guide geht." },
+          { "q": "Eignet es sich für ein Archiv oder eine Bibliothek?", "a": "Ja. Neben den 360-Grad-Szenen gibt es 2D-Gigapixel-Szenen, um ein digitalisiertes Dokument oder Werk mit kartenartigem Zoom und direkt auf dem Blatt verankerten Anmerkungen zu erkunden, dazu PDF-Hotspots mit eingebautem Viewer. Schritt für Schritt erklärt in <a href=\"{articulo_archivo}\">360-Grad-Rundgang für ein Archiv oder eine Bibliothek</a>." },
+          { "q": "Und wenn das Museum Andarama nicht mehr nutzt?", "a": "Dann nimmt es den ganzen Rundgang mit. Das exportierte ZIP ist statisch und in sich geschlossen: HTML, Viewer, <code>tour.json</code>, Kacheln und Medien. Per FTP auf ein beliebiges Hosting, auf GitHub Pages oder auf Cloudflare Pages hochladen, und es läuft weiter, ohne Plattform dahinter. Das Format ist dokumentiert, und das Programm ist Open Source unter EUPL-1.2." },
+          { "q": "Ist es DSGVO-konform?", "a": "Ja. Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen; die Sitzungskennung ist flüchtig, und die Daten werden aggregiert. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit dem passenden Auftragsverarbeitungsvertrag." },
+          { "q": "Lässt es sich mit einer VR-Brille ansehen?", "a": "Derselbe Rundgang öffnet sich auf Meta Quest, Pico oder Vision Pro direkt im Browser der Brille, mit den Textpanels, dem Audio und dem Quiz innerhalb der Sitzung. Und im Cardboard-Modus mit jedem Handy, was in einem Klassenzimmer meist vorhanden ist." }
+        ]
+      },
+      "enlaces": {
+        "titulo": "Weiterlesen",
+        "texto": "Die Seiten und Artikel, die meist zusammen mit dieser gelesen werden.",
+        "universidades": "Andarama für Hochschulen und Institutionen",
+        "formacion": "Der Plan Formación: SCORM, LTI, Rechnung und eigene Domain",
+        "explorar": "Die öffentliche Galerie der Rundgänge auf andarama.com/explorar/",
+        "articulo_museo": "Virtueller Rundgang durch ein Museum: Wie er entsteht und was er kostet",
+        "articulo_archivo": "360-Grad-Rundgang für ein Archiv oder eine Bibliothek: ein praktischer Leitfaden"
+      },
+      "enlace_desde": {
+        "titulo": "Museum, Archiv, Bibliothek oder Kulturerbe?",
+        "texto": "Für Museen, Archive, Bibliotheken, Baudenkmäler und Kommunen gibt es eine eigene Seite: begehbarer virtueller Rundgang, geführte Live-Touren für Schulen, Quiz, Barrierefreiheit und freier Export.",
+        "boton": "Andarama für Museen"
+      },
+      "contacto": {
+        "titulo": "Lass uns über euren virtuellen Rundgang reden",
+        "texto": "Erzähl uns, welchen Ort ihr zeigen wollt und wie, und wir antworten mit einem Vorschlag. Das Formular öffnet dein E-Mail-Programm mit der vorbereiteten Nachricht.",
+        "institucion": "Museum oder Institution",
+        "nombre": "Name",
+        "email": "E-Mail-Adresse",
+        "mensaje": "Was wollt ihr zeigen?",
+        "enviar": "Per E-Mail senden",
+        "asunto": "Virtueller Rundgang für {institucion}"
+      }
+    },
+    "aula": {
+      "title": "Andarama für Lehrkräfte: Escape Room 360, virtuelle Exkursionen und Quiz | andarama",
+      "description": "Für Lehrkräfte: Escape Rooms in 360 Grad, virtuelle Exkursionen und Quiz mit Note. Plan Aula für 42 $ im Jahr je Lehrkraft, mit unbegrenzt vielen Lernenden per Klassencode.",
+      "h1": "Fürs Klassenzimmer: gehen, suchen, lernen",
+      "lead": "360-Grad-Rundgänge, die die Lernenden wie ein Spiel erkunden: Escape Rooms, virtuelle Exkursionen ins Museum oder zur Ausgrabungsstätte und Fragen, die zählen. Ohne Konten für die Schülerinnen und Schüler: ein Klassencode, und los geht's.",
+      "bloques": [
+        { "titulo": "Escape Room 360", "texto": "In den Szenen versteckte Objekte, Zähler, die Türen öffnen, Hinweise als Text, Audio und Video, und ein Schloss am Ende. Zusammengebaut wird per Drag-and-drop: Jeder Hotspot trägt seine Bedingungen und Variablen." },
+        { "titulo": "Virtuelle Exkursionen", "texto": "Das Museum, die Kathedrale, der Wald oder das Labor der Universität, in 360 Grad und mit Erklärungen genau dort verankert, wo sie hingehören. Mit eigenen Fotos oder mit den freien Panoramen von Wikimedia Commons." },
+        { "titulo": "Quiz mit Note", "texto": "Fragen über den Rundgang verteilt, Bestehensgrenze, Zufallsreihenfolge und Versuche. Der Bericht geht an die Lehrkraft, und die Lernenden laden sich ihr Zertifikat herunter." },
+        { "titulo": "Klassencode", "texto": "Die Lernenden kommen mit einem Code hinein, ohne E-Mail und ohne Passwort. Die Lehrkraft sieht den Fortschritt jeder Gruppe und exportiert die Noten als CSV." },
+        { "titulo": "Geführte Live-Touren", "texto": "Die ganze Klasse im selben Raum: Die Lehrkraft bewegt die Szene und zeigt mit dem Zeiger; jeder Lernende kann sich lösen und wieder synchronisieren." },
+        { "titulo": "Mit VR-Brille oder Cardboard", "texto": "Derselbe Rundgang funktioniert in der VR-Brille und auf jedem Handy mit einer Cardboard-Brille. Und auf der digitalen Tafel, klar." }
+      ],
+      "cta": { "titulo": "Der Plan Aula", "texto": "42 $ im Jahr je Lehrkraft: 5 Rundgänge, 10 GB, unbegrenzt viele Lernende per Klassencode, Quiz mit Note, Escape Room und Schatzsuche.", "boton": "Mit Aula loslegen", "secundario": "Alle Pläne ansehen" }
+    },
+    "wordpress": {
+      "title": "WordPress-Plugin für virtuelle 360-Grad-Rundgänge | andarama",
+      "description": "Das Plugin Andarama 360 bettet virtuelle Rundgänge in WordPress ein: mit einem Block, einem Shortcode oder einfach durch Einfügen der Tour-Adresse. Open Source und kostenlos.",
+      "h1": "360-Grad-Rundgänge in WordPress, mit einem Block",
+      "lead": "Das Plugin Andarama 360 holt den Viewer in jeden Beitrag und jede Seite: Adresse des Rundgangs einfügen, fertig. Funktioniert mit dem Block-Editor, dem klassischen Editor und den Page Buildern.",
+      "bloques": [
+        { "titulo": "Drei Wege zum Einbetten", "texto": "Ein Block „Andarama 360 Tour“ mit Vorschau im Editor, die Adresse in einen leeren Absatz eingefügt (wie bei einem YouTube-Video) oder der Shortcode <code>[andarama url=\"…\"]</code> für Elementor, Divi, WPBakery und Co." },
+        { "titulo": "Was der Viewer mitbringt", "texto": "360-Grad-Panorama per WebGL mit Gyroskop auf dem Handy, Virtual-Reality-Modus per WebXR, Vollbild, Lazy Loading und wählbares Seitenverhältnis. Der iframe bringt die nötigen Berechtigungen mit." },
+        { "titulo": "Mit deiner eigenen Instanz", "texto": "In den Einstellungen gibst du die Adresse der Andarama-Instanz an, ob andarama.com oder dein Server. Das Plugin steht unter GPLv2 und liegt im selben Repository wie alles andere." }
+      ],
+      "enlaces": { "wporg": "Auf wordpress.org (in Prüfung)", "repo": "Plugin-Code auf GitHub" }
+    },
+    "privacidad": {
+      "title": "Datenschutz und Cookies | andarama",
+      "description": "Welche Daten andarama.com verarbeitet, mit welchen Anbietern (Plausible, Clerk, Cloudflare) und welche Cookies im Spiel sind. Ohne Umschweife erklärt.",
+      "h1": "Datenschutz und Cookies",
+      "lead": "Diese Seite erklärt, welche Daten andarama.com verarbeitet, wofür und mit wem. Sie ist zum Lesen geschrieben, nicht fürs Pflichtprogramm.",
+      "secciones": [
+        { "titulo": "Wer verantwortlich ist", "html": "<p>José Luis Saorín Ferrer, Autor von Andarama, erreichbar unter <a href=\"mailto:jl@joseluissaorin.com\">jl@joseluissaorin.com</a>. Andarama ist ein Open-Source-Programm (EUPL-1.2); andarama.com ist die gehostete Instanz, die er betreibt.</p>" },
+        { "titulo": "Analytik ohne Cookies", "html": "<p>Um zu wissen, wie viele Leute die Website besuchen, wird <a href=\"https://plausible.io\">Plausible</a> genutzt, ein europäischer Dienst, der keine Cookies setzt, keine IP-Adressen speichert und niemanden über Besuche hinweg wiedererkennt. Er zählt Seitenaufrufe und einige anonyme Ereignisse (zum Beispiel, dass ein Werkzeug benutzt wurde). Deshalb gibt es kein Cookie-Banner: Es gibt nichts zu akzeptieren.</p><p>Die mit Andarama veröffentlichten Rundgänge tragen dieselbe Art von Analytik: Besuche, Szenen und Hotspots aggregiert, ohne Cookies und ohne IP.</p>" },
+        { "titulo": "Konten und Zahlungen: Clerk", "html": "<p>Wenn du ein Konto auf app.andarama.com anlegst, übernimmt <a href=\"https://clerk.com\">Clerk</a> Registrierung, Anmeldung und Abrechnung der Pläne. Clerk speichert deine E-Mail-Adresse, deinen Namen, falls du ihn angibst, die Anmeldemethode und die Rechnungsdaten; um die Sitzung offen zu halten, nutzt es technische Cookies, ohne die die Anwendung nicht funktioniert. Die Rundgänge, die Medien und alles, was du erstellst, liegen in der Datenbank von Andarama, nicht bei Clerk.</p>" },
+        { "titulo": "Infrastruktur: Cloudflare", "html": "<p>andarama.com wird über <a href=\"https://www.cloudflare.com\">Cloudflare</a> ausgeliefert (Workers, D1, R2 und KV). Cloudflare verarbeitet die Anfragen als Auftragsverarbeiter und kann aus Sicherheitsgründen technische Protokolle für begrenzte Zeit aufbewahren. Die Medien, die du hochlädst, werden in R2 gespeichert, wenn möglich in europäischen Rechenzentren.</p>" },
+        { "titulo": "Die kostenlosen Werkzeuge", "html": "<p>Der 360-Grad-Viewer, der Little Planet und der Cubemap-Konverter arbeiten vollständig in deinem Browser. Die Bilder, die du mit ihnen öffnest, werden auf keinen Server geladen: Sie verlassen deinen Rechner nicht. Es wird lediglich, ohne dich zu identifizieren, festgehalten, dass das Werkzeug benutzt wurde.</p>" },
+        { "titulo": "E-Mail", "html": "<p>Wenn du über das Kontaktformular schreibst, öffnet sich dein eigenes E-Mail-Programm: Die Nachricht geht von deinem Konto an unseres und wird nur benutzt, um dir zu antworten. Konten erhalten Transaktions-E-Mails (Bestätigung, Einladungen, Hinweise zum Plan), nie Werbung.</p>" },
+        { "titulo": "Deine Rechte", "html": "<p>Du kannst Auskunft, Berichtigung, Löschung, Übertragbarkeit und Widerspruch verlangen, indem du an <a href=\"mailto:jl@joseluissaorin.com\">jl@joseluissaorin.com</a> schreibst. Konten lassen sich direkt in der Anwendung löschen, und alles Erstellte kann jederzeit als ZIP oder als Datei <code>.andarama</code> exportiert werden. Wenn du meinst, dass etwas nicht richtig läuft, kannst du dich bei der spanischen Datenschutzbehörde (Agencia Española de Protección de Datos) beschweren.</p>" },
+        { "titulo": "Änderungen", "html": "<p>Wenn sich diese Erklärung ändert, wird hier das Datum vermerkt. Letzte Überarbeitung: September 2026.</p>" }
+      ]
+    }
+  },
+  "herramientas": {
+    "indice": {
+      "title": "Kostenlose Werkzeuge für 360-Grad-Fotos | andarama",
+      "description": "360 Grad Bilder Viewer online, Little-Planet-Generator und Konverter von Equirectangular zu Cubemap. Kostenlos, ohne Konto und ohne Upload: Alles passiert in deinem Browser.",
+      "h1": "Kostenlose Werkzeuge für 360-Grad-Fotos",
+      "lead": "Drei Helfer, die in deinem Browser arbeiten, ohne Konto und ohne irgendetwas auf einen Server zu laden. Sie sind Stücke von Andarama selbst, was du hier siehst, steckt also auch drin."
+    },
+    "comunes": {
+      "abrir": "360-Grad-Foto auswählen",
+      "arrastrar": "oder zieh es hierher (JPG oder PNG, equirektangulär, Seitenverhältnis 2:1)",
+      "local": "Das Bild verlässt deinen Browser nicht: Es wird auf keinen Server geladen.",
+      "procesando": "Wird berechnet …",
+      "descargar": "PNG herunterladen",
+      "otra": "Anderes Foto",
+      "error_formato": "Diese Datei sieht nicht nach einem Bild aus. Versuch es mit einem JPG oder PNG.",
+      "error_proporcion": "Das Bild hat kein Seitenverhältnis von 2:1 ({w}×{h}). Es geht trotzdem weiter, aber ein vollständiges Equirectangular ist doppelt so breit wie hoch.",
+      "error_grande": "Das Bild ist riesig ({w}×{h}). Es wird auf {max} px Breite verkleinert, damit der Browser nicht in die Knie geht.",
+      "faq_titulo": "Häufige Fragen",
+      "cta_titulo": "Willst du daraus einen Rundgang machen?",
+      "cta_texto": "Mit Andarama verbindest du mehrere 360-Grad-Fotos, gibst ihnen Hotspots, Quiz und Erzählung und veröffentlichst einen Link, der sich in jedem Browser oder mit einer VR-Brille begehen lässt.",
+      "cta_boton": "Konto anlegen (14 Tage gratis)"
+    },
+    "visor": {
+      "title": "360 Grad Bilder Viewer online kostenlos: 360-Grad-Fotos im Browser ansehen | andarama",
+      "description": "360 Panorama Viewer online und kostenlos. Öffne ein equirektanguläres Foto (JPG oder PNG) und sieh es dir in 360 Grad an, mit Vollbild und Virtual Reality, ohne Upload auf irgendeinen Server.",
+      "h1": "360 Grad Bilder Viewer online: Sieh dir dein equirektanguläres Foto im Browser an",
+      "lead": "Wähl ein 360-Grad-Foto, und es erscheint direkt hier wie in einer VR-Brille: Ziehen zum Umsehen, Scrollen zum Zoomen, Vollbild und Virtual Reality, wenn dein Browser WebXR kann. Nichts wird hochgeladen: Der Viewer ist dieselbe Engine wie in Andarama, nur auf deinem Rechner.",
+      "pantalla_completa": "Vollbild",
+      "rv": "Mit VR-Brille ansehen (WebXR)",
+      "rv_no": "Dieser Browser hat kein WebXR. Öffne diese Seite im Browser einer Meta Quest, Pico oder Vision Pro.",
+      "cuerpo": "<h2>Was ein 360-Grad-Foto ist und warum es in einem normalen Viewer nicht gut aussieht</h2><p>Ein 360-Grad-Foto (equirektangulär) ist eine Kugel, die auf ein Rechteck im Seitenverhältnis 2:1 ausgebreitet wurde: die 360 Grad der Drehung in der Breite und die 180 Grad von oben nach unten in der Höhe. In einem gewöhnlichen Bildbetrachter wirkt es gestreckt, Boden und Himmel sind verformt, gerade Linien werden krumm. Ein 360 Panorama Viewer wickelt das Bild wieder um eine Kugel und setzt dich in die Mitte, sodass du dich umsiehst, als wärst du dort.</p><h2>So benutzt du diesen 360 Grad Bilder Viewer online</h2><ol><li>Klick auf „360-Grad-Foto auswählen“ oder zieh die Datei auf die gestrichelte Fläche. Es gehen die JPG- und PNG-Dateien von Insta360, Ricoh Theta, GoPro Max, Kandao, von den Panorama-Apps des Handys oder von jeder Stitching-Software.</li><li>Zieh mit der Maus oder dem Finger, um dich zu drehen; mit dem Mausrad oder durch Zusammenziehen der Finger zoomst du hinein und heraus; mit der Tastatur über die Pfeiltasten.</li><li>Der Vollbild-Button füllt den Monitor; der Brillen-Button startet die Virtual-Reality-Sitzung, wenn der Browser WebXR unterstützt (Meta Quest, Pico, Vision Pro mit Safari oder ein PC mit Headset).</li></ol><h2>Ohne Upload</h2><p>Das Bild reist zu keinem Server: Der Browser dekodiert es, und die WebGL-Engine zeichnet es auf deiner Grafikkarte. Du kannst den Viewer mit privaten Fotos oder mit denen eines Kunden nutzen, ohne dass sie deinen Rechner verlassen. Und weil nichts hochgeladen wird, gibt es auch keine Wartezeit: Ein 8K-Foto öffnet sich in ein paar Sekunden.</p><h2>360-Grad-Fotos am PC, auf dem Handy und in der VR-Brille ansehen</h2><p>Dieser Viewer läuft in jedem modernen Browser: Chrome, Firefox, Safari und Edge, unter Windows, macOS, Linux, Android und iOS. Auf dem Handy lässt sich die Ansicht mit dem Gyroskop drehen. In einer VR-Brille bietet dieselbe Seite den Button zum Eintritt in VR, und das Foto umhüllt den ganzen Raum.</p><h2>Was er nicht kann (und wo es geht)</h2><p>Er speichert das Foto nicht und erzeugt keinen Link zum Teilen: Dafür müsste man es irgendwo hochladen. Wenn du ein 360-Grad-Foto per Link teilen, in deine Website einbetten, mehrere zu einem Rundgang verbinden oder mit Hotspots versehen willst, dann ist das genau das, was Andarama macht, und es lässt sich vierzehn Tage kostenlos ausprobieren.</p>",
+      "faq": [
+        { "q": "Welche Formate unterstützt der Viewer?", "a": "Equirektanguläre JPG- und PNG-Dateien im Seitenverhältnis 2:1, wie sie alle 360-Grad-Kameras und Stitching-Programme erzeugen. Er öffnet auch Panoramen, die keine vollen 360 Grad abdecken, dann bleibt allerdings ein schwarzer Streifen." },
+        { "q": "Gibt es eine Größenbeschränkung?", "a": "Die Grenze setzt der Speicher deines Browsers. 8K-Fotos (8192×4096) öffnen sich auf jedem Rechner problemlos; über 16K wird automatisch verkleinert, damit die Grafikkarte damit zurechtkommt." },
+        { "q": "Wird mein Foto auf einen Server geladen?", "a": "Nein. Alles passiert in deinem Browser: Das Foto wird von der Festplatte gelesen, dekodiert und mit WebGL gezeichnet. Es wird lediglich, ohne dich zu identifizieren, festgehalten, dass das Werkzeug benutzt wurde." },
+        { "q": "Kann ich das Foto mit einer VR-Brille ansehen?", "a": "Ja, wenn der Browser WebXR unterstützt: Öffne diese Seite im Browser der Meta Quest, Pico oder Vision Pro und drück den Brillen-Button. Auf einem Handy ohne WebXR lässt sich die Ansicht mit dem Gyroskop drehen." },
+        { "q": "Wie teile ich ein 360-Grad-Foto per Link?", "a": "Dieser Viewer speichert es nicht. Für einen Link, zum Einbetten in eine Website oder um mehrere Fotos zu einem Rundgang zu verbinden, leg ein Konto bei Andarama an: Die Testphase dauert vierzehn Tage und verlangt keine Kreditkarte." }
+      ]
+    },
+    "planeta": {
+      "title": "Little Planet erstellen online und kostenlos | andarama",
+      "description": "Verwandle ein 360-Grad-Foto in einen Little Planet (Tiny Planet) und lade ihn als PNG herunter. Kostenlos, im Browser und ohne das Bild irgendwohin hochzuladen.",
+      "h1": "Little Planet erstellen: Mach aus deinem 360-Grad-Foto einen kleinen Planeten",
+      "lead": "Lade ein equirektanguläres Foto, und der Planet erscheint: der Boden in der Mitte, der Himmel drumherum. Dreh die Welt, öffne oder schließe sie und lade sie als PNG in der gewünschten Auflösung herunter. Alles in deinem Browser.",
+      "tamano": "Ausgabegröße",
+      "giro": "Drehung",
+      "apertura": "Öffnung",
+      "fondo": "Hintergrund",
+      "fondo_transparente": "Transparent",
+      "fondo_blanco": "Weiß",
+      "fondo_negro": "Schwarz",
+      "fondo_papel": "Papier",
+      "descargar": "Planeten als PNG herunterladen",
+      "cuerpo": "<h2>Was ein Little Planet ist</h2><p>Ein <em>Little Planet</em> (oder <em>Tiny Planet</em>) ist eine stereografische Projektion eines 360-Grad-Fotos: Man nimmt die ganze Kugel, stellt sie auf den Boden und projiziert sie vom Zenit aus auf eine Ebene. Das Ergebnis ist eine Scheibe, bei der der Boden in der Mitte liegt, Gebäude und Bäume nach außen wachsen und der Himmel den Rand umschließt. Es ist die fotogenste Art, in einem einzigen Bild alles zu zeigen, was rund um die Kamera war.</p><h2>So erstellst du mit diesem Werkzeug einen Little Planet</h2><ol><li>Wähl ein equirektanguläres Foto (JPG oder PNG im Seitenverhältnis 2:1) von einer beliebigen 360-Grad-Kamera oder einer Panorama-App.</li><li>Stell die Drehung ein, um festzulegen, was oben auf dem Planeten liegt, und die Öffnung, um den Horizont näher oder weiter zu holen. Der Planet wird sofort neu berechnet.</li><li>Wähl Ausgabegröße und Hintergrund (transparent, um ihn auf etwas anderes zu montieren) und lade das PNG herunter.</li></ol><h2>Tipps für einen guten Planeten</h2><p>Am besten funktionieren Fotos mit sauberem Nadir (ohne Stativ und ohne Hand), denn die Mitte der Scheibe ist genau der Boden. Szenen mit freiem Horizont und spannendem Himmel ergeben die schönsten Planeten; Plätze, Innenhöfe und Gipfel sind sichere Gewinner. Wenn das Original schief ist, korrigier es vorher: Die Projektion übertreibt jede Neigung.</p><h2>Ohne Upload, ohne Wasserzeichen</h2><p>Die Berechnung erfolgt Pixel für Pixel in deinem Browser, mit derselben Routine, mit der die Mediathek von Andarama ihre Miniaturen zeigt. Das Foto verlässt deinen Rechner nicht, und das PNG, das du herunterlädst, gehört dir, ohne Wasserzeichen und ohne andere Auflösungsgrenze als den Speicher deines Geräts.</p>",
+      "faq": [
+        { "q": "Welche Auflösung kann ich herunterladen?", "a": "Jede zwischen 512 und 4096 Pixeln Kantenlänge. Die Schärfe hängt vom Originalfoto ab: Ein 8K-Equirectangular liefert gestochen scharfe Planeten mit 4096 px." },
+        { "q": "Taugt das für Instagram?", "a": "Ja: Lade mit 2048 oder 4096 px und weißem oder schwarzem Hintergrund herunter und stell es als quadratisches Bild ein. Der transparente Hintergrund eignet sich, um ihn auf ein anderes Design zu montieren." },
+        { "q": "Geht der Planet auch andersherum (Himmel in der Mitte)?", "a": "Mit diesem Werkzeug noch nicht. Das ist die „Tunnel“-Projektion; wenn sie dich interessiert, schreib uns, und wir bauen sie ein." },
+        { "q": "Wird mein Foto hochgeladen?", "a": "Nein. Es wird in deinem Browser berechnet und reist zu keinem Server." }
+      ]
+    },
+    "cubemap": {
+      "title": "Equirectangular zu Cubemap online konvertieren (und zurück) | andarama",
+      "description": "Kostenloser Cubemap Converter: von equirektangulärem Panorama zu Cubemap, sechs Seiten als PNG oder ZIP, und von Cubemap zu Equirectangular. Im Browser, ohne Upload.",
+      "h1": "Equirectangular zu Cubemap (und Cubemap zu Equirectangular)",
+      "lead": "Lade ein 2:1-Panorama, und die sechs Würfelseiten kommen als PNG heraus, einzeln oder als ZIP. Oder umgekehrt: Wähl sechs Seiten, und daraus wird ein Equirectangular zusammengesetzt. Alles wird in deinem Browser berechnet.",
+      "modo_a_cubo": "Equirectangular → Cubemap",
+      "modo_a_equi": "Cubemap → Equirectangular",
+      "tamano_cara": "Seitengröße",
+      "orden": "Reihenfolge der Seiten",
+      "descargar_zip": "Die sechs Seiten herunterladen (ZIP)",
+      "descargar_equi": "Equirectangular herunterladen (PNG)",
+      "caras": { "f": "vorne", "b": "hinten", "l": "links", "r": "rechts", "u": "oben", "d": "unten" },
+      "elige_caras": "Wähl die sechs Seiten",
+      "faltan": "Es fehlen noch Seiten: {lista}",
+      "cuerpo": "<h2>Was ein Cubemap ist und wofür man es braucht</h2><p>Ein Cubemap stellt die Umgebung mit sechs quadratischen Bildern dar, eines je Würfelseite: vorne, hinten, links, rechts, oben und unten. Es ist das Format, das 3D-Engines (Unity, Unreal, Godot, Three.js, Babylon), die Skyboxen von Videospielen, Reflection Maps und viele 360-Grad-Viewer erwarten, denn jede Seite ist eine normale Textur ohne die Verzerrungen des Equirectangulars an den Polen.</p><h2>So konvertierst du Equirectangular zu Cubemap</h2><ol><li>Wähl das equirektanguläre Panorama (JPG oder PNG im Seitenverhältnis 2:1).</li><li>Leg die Seitengröße fest. Die Faustregel: Breite des Panoramas geteilt durch vier. Ein Equirectangular mit 8192 px ergibt Seiten mit 2048 px.</li><li>Lade die sechs Seiten einzeln oder als ZIP herunter, mit den Namen <code>f, b, l, r, u, d</code> (die Konvention von Marzipano und krpano) oder denen deiner Engine.</li></ol><h2>Und von Cubemap zu Equirectangular</h2><p>Der umgekehrte Weg geht auch: Wähl die sechs Seiten, und das Werkzeug setzt sie zu einem einzigen 2:1-Panorama zusammen, bereit für jeden 360-Grad-Viewer, für soziale Netzwerke oder für Andarama. Damit lässt sich eine Skybox aus einem Videospiel, ein Blender-Render im Würfelformat oder ein Panorama einer Kamera zurückholen, die in Seiten exportiert.</p><h2>Wie gerechnet wird</h2><p>Für jedes Pixel jeder Seite wird die Richtung vom Würfelmittelpunkt aus verfolgt, in Längen- und Breitengrad umgerechnet und der entsprechende Punkt aus dem Equirectangular gelesen. Es ist dieselbe Geometrie, die der Kachel-Generator von Andarama zum Vorbereiten der Rundgänge nutzt, hier in Canvas in deinem Browser ausgeführt. Kein Bild wird irgendwohin hochgeladen.</p>",
+      "faq": [
+        { "q": "Welche Seitengröße soll ich wählen?", "a": "Die Breite des Equirectangulars geteilt durch vier: 4096 px Breite, Seiten mit 1024; 8192, Seiten mit 2048. Eine größere Seite bringt kein Detail, nur Gewicht." },
+        { "q": "In welcher Reihenfolge und mit welchen Namen kommen die Seiten heraus?", "a": "Standardmäßig nach der Konvention von Marzipano und krpano (f, b, l, r, u, d). Du kannst auch die von Unity und Three.js wählen (px, nx, py, ny, pz, nz)." },
+        { "q": "Lässt sich ein Video konvertieren?", "a": "Nein, nur Bilder. Für 360-Grad-Video braucht es ein Desktop-Programm wie FFmpeg mit dem Filter v360." },
+        { "q": "Wird mein Panorama hochgeladen?", "a": "Nein. Die Konvertierung erfolgt Pixel für Pixel in deinem Browser." }
+      ]
+    }
+  },
+  "blog": {
+    "title": "andarama-Blog: 360-Grad-Rundgänge, Vergleiche und Lehre",
+    "description": "Ehrliche Vergleiche von Software für virtuelle Rundgänge, Alternativen zu Matterport und Kuula sowie Anleitungen für Klassenzimmer und immersive Schulung.",
+    "h1": "Der Blog",
+    "lead": "Vergleiche mit geprüften Preisen, Alternativen zu den üblichen Werkzeugen und Anleitungen zum Unterrichten mit 360-Grad-Fotos.",
+    "autor_title": "{nombre}, Autor im andarama-Blog",
+    "autor_articulos": "Artikel von {nombre}",
+    "vs": {
+      "titulo": "Andarama und {nombre} auf einen Blick",
+      "caracteristica": "Merkmal",
+      "si": "Ja",
+      "no": "Nein",
+      "parcial": "Teilweise",
+      "gratis": "Kostenloser Plan",
+      "precio_desde": "Preis ab",
+      "planes": "Pläne",
+      "cuotas": "Kontingente",
+      "rv": "Virtual Reality (WebXR)",
+      "scorm": "SCORM und LTI",
+      "exportacion": "Export der Tour",
+      "codigo_abierto": "Open Source",
+      "marca_blanca": "White Label",
+      "dominio": "Eigene Domain",
+      "analitica": "Analytik ohne Cookies",
+      "street_view": "Auf Street View veröffentlichen",
+      "verificado": "Preise im September 2026 auf der Website des jeweiligen Produkts geprüft.",
+      "no_verificado": "Mit * markierte Angaben konnten nicht geprüft werden und verdienen einen zweiten Blick.",
+      "andarama_desde": "0 € auf deinem Server; gehostet ab 2 $ im Monat",
+      "andarama_cuotas": "Keine Kontingente auf deinem Server; 1 bis 1000 Rundgänge gehostet",
+      "sin_datos": "keine Angaben"
+    },
+    "alternativas": {
+      "titulo": "Die Alternativen auf einen Blick",
+      "web": "Website",
+      "pais": "Land",
+      "desde": "ab"
+    }
+  },
+  "jsonld": {
+    "app_nombre": "Andarama",
+    "app_descripcion": "Virtuelle 360-Grad-Rundgänge als Open Source: visueller Editor, WebGL-Viewer mit Virtual Reality, Quiz, LTI, SCORM und offener Export.",
+    "categoria": "MultimediaApplication"
+  }
+}

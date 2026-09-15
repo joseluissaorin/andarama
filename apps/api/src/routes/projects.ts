@@ -18,6 +18,7 @@ import { listAccessibleProjects, projectAccess, requireOrgRole } from "../lib/au
 import { audit, getSettings } from "../lib/helpers.js";
 import { assertTourQuota } from "../lib/quota.js";
 import { resolveNewTourSettings, type OrgDefaults, type UserPrefs } from "../lib/defaults.js";
+import { galleryInfo } from "./publish.js";
 import { compileProject } from "../compiler.js";
 import { embedResponse } from "../lib/embed.js";
 
@@ -149,7 +150,7 @@ export function projectRoutes(): Hono<AppEnv> {
       ...projectSummary(access.project),
       settings: parseJson(access.project.settingsJson, {}),
       permissions: { canEdit: access.canEdit, canPublish: access.canPublish, canManage: access.canManage, role: access.role },
-      publication: pub != null ? { slug: pub.slug, visibility: pub.visibility, publishedAt: pub.publishedAt, versionId: pub.versionId, expireAt: pub.expireAt, publishAt: pub.publishAt, domains: parseJson(pub.domainsJson, []), hasPassword: pub.passwordHash != null, kiosk: pub.kiosk === true } : null,
+      publication: pub != null ? { slug: pub.slug, visibility: pub.visibility, publishedAt: pub.publishedAt, versionId: pub.versionId, expireAt: pub.expireAt, publishAt: pub.publishAt, domains: parseJson(pub.domainsJson, []), hasPassword: pub.passwordHash != null, kiosk: pub.kiosk === true, gallery: galleryInfo(pub) } : null,
     });
   });
 

@@ -1,0 +1,109 @@
+---
+/**
+ * Armazón de todas las páginas: cabecera, pie, metadatos, hreflang, Open
+ * Graph, JSON-LD y Plausible. Cada página trae su idioma, su título y su
+ * descripción; las alternativas hreflang salen de la clave de página (o de
+ * una lista propia, en el blog).
+ */
+import "../styles/estilo.css";
+import "../styles/sitio.css";
+import Cabecera from "../components/Cabecera.astro";
+import Pie from "../components/Pie.astro";
+import Criatura from "../components/Criatura.astro";
+import { absolute, alternates as alternatesOf, DEFAULT_LANG, dir, hreflangOf, ogLocaleOf, t, type Lang, type PageKey } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  /** Ruta de la página (absoluta desde la raíz, con barra final). */
+  path: string;
+  /** Clave de página para calcular las alternativas hreflang. */
+  pageKey?: PageKey;
+  /** Alternativas explícitas (blog): sustituyen a las de la clave. */
+  alternates?: { lang: Lang; path: string }[];
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogType?: "website" | "article";
+  /** Objetos JSON-LD que se serializan tal cual en el <head>. */
+  jsonld?: object[];
+  noindex?: boolean;
+}
+
+const {
+  lang,
+  title,
+  description,
+  path,
+  pageKey,
+  alternates,
+  ogImage = "/og.png",
+  ogImageAlt = t(lang, "home.og_alt"),
+  ogType = "website",
+  jsonld = [],
+  noindex = false,
+} = Astro.props;
+
+const alts = alternates ?? (pageKey != null ? alternatesOf(pageKey) : [{ lang, path }]);
+const xDefault = alts.find((a) => a.lang === DEFAULT_LANG) ?? alts[0]!;
+const canonical = absolute(path);
+const ogLocale = ogLocaleOf(lang);
+const otherLocales = alts.filter((a) => a.lang !== lang).map((a) => ogLocaleOf(a.lang));
+---
+
+<!doctype html>
+<html lang={lang} dir={dir(lang)}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" type="image/svg+xml" href="/logo-andarama.svg" />
+    <link rel="canonical" href={canonical} />
+    {alts.map((a) => <link rel="alternate" hreflang={hreflangOf(a.lang)} href={absolute(a.path)} />)}
+    <link rel="alternate" hreflang="x-default" href={absolute(xDefault.path)} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="andarama" />
+    <meta property="og:locale" content={ogLocale} />
+    {otherLocales.map((l) => <meta property="og:locale:alternate" content={l} />)}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={absolute(ogImage)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#f7f2e7" />
+    <link rel="preload" href="/fonts/Baloo2-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/SpaceMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
+    {jsonld.map((obj) => <script type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-ZLxtY4tx_lIZ2BzrNpR-v.js"></script>
+    <script is:inline>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
+  </head>
+  <body>
+    <a class="salto" href="#contenido">{t(lang, "comunes.saltar")}</a>
+    <Cabecera lang={lang} alternates={alts} />
+    <main id="contenido">
+      <slot />
+    </main>
+    <Pie lang={lang} />
+    <Criatura />
+    <script>
+      // Los botones hacia el Studio cuentan como «cta_registro» en Plausible.
+      // Se delega en el documento para no repetirlo en cada página.
+      document.addEventListener("click", (ev) => {
+        const target = (ev.target as Element | null)?.closest<HTMLAnchorElement>("a[data-cta]");
+        if (target == null) return;
+        const w = window as unknown as { plausible?: (name: string, opts?: { props?: Record<string, string> }) => void };
+        w.plausible?.(target.dataset.cta === "registro" ? "cta_registro" : target.dataset.cta!, { props: { desde: location.pathname } });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+{
+  "slug": "smithsonian",
+  "lang": "en",
+  "title": "TODO: título SEO con el nombre del lugar (3 a 120 caracteres), por ejemplo «Smithsonian en 360: recorrido virtual»",
+  "description": "TODO: un párrafo de 300 a 600 caracteres sobre el lugar y lo que se ve en las escenas; solo hechos comprobados, sin inventar",
+  "placeName": "Smithsonian",
+  "placeCountry": "TODO",
+  "lat": null,
+  "lng": null,
+  "startScene": "kayak-interior-smithsonian-nmai",
+  "scenes": [
+    {
+      "id": "kayak-interior-smithsonian-nmai",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Kayak-interior-Smithsonian-NMAI.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Kayak-interior-Smithsonian-NMAI.jpg",
+      "title": "TODO: título corto de la escena (fichero: Kayak-interior-Smithsonian-NMAI)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Fuzheado",
+      "license": "CC BY-SA 4.0",
+      "width": 7776,
+      "height": 3888,
+      "categories": [
+        "360° panoramas",
+        "CC-BY-SA-4.0",
+        "Collections of the National Museum of the American Indian",
+        "Files with coordinates missing SDC location of creation",
+        "Kayaks",
+        "Native American transportation"
+      ]
+    },
+    {
+      "id": "smithsonian-nasm-panorama-20160716",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Smithsonian-nasm-panorama-20160716.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Smithsonian-nasm-panorama-20160716.jpg",
+      "title": "TODO: título corto de la escena (fichero: Smithsonian-nasm-panorama-20160716)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Fuzheado",
+      "license": "CC BY-SA 4.0",
+      "width": 7776,
+      "height": 3888,
+      "categories": [
+        "360° panoramas",
+        "CC-BY-SA-4.0",
+        "Files with coordinates missing SDC location of creation",
+        "National Air and Space Museum",
+        "Panoramic photographs",
+        "Self-published work"
+      ]
+    },
+    {
+      "id": "smithsonian-castle-the-commons-panospher",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Smithsonian_Castle_-_The_Commons_-_panosphere_-_2022-07-14.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Smithsonian_Castle_-_The_Commons_-_panosphere_-_2022-07-14.jpg",
+      "title": "TODO: título corto de la escena (fichero: Smithsonian Castle - The Commons - panosphere - 2022-07-14)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Fuzheado",
+      "license": "CC BY-SA 4.0",
+      "width": 6528,
+      "height": 3264,
+      "categories": [
+        "360° panoramas",
+        "Ambiguous location in EXIF",
+        "CC-BY-SA-4.0",
+        "Self-published work",
+        "Smithsonian Institution Building",
+        "Taken with Insta360 ONE RS"
+      ]
+    },
+    {
+      "id": "smithsonian-castle-great-hall-panosphere",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Smithsonian_Castle_-_Great_Hall_-_panosphere_-_2022-07-14.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Smithsonian_Castle_-_Great_Hall_-_panosphere_-_2022-07-14.jpg",
+      "title": "TODO: título corto de la escena (fichero: Smithsonian Castle - Great Hall - panosphere - 2022-07-14)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "Fuzheado",
+      "license": "CC BY-SA 4.0",
+      "width": 6528,
+      "height": 3264,
+      "categories": [
+        "360° panoramas",
+        "Ambiguous location in EXIF",
+        "CC-BY-SA-4.0",
+        "Self-published work",
+        "Smithsonian Institution Building",
+        "Taken with Insta360 ONE RS"
+      ]
+    }
+  ],
+  "_demanda": {
+    "total": 780,
+    "mercados": {
+      "en-US": 730,
+      "en-GB": 20,
+      "es-ES": 20,
+      "pt-BR": 10
+    },
+    "idiomas": {
+      "en": 750,
+      "es": 20,
+      "pt": 10
+    }
+  },
+  "_notas": "Revisa placeName (acentos y forma oficial), placeCountry (ISO-2) y pon lat/lng del lugar. Sustituye todos los TODO. Quita las escenas que no sean del lugar o no sean panoramas esféricos completos. Otras 0 panorámicas coincidentes quedan fuera del encargo."
+}

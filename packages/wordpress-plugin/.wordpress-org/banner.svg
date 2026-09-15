@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1544" height="500" viewBox="0 0 1544 500" role="img" aria-label="Andarama: open-source 360 virtual tours">
+  <!--
+    Banner del directorio de wordpress.org (1544×500; se reduce a 772×250).
+    Papel de la marca, la criatura grande a la izquierda y el nombre en
+    serifa; la misma risografía a dos tintas que el logo.
+  -->
+  <rect width="1544" height="500" fill="#f7f2e7" />
+  <!-- Una mancha amarilla de fondo, como una tinta que se ha pasado de registro -->
+  <ellipse cx="1180" cy="520" rx="520" ry="230" fill="#ffd900" opacity="0.28" />
+  <ellipse cx="1210" cy="540" rx="520" ry="230" fill="#ff8a00" opacity="0.12" />
+
+  <!-- La criatura, sin caja, andando -->
+  <g transform="translate(120 70) scale(5.6) rotate(-3 32 32)">
+    <g fill="#e8501a" transform="translate(1.8 2)">
+      <path d="M32 8.5 C44 7.5 54 17 54.5 29 C55 40 49 49 39 51.5 C36.5 52.2 27.5 52.2 25 51.5 C15 49 9 40 9.5 29 C10 17 20 7.5 32 8.5 Z" />
+      <ellipse cx="21.5" cy="54.2" rx="6.5" ry="4.5" />
+      <ellipse cx="42.5" cy="56" rx="7" ry="4.5" />
+    </g>
+    <g fill="#ffd900">
+      <path d="M32 8.5 C44 7.5 54 17 54.5 29 C55 40 49 49 39 51.5 C36.5 52.2 27.5 52.2 25 51.5 C15 49 9 40 9.5 29 C10 17 20 7.5 32 8.5 Z" />
+      <ellipse cx="21.5" cy="54.2" rx="6.5" ry="4.5" />
+      <ellipse cx="42.5" cy="56" rx="7" ry="4.5" />
+    </g>
+    <g fill="#33260f">
+      <ellipse cx="25.5" cy="28" rx="2" ry="3.7" />
+      <ellipse cx="38.5" cy="28" rx="2" ry="3.7" />
+    </g>
+    <path d="M25 35 Q32 41.5 39 35" fill="none" stroke="#33260f" stroke-width="2.6" stroke-linecap="round" />
+    <circle cx="19.5" cy="34.5" r="2.8" fill="#ff8a00" opacity=".6" />
+    <circle cx="44.5" cy="34.5" r="2.8" fill="#ff8a00" opacity=".6" />
+  </g>
+
+  <!-- Nombre y lema -->
+  <g fill="#33260f" font-family="Georgia, 'Times New Roman', serif">
+    <text x="520" y="235" font-size="132" font-weight="bold" letter-spacing="-3">andarama</text>
+    <text x="524" y="312" font-size="44">Open-source 360 virtual tours</text>
+    <text x="524" y="372" font-size="30" opacity="0.72">Block, shortcode or just paste the URL. VR ready.</text>
+  </g>
+</svg>

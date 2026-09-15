@@ -5,7 +5,7 @@ import { requireAuth } from "../lib/session.js";
 import { notFound } from "../lib/errors.js";
 import { redeemCoupon } from "../lib/coupons.js";
 import { audit } from "../lib/helpers.js";
-import { PLANS, effectivePlan, quotaForPlan } from "../lib/plans.js";
+import { PLANS, TRIAL_DAYS, TRIAL_PLAN, effectivePlan, planCapabilities, planName, quotaForPlan } from "../lib/plans.js";
 
 /**
  * Planes y facturación de la instancia alojada.
@@ -25,6 +25,7 @@ export function billingRoutes(): Hono<AppEnv> {
       mode: hosted ? "clerk" : "local",
       currency: "usd",
       plans: hosted ? Object.values(PLANS) : [],
+      trial: hosted ? { days: TRIAL_DAYS, quotaTours: TRIAL_PLAN.quotaTours, quotaBytes: TRIAL_PLAN.quotaBytes } : null,
       selfHost: {
         name: "En tu casa",
         amountCents: 0,
@@ -38,13 +39,19 @@ export function billingRoutes(): Hono<AppEnv> {
     const auth = requireAuth(c);
     const hosted = c.get("config").clerk != null;
     const plan = hosted ? effectivePlan(auth.user) : null;
+    const trialEndsAt = hosted ? (auth.user.trialEndsAt ?? null) : null;
     return c.json({
       mode: hosted ? "clerk" : "local",
       plan,
-      planName: plan != null ? PLANS[plan].name : null,
+      planName: planName(plan),
       planFromClerk: auth.user.plan,
       planOverride: auth.user.planOverride,
       quota: hosted ? quotaForPlan(plan) : null,
+      // En el self-host todo está permitido: no hay planes que lo limiten
+      capabilities: hosted ? planCapabilities(plan) : null,
+      trialEndsAt,
+      /** Días enteros que quedan de prueba; 0 si ya caducó o nunca la tuvo. */
+      trialDaysLeft: trialEndsAt != null ? Math.max(0, Math.ceil((trialEndsAt - Date.now()) / 86_400_000)) : 0,
       instanceAdmin: auth.user.roleGlobal === "admin",
     });
   });

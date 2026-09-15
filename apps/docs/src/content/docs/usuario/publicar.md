@@ -31,6 +31,17 @@ Además: fecha de publicación programada y fecha de expiración.
 
 Tras publicar obtienes: URL pública con **deep links** (`#s=escena&y=120&p=-5&f=70`), **código QR**, **código de embebido** responsive y metadatos Open Graph con imagen de la vista inicial.
 
+### La galería pública de andarama.com
+
+En la instancia alojada, un tour **público** puede pedir además una página propia en la galería, `andarama.com/explorar/{slug}/`, pensada para que los buscadores la encuentren por el nombre del lugar. Al publicar, activa **«Mostrar en la galería pública de andarama.com»** y rellena:
+
+- **Título de la ficha**, con el nombre del lugar («Catedral de La Laguna: recorrido virtual 360»).
+- **Descripción**: un párrafo de entre 300 y 600 caracteres, en un solo idioma.
+- **Lugar y país**, y las **coordenadas** si las sabes (si el tour ya tiene mapa, se rellenan solas).
+- **Atribuciones**, si las fotografías no son tuyas.
+
+La ficha lleva el visor embebido, el botón de pantalla completa, la portada capturada al publicar como imagen social, datos estructurados de lugar (`TouristAttraction` o `Place`, con `geo`) y entra en el `sitemap-tours.xml` con su portada. Si cambias la visibilidad a algo que no sea público, la ficha se apaga sola; los textos se conservan por si la vuelves a encender. El índice, `andarama.com/explorar/`, se filtra por país.
+
 ### API postMessage del visor embebido
 
 ```js

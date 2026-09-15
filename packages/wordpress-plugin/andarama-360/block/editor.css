@@ -1,0 +1,29 @@
+/* Estilos del bloque dentro del editor. */
+.andarama-360-editor .andarama-360 {
+	position: relative;
+	margin: 0;
+}
+
+/* Capa transparente sobre el iframe: sin ella el visor se traga los clics y no se puede seleccionar el bloque. */
+.andarama-360-editor__overlay {
+	position: absolute;
+	inset: 0;
+	cursor: pointer;
+}
+
+.andarama-360-editor__form {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	width: 100%;
+}
+
+.andarama-360-editor__form .components-base-control {
+	flex: 1;
+	margin-bottom: 0;
+}
+
+.andarama-360-editor__hint {
+	margin: 8px 0 0;
+	font-size: 12px;
+}

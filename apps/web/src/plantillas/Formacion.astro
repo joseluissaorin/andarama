@@ -1,0 +1,58 @@
+---
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "paginas.formacion";
+const path = pagePath(lang, "formacion");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "nav.formacion"), path },
+];
+const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
+const scormTics = tv<string[]>(lang, `${k}.scorm.tics`);
+---
+
+<Base lang={lang} title={t(lang, `${k}.title`)} description={t(lang, `${k}.description`)} path={path} pageKey="formacion" jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.formacion")}</p>
+      <h1>{t(lang, `${k}.h1`)}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+      <div class="acciones" style="margin-top: 24px">
+        <a class="btn" href="https://app.andarama.com/plan?plan=formacion" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
+        <a class="btn btn--fantasma" href={`${pagePath(lang, "home")}#precios`}>{t(lang, `${k}.cta.secundario`)}</a>
+      </div>
+      <p class="susurro">{t(lang, "comunes.prueba")}</p>
+    </div>
+    <div class="malla">
+      {bloques.map((b) => (
+        <article>
+          <h2>{b.titulo}</h2>
+          <p set:html={b.texto} />
+        </article>
+      ))}
+    </div>
+    <section class="caja">
+      <h2>{t(lang, `${k}.scorm.titulo`)}</h2>
+      <p>{t(lang, `${k}.scorm.texto`)}</p>
+      <ul class="tics">
+        {scormTics.map((x) => <li>{x}</li>)}
+      </ul>
+    </section>
+    <section class="caja caja--naranja">
+      <h2>{t(lang, `${k}.cta.titulo`)}</h2>
+      <p>{t(lang, `${k}.cta.texto`)}</p>
+      <div class="acciones">
+        <a class="btn" href="https://app.andarama.com/plan?plan=formacion" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
+        <a class="btn btn--fantasma" href={pagePath(lang, "universidades")}>{t(lang, "nav.universidades")}</a>
+      </div>
+    </section>
+  </section>
+</Base>

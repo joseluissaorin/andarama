@@ -34,6 +34,11 @@ export interface SkinOptions {
   kiosk?: boolean | { inactivitySeconds?: number };
   /** Sala en vivo a la que conectarse automaticamente. */
   live?: LiveOptions;
+  /**
+   * Insignia «Hecho con Andarama»: enlace discreto que ponen los planes sin
+   * marca blanca de la instancia alojada. El self-host nunca la manda.
+   */
+  badge?: { url: string };
 }
 
 export interface MountedSkin {
@@ -165,6 +170,19 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         ? el("a", { className: "anda-watermark", href: ui.watermark.link, target: "_blank", rel: "noopener" }, img)
         : el("div", { className: "anda-watermark" }, img);
     container.appendChild(wm);
+  }
+
+  // Insignia «Hecho con Andarama» (planes sin marca blanca de la instancia
+  // alojada): un enlace pequeño sobre los controles, que no tapa el panorama
+  // y sigue el tema. En pantalla completa va dentro del contenedor, así que
+  // también se ve.
+  if (options.badge != null && !options.editMode) {
+    const badge = el(
+      "a",
+      { className: "anda-badge", href: options.badge.url, target: "_blank", rel: "noopener", "aria-label": t("made_with_andarama") },
+      t("made_with_andarama"),
+    );
+    container.appendChild(badge);
   }
 
   // Parche de nadir con logo (oculta el tripode): hotspot fijo en el nadir.

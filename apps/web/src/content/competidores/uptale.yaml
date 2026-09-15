@@ -1,0 +1,23 @@
+nombre: Uptale
+web: https://www.uptale.io
+pais: "FR"
+tipo: saas
+gratis: false
+gratis_detalle: "Solo demostración o prueba bajo solicitud; no hay plan gratuito"
+planes: []
+cuotas: null
+rv: true
+scorm: true
+lti: true
+exportacion: parcial
+exportacion_detalle: "Exportación como paquete SCORM para LMS; el visor sigue dependiendo de la plataforma"
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: parcial
+analitica_sin_cookies: null
+street_view: false
+verificado: false
+descripcion:
+  es: "Plataforma francesa de formación inmersiva 360 para empresas, con SCORM y LTI; precio por presupuesto."
+  en: "French immersive 360 training platform for enterprises, with SCORM and LTI; quote-based pricing."
+notas: "Precio solo por presupuesto, orientado a grandes empresas y centros de formación profesional. Fuerte en escenarios pedagógicos con preguntas y seguimiento."

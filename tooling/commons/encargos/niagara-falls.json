@@ -1,0 +1,95 @@
+{
+  "slug": "niagara-falls",
+  "lang": "en",
+  "title": "TODO: título SEO con el nombre del lugar (3 a 120 caracteres), por ejemplo «Niagara Falls en 360: recorrido virtual»",
+  "description": "TODO: un párrafo de 300 a 600 caracteres sobre el lugar y lo que se ve en las escenas; solo hechos comprobados, sin inventar",
+  "placeName": "Niagara Falls",
+  "placeCountry": "CA",
+  "lat": null,
+  "lng": null,
+  "startScene": "360-photo-between-horseshoe-and-american",
+  "scenes": [
+    {
+      "id": "360-photo-between-horseshoe-and-american",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/e/e9/360_photo_between_Horseshoe_and_American_Falls_Niagara_Falls_Canada_2025-09-06_19-12-46_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_photo_between_Horseshoe_and_American_Falls_Niagara_Falls_Canada_2025-09-06_19-12-46_1.jpg",
+      "title": "TODO: título corto de la escena (fichero: 360 photo between Horseshoe and American Falls Niagara Falls Canada 2025-09-06 19-12-46 1)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "categories": [
+        "2025 in Niagara Falls, Ontario",
+        "360° panoramas",
+        "360° panoramics in Canada",
+        "360° panoramics in Niagara Falls"
+      ]
+    },
+    {
+      "id": "360-photo-horseshoe-falls-top-niagara-fa",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/6/66/360_photo_Horseshoe_Falls_top_Niagara_Falls_Canada_2025-09-06_19-10-09_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_photo_Horseshoe_Falls_top_Niagara_Falls_Canada_2025-09-06_19-10-09_1.jpg",
+      "title": "TODO: título corto de la escena (fichero: 360 photo Horseshoe Falls top Niagara Falls Canada 2025-09-06 19-10-09 1)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "categories": []
+    },
+    {
+      "id": "360-photo-american-falls-from-luna-islan",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/b/b6/360_photo_American_Falls_from_Luna_Island_Niagara_Falls_NY_2025-09-05_17-54-08_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_photo_American_Falls_from_Luna_Island_Niagara_Falls_NY_2025-09-05_17-54-08_1.jpg",
+      "title": "TODO: título corto de la escena (fichero: 360 photo American Falls from Luna Island Niagara Falls NY 2025-09-05 17-54-08 1)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "categories": [
+        "2025 in Niagara Falls, New York",
+        "360° panoramas",
+        "360° panoramics in New York (state)",
+        "360° panoramics in Niagara Falls",
+        "CC-BY-4.0",
+        "Files by User:Lorax/360° panoramics"
+      ]
+    },
+    {
+      "id": "360-photo-american-falls-from-observatio",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/1/12/360_photo_American_Falls_from_Observation_Tower_Niagara_Falls_NY_2025-09-06_15-06-06_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_photo_American_Falls_from_Observation_Tower_Niagara_Falls_NY_2025-09-06_15-06-06_1.jpg",
+      "title": "TODO: título corto de la escena (fichero: 360 photo American Falls from Observation Tower Niagara Falls NY 2025-09-06 15-06-06 1)",
+      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
+      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "categories": [
+        "2025 in Niagara Falls, New York",
+        "360° panoramas",
+        "360° panoramics in New York (state)",
+        "360° panoramics in Niagara Falls"
+      ]
+    }
+  ],
+  "_demanda": {
+    "total": 60,
+    "mercados": {
+      "en-US": 40,
+      "de-DE": 10,
+      "en-GB": 10
+    },
+    "idiomas": {
+      "en": 50,
+      "de": 10
+    }
+  },
+  "_notas": "Revisa placeName (acentos y forma oficial), placeCountry (ISO-2) y pon lat/lng del lugar. Sustituye todos los TODO. Quita las escenas que no sean del lugar o no sean panoramas esféricos completos. Otras 0 panorámicas coincidentes quedan fuera del encargo."
+}

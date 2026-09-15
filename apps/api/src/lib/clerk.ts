@@ -4,7 +4,7 @@ import { orgMembers, orgs, users } from "@andarama/db";
 import type { AppEnv, AuthState, UserRow } from "./context.js";
 import { newId, nowMs, slugify } from "./util.js";
 import { getSettings } from "./helpers.js";
-import { planFromClaim } from "./plans.js";
+import { TRIAL_MS, planFromClaim } from "./plans.js";
 
 /**
  * Clerk como puerta de la instancia alojada.
@@ -150,6 +150,9 @@ async function provisionUser(
     clerkId,
     plan,
     planUpdatedAt: nowMs(),
+    // Sin plan al entrar: catorce días de prueba sin tarjeta. Quien llega ya
+    // con plan (o administra la instancia) no la necesita.
+    trialEndsAt: plan == null && !isFirstUser ? nowMs() + TRIAL_MS : null,
     roleGlobal: isFirstUser ? "admin" : "user",
     emailVerified: true,
     createdAt: nowMs(),

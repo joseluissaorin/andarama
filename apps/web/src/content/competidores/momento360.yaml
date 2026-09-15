@@ -1,0 +1,44 @@
+nombre: Momento360
+web: https://www.momento360.com
+pais: "US"
+tipo: saas
+gratis: true
+gratis_detalle: "Plan gratuito con 750 MB de almacenamiento"
+planes:
+  - nombre: Personal
+    precio: 9
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+  - nombre: Pro
+    precio: 24
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+  - nombre: Business
+    precio: 48
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+cuotas: "Gratis: 750 MB; los planes de pago amplían el almacenamiento"
+rv: true
+scorm: false
+lti: false
+exportacion: false
+exportacion_detalle: null
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: false
+analitica_sin_cookies: null
+street_view: false
+verificado: true
+descripcion:
+  es: "Servicio sencillo para subir y compartir fotos 360 y tours básicos, popular en educación."
+  en: "Simple service to upload and share 360 photos and basic tours, popular in education."
+notas: "Los precios (9, 24 y 48 $/mes) están verificados; los nombres de los planes pueden diferir de los oficiales."
