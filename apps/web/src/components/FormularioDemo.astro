@@ -1,0 +1,121 @@
+---
+/**
+ * «Pide una demo»: el formulario de formación, universidades y museos. Se
+ * envía a `POST /api/v1/public/demo` (mismo origen: andarama.com), que lo
+ * guarda con la atribución de la sesión, lo cuenta como conversión
+ * «Solicitud de demo» y avisa por correo. Si la instancia tiene Turnstile,
+ * el widget se pinta tras preguntar la clave a `GET /api/v1/public/demo/config`.
+ *
+ * Los textos de las etiquetas son los de cada página (`<clave>.titulo`,
+ * `.texto`, `.institucion`, `.nombre`, `.email`, `.mensaje`, `.enviar`); los
+ * estados y el aviso de privacidad, los comunes de `demo.*`.
+ */
+import { TITULAR } from "../data/titular";
+import { pagePath, t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  /** Ruta de los textos en el JSON («paginas.museos.contacto»). */
+  clave: string;
+  /** De qué página viene (formacion, universidades, museos): va a la API y a Plausible. */
+  origen: string;
+  naranja?: boolean;
+}
+const { lang, clave: c, origen, naranja = false } = Astro.props;
+const aviso = t(lang, "demo.aviso").replace("{privacidad}", pagePath(lang, "privacidad"));
+const error = t(lang, "demo.error", { correo: TITULAR.correo });
+---
+
+<section class:list={["caja", { "caja--naranja": naranja }]} id="contacto">
+  <h2>{t(lang, `${c}.titulo`)}</h2>
+  <p>{t(lang, `${c}.texto`)}</p>
+  <form
+    class="formulario"
+    data-demo
+    data-origen={origen}
+    data-lang={lang}
+    data-enviando={t(lang, "demo.enviando")}
+    data-ok={t(lang, "demo.ok")}
+    data-error={error}
+  >
+    <label>{t(lang, `${c}.nombre`)}<input type="text" name="nombre" required maxlength="120" autocomplete="name" /></label>
+    <label>{t(lang, `${c}.institucion`)}<input type="text" name="institucion" required maxlength="200" autocomplete="organization" /></label>
+    <label>{t(lang, `${c}.email`)}<input type="email" name="email" required maxlength="200" autocomplete="email" /></label>
+    <label>{t(lang, `${c}.mensaje`)}<textarea name="mensaje" required maxlength="4000"></textarea></label>
+    <!-- Trampa para robots: una persona no la ve ni la rellena -->
+    <label class="formulario__trampa" aria-hidden="true">Web<input type="text" name="web" tabindex="-1" autocomplete="off" /></label>
+    <div data-turnstile></div>
+    <button class="btn" type="submit">{t(lang, `${c}.enviar`)}</button>
+    <p class="formulario__estado" role="status" aria-live="polite" data-estado></p>
+    <p class="formulario__aviso" set:html={aviso} />
+  </form>
+</section>
+
+<script>
+  import { leerAtribucion } from "../scripts/atribucion";
+
+  interface Turnstile {
+    render(el: HTMLElement, opts: { sitekey: string; callback?: (token: string) => void }): string;
+    reset(id?: string): void;
+  }
+
+  for (const form of document.querySelectorAll<HTMLFormElement>("form[data-demo]")) {
+    const estado = form.querySelector<HTMLElement>("[data-estado]")!;
+    const boton = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+    const hueco = form.querySelector<HTMLElement>("[data-turnstile]")!;
+    let token: string | null = null;
+    let widget: string | undefined;
+
+    // Turnstile solo si la instancia lo tiene configurado
+    void fetch("/api/v1/public/demo/config")
+      .then((r) => (r.ok ? (r.json() as Promise<{ turnstileSiteKey: string | null }>) : null))
+      .then((cfg) => {
+        if (cfg?.turnstileSiteKey == null) return;
+        const s = document.createElement("script");
+        s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        s.async = true;
+        s.onload = () => {
+          const ts = (window as unknown as { turnstile?: Turnstile }).turnstile;
+          widget = ts?.render(hueco, { sitekey: cfg.turnstileSiteKey!, callback: (t) => (token = t) });
+        };
+        document.head.appendChild(s);
+      })
+      .catch(() => {});
+
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const data = new FormData(form);
+      boton.disabled = true;
+      estado.textContent = form.dataset.enviando ?? "";
+      try {
+        const res = await fetch("/api/v1/public/demo", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            name: String(data.get("nombre") ?? ""),
+            institution: String(data.get("institucion") ?? ""),
+            email: String(data.get("email") ?? ""),
+            message: String(data.get("mensaje") ?? ""),
+            website: String(data.get("web") ?? ""),
+            lang: form.dataset.lang,
+            source: form.dataset.origen,
+            page: location.pathname,
+            attribution: leerAtribucion(window.sessionStorage) ?? undefined,
+            turnstileToken: token,
+          }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        estado.textContent = form.dataset.ok ?? "";
+        form.reset();
+        const w = window as unknown as { plausible?: (n: string, o?: object) => void };
+        w.plausible?.("demo", { props: { desde: form.dataset.origen ?? "" } });
+      } catch {
+        estado.textContent = form.dataset.error ?? "";
+        boton.disabled = false;
+      } finally {
+        token = null;
+        (window as unknown as { turnstile?: Turnstile }).turnstile?.reset(widget);
+      }
+    });
+  }
+</script>

@@ -3,10 +3,11 @@
  * (una sola fuente de verdad para cuotas y precios) y de los textos de i18n
  * (`precios.*` en cada JSON).
  *
- * Siete tarjetas: «En tu casa» (gratis: instalártelo) y los seis planes
- * alojados. Aula se anuncia a 39 € al año por docente aunque Clerk lo cobre
- * en dólares (42 $); el resto se muestra en dólares tal cual lo cobra la
- * pasarela.
+ * Seis planes alojados en dos bloques (D11): «Para crear» (Andar, Paseo,
+ * Excursión, De por vida) y «Para enseñar» (Aula, Formación). Todos se
+ * muestran en dólares, tal cual los cobra la pasarela (Aula, 42 $ al año por
+ * docente). La instalación propia gratuita va aparte, en una línea bajo los
+ * bloques, y como tarjeta en `tarjetaCasa` para quien la quiera.
  */
 import { PLANS, TRIAL_DAYS as API_TRIAL_DAYS, type PlanInfo, type PlanSlug } from "../../../api/src/lib/plans";
 import { t, tv, type Lang } from "../i18n";
@@ -20,7 +21,7 @@ export type PlanCardKind = "casa" | PlanSlug;
 export interface PlanCard {
   kind: PlanCardKind;
   name: string;
-  /** La cifra grande («20 $», «39 €», «0 €»). */
+  /** La cifra grande («20 $», «42 $», «0 €»). */
   figure: string;
   /** Cuándo se paga («al mes», «al año por docente», «para siempre»). */
   when: string;
@@ -31,8 +32,13 @@ export interface PlanCard {
   cta: string;
 }
 
-/** Orden de las tarjetas alojadas, de menor a mayor. */
-const ORDEN: PlanSlug[] = ["andar", "aula", "paseo", "excursion", "formacion", "vitalicio"];
+/** Los dos bloques de planes alojados, cada uno de menor a mayor. */
+export const BLOQUES = {
+  crear: ["andar", "paseo", "excursion", "vitalicio"],
+  ensenar: ["aula", "formacion"],
+} as const satisfies Record<string, readonly PlanSlug[]>;
+
+export type BloquePlanes = keyof typeof BLOQUES;
 
 const GB = 1024 * 1024 * 1024;
 
@@ -75,19 +81,22 @@ function tarjetaAlojada(lang: Lang, plan: PlanInfo): PlanCard {
   };
 }
 
-function tarjetaCasa(lang: Lang): PlanCard {
+export function tarjetaCasa(lang: Lang): PlanCard {
   return {
     kind: "casa",
     name: t(lang, "precios.planes.casa.nombre"),
     figure: t(lang, "precios.planes.casa.cifra"),
     when: t(lang, "precios.planes.casa.cuando"),
     items: tv<string[]>(lang, "precios.planes.casa.items") ?? [],
-    href: "https://docs.andarama.com/despliegue/escritorio/",
+    href: CASA_URL,
     cta: t(lang, "precios.planes.casa.cta"),
   };
 }
 
-/** Las siete tarjetas en el idioma pedido. */
-export function planCards(lang: Lang): PlanCard[] {
-  return [tarjetaCasa(lang), ...ORDEN.map((slug) => tarjetaAlojada(lang, PLANS[slug]))];
+/** Las tarjetas de un bloque en el idioma pedido. */
+export function planCards(lang: Lang, bloque: BloquePlanes): PlanCard[] {
+  return BLOQUES[bloque].map((slug) => tarjetaAlojada(lang, PLANS[slug]));
 }
+
+/** Dónde se explica cómo instalarlo gratis (la documentación del ejecutable). */
+export const CASA_URL = "https://docs.andarama.com/despliegue/escritorio/";

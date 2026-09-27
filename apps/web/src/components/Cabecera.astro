@@ -25,7 +25,7 @@ const byLang = new Map(alternates.map((a) => [a.lang, a.path]));
     <a href={`${home}#visor`}>{t(lang, "nav.visor")}</a>
     <a href={`${home}#gafas`}>{t(lang, "nav.gafas")}</a>
     <a href={`${home}#docencia`}>{t(lang, "nav.docencia")}</a>
-    <a href={`${home}#precios`}>{t(lang, "nav.precios")}</a>
+    <a href={pagePath(lang, "precios")}>{t(lang, "nav.precios")}</a>
     <a href={pagePath(lang, "herramientas")}>{t(lang, "nav.herramientas")}</a>
     <a href={pagePath(lang, "blog")}>{t(lang, "nav.blog")}</a>
     <a href="https://docs.andarama.com">{t(lang, "nav.documentacion")}</a>

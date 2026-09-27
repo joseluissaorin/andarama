@@ -1,7 +1,15 @@
 ---
+/**
+ * Formación inmersiva (/formacion/, /en/training/…): página de destino del
+ * grupo de anuncios de formación. Botón principal: la demo de 20 minutos
+ * (formulario, conversión «Solicitud de demo»); secundario: la prueba. El
+ * precio va a la vista junto a la prueba.
+ */
 import Base from "../layouts/Base.astro";
 import Migas from "../components/Migas.astro";
+import FormularioDemo from "../components/FormularioDemo.astro";
 import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { planHref } from "../data/planes";
 import { pagePath, t, tv, type Lang } from "../i18n";
 
 interface Props {
@@ -26,9 +34,10 @@ const scormTics = tv<string[]>(lang, `${k}.scorm.tics`);
       <h1>{t(lang, `${k}.h1`)}</h1>
       <p class="lead">{t(lang, `${k}.lead`)}</p>
       <div class="acciones" style="margin-top: 24px">
-        <a class="btn" href="https://app.andarama.com/plan?plan=formacion" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
-        <a class="btn btn--fantasma" href={`${pagePath(lang, "home")}#precios`}>{t(lang, `${k}.cta.secundario`)}</a>
+        <a class="btn" href="#contacto">{t(lang, `${k}.demo_boton`)}</a>
+        <a class="btn btn--fantasma" href={planHref("formacion")} data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
       </div>
+      <p class="precio-visible">{t(lang, `${k}.precio_visible`)}</p>
       <p class="susurro">{t(lang, "comunes.prueba")}</p>
     </div>
     <div class="malla">
@@ -46,13 +55,19 @@ const scormTics = tv<string[]>(lang, `${k}.scorm.tics`);
         {scormTics.map((x) => <li>{x}</li>)}
       </ul>
     </section>
-    <section class="caja caja--naranja">
+    <section class="caja">
       <h2>{t(lang, `${k}.cta.titulo`)}</h2>
       <p>{t(lang, `${k}.cta.texto`)}</p>
       <div class="acciones">
-        <a class="btn" href="https://app.andarama.com/plan?plan=formacion" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
-        <a class="btn btn--fantasma" href={pagePath(lang, "universidades")}>{t(lang, "nav.universidades")}</a>
+        <a class="btn" href={planHref("formacion")} data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
+        <a class="btn btn--fantasma" href={pagePath(lang, "precios")}>{t(lang, `${k}.cta.secundario`)}</a>
       </div>
+      <ul class="tics">
+        {(["seguridad", "contratacion", "universidades"] as const).map((clave) => (
+          <li><a href={pagePath(lang, clave)}>{t(lang, `paginas.${clave}.h1`)}</a></li>
+        ))}
+      </ul>
     </section>
+    <FormularioDemo lang={lang} clave={`${k}.contacto`} origen="formacion" naranja />
   </section>
 </Base>

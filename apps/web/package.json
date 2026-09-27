@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/empaquetar-plugin-wp.mjs",
     "preview": "astro preview",
     "typecheck": "echo skip",
     "test": "vitest run --passWithNoTests"

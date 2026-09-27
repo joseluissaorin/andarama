@@ -1,0 +1,73 @@
+---
+/**
+ * /precios/ (/en/pricing/…): la página de destino de los anuncios genéricos.
+ * Encima del pliegue, la prueba y el precio de después juntos; luego los
+ * planes en dos bloques (el mismo componente que la portada), qué incluye la
+ * prueba, las preguntas de facturación y la caja para instituciones.
+ * JSON-LD: SoftwareApplication con una Offer por plan y FAQPage.
+ */
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import Precios from "../components/Precios.astro";
+import Preguntas from "../components/Preguntas.astro";
+import { breadcrumbJsonLd, faqJsonLd, organizationJsonLd, softwareJsonLd } from "../data/jsonld";
+import { planHref } from "../data/planes";
+import { conMarcadores } from "../data/titular";
+import { pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "paginas.precios";
+const path = pagePath(lang, "precios");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "nav.precios"), path },
+];
+const prueba = tv<string[]>(lang, `${k}.prueba.lista`);
+const faq = tv<{ q: string; a: string }[]>(lang, `${k}.faq.lista`).map((f) => ({ q: f.q, a: conMarcadores(lang, f.a) }));
+---
+
+<Base
+  lang={lang}
+  title={t(lang, `${k}.title`)}
+  description={t(lang, `${k}.description`)}
+  path={path}
+  pageKey="precios"
+  jsonld={[organizationJsonLd(), softwareJsonLd(lang), breadcrumbJsonLd(migas), faqJsonLd(faq)]}
+>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.precios")}</p>
+      <h1>{t(lang, `${k}.h1`)}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+      <div class="acciones" style="margin-top: 24px">
+        <a class="btn" href={planHref("paseo")} data-cta="registro">{t(lang, `${k}.cta_prueba`)}</a>
+        <a class="btn btn--fantasma" href={`${pagePath(lang, "universidades")}#contacto`}>{t(lang, `${k}.instituciones.demo`)}</a>
+      </div>
+      <p class="susurro">{t(lang, "precios.prueba")}</p>
+    </div>
+
+    <Precios lang={lang} enPagina />
+
+    <section class="caja">
+      <h2>{t(lang, `${k}.prueba.titulo`)}</h2>
+      <ul class="tics">
+        {prueba.map((x) => <li>{x}</li>)}
+      </ul>
+    </section>
+
+    <Preguntas titulo={t(lang, `${k}.faq.titulo`)} lista={faq} id="facturacion" />
+
+    <section class="caja caja--naranja">
+      <h2>{t(lang, `${k}.instituciones.titulo`)}</h2>
+      <p>{t(lang, `${k}.instituciones.texto`)}</p>
+      <div class="acciones">
+        <a class="btn" href={pagePath(lang, "contratacion")}>{t(lang, `${k}.instituciones.boton`)}</a>
+        <a class="btn btn--fantasma" href={`${pagePath(lang, "universidades")}#contacto`}>{t(lang, `${k}.instituciones.demo`)}</a>
+      </div>
+    </section>
+  </section>
+</Base>

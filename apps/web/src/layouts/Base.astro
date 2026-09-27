@@ -10,7 +10,7 @@ import "../styles/sitio.css";
 import Cabecera from "../components/Cabecera.astro";
 import Pie from "../components/Pie.astro";
 import Criatura from "../components/Criatura.astro";
-import { absolute, alternates as alternatesOf, DEFAULT_LANG, dir, hreflangOf, ogLocaleOf, t, type Lang, type PageKey } from "../i18n";
+import { absolute, alternates as alternatesOf, DEFAULT_LANG, dir, hreflangOf, ogLocaleOf, pagePath, t, type Lang, type PageKey } from "../i18n";
 
 interface Props {
   lang: Lang;
@@ -95,6 +95,73 @@ const otherLocales = alts.filter((a) => a.lang !== lang).map((a) => ogLocaleOf(a
     </main>
     <Pie lang={lang} />
     <Criatura />
+    <!-- Aviso de anuncio: solo aparece si la URL trae gclid, gbraid, wbraid o utm_* (D3) -->
+    <div class="aviso-anuncio" data-aviso-anuncio role="region" aria-label={t(lang, "consentimiento.aria")} hidden>
+      <p>
+        {t(lang, "consentimiento.texto")}
+        <a href={pagePath(lang, "privacidad")}>{t(lang, "consentimiento.mas")}</a>
+      </p>
+      <div class="aviso-anuncio__botones">
+        <button type="button" class="btn btn--chico" data-decision="si">{t(lang, "consentimiento.si")}</button>
+        <button type="button" class="btn btn--chico btn--fantasma" data-decision="no">{t(lang, "consentimiento.no")}</button>
+      </div>
+    </div>
+    <script>
+      import {
+        construir,
+        decorarHref,
+        guardarAtribucion,
+        guardarDecision,
+        leerAtribucion,
+        leerDecision,
+        parametrosDeUrl,
+        parametrosParaApp,
+        traeAnuncio,
+        type AtribucionWeb,
+        type Decision,
+      } from "../scripts/atribucion";
+
+      // Atribución de anuncios con consentimiento: ver `scripts/atribucion.ts`
+      const storage = window.sessionStorage;
+      const decorar = (a: AtribucionWeb | null): void => {
+        if (a == null) return;
+        const params = parametrosParaApp(a);
+        for (const el of document.querySelectorAll<HTMLAnchorElement>('a[href^="https://app.andarama.com"]')) {
+          el.href = decorarHref(el.href, params);
+        }
+      };
+      const params = parametrosDeUrl(location.search);
+      const aviso = document.querySelector<HTMLElement>("[data-aviso-anuncio]");
+      if (traeAnuncio(params)) {
+        const previa = leerDecision(storage);
+        if (previa != null) {
+          // Ya contestó en esta sesión: la misma respuesta vale para el clic nuevo
+          const a = construir(params, previa, location.pathname);
+          guardarAtribucion(storage, a);
+          decorar(a);
+        } else {
+          // Mientras no contesta, los enlaces solo llevan las utm
+          decorar(construir(params, null, location.pathname));
+          if (aviso != null) {
+            aviso.hidden = false;
+            aviso.addEventListener("click", (ev) => {
+              const boton = (ev.target as Element | null)?.closest<HTMLButtonElement>("button[data-decision]");
+              if (boton == null) return;
+              const decision = boton.dataset.decision as Decision;
+              guardarDecision(storage, decision);
+              const a = construir(params, decision, location.pathname);
+              guardarAtribucion(storage, a);
+              decorar(a);
+              aviso.hidden = true;
+              const w = window as unknown as { plausible?: (name: string, opts?: { props?: Record<string, string> }) => void };
+              w.plausible?.("consentimiento_anuncio", { props: { respuesta: decision } });
+            });
+          }
+        }
+      } else {
+        decorar(leerAtribucion(storage));
+      }
+    </script>
     <script>
       // Los botones hacia el Studio cuentan como «cta_registro» en Plausible.
       // Se delega en el documento para no repetirlo en cada página.

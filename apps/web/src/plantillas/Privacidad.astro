@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Migas from "../components/Migas.astro";
 import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { conMarcadores } from "../data/titular";
 import { pagePath, t, tv, type Lang } from "../i18n";
 
 interface Props {
@@ -14,7 +15,7 @@ const migas = [
   { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
   { name: t(lang, "nav.privacidad"), path },
 ];
-const secciones = tv<{ titulo: string; html: string }[]>(lang, `${k}.secciones`);
+const secciones = tv<{ titulo: string; html: string }[]>(lang, `${k}.secciones`).map((s) => ({ titulo: s.titulo, html: conMarcadores(lang, s.html) }));
 ---
 
 <Base lang={lang} title={t(lang, `${k}.title`)} description={t(lang, `${k}.description`)} path={path} pageKey="privacidad" jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>

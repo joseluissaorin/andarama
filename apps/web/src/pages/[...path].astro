@@ -12,6 +12,9 @@ import Museos from "../plantillas/Museos.astro";
 import Aula from "../plantillas/Aula.astro";
 import WordPress from "../plantillas/WordPress.astro";
 import Privacidad from "../plantillas/Privacidad.astro";
+import PaginaPrecios from "../plantillas/PaginaPrecios.astro";
+import Prosa from "../plantillas/Prosa.astro";
+import Inmobiliaria from "../plantillas/Inmobiliaria.astro";
 import Herramientas from "../plantillas/Herramientas.astro";
 import HerramientaVisor from "../plantillas/HerramientaVisor.astro";
 import HerramientaPlaneta from "../plantillas/HerramientaPlaneta.astro";
@@ -26,6 +29,10 @@ export const getStaticPaths = (async () => {
 }) satisfies GetStaticPaths;
 
 const { ruta } = Astro.props as { ruta: Ruta };
+/** Páginas de texto corrido que comparten la plantilla `Prosa`. */
+const PROSA = ["avisoLegal", "condiciones", "seguridad", "accesibilidad", "codigoAbierto", "contratacion"] as const;
+type ClaveProsa = (typeof PROSA)[number];
+const esProsa = (key: string): key is ClaveProsa => (PROSA as readonly string[]).includes(key);
 ---
 
 {ruta.kind === "pagina" && ruta.key === "home" && <Inicio lang={ruta.lang} />}
@@ -35,6 +42,9 @@ const { ruta } = Astro.props as { ruta: Ruta };
 {ruta.kind === "pagina" && ruta.key === "aula" && <Aula lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "wordpress" && <WordPress lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "privacidad" && <Privacidad lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "precios" && <PaginaPrecios lang={ruta.lang} />}
+{ruta.kind === "pagina" && ruta.key === "inmobiliaria" && <Inmobiliaria lang={ruta.lang} />}
+{ruta.kind === "pagina" && esProsa(ruta.key) && <Prosa lang={ruta.lang} pageKey={ruta.key} />}
 {ruta.kind === "pagina" && ruta.key === "herramientas" && <Herramientas lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "visor" && <HerramientaVisor lang={ruta.lang} />}
 {ruta.kind === "pagina" && ruta.key === "planeta" && <HerramientaPlaneta lang={ruta.lang} />}

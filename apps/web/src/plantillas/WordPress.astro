@@ -15,6 +15,13 @@ const migas = [
   { name: t(lang, "nav.wordpress"), path },
 ];
 const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
+/**
+ * El ZIP del plugin lo empaqueta `scripts/empaquetar-plugin-wp.mjs` al
+ * construir el sitio (a partir de `packages/wordpress-plugin/andarama-360`),
+ * mientras el plugin espera su aprobación en wordpress.org.
+ */
+const ZIP = "/descargas/andarama-360.zip";
+const pasos = tv<string[]>(lang, `${k}.instalacion.pasos`).map((p) => p.replace("{zip}", ZIP));
 ---
 
 <Base lang={lang} title={t(lang, `${k}.title`)} description={t(lang, `${k}.description`)} path={path} pageKey="wordpress" jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>
@@ -25,8 +32,8 @@ const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
       <h1>{t(lang, `${k}.h1`)}</h1>
       <p class="lead">{t(lang, `${k}.lead`)}</p>
       <div class="acciones" style="margin-top: 24px">
-        <a class="btn btn--fantasma" href="https://wordpress.org/plugins/andarama-360/" rel="nofollow">{t(lang, `${k}.enlaces.wporg`)}</a>
-        <a class="btn btn--fantasma" href="https://github.com/joseluissaorin/andarama/tree/main/packages/wordpress-plugin">{t(lang, `${k}.enlaces.repo`)}</a>
+        <a class="btn" href={ZIP} download>{t(lang, `${k}.enlaces.zip`)}</a>
+        <a class="btn btn--fantasma" href="#instalar">{t(lang, `${k}.enlaces.instalar`)}</a>
       </div>
     </div>
     <div class="malla">
@@ -37,6 +44,14 @@ const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
         </article>
       ))}
     </div>
+    <section class="caja" id="instalar">
+      <h2>{t(lang, `${k}.instalacion.titulo`)}</h2>
+      <p>{t(lang, `${k}.instalacion.texto`)}</p>
+      <ol class="pasos-lista">
+        {pasos.map((p) => <li set:html={p} />)}
+      </ol>
+      <p set:html={t(lang, `${k}.instalacion.sin_plugin`)} />
+    </section>
     <section class="caja">
       <h2>{t(lang, "herramientas.comunes.cta_titulo")}</h2>
       <p>{t(lang, "herramientas.comunes.cta_texto")}</p>
