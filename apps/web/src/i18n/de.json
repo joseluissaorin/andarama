@@ -18,7 +18,15 @@
     "planeta": "little-planet-erstellen",
     "cubemap": "equirectangular-zu-cubemap",
     "blog": "blog",
-    "autor": "autor"
+    "autor": "autor",
+    "precios": "preise",
+    "avisoLegal": "impressum",
+    "condiciones": "agb",
+    "seguridad": "sicherheit",
+    "accesibilidad": "barrierefreiheit",
+    "codigoAbierto": "open-source",
+    "contratacion": "institutionen/beschaffung",
+    "inmobiliaria": "immobilien"
   },
   "comunes": {
     "saltar": "Zum Inhalt springen",
@@ -50,17 +58,26 @@
     "universidades": "Hochschulen",
     "museos": "Museen",
     "wordpress": "WordPress",
-    "privacidad": "Datenschutz"
+    "privacidad": "Datenschutz",
+    "aviso_legal": "Impressum",
+    "condiciones": "AGB",
+    "seguridad": "Sicherheit",
+    "accesibilidad": "Barrierefreiheit",
+    "codigo_abierto": "Open Source",
+    "contratacion": "Öffentliche Beschaffung",
+    "inmobiliaria": "Immobilienmakler"
   },
   "pie": {
     "linea": "Open Source unter EUPL-1.2 · von Hand gemacht von <a href=\"https://joseluissaorin.com\">José Luis Saorín</a> · der Code liegt auf <a href=\"https://github.com/joseluissaorin/andarama\">GitHub</a>",
     "secciones": "Bereiche",
+    "confianza": "Institutionen",
+    "legal": "Rechtliches",
     "herramientas": "Kostenlose Werkzeuge",
     "idiomas": "Sprachen"
   },
   "home": {
     "title": "andarama | ¡anda! Open-Source-Touren in 360 Grad",
-    "description": "¡anda! andarama lässt mich durch Panoramen gehen. Erstelle, veröffentliche und teile virtuelle 360-Grad-Rundgänge mit visuellem Editor, WebGL-Viewer mit Virtual Reality, Quiz, LTI, SCORM und offenem Export. Open Source (EUPL-1.2): kostenlos auf deinem Server, gehostet ab 2 $ im Monat.",
+    "description": "¡anda! andarama lässt mich durch Panoramen gehen. Erstelle, veröffentliche und teile virtuelle 360-Grad-Rundgänge mit visuellem Editor, WebGL-Viewer mit Virtual Reality, Quiz, SCORM und offenem Export. Open Source (EUPL-1.2): kostenlos auf deinem Server, gehostet ab 2 $ im Monat.",
     "og_description": "andarama lässt mich durch Panoramen gehen. Lade deine 360-Grad-Fotos hoch, verbinde sie, als würdest du einen Grundriss zeichnen, und veröffentliche einen Rundgang, der sich in jedem Browser begehen lässt, auch mit VR-Brille.",
     "og_alt": "„¡anda!“ in riesigen Buchstaben auf knochenfarbenem Papier, mit drei gelben Wesen, die auf einer Linie entlanggehen",
     "portada": {
@@ -79,7 +96,7 @@
       "lista": [
         { "titulo": "Fotos hochladen", "texto": "Von jeder 360-Grad-Kamera oder vom Handy. Der Importer liest einen ganzen Stapel ein, sortiert nach der Nummerierung der Kamera, benennt nach Muster um und zerlegt die Panoramen direkt in deinem Browser in Kacheln, bis 32K, ohne auf einen Server zu warten." },
         { "titulo": "Verbinden", "texto": "Zieh eine Szene auf eine andere, und schon gibt es einen Übergang, samt Rückweg. Im Graphen <em>ist</em> jeder Pfeil ein Navigations-Hotspot: Es gibt keine parallelen Daten, die aus dem Takt geraten könnten." },
-        { "titulo": "Erzählen", "texto": "Texte, Fotos, Videos, Audio, PDF, 3D-Modelle, Fragen, Formulare, Grundrisse, Erzählung mit räumlichem Audio und Übersetzungen. Siebzehn Hotspot-Typen, alle auch in der VR-Brille bedienbar." },
+        { "titulo": "Erzählen", "texto": "Texte, Fotos, Videos, Audio, PDF, 3D-Modelle, Fragen, Formulare, Grundrisse, Erzählung mit räumlichem Audio und Übersetzungen. Achtzehn Hotspot-Typen, alle auch in der VR-Brille bedienbar." },
         { "titulo": "Veröffentlichen", "texto": "Ein Link, ein iframe, eine eigene Domain oder ein ZIP, das auf jedem Hosting läuft. Im Kiosk-Modus für einen Fernseher, als SCORM für Moodle, als PWA zum Ansehen ohne Internet." }
       ]
     },
@@ -117,7 +134,7 @@
       "alt": "Das Projekt-Dashboard von Andarama mit den Titelbildern von vier Rundgängen"
     },
     "hotspots": {
-      "titulo": "Siebzehn Arten, das Foto anzufassen",
+      "titulo": "Achtzehn Arten, das Foto anzufassen",
       "texto": "Jeder Hotspot hat Position, Icon, Beschriftung, Skalierung nach Entfernung und Bedingungen (Sprache, Variablen, Zeitpunkt im Video). Und alle erscheinen in der VR-Brille als Piktogramme, die man mit der Hand berührt.",
       "lista": [
         { "b": "Navigation", "t": "Übergang zu einer anderen Szene, mit Bodenpfeil und Ankunftsrichtung." },
@@ -136,7 +153,8 @@
         { "b": "Polygon", "t": "Eine frei geformte Zone, die hervorhebt und reagiert." },
         { "b": "Beschriftung", "t": "Ein verankertes Schild, um zu benennen, was man sieht." },
         { "b": "Link", "t": "Webadresse, Telefon oder E-Mail." },
-        { "b": "Schatz und Zustand", "t": "Objekte zum Sammeln und Zähler, die Türen öffnen." }
+        { "b": "Schatz", "t": "Versteckte Objekte zum Sammeln, mit sichtbarem Zähler." },
+        { "b": "Zustand", "t": "Variablen und Zähler, die Türen öffnen, sobald die Bedingung erfüllt ist." }
       ]
     },
     "visor": {
@@ -169,7 +187,7 @@
       "lista": [
         { "titulo": "Quiz mit Note", "texto": "Fragen über die Tour verteilt, Punktzahl, Bestehensgrenze, Zufallsreihenfolge, Versuche, Abschlussbericht und PDF-Zertifikat mit dem Namen des Lernenden." },
         { "titulo": "Schatzsuche", "texto": "In den Szenen versteckte Objekte, sichtbarer Fortschritt und Zustandsvariablen, die Türen öffnen, wenn alle gefunden sind." },
-        { "titulo": "Moodle und Co.", "texto": "LTI 1.3 Advantage: Die Tour wird direkt aus Moodle eingebunden, mit Inhaltsauswahl, und gibt die Note ans Bewertungsbuch zurück. Und SCORM 1.2 und 2004 für jeden anderen Campus." },
+        { "titulo": "Moodle und Co.", "texto": "SCORM-Paket 1.2 und 2004 mit Abschluss und Note für Moodle, Canvas, Blackboard oder jeden anderen Campus. LTI 1.3 ist in der Testphase und auf Anfrage verfügbar." },
         { "titulo": "Geführte Live-Touren", "texto": "Ein Raum mit Code: Der Guide bewegt Szene und Blick aller, zeigt mit dem Zeiger, chattet; jeder Teilnehmende kann sich lösen und wieder synchronisieren." },
         { "titulo": "Formulare", "texto": "Anmeldung, Umfrage oder Kontakt direkt im Rundgang. Die Antworten werden gespeichert und als CSV heruntergeladen oder an einen Webhook weitergeleitet." },
         { "titulo": "Analytik ohne Cookies", "texto": "Besuche, Szenen-Trichter, meistgenutzte Hotspots, Zeit je Szene und Heatmap, wohin die Leute schauen. Ohne jemanden zu tracken: DSGVO-konform ab Werk." }
@@ -210,8 +228,8 @@
         { "titulo": "Desktop, eine ausführbare Datei", "texto": "Eine einzige Datei für macOS, Windows und Linux mit Server, Studio und Viewer drin. Doppelklick, der Browser öffnet sich, und die Daten bleiben in deinem persönlichen Ordner. Ohne Docker, ohne Node, ohne Konto bei irgendwem." },
         { "titulo": "Docker, eine Datei", "texto": "Node und SQLite in einem einzigen Image, ein Volume und ein Port. <code>docker compose up -d</code>. Backups mit einem Script und der portablen Datei <code>.andarama</code>." },
         { "titulo": "Sicherheit ab Werk", "texto": "CSP mit Nonces, HSTS, sichere Sitzungen, CSRF mit doppeltem Token, Anfragelimits, Turnstile, Bereinigung von SVG, Markdown und CSS, Audit-Log und serverseitig geprüfte Berechtigungen auf jeder Route." },
-        { "titulo": "Konten und Teams", "texto": "Organisationen mit Rollen (verwalten, bearbeiten, mitarbeiten, lesen), Freigabe je Projekt, Einladungen, institutionelles SSO per OIDC mit automatischer Anmeldung nach Domain, Zwei-Faktor-Authentifizierung und Admin-Panel mit Kontingenten und Nutzung." },
-        { "titulo": "Barrierefrei und international", "texto": "Vollständige Tastaturbedienung, sichtbarer Fokus, Zielflächen von 44 Pixeln, Ansagen beim Szenenwechsel, verpflichtender Alternativtext mit prüfbarem KI-Vorschlag, <code>prefers-reduced-motion</code>, WebVTT-Untertitel und Übersetzungen je Szene und je Hotspot." },
+        { "titulo": "Konten und Teams", "texto": "Organisationen mit Rollen (verwalten, bearbeiten, mitarbeiten, lesen), Freigabe je Projekt, Einladungen, Zwei-Faktor-Authentifizierung und Admin-Panel mit Kontingenten und Nutzung. Bei der eigenen Installation außerdem institutionelles SSO per OIDC mit automatischer Anmeldung nach Domain." },
+        { "titulo": "Barrierefrei und international", "texto": "Vollständige Tastaturbedienung, sichtbarer Fokus, Zielflächen von 44 Pixeln, Ansagen beim Szenenwechsel, Alternativtext je Szene mit prüfbarem KI-Vorschlag (der Editor weist darauf hin, wenn er fehlt), <code>prefers-reduced-motion</code>, WebVTT-Untertitel und Übersetzungen je Szene und je Hotspot. Wir arbeiten daran, WCAG 2.1 AA zu erfüllen: Der tatsächliche Stand steht in der Erklärung zur Barrierefreiheit." },
         { "titulo": "Open Source", "texto": "EUPL-1.2, striktes TypeScript im ganzen Monorepo, Hunderte Unit- und End-to-End-Tests, Continuous Integration mit Abhängigkeits-Audit. Das Format <code>tour.json</code> garantiert, dass sich Exportiertes auch künftig öffnen lässt. Code, Issues und Downloads liegen auf <a href=\"https://github.com/joseluissaorin/andarama\">github.com/joseluissaorin/andarama</a>." }
       ],
       "susurro": "auf andarama.com übernimmt Clerk die Konten und Zahlungen · die Daten bleiben in der Datenbank von Andarama"
@@ -229,7 +247,7 @@
         { "q": "Welche Kamera brauche ich?", "a": "Jede, die ein equirektanguläres Foto liefert (Insta360, Ricoh Theta, GoPro Max, Kandao …), oder das Handy mit einer Panorama-App. Auch Cubemaps, Teilpanoramen und flache Gigapixel-Fotos gehen. Die Kachelung passiert bis 32K in deinem Browser; darüber auf dem Server." },
         { "q": "Funktionieren die Rundgänge weiter, wenn Andarama verschwindet?", "a": "Ja. Das exportierte ZIP ist statisch und eigenständig: HTML, der Viewer und die Kacheln. Es lässt sich auf jedes Hosting laden, mit der einzelnen HTML-Datei vom USB-Stick öffnen und behält die Virtual Reality. Und das Format <code>tour.json</code> ist dokumentiert und versioniert." },
         { "q": "Wo liegen meine Daten?", "a": "Wenn du es selbst installierst, auf deinem Server oder in deinem Cloudflare-Konto. Auf andarama.com in der Datenbank von Andarama; Clerk speichert nur Konto und Zahlung. Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen." },
-        { "q": "Funktioniert es mit Moodle?", "a": "Mit LTI 1.3: Andarama wird als externes Tool registriert, die Tour wird direkt in Moodle ausgewählt, und die Quiz-Note landet im Bewertungsbuch. Für andere Lernplattformen gibt es das SCORM-Paket 1.2 oder 2004." },
+        { "q": "Funktioniert es mit Moodle?", "a": "Ja, mit dem SCORM-Paket 1.2 oder 2004: Es wird wie jede andere Aktivität in Moodle (oder Canvas, Blackboard, Sakai …) hochgeladen und meldet den Abschluss und die Quiz-Note. Die Integration per LTI 1.3 ist in der Testphase, wir schalten sie auf Anfrage frei." },
         { "q": "Kann ich mit mehreren Leuten an derselben Tour arbeiten?", "a": "Ja. Organisationen mit Rollen, Freigabe je Projekt, Anwesenheit und sanfte Sperre je Szene, damit ihr euch nicht in die Quere kommt, im Foto verankerte Kommentare und Versionsverlauf zum Zurückspringen." },
         { "q": "Welche VR-Brillen gehen?", "a": "Jede mit WebXR-Browser (Meta Quest, Pico, Vision Pro mit Safari, PC mit Headset). Man öffnet die Adresse der Tour im Browser der Brille und drückt den Virtual-Reality-Button. Ohne Brille läuft der Cardboard-Modus auf jedem Handy." },
         { "q": "Was bedeutet „angemessene Nutzung“?", "a": "Dass die Pläne für eine Person oder ein kleines Team gedacht sind. Wenn die Nutzung nicht mehr danach aussieht, reden wir, bevor irgendetwas abgeschaltet wird. Und wenn du etwas ohne Kontingente brauchst: Die eigene Installation ist kostenlos und dasselbe Programm." }
@@ -239,7 +257,13 @@
   "precios": {
     "titulo": "Was es kostet",
     "texto": "Andarama ist Open Source: <strong>kostenlos, wenn du es selbst installierst</strong>. Wenn du lieber uns die Pflege überlässt, gibt es auf andarama.com sechs Pläne. Alle haben eine begrenzte Anzahl an Projekten und eine Richtlinie zur angemessenen Nutzung.",
-    "prueba": "14 Tage testen, ohne Kreditkarte, direkt beim Anlegen des Kontos.",
+    "prueba": "14 Tage testen, ohne Kreditkarte; danach ab 20 $ im Monat.",
+    "bloques": {
+      "crear": { "titulo": "Zum Erstellen", "texto": "Für Fotografen, Immobilienmakler, Unternehmen, Kulturerbe und alle, die Rundgänge veröffentlichen wollen." },
+      "ensenar": { "titulo": "Zum Lehren", "texto": "Für Lehrkräfte, Schulen und Schulungsteams: Quiz mit Note und Zertifikat, Escape Room und SCORM.", "enlaces": "Mehr über <a href=\"{aula}\">den Plan Aula</a> und <a href=\"{formacion}\">den Plan Formación</a>." }
+    },
+    "casa_linea": "Lieber selbst installieren? Andarama ist Open Source: <a href=\"{url}\">kostenlos auf deinem Rechner oder deinem Server</a>, ohne Kontingente und ohne beschnittene Funktionen.",
+    "ver_todo": "Preise, Testphase und Fragen zur Abrechnung",
     "formato": { "usd": "{n} $", "eur": "{n} €" },
     "periodo": { "month": "im Monat", "year": "im Jahr", "once": "einmalig", "o_anual": "oder {precio} im Jahr", "por_docente": "je Lehrkraft" },
     "todo": "Der ganze Editor, VR und Export",
@@ -261,8 +285,8 @@
       "andar": { "items": [], "cta": "Loslegen" },
       "aula": {
         "items": [
-          "Unbegrenzt viele Lernende per Klassencode",
-          "Quiz mit Note, Escape Room und Schatzsuche",
+          "Keine Konten für die Lernenden: Zugang über den Link",
+          "Quiz mit Note und Zertifikat, Escape Room und Schatzsuche",
           "Gedacht für eine Lehrkraft und ihre Gruppen"
         ],
         "cta": "Loslegen"
@@ -271,21 +295,21 @@
       "excursion": { "items": ["Ohne das Abzeichen „Erstellt mit Andarama“", "Eigene Domain für deine Rundgänge"], "cta": "Loslegen" },
       "formacion": {
         "items": [
-          "SCORM und LTI für deinen Campus",
+          "SCORM für deinen Campus (LTI 1.3 auf Anfrage)",
           "White Label und eigene Domain",
           "Team mit mehreren Bearbeitenden",
-          "Zahlung auf Rechnung"
+          "Rechnung in Euro auf Anfrage für Institutionen"
         ],
         "cta": "Loslegen"
       },
       "vitalicio": { "items": ["Ohne Abzeichen und mit eigener Domain"], "cta": "Für immer sichern" }
     },
-    "susurro": "abgerechnet wird in Dollar; die Bank rechnet um · Steuern je nach Land · angemessene Nutzung: wenn die Nutzung nicht mehr der einer Person oder eines kleinen Teams entspricht, reden wir, bevor irgendetwas abgeschaltet wird"
+    "susurro": "per Karte wird in Dollar abgerechnet, die Bank rechnet um · Rechnung in Euro auf Anfrage für Institutionen · Steuern je nach Land · angemessene Nutzung: wenn die Nutzung nicht mehr der einer Person oder eines kleinen Teams entspricht, reden wir, bevor irgendetwas abgeschaltet wird"
   },
   "paginas": {
     "formacion": {
       "title": "Immersive Schulung mit 360-Grad-Rundgängen | andarama",
-      "description": "Immersive Schulung für Unternehmen, Berufsschulen und Hochschulen: 360-Grad-Rundgänge mit Quiz, SCORM, LTI und Virtual Reality. Arbeitsschutz, Onboarding und simulierte Übungen mit Andarama.",
+      "description": "Immersive Schulung für Unternehmen, Berufsschulen und Hochschulen: 360-Grad-Rundgänge mit Quiz, SCORM und Virtual Reality. Arbeitsschutz, Einarbeitung und simulierte Übungen.",
       "h1": "Immersive Schulung: Der Lernort ist der echte Ort",
       "lead": "Ein 360-Grad-Rundgang durch die Halle, das Labor oder die Baustelle, mit Fragen an jeder Ecke und der Note zurück in deinem Campus. Für Unternehmen, Berufsschulen und Hochschulen.",
       "bloques": [
@@ -295,38 +319,49 @@
         { "titulo": "Virtual Reality ohne Installation", "texto": "Derselbe Rundgang öffnet sich auf Meta Quest, Pico oder Vision Pro direkt im Browser. Hände, Controller und Blick; Panels, Quiz und Vergleich innerhalb der Sitzung. Und im Cardboard-Modus mit jedem Handy." }
       ],
       "scorm": {
-        "titulo": "SCORM, LTI und dein Campus",
-        "texto": "Der Rundgang wird als SCORM-Paket 1.2 oder 2004 mit Abschlussbericht und Note exportiert, für Moodle, Canvas, Blackboard, Sakai oder jedes andere LMS. Mit LTI 1.3 Advantage muss man nicht einmal exportieren: Die Tour wird direkt im Campus ausgewählt, und die Bewertung kehrt ins Notenbuch zurück.",
+        "titulo": "SCORM und dein Campus",
+        "texto": "Der Rundgang wird als SCORM-Paket 1.2 oder 2004 mit Abschlussbericht und Note exportiert, für Moodle, Canvas, Blackboard, Sakai oder jedes andere LMS. Die Integration per LTI 1.3 ist in der Testphase: Wenn dein Campus sie braucht, schalten wir sie auf Anfrage gemeinsam mit dir frei.",
         "tics": [
           "SCORM 1.2 und 2004 mit Abschlussstatus, Note und Zeit",
-          "LTI 1.3 Advantage mit Inhaltsauswahl und Notenrückgabe",
+          "LTI 1.3 in der Testphase, auf Anfrage verfügbar",
           "Abschlussbericht mit Treffern je Frage und PDF-Zertifikat",
           "Analytik ohne Cookies: Zeit je Szene und wohin jede Gruppe schaut"
         ]
       },
-      "cta": { "titulo": "Der Plan Formación", "texto": "100 Rundgänge, 200 GB, SCORM und LTI, White Label, eigene Domain, Team und Zahlung auf Rechnung. 99 $ im Monat oder 990 $ im Jahr.", "boton": "Mit Formación loslegen", "secundario": "Alle Pläne ansehen" }
+      "cta": { "titulo": "Der Plan Formación", "texto": "100 Rundgänge, 200 GB, SCORM, White Label, eigene Domain und Team. 99 $ im Monat oder 990 $ im Jahr per Karte, oder Rechnung in Euro auf Anfrage für Institutionen. 14 Tage testen, ohne Kreditkarte.", "boton": "Mit Formación loslegen", "secundario": "Alle Pläne ansehen" },
+      "precio_visible": "99 $ im Monat oder 990 $ im Jahr · 100 Rundgänge · 200 GB · Rechnung in Euro auf Anfrage",
+      "demo_boton": "20-minütige Demo anfragen",
+      "contacto": {
+        "titulo": "20-minütige Demo anfragen",
+        "texto": "Wir zeigen dir einen Schulungsrundgang von Anfang bis Ende an eurem Fall: Quiz, Zertifikat, SCORM in eurem Campus und Virtual Reality. Wir antworten dir innerhalb von ein bis zwei Werktagen per E-Mail, um einen Termin zu vereinbaren.",
+        "institucion": "Unternehmen oder Institution",
+        "nombre": "Name",
+        "email": "E-Mail-Adresse",
+        "mensaje": "Was wollt ihr schulen und für wie viele Personen?",
+        "enviar": "Demo anfragen"
+      }
     },
     "universidades": {
       "title": "Andarama für Hochschulen und Institutionen | andarama",
-      "description": "Virtuelle 360-Grad-Rundgänge für Hochschulen und Institutionen: Open Source, DSGVO, LTI mit Moodle, Canvas und Blackboard, Rechnung und eigene Instanz mit Support.",
+      "description": "Virtuelle 360-Grad-Rundgänge für Hochschulen und Institutionen: Open Source, DSGVO, SCORM für Moodle, Rechnung in Euro und eigene Instanz mit Support.",
       "h1": "Für Hochschulen und Institutionen",
-      "lead": "Ein Open-Source-Programm, das sich prüfen, auf der eigenen Infrastruktur installieren oder gehostet auf Rechnung buchen lässt. Ohne Abhängigkeit von irgendwem und ohne Überraschungen.",
+      "lead": "Ein Open-Source-Programm, das sich prüfen, auf der eigenen Infrastruktur installieren oder gehostet mit Rechnung in Euro buchen lässt. Ohne Abhängigkeit von irgendwem und ohne Überraschungen.",
       "bloques": [
         { "titulo": "Wirklich Open Source", "texto": "EUPL-1.2, die Lizenz der Europäischen Kommission. Der vollständige Code liegt auf GitHub: Er lässt sich lesen, prüfen, verändern und ausrollen, ohne jemanden zu fragen. Und das Format <code>tour.json</code> ist dokumentiert: Was heute entsteht, öffnet sich auch morgen noch." },
-        { "titulo": "DSGVO ab Werk", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit dem passenden Auftragsverarbeitungsvertrag." },
-        { "titulo": "LTI mit Moodle, Canvas und Blackboard", "texto": "Andarama wird per LTI 1.3 Advantage als externes Tool registriert. Die Lehrenden wählen den Rundgang mit der Inhaltsauswahl direkt im Campus, und die Quiz-Noten kehren ins Bewertungsbuch zurück. SCORM 1.2 und 2004 für alles andere." },
-        { "titulo": "Institutionelle Konten", "texto": "SSO per OIDC mit automatischer Anmeldung nach E-Mail-Domain, Organisationen mit Rollen, Zwei-Faktor-Authentifizierung und Admin-Panel mit Kontingenten und Nutzung je Fachbereich." },
-        { "titulo": "Rechnung und Vertrag", "texto": "Der Plan Formación wird auf Rechnung mit den Steuerdaten der Institution bezahlt. Für größere Volumen oder besondere Bedingungen erstellen wir ein individuelles Angebot." },
+        { "titulo": "DSGVO ab Werk", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit einem Auftragsverarbeitungsvertrag, den wir auf Anfrage vorbereiten." },
+        { "titulo": "Moodle, Canvas und Blackboard", "texto": "Der Rundgang wird als SCORM-Paket 1.2 oder 2004 exportiert, das dem Campus den Abschluss und die Quiz-Note meldet. Die Integration per LTI 1.3 ist in der Testphase, wir schalten sie auf Anfrage mit dem Campus der Institution frei." },
+        { "titulo": "Institutionelle Konten", "texto": "Organisationen mit Rollen, Zwei-Faktor-Authentifizierung und Admin-Panel mit Kontingenten und Nutzung je Fachbereich. Bei der eigenen Installation außerdem SSO per OIDC mit automatischer Anmeldung nach E-Mail-Domain." },
+        { "titulo": "Rechnung und Vertrag", "texto": "Für Institutionen gibt es auf Anfrage eine Rechnung in Euro mit ihren Steuerdaten, zahlbar per Überweisung und bei Bedarf über FACe. Für größere Volumen oder besondere Bedingungen erstellen wir ein individuelles Angebot." },
         { "titulo": "Eigene Instanz mit Support", "texto": "Wenn die Institution es lieber im Haus haben möchte, wird dieselbe Anwendung auf ihrem Cloudflare oder in Docker ausgerollt, mit Support, Updates und Begleitung der Lehrenden im Vertrag." }
       ],
       "contacto": {
         "titulo": "Lass uns reden",
-        "texto": "Erzähl uns, was deine Institution braucht, und wir antworten mit einem Vorschlag. Das Formular öffnet dein E-Mail-Programm mit der vorbereiteten Nachricht.",
+        "texto": "Erzähl uns, was deine Institution braucht, und wir bereiten dir eine 20-minütige Demo oder einen Vorschlag vor. Wir antworten dir innerhalb von ein bis zwei Werktagen per E-Mail.",
         "institucion": "Institution",
         "nombre": "Name",
         "email": "E-Mail-Adresse",
         "mensaje": "Was braucht ihr?",
-        "enviar": "Per E-Mail senden",
+        "enviar": "Demo anfragen",
         "asunto": "Andarama für {institucion}"
       }
     },
@@ -353,11 +388,11 @@
         { "titulo": "Begehbarer 360-Grad-Rundgang, mit den Informationen dort, wo sie hingehören", "texto": "360-Grad-Fotos jedes Saals, über Navigationsschritte verbunden, ein Grundriss je Etage zur Orientierung und ein Szenenmenü nach Bereichen. Neben jedem Exponat ein Hotspot mit der Beschriftung als Text, dem Audioguide, dem Werk in hoher Auflösung mit Zoom, dem Katalog als PDF oder dem 3D-Modell in glTF, das sich auf dem Handy auch in Augmented Reality öffnet. Und in den Sprachen der Besucher: Jede Szene und jeder Hotspot wird direkt im Editor übersetzt." },
         { "titulo": "Geführte Live-Tour für Schulklassen", "texto": "Der Guide erstellt einen Raum mit Code und teilt den Link: Die ganze Klasse sieht die Szene und den Blickwinkel, die er vorgibt; er zeigt mit dem Zeiger und schreibt im Chat. Jeder Lernende kann sich lösen, sich selbst umsehen und wieder synchronisieren. Die Stimme läuft über die Videokonferenz, die die Schule ohnehin nutzt. Nichts zu installieren: im Browser, auf der digitalen Tafel oder auf den Tablets." },
         { "titulo": "Quiz und Schatzsuche für junge Besucher", "texto": "Fragen über die Säle verteilt, mit Feedback, Punkten und einer Sperre, die in der Szene festhält, bis die Antwort stimmt. Versteckte Objekte mit dem Schatz-Hotspot und einem sichtbaren Zähler der gefundenen Stücke. Zustandsvariablen, die eine Tür öffnen, sobald alles gefunden ist. Und zum Schluss Bericht und PDF-Zertifikat mit dem Namen des Teilnehmenden. Schulen bauen dasselbe mit dem <a href=\"{aula}\">Plan Aula</a>." },
-        { "titulo": "Barrierefrei vom ersten Tag an", "texto": "Jede Szene trägt einen verpflichtenden Alternativtext, und der Viewer bietet einen linearen, barrierefreien Inhaltsmodus: Der ganze Rundgang lässt sich als Text lesen, mit Screenreader oder ohne Maus. WebVTT-Untertitel für 360-Grad-Video und Video-Hotspots, sichtbarer Fokus, Touch-Ziele von 44 px und <code>prefers-reduced-motion</code> wird respektiert. WCAG 2.1 AA." },
+        { "titulo": "Barrierefrei vom ersten Tag an", "texto": "Jede Szene kann einen Alternativtext haben (der Editor weist darauf hin, wenn er fehlt), und der Viewer bietet einen linearen, barrierefreien Inhaltsmodus: Der ganze Rundgang lässt sich als Text lesen, mit Screenreader oder ohne Maus. WebVTT-Untertitel für 360-Grad-Video und Video-Hotspots, sichtbarer Fokus, Touch-Ziele von 44 px und <code>prefers-reduced-motion</code> wird respektiert. Wir arbeiten daran, WCAG 2.1 AA zu erfüllen; was schon erfüllt ist und was nicht, steht in der <a href=\"{accesibilidad}\">Erklärung zur Barrierefreiheit</a>." },
         { "titulo": "Der Rundgang gehört dem Museum: freier Export", "texto": "Ein Klick exportiert ein statisches, in sich geschlossenes ZIP (HTML, Viewer, <code>tour.json</code>, Kacheln und Medien), das auf jedem Server läuft, ganz ohne Andarama dahinter. Auch als einzelne HTML-Datei, als PWA zum Ansehen ohne Internet oder im Kiosk-Modus für den Bildschirm im Foyer, mit Autopilot und Neustart nach Inaktivität. Das Format ist dokumentiert: Wenn das Museum Andarama nicht mehr nutzt, nimmt es den ganzen Rundgang mit." },
         { "titulo": "Eigene Seite auf andarama.com/explorar/", "texto": "Ein öffentlicher Rundgang auf der gehosteten Instanz kann seine eigene Seite in <a href=\"{explorar}\">der öffentlichen Galerie</a> beantragen: Titel mit dem Namen des Ortes, Beschreibung, Land und Koordinaten, strukturierte Ortsdaten und ein Eintrag in der Sitemap. Eine URL, die Suchmaschinen über den Namen des Museums finden und die auf seine Website führt. Der Index lässt sich nach Land filtern." },
         { "titulo": "DSGVO und Open Source", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen: Sie zeigt Besuche, Zeit je Saal und wohin die Leute schauen, ohne jemanden zu tracken. Das Programm ist Open Source unter EUPL-1.2, der Lizenz der Europäischen Kommission: Es lässt sich lesen, prüfen und auf der Infrastruktur des Museums oder seines Trägers installieren." },
-        { "titulo": "Eigene Instanz mit Support oder Plan Formación", "texto": "Zwei Wege. Der gehostete <a href=\"{formacion}\">Plan Formación</a> auf andarama.com: bis zu 100 Rundgänge, 200 GB, ohne Badge, eigene Domain, Team und Rechnung mit den Steuerdaten der Institution. Oder dieselbe Anwendung, ausgerollt auf dem Cloudflare oder Docker des Museums, mit Support, Updates und Begleitung des Personals. Die Bedingungen für Institutionen stehen auf <a href=\"{universidades}\">der Seite für Hochschulen</a>." }
+        { "titulo": "Eigene Instanz mit Support oder Plan Formación", "texto": "Zwei Wege. Der gehostete <a href=\"{formacion}\">Plan Formación</a> auf andarama.com: bis zu 100 Rundgänge, 200 GB, ohne Badge, eigene Domain, Team und Rechnung in Euro auf Anfrage mit den Steuerdaten der Institution. Oder dieselbe Anwendung, ausgerollt auf dem Cloudflare oder Docker des Museums, mit Support, Updates und Begleitung des Personals. Die Bedingungen für Institutionen stehen auf <a href=\"{universidades}\">der Seite für Hochschulen</a>." }
       ],
       "faq": {
         "titulo": "Häufige Fragen zum virtuellen Museumsrundgang",
@@ -367,7 +402,7 @@
           { "q": "Wie läuft eine geführte Tour mit einer Schule ab?", "a": "Der Guide veröffentlicht den Rundgang, erstellt im Editor einen Raum und teilt den Teilnehmerlink. Alles, was er tut (Saal wechseln, Blick drehen, zoomen), erscheint auf den Bildschirmen der Klasse; mit dem Zeiger zeigt er, im Chat antwortet er. Die Stimme läuft über die Videokonferenz, die die Schule ohnehin nutzt. Die Räume sind flüchtig: Sie verschwinden, sobald der Guide geht." },
           { "q": "Eignet es sich für ein Archiv oder eine Bibliothek?", "a": "Ja. Neben den 360-Grad-Szenen gibt es 2D-Gigapixel-Szenen, um ein digitalisiertes Dokument oder Werk mit kartenartigem Zoom und direkt auf dem Blatt verankerten Anmerkungen zu erkunden, dazu PDF-Hotspots mit eingebautem Viewer. Schritt für Schritt erklärt in <a href=\"{articulo_archivo}\">360-Grad-Rundgang für ein Archiv oder eine Bibliothek</a>." },
           { "q": "Und wenn das Museum Andarama nicht mehr nutzt?", "a": "Dann nimmt es den ganzen Rundgang mit. Das exportierte ZIP ist statisch und in sich geschlossen: HTML, Viewer, <code>tour.json</code>, Kacheln und Medien. Per FTP auf ein beliebiges Hosting, auf GitHub Pages oder auf Cloudflare Pages hochladen, und es läuft weiter, ohne Plattform dahinter. Das Format ist dokumentiert, und das Programm ist Open Source unter EUPL-1.2." },
-          { "q": "Ist es DSGVO-konform?", "a": "Ja. Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen; die Sitzungskennung ist flüchtig, und die Daten werden aggregiert. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit dem passenden Auftragsverarbeitungsvertrag." },
+          { "q": "Ist es DSGVO-konform?", "a": "Ja. Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen; die Sitzungskennung ist flüchtig, und die Daten werden aggregiert. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit einem Auftragsverarbeitungsvertrag, den wir auf Anfrage vorbereiten." },
           { "q": "Lässt es sich mit einer VR-Brille ansehen?", "a": "Derselbe Rundgang öffnet sich auf Meta Quest, Pico oder Vision Pro direkt im Browser der Brille, mit den Textpanels, dem Audio und dem Quiz innerhalb der Sitzung. Und im Cardboard-Modus mit jedem Handy, was in einem Klassenzimmer meist vorhanden ist." }
         ]
       },
@@ -375,7 +410,7 @@
         "titulo": "Weiterlesen",
         "texto": "Die Seiten und Artikel, die meist zusammen mit dieser gelesen werden.",
         "universidades": "Andarama für Hochschulen und Institutionen",
-        "formacion": "Der Plan Formación: SCORM, LTI, Rechnung und eigene Domain",
+        "formacion": "Der Plan Formación: SCORM, White Label, Rechnung in Euro und eigene Domain",
         "explorar": "Die öffentliche Galerie der Rundgänge auf andarama.com/explorar/",
         "articulo_museo": "Virtueller Rundgang durch ein Museum: Wie er entsteht und was er kostet",
         "articulo_archivo": "360-Grad-Rundgang für ein Archiv oder eine Bibliothek: ein praktischer Leitfaden"
@@ -387,29 +422,29 @@
       },
       "contacto": {
         "titulo": "Lass uns über euren virtuellen Rundgang reden",
-        "texto": "Erzähl uns, welchen Ort ihr zeigen wollt und wie, und wir antworten mit einem Vorschlag. Das Formular öffnet dein E-Mail-Programm mit der vorbereiteten Nachricht.",
+        "texto": "Erzähl uns, welchen Ort ihr zeigen wollt und wie, und wir bereiten dir eine 20-minütige Demo oder einen Vorschlag vor. Wir antworten dir innerhalb von ein bis zwei Werktagen per E-Mail.",
         "institucion": "Museum oder Institution",
         "nombre": "Name",
         "email": "E-Mail-Adresse",
         "mensaje": "Was wollt ihr zeigen?",
-        "enviar": "Per E-Mail senden",
+        "enviar": "Demo anfragen",
         "asunto": "Virtueller Rundgang für {institucion}"
       }
     },
     "aula": {
       "title": "Andarama für Lehrkräfte: Escape Room 360, virtuelle Exkursionen und Quiz | andarama",
-      "description": "Für Lehrkräfte: Escape Rooms in 360 Grad, virtuelle Exkursionen und Quiz mit Note. Plan Aula für 42 $ im Jahr je Lehrkraft, mit unbegrenzt vielen Lernenden per Klassencode.",
+      "description": "Für Lehrkräfte: Escape Rooms in 360 Grad, virtuelle Exkursionen und Quiz mit Note und Zertifikat. Plan Aula für 42 $ im Jahr je Lehrkraft, ohne Konten für die Lernenden.",
       "h1": "Fürs Klassenzimmer: gehen, suchen, lernen",
-      "lead": "360-Grad-Rundgänge, die die Lernenden wie ein Spiel erkunden: Escape Rooms, virtuelle Exkursionen ins Museum oder zur Ausgrabungsstätte und Fragen, die zählen. Ohne Konten für die Schülerinnen und Schüler: ein Klassencode, und los geht's.",
+      "lead": "360-Grad-Rundgänge, die die Lernenden wie ein Spiel erkunden: Escape Rooms, virtuelle Exkursionen ins Museum oder zur Ausgrabungsstätte und Fragen, die zählen. Ohne Konten für die Schülerinnen und Schüler: Link oder QR-Code teilen, und los geht's.",
       "bloques": [
         { "titulo": "Escape Room 360", "texto": "In den Szenen versteckte Objekte, Zähler, die Türen öffnen, Hinweise als Text, Audio und Video, und ein Schloss am Ende. Zusammengebaut wird per Drag-and-drop: Jeder Hotspot trägt seine Bedingungen und Variablen." },
         { "titulo": "Virtuelle Exkursionen", "texto": "Das Museum, die Kathedrale, der Wald oder das Labor der Universität, in 360 Grad und mit Erklärungen genau dort verankert, wo sie hingehören. Mit eigenen Fotos oder mit den freien Panoramen von Wikimedia Commons." },
-        { "titulo": "Quiz mit Note", "texto": "Fragen über den Rundgang verteilt, Bestehensgrenze, Zufallsreihenfolge und Versuche. Der Bericht geht an die Lehrkraft, und die Lernenden laden sich ihr Zertifikat herunter." },
-        { "titulo": "Klassencode", "texto": "Die Lernenden kommen mit einem Code hinein, ohne E-Mail und ohne Passwort. Die Lehrkraft sieht den Fortschritt jeder Gruppe und exportiert die Noten als CSV." },
+        { "titulo": "Quiz mit Note", "texto": "Fragen über den Rundgang verteilt, Bestehensgrenze, Zufallsreihenfolge und Versuche. Am Ende sieht jeder Lernende seinen Bericht mit der Note und lädt sein PDF-Zertifikat herunter. Nutzt die Schule Moodle, bringt das SCORM-Paket die Note in den Campus." },
+        { "titulo": "Keine Konten für die Lernenden", "texto": "Die Lernenden öffnen den Link oder scannen den QR-Code, ohne E-Mail und ohne Passwort. Niemand muss angemeldet werden, und von Minderjährigen werden keine Daten verlangt: Die Analytik ist aggregiert und kommt ohne Cookies aus." },
         { "titulo": "Geführte Live-Touren", "texto": "Die ganze Klasse im selben Raum: Die Lehrkraft bewegt die Szene und zeigt mit dem Zeiger; jeder Lernende kann sich lösen und wieder synchronisieren." },
         { "titulo": "Mit VR-Brille oder Cardboard", "texto": "Derselbe Rundgang funktioniert in der VR-Brille und auf jedem Handy mit einer Cardboard-Brille. Und auf der digitalen Tafel, klar." }
       ],
-      "cta": { "titulo": "Der Plan Aula", "texto": "42 $ im Jahr je Lehrkraft: 5 Rundgänge, 10 GB, unbegrenzt viele Lernende per Klassencode, Quiz mit Note, Escape Room und Schatzsuche.", "boton": "Mit Aula loslegen", "secundario": "Alle Pläne ansehen" }
+      "cta": { "titulo": "Der Plan Aula", "texto": "42 $ im Jahr je Lehrkraft: 5 Rundgänge, 10 GB, keine Konten für die Lernenden, Quiz mit Note und Zertifikat, Escape Room und Schatzsuche. 14 Tage testen, ohne Kreditkarte.", "boton": "Mit Aula loslegen", "secundario": "Alle Pläne ansehen" }
     },
     "wordpress": {
       "title": "WordPress-Plugin für virtuelle 360-Grad-Rundgänge | andarama",
@@ -419,26 +454,210 @@
       "bloques": [
         { "titulo": "Drei Wege zum Einbetten", "texto": "Ein Block „Andarama 360 Tour“ mit Vorschau im Editor, die Adresse in einen leeren Absatz eingefügt (wie bei einem YouTube-Video) oder der Shortcode <code>[andarama url=\"…\"]</code> für Elementor, Divi, WPBakery und Co." },
         { "titulo": "Was der Viewer mitbringt", "texto": "360-Grad-Panorama per WebGL mit Gyroskop auf dem Handy, Virtual-Reality-Modus per WebXR, Vollbild, Lazy Loading und wählbares Seitenverhältnis. Der iframe bringt die nötigen Berechtigungen mit." },
-        { "titulo": "Mit deiner eigenen Instanz", "texto": "In den Einstellungen gibst du die Adresse der Andarama-Instanz an, ob andarama.com oder dein Server. Das Plugin steht unter GPLv2 und liegt im selben Repository wie alles andere." }
+        { "titulo": "Mit deiner eigenen Instanz", "texto": "In den Plugin-Einstellungen gibst du die Adresse der Andarama-Instanz an, ob andarama.com oder dein Server. Das Plugin ist freie Software (GPLv2 oder später)." }
       ],
-      "enlaces": { "wporg": "Auf wordpress.org (in Prüfung)", "repo": "Plugin-Code auf GitHub" }
+      "enlaces": { "zip": "Plugin herunterladen (ZIP)", "instalar": "So installierst du es" },
+      "instalacion": {
+        "titulo": "Manuell mit dem ZIP installieren",
+        "texto": "Das Plugin wird gerade für das Verzeichnis auf wordpress.org geprüft. Bis dahin installierst du es, indem du das ZIP hochlädst, es ist dieselbe Datei:",
+        "pasos": [
+          "Lade <a href=\"{zip}\">andarama-360.zip</a> herunter und entpacke es nicht.",
+          "Geh im WordPress-Dashboard zu <strong>Plugins</strong>, klick auf <strong>Neues Plugin hinzufügen</strong> und dann auf <strong>Plugin hochladen</strong>.",
+          "Wähl das ZIP, klick auf <strong>Jetzt installieren</strong> und danach auf <strong>Aktivieren</strong>.",
+          "Prüf in den Plugin-Einstellungen die Adresse deiner Instanz (andarama.com ist voreingestellt) und das Standard-Seitenverhältnis.",
+          "Bearbeite einen Beitrag, füge den Block „Andarama 360 Tour“ hinzu oder füge die Adresse des Rundgangs in einen leeren Absatz ein."
+        ],
+        "sin_plugin": "Du kannst keine Plugins installieren? Es geht auch ohne: Füge den iframe oder die Script-Zeile ein, die dir der Button „Einbetten“ beim Veröffentlichen gibt. Erklärt wird das in <a href=\"https://docs.andarama.com/usuario/embeber/\">der Anleitung zum Einbetten</a>."
+      }
     },
     "privacidad": {
       "title": "Datenschutz und Cookies | andarama",
-      "description": "Welche Daten andarama.com verarbeitet, mit welchen Anbietern (Plausible, Clerk, Cloudflare) und welche Cookies im Spiel sind. Ohne Umschweife erklärt.",
+      "description": "Welche Daten andarama.com verarbeitet, mit welchen Anbietern (Cloudflare, Clerk, Plausible, E-Mail), welche Cookies im Spiel sind und was passiert, wenn du über eine Anzeige kommst.",
       "h1": "Datenschutz und Cookies",
       "lead": "Diese Seite erklärt, welche Daten andarama.com verarbeitet, wofür und mit wem. Sie ist zum Lesen geschrieben, nicht fürs Pflichtprogramm.",
       "secciones": [
-        { "titulo": "Wer verantwortlich ist", "html": "<p>José Luis Saorín Ferrer, Autor von Andarama, erreichbar unter <a href=\"mailto:jl@joseluissaorin.com\">jl@joseluissaorin.com</a>. Andarama ist ein Open-Source-Programm (EUPL-1.2); andarama.com ist die gehostete Instanz, die er betreibt.</p>" },
+        { "titulo": "Wer verantwortlich ist", "html": "<p>{titular}, NIF {nif}, mit Sitz in {domicilio} (Spanien), erreichbar unter <a href=\"mailto:{correo}\">{correo}</a>. Er ist der Autor von Andarama, einem Open-Source-Programm (EUPL-1.2), und betreibt andarama.com, die gehostete Instanz. Die Angaben zum Betreiber stehen auch im <a href=\"{aviso_legal}\">Impressum</a>.</p>" },
         { "titulo": "Analytik ohne Cookies", "html": "<p>Um zu wissen, wie viele Leute die Website besuchen, wird <a href=\"https://plausible.io\">Plausible</a> genutzt, ein europäischer Dienst, der keine Cookies setzt, keine IP-Adressen speichert und niemanden über Besuche hinweg wiedererkennt. Er zählt Seitenaufrufe und einige anonyme Ereignisse (zum Beispiel, dass ein Werkzeug benutzt wurde). Deshalb gibt es kein Cookie-Banner: Es gibt nichts zu akzeptieren.</p><p>Die mit Andarama veröffentlichten Rundgänge tragen dieselbe Art von Analytik: Besuche, Szenen und Hotspots aggregiert, ohne Cookies und ohne IP.</p>" },
-        { "titulo": "Konten und Zahlungen: Clerk", "html": "<p>Wenn du ein Konto auf app.andarama.com anlegst, übernimmt <a href=\"https://clerk.com\">Clerk</a> Registrierung, Anmeldung und Abrechnung der Pläne. Clerk speichert deine E-Mail-Adresse, deinen Namen, falls du ihn angibst, die Anmeldemethode und die Rechnungsdaten; um die Sitzung offen zu halten, nutzt es technische Cookies, ohne die die Anwendung nicht funktioniert. Die Rundgänge, die Medien und alles, was du erstellst, liegen in der Datenbank von Andarama, nicht bei Clerk.</p>" },
-        { "titulo": "Infrastruktur: Cloudflare", "html": "<p>andarama.com wird über <a href=\"https://www.cloudflare.com\">Cloudflare</a> ausgeliefert (Workers, D1, R2 und KV). Cloudflare verarbeitet die Anfragen als Auftragsverarbeiter und kann aus Sicherheitsgründen technische Protokolle für begrenzte Zeit aufbewahren. Die Medien, die du hochlädst, werden in R2 gespeichert, wenn möglich in europäischen Rechenzentren.</p>" },
+        { "titulo": "Wenn du über eine Anzeige kommst", "html": "<p>Wenn jemand über eine Google-Anzeige auf andarama.com kommt, enthält die Adresse eine Klick-Kennung (<code>gclid</code>, <code>gbraid</code> oder <code>wbraid</code>) und manchmal Kampagnenparameter (<code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code>, <code>utm_term</code>, <code>utm_content</code>). Nur in diesem Fall erscheint ein Hinweis, der fragt, ob wir das Google mitteilen dürfen, um zu erfahren, ob die Anzeige funktioniert. Wer auf anderem Weg kommt, sieht keinen Hinweis.</p><ul><li><strong>Wenn du Ja sagst</strong>, werden die Klick-Kennung, die Kampagnenparameter und die Seite, über die du gekommen bist, im Sitzungsspeicher deines Browsers abgelegt (er wird beim Schließen des Tabs gelöscht) und an die Links zu app.andarama.com angehängt. Wenn du danach die Testphase startest, eine Demo anfragst oder einen Plan bezahlst, erfassen wir das zusammen mit der Kennung und melden es von unserem Server aus an Google Ads, mit der Einwilligung für Nutzerdaten und Personalisierung als erteilt markiert, nur um die Anzeige zu messen.</li><li><strong>Wenn du Nein sagst</strong>, wird die Klick-Kennung verworfen, und es werden nur die Kampagnenparameter gespeichert, die sagen, aus welcher Kampagne du kommst, dich aber nicht identifizieren. An Google wird nichts gesendet.</li></ul><p>Wir binden weder das Google-Tag noch irgendein Werbe-Cookie ein: Alles läuft über unseren Server. Rechtsgrundlage ist deine Einwilligung, die du jederzeit widerrufen kannst, indem du an <a href=\"mailto:{correo}\">{correo}</a> schreibst. Die Kennung wird höchstens 90 Tage ab dem Klick verwendet. Google (Google Ireland Limited) verarbeitet, was es erhält, gemäß seiner eigenen Datenschutzerklärung.</p>" },
+        { "titulo": "Konten und Zahlungen: Clerk", "html": "<p>Wenn du ein Konto auf app.andarama.com anlegst, übernimmt <a href=\"https://clerk.com\">Clerk</a> Registrierung, Anmeldung und Abrechnung der Pläne. Clerk speichert deine E-Mail-Adresse, deinen Namen, falls du ihn angibst, die Anmeldemethode und die Rechnungsdaten; um die Sitzung offen zu halten, nutzt es technische Cookies, ohne die die Anwendung nicht funktioniert. Die Rundgänge, die Medien und alles, was du erstellst, liegen in der Datenbank von Andarama, nicht bei Clerk. Clerk ist ein Unternehmen in den Vereinigten Staaten: Diese Daten werden dort verarbeitet, mit den Garantien für internationale Übermittlungen, die Clerk in seinem Auftragsverarbeitungsvertrag bietet. Die Kartenzahlung wickelt Stripe über Clerk ab; Andarama sieht die Kartennummer nie.</p>" },
+        { "titulo": "Infrastruktur: Cloudflare", "html": "<p>andarama.com wird über <a href=\"https://www.cloudflare.com\">Cloudflare</a> ausgeliefert (Workers, D1, R2 und KV). Die Datenbank (D1) und die Medien, die du hochlädst (R2), liegen in Rechenzentren in Westeuropa. Der Code läuft im Netz von Cloudflare, im Rechenzentrum, das den Besuchenden am nächsten ist, und einige kurzlebige technische Daten (KV) werden im ganzen Netz repliziert. Cloudflare verarbeitet die Anfragen als Auftragsverarbeiter und kann aus Sicherheitsgründen technische Protokolle für begrenzte Zeit aufbewahren.</p>" },
+        { "titulo": "Auftragsverarbeiter", "html": "<p>Diese Unternehmen verarbeiten Daten im Auftrag von andarama.com:</p><ul><li><strong>Cloudflare, Inc.</strong> (Vereinigte Staaten; Datenbank und Medien in Westeuropa): Hosting, Datenbank, Speicher und Schutz vor Missbrauch.</li><li><strong>Clerk, Inc.</strong> (Vereinigte Staaten): Konten, Anmeldung und Abrechnung der Pläne, mit Stripe als Zahlungsdienstleister.</li><li><strong>Plausible Insights OÜ</strong> (Estland, Europäische Union): Besucheranalytik ohne Cookies.</li><li><strong>{proveedor_correo}</strong> (Vereinigte Staaten): Versand der Transaktions-E-Mails (Kontohinweise und Antworten auf Demo-Anfragen).</li></ul><p>Und nur, wenn du den Hinweis zu Anzeigen annimmst, erhält <strong>Google Ireland Limited</strong> die Klick-Kennung und die Conversion, wie oben erklärt.</p>" },
         { "titulo": "Die kostenlosen Werkzeuge", "html": "<p>Der 360-Grad-Viewer, der Little Planet und der Cubemap-Konverter arbeiten vollständig in deinem Browser. Die Bilder, die du mit ihnen öffnest, werden auf keinen Server geladen: Sie verlassen deinen Rechner nicht. Es wird lediglich, ohne dich zu identifizieren, festgehalten, dass das Werkzeug benutzt wurde.</p>" },
-        { "titulo": "E-Mail", "html": "<p>Wenn du über das Kontaktformular schreibst, öffnet sich dein eigenes E-Mail-Programm: Die Nachricht geht von deinem Konto an unseres und wird nur benutzt, um dir zu antworten. Konten erhalten Transaktions-E-Mails (Bestätigung, Einladungen, Hinweise zum Plan), nie Werbung.</p>" },
-        { "titulo": "Deine Rechte", "html": "<p>Du kannst Auskunft, Berichtigung, Löschung, Übertragbarkeit und Widerspruch verlangen, indem du an <a href=\"mailto:jl@joseluissaorin.com\">jl@joseluissaorin.com</a> schreibst. Konten lassen sich direkt in der Anwendung löschen, und alles Erstellte kann jederzeit als ZIP oder als Datei <code>.andarama</code> exportiert werden. Wenn du meinst, dass etwas nicht richtig läuft, kannst du dich bei der spanischen Datenschutzbehörde (Agencia Española de Protección de Datos) beschweren.</p>" },
-        { "titulo": "Änderungen", "html": "<p>Wenn sich diese Erklärung ändert, wird hier das Datum vermerkt. Letzte Überarbeitung: September 2026.</p>" }
+        { "titulo": "Demo-Formulare und E-Mail", "html": "<p>Wenn du über die Formulare für Schulung, Hochschulen oder Museen eine Demo oder einen Vorschlag anfragst, speichern wir deinen Namen, die Institution, deine E-Mail-Adresse, die Nachricht, die Sprache und die Seite, von der aus du schreibst (und, falls du den Hinweis zu Anzeigen angenommen hast, die Klick-Kennung), um dir zu antworten. Rechtsgrundlage ist deine eigene Anfrage. Die Daten werden so lange aufbewahrt, wie das Gespräch dauert, höchstens zwei Jahre. Konten erhalten Transaktions-E-Mails (Bestätigung, Einladungen, Hinweise zum Plan), nie Werbung.</p>" },
+        { "titulo": "Deine Rechte und wie du dein Konto löschst", "html": "<p>Du kannst Auskunft, Berichtigung, Löschung, Übertragbarkeit, Einschränkung und Widerspruch verlangen, indem du an <a href=\"mailto:{correo}\">{correo}</a> schreibst.</p><p><strong>Um dein Konto und alles, was du erstellt hast, zu löschen</strong>, schreib uns von der E-Mail-Adresse des Kontos aus. Wir löschen das Konto bei Clerk sowie die Rundgänge, die Veröffentlichungen und die Medien aus der Datenbank und dem Speicher von Andarama und bestätigen dir das innerhalb von höchstens 30 Tagen per E-Mail. Sich abzumelden oder den Zugang im Profil der Anwendung zu entfernen, löscht die Rundgänge nicht von selbst; deshalb wird die vollständige Löschung per E-Mail beantragt. Vorher kannst du, wenn du willst, exportieren, was du gemacht hast: Das geht jederzeit als ZIP oder als Datei <code>.andarama</code>.</p><p>Wenn du meinst, dass etwas nicht richtig läuft, kannst du dich bei der spanischen Datenschutzbehörde (Agencia Española de Protección de Datos, <a href=\"https://www.aepd.es\">aepd.es</a>) beschweren.</p>" },
+        { "titulo": "Änderungen", "html": "<p>Wenn sich diese Erklärung ändert, wird hier das Datum vermerkt. Letzte Überarbeitung: 27. September 2026.</p>" }
       ]
+    },
+    "precios": {
+      "title": "Andarama-Preise: 14 Tage kostenlos, danach ab 20 $ im Monat | andarama",
+      "description": "Andarama-Preise: 14 Tage testen ohne Kreditkarte und Pläne ab 20 $ im Monat mit 10 Rundgängen. Pläne zum Erstellen und zum Lehren, und Rechnung in Euro für Institutionen.",
+      "h1": "Preise: 14 Tage kostenlos, danach ab 20 $ im Monat",
+      "lead": "Fang ohne Kreditkarte an, mit dem ganzen Editor, der Virtual Reality und dem Export. Wenn es dich überzeugt, wählst du den Plan, der zu dir passt; wenn nicht, gehört dir weiterhin, was du gemacht hast, und du kannst es exportieren.",
+      "cta_prueba": "Kostenlos testen",
+      "prueba": {
+        "titulo": "Was die Testphase umfasst",
+        "lista": [
+          "14 Tage ab dem Anlegen des Kontos, ohne Kreditkarte",
+          "1 Rundgang und 500 MB Medien, mit dem vollständigen Editor, der Virtual Reality und dem Export",
+          "Die in der Testphase veröffentlichten Rundgänge tragen das Abzeichen „Erstellt mit Andarama“",
+          "Am Ende wird nichts berechnet: Was du erstellt hast, bleibt erhalten und lässt sich exportieren; um mehr zu erstellen und hochzuladen, wählst du einen Plan"
+        ]
+      },
+      "faq": {
+        "titulo": "Abrechnung und häufige Fragen",
+        "lista": [
+          { "q": "In welcher Währung wird bezahlt?", "a": "Per Karte in US-Dollar (USD): Der Zahlungsdienst rechnet in Dollar ab, und deine Bank rechnet um. Institutionen, die eine Rechnung in Euro brauchen, können sie anfordern, wie unten erklärt." },
+          { "q": "Kann ich per Rechnung in Euro bezahlen?", "a": "Ja, wenn du eine Hochschule, eine Bildungseinrichtung, ein Museum, eine Behörde oder ein Unternehmen bist. Schreib uns, und wir schicken dir ein Angebot und die Rechnung in Euro mit deinen Steuerdaten, zahlbar per Überweisung; bei Bedarf reichen wir sie über FACe ein. Die Einzelheiten stehen unter <a href=\"{contratacion}\">Beschaffung für Institutionen</a>." },
+          { "q": "Sind die Steuern in den Preisen enthalten?", "a": "Die jeweils anfallenden indirekten Steuern (Mehrwertsteuer, IGIC oder andere) hängen von deinem Land ab und davon, ob du als Privatperson oder als Unternehmen kaufst, und werden auf der Rechnung ausgewiesen." },
+          { "q": "Was passiert, wenn die Testphase endet?", "a": "Es wird nichts berechnet, denn die Testphase verlangt keine Kreditkarte. Was du erstellt hast, bleibt erhalten und lässt sich exportieren; um weitere Rundgänge zu erstellen und mehr Medien hochzuladen, musst du einen Plan wählen." },
+          { "q": "Verlängert es sich automatisch? Wie kündige ich?", "a": "Die Monats- und Jahrespläne verlängern sich am Ende jedes Zeitraums automatisch. Du kannst jederzeit in deinem Konto auf app.andarama.com kündigen: Der Plan bleibt bis zum Ende des bezahlten Zeitraums aktiv, und es wird nichts mehr abgebucht. De por vida ist eine Einmalzahlung. Alles steht in den <a href=\"{condiciones}\">Geschäftsbedingungen</a>." },
+          { "q": "Habe ich ein Widerrufsrecht?", "a": "Beim Abschluss verlangst du, dass der Plan sofort aktiviert wird; deshalb erlischt das Widerrufsrecht bei digitalen Inhalten, sobald die Ausführung begonnen hat (Artikel 103 m der Neufassung des spanischen Verbraucherschutzgesetzes, Ley General para la Defensa de los Consumidores). Dafür gibt es die 14-tägige Testphase ohne Kreditkarte: Du testest, bevor du bezahlst." },
+          { "q": "Kann ich meine Rundgänge mitnehmen?", "a": "Ja, in jedem Plan und auch nach der Testphase: statisches ZIP, einzelne HTML-Datei oder PWA, die ohne Andarama im Hintergrund funktionieren, und die Datei <code>.andarama</code> mit dem Projekt." },
+          { "q": "Und wenn ich es selbst installiere?", "a": "Das ist kostenlos und ohne Kontingente: dasselbe Programm, Open Source unter EUPL-1.2, auf deinem Rechner, in Docker oder in deinem Cloudflare-Konto. Mehr dazu auf der Seite <a href=\"{codigo_abierto}\">Open Source</a>." }
+        ]
+      },
+      "instituciones": {
+        "titulo": "Eine Institution?",
+        "texto": "Hochschulen, Schulen, Museen und Behörden: Rechnung in Euro auf Anfrage, Direktauftrag (contrato menor), Unterlagen zu Sicherheit und Datenschutz und eigene Installation mit Support, wenn ihr das bevorzugt.",
+        "boton": "Beschaffung für Institutionen",
+        "demo": "Demo anfragen"
+      }
+    },
+    "avisoLegal": {
+      "title": "Impressum | andarama",
+      "description": "Impressum von andarama.com: Betreiber, NIF, Anschrift und Kontakt, geistiges Eigentum, Haftung und anwendbares Recht.",
+      "h1": "Impressum",
+      "lead": "Wer hinter andarama.com steht und unter welchen Bedingungen diese Website genutzt wird.",
+      "secciones": [
+        { "titulo": "Betreiber der Website", "html": "<p>Gemäß Artikel 10 des spanischen Gesetzes 34/2002 über Dienste der Informationsgesellschaft und den elektronischen Geschäftsverkehr (LSSI) sind dies die Angaben zum Betreiber von andarama.com und seinen Subdomains (app.andarama.com und docs.andarama.com):</p><ul><li><strong>Betreiber:</strong> {titular}</li><li><strong>NIF (Steuernummer):</strong> {nif}</li><li><strong>Anschrift:</strong> {domicilio} (Spanien)</li><li><strong>E-Mail:</strong> <a href=\"mailto:{correo}\">{correo}</a></li><li><strong>Tätigkeit:</strong> Entwicklung von Andarama, einem Open-Source-Programm zum Erstellen virtueller 360-Grad-Rundgänge, und Online-Bereitstellung des gehosteten Dienstes auf andarama.com.</li></ul>" },
+        { "titulo": "Gegenstand", "html": "<p>Diese Website informiert über Andarama, bietet kostenlose Werkzeuge, die im Browser laufen, und gibt Zugang zum gehosteten Dienst. Der Abschluss der Pläne richtet sich nach den <a href=\"{condiciones}\">Geschäftsbedingungen</a>, die Verarbeitung personenbezogener Daten nach der <a href=\"{privacidad}\">Datenschutzerklärung</a>.</p>" },
+        { "titulo": "Geistiges Eigentum", "html": "<p>Der Quellcode von Andarama wird unter der Lizenz EUPL-1.2 auf <a href=\"https://github.com/joseluissaorin/andarama\">GitHub</a> veröffentlicht. Die Texte, das Design, das Logo und die Marke „Andarama“ dieser Website gehören dem Betreiber, sofern nicht anders angegeben. Die Fotos von Wikimedia Commons in den Beispielrundgängen tragen ihre Urheberangaben und ihre Lizenz im Rundgang selbst. Was jede Nutzerin und jeder Nutzer hochlädt und veröffentlicht, gehört den jeweiligen Urhebern, die dafür einstehen, die Rechte daran zu haben.</p>" },
+        { "titulo": "Haftung", "html": "<p>Der Betreiber bemüht sich, dass die Informationen auf dieser Website richtig und aktuell sind, und korrigiert sie, sobald er einen Fehler bemerkt. Links zu Websites Dritter werden aus Nützlichkeitsgründen angeboten; der Betreiber hat keinen Einfluss auf deren Inhalt. Für die von Nutzern veröffentlichten Rundgänge sind diejenigen verantwortlich, die sie veröffentlichen; wenn du einen mit rechtswidrigem oder rechtsverletzendem Inhalt findest, schreib uns an <a href=\"mailto:{correo}\">{correo}</a>, und wir entfernen ihn, sobald wir tatsächlich Kenntnis davon haben, wie es Artikel 16 der LSSI vorsieht.</p>" },
+        { "titulo": "Anwendbares Recht", "html": "<p>Für diese Website gilt spanisches Recht. Wenn du Verbraucher bist, kannst du die Gerichte an deinem Wohnsitz anrufen; in allen anderen Fällen unterwerfen sich die Parteien den Gerichten von Santa Cruz de Tenerife.</p><p>Letzte Aktualisierung: 27. September 2026.</p>" }
+      ]
+    },
+    "condiciones": {
+      "title": "Geschäfts- und Nutzungsbedingungen | andarama",
+      "description": "Bedingungen von andarama.com: Vertragsschluss, Preise und Steuern, kostenlose Testphase, Verlängerung, Kündigung, Widerruf, Datenexport und anwendbares Recht.",
+      "h1": "Geschäfts- und Nutzungsbedingungen",
+      "lead": "Was wir vereinbaren, wenn du ein Konto anlegst oder einen Plan auf andarama.com abschließt, so geschrieben, dass man es versteht.",
+      "secciones": [
+        { "titulo": "1. Wer den Dienst erbringt und wofür diese Bedingungen gelten", "html": "<p>Den gehosteten Dienst von Andarama (andarama.com und app.andarama.com) erbringt {titular}, NIF {nif}, mit Sitz in {domicilio} (Spanien) und der E-Mail-Adresse <a href=\"mailto:{correo}\">{correo}</a>. Diese Bedingungen gelten für die Nutzung des Kontos und den Abschluss der Pläne. Das Programm Andarama unterliegt, wenn du es selbst installierst, nur seiner Open-Source-Lizenz (EUPL-1.2), nicht diesen Bedingungen.</p>" },
+        { "titulo": "2. Das Konto", "html": "<p>Um ein Konto anzulegen, musst du mindestens 14 Jahre alt sein; um einen kostenpflichtigen Plan abzuschließen, musst du geschäftsfähig sein. Registrierung und Anmeldung übernimmt Clerk. Du bist dafür verantwortlich, deinen Zugang zu schützen, und für das, was mit deinem Konto geschieht; wenn du einen Missbrauch vermutest, gib uns Bescheid.</p>" },
+        { "titulo": "3. Vertragsschluss", "html": "<p>Die Pläne werden auf app.andarama.com abgeschlossen: Du wählst Plan und Abrechnungszeitraum, prüfst den Preis und bezahlst per Karte über den Zahlungsdienst (Clerk, mit Stripe als Zahlungsdienstleister). Der Vertrag ist geschlossen, sobald die Zahlung bestätigt ist, und du erhältst den Beleg per E-Mail. Der Vertrag wird auf Spanisch geschlossen; die Übersetzungen dieser Bedingungen dienen nur der Information, und bei Abweichungen gilt die spanische Fassung.</p><p>Institutionen und Unternehmen können auch über ein Angebot und eine Rechnung in Euro abschließen: Der Vertrag ist geschlossen, sobald sie das Angebot annehmen oder uns die Bestellung schicken.</p>" },
+        { "titulo": "4. Preise und Steuern", "html": "<p>Die aktuellen Preise stehen auf der Seite <a href=\"{precios}\">Preise</a>. Per Karte wird in US-Dollar (USD) abgerechnet; deine Bank rechnet um. Per Rechnung wird in Euro abgerechnet. Die jeweils anfallenden indirekten Steuern (Mehrwertsteuer, IGIC oder andere) werden nach den geltenden Vorschriften und dem Standort des Kunden berechnet und auf der Rechnung ausgewiesen. Wenn sich ein Preis ändert, informieren wir dich mindestens 30 Tage vor der nächsten Verlängerung per E-Mail, und du kannst kündigen, bevor er gilt.</p>" },
+        { "titulo": "5. Kostenlose Testphase", "html": "<p>Beim Anlegen des Kontos hast du 14 Tage Testphase ohne Kreditkarte, mit 1 Rundgang und 500 MB Medien; was du in der Testphase veröffentlichst, trägt das Abzeichen „Erstellt mit Andarama“. Die Testphase wird nicht von selbst zu einem kostenpflichtigen Plan. Am Ende bleibt, was du erstellt hast, erhalten und lässt sich exportieren; um mehr zu erstellen oder hochzuladen, brauchst du einen Plan.</p>" },
+        { "titulo": "6. Verlängerung und Kündigung", "html": "<p>Die Monats- und Jahrespläne verlängern sich am Ende jedes Zeitraums automatisch zum selben Betrag, sofern keine Preisänderung angekündigt wurde. Du kannst die Verlängerung jederzeit in deinem Konto kündigen: Der Plan bleibt bis zum Ende des bereits bezahlten Zeitraums aktiv, und es wird nichts mehr abgebucht. Angefangene Zeiträume werden nicht erstattet, außer wenn das Gesetz es verlangt.</p><p>Der Plan De por vida ist eine Einmalzahlung und gilt, solange der gehostete Dienst von andarama.com erbracht wird. Sollte er eines Tages eingestellt werden, kündigen wir das mindestens 90 Tage vorher an, damit du alles exportieren oder in eine eigene Installation mitnehmen kannst.</p>" },
+        { "titulo": "7. Widerrufsrecht", "html": "<p>Als Verbraucher hast du grundsätzlich 14 Kalendertage Zeit, um einen Fernabsatzvertrag zu widerrufen. Die Pläne von Andarama sind digitale Inhalte, die nicht auf einem körperlichen Datenträger geliefert werden: Beim Abschluss verlangst du ausdrücklich, dass der Plan sofort aktiviert wird, und nimmst zur Kenntnis, dass du dadurch dein Widerrufsrecht verlierst, sobald die Ausführung begonnen hat, gemäß Artikel 103 m) der Neufassung des spanischen Verbraucherschutzgesetzes (Ley General para la Defensa de los Consumidores y Usuarios, Real Decreto Legislativo 1/2007). Deshalb bieten wir vorher eine 14-tägige Testphase ohne Kreditkarte an.</p><p>Wenn du diese Zustimmung nicht gegeben hast oder der Plan noch nicht aktiviert wurde, kannst du innerhalb von 14 Tagen widerrufen, indem du an <a href=\"mailto:{correo}\">{correo}</a> schreibst (das Muster-Widerrufsformular aus Anhang B dieses Gesetzes genügt, ebenso jede eindeutige Nachricht), und wir erstatten dir den Betrag innerhalb von höchstens 14 Tagen über dasselbe Zahlungsmittel. Unternehmen und Institutionen sind in diesem Sinne keine Verbraucher.</p>" },
+        { "titulo": "8. Zulässige Nutzung und Inhalte", "html": "<p>Du bist für das verantwortlich, was du hochlädst und veröffentlichst, und dafür, die Rechte daran zu haben (Fotos, Texte, Audio, Video, Marken und das Bild der Personen, die darauf zu sehen sind). Es ist nicht erlaubt, den Dienst für rechtswidrige Inhalte, zur Verletzung von Rechten Dritter, zur Verbreitung von Schadsoftware oder zu seiner absichtlichen Überlastung zu nutzen. Wir können Inhalte entfernen oder ein Konto sperren, das gegen diese Regeln verstößt, und informieren dich darüber, sofern die Schwere des Falls oder das Gesetz es nicht verhindern.</p><p>Die Pläne haben Kontingente für Rundgänge und Speicherplatz und eine Richtlinie zur angemessenen Nutzung: Sie sind für eine Person oder ein kleines Team gedacht. Wenn die Nutzung nicht mehr danach aussieht, sprechen wir mit dir, bevor irgendetwas abgeschaltet wird.</p>" },
+        { "titulo": "9. Verfügbarkeit und Support", "html": "<p>Wir arbeiten daran, dass der Dienst immer verfügbar ist, es kann aber Unterbrechungen durch Wartung, durch Ausfälle der Anbieter oder aus Gründen geben, auf die wir keinen Einfluss haben. Sofern nicht schriftlich vereinbart, gibt es kein garantiertes Service-Level. Support gibt es per E-Mail.</p>" },
+        { "titulo": "10. Deine Daten und der Export", "html": "<p>Was du erstellst, gehört dir. Du kannst deine Rundgänge jederzeit und in jedem Plan exportieren, auch nach der Testphase oder nach einer Kündigung: statisches ZIP, einzelne HTML-Datei, PWA und die Datei <code>.andarama</code>. Wenn du kündigst, bleiben deine Rundgänge und Medien erhalten, solange das Konto besteht; wenn du die Löschung per E-Mail beantragst, werden sie innerhalb von höchstens 30 Tagen entfernt, wie in der <a href=\"{privacidad}\">Datenschutzerklärung</a> erklärt. Für Institutionen und Unternehmen bereiten wir auf Anfrage den Auftragsverarbeitungsvertrag nach Artikel 28 DSGVO vor.</p>" },
+        { "titulo": "11. Haftung", "html": "<p>Wir stehen dafür ein, den Dienst mit Sorgfalt zu erbringen. Außer bei Vorsatz oder grober Fahrlässigkeit und außer in dem, was das Gesetz gegenüber Verbrauchern nicht zu beschränken erlaubt, ist unsere Haftung auf den Betrag begrenzt, der in den zwölf Monaten vor dem schadensbegründenden Ereignis bezahlt wurde. Wir empfehlen dir, die Originale deiner Fotos aufzubewahren und deine Rundgänge von Zeit zu Zeit zu exportieren.</p>" },
+        { "titulo": "12. Änderungen dieser Bedingungen", "html": "<p>Wenn sich diese Bedingungen wesentlich ändern, informieren wir dich mindestens 30 Tage vorher per E-Mail. Wenn du nicht einverstanden bist, kannst du kündigen, bevor sie in Kraft treten.</p>" },
+        { "titulo": "13. Anwendbares Recht und Gerichtsstand", "html": "<p>Für diese Bedingungen gilt spanisches Recht. Wenn du Verbraucher bist, kannst du die Gerichte an deinem Wohnsitz anrufen; in allen anderen Fällen unterwerfen sich die Parteien den Gerichten von Santa Cruz de Tenerife. Schreib uns aber vorher: Fast alles lässt sich mit einer E-Mail klären.</p><p>Letzte Aktualisierung: 27. September 2026.</p>" }
+      ]
+    },
+    "seguridad": {
+      "title": "Sicherheit und Datenschutz | andarama",
+      "description": "Wie andarama.com gebaut ist: Architektur auf Cloudflare, wo die Daten liegen, Verschlüsselung, Backups, prüfbarer Code und Ausstiegsplan. Ohne Zertifizierungen, die wir nicht haben.",
+      "h1": "Sicherheit und Datenschutz",
+      "lead": "Was die IT-Abteilung oder der Datenschutzbeauftragte vor einem Vertragsabschluss meist fragt, beantwortet mit dem, was es wirklich gibt.",
+      "secciones": [
+        { "titulo": "Architektur", "html": "<p>andarama.com läuft auf Cloudflare: Ein Worker liefert die API, das Studio und die Rundgänge aus; die Datenbank ist D1 (verwaltetes SQLite); Medien und Kacheln liegen in R2 (Objektspeicher); KV speichert kurzlebige technische Daten, und Durable Objects koordinieren die Echtzeitbearbeitung und die Live-Touren. Konten, Anmeldung und Abrechnung übernimmt Clerk. Die Besucheranalytik ist eine eigene Lösung ohne Cookies, die der Website übernimmt Plausible.</p>" },
+        { "titulo": "Wo die Daten liegen", "html": "<ul><li><strong>Datenbank (D1) und Medien (R2):</strong> in Cloudflare-Rechenzentren in Westeuropa. Das ist der beim Anlegen gewählte Standort; wir arbeiten daran, ihn auch per EU-Jurisdiktion festzulegen.</li><li><strong>Ausführung:</strong> Der Code läuft im Netz von Cloudflare, im Rechenzentrum, das den Besuchenden am nächsten ist.</li><li><strong>KV:</strong> flüchtige technische Daten (Lesesitzungen, Veröffentlichungszeiger), im ganzen Netz repliziert.</li><li><strong>Konten und Abrechnung:</strong> bei Clerk, in den Vereinigten Staaten (E-Mail, Name, Sitzung und Rechnungsdaten). Rundgänge und Medien laufen nicht über Clerk.</li><li><strong>Website-Analytik:</strong> Plausible, in der Europäischen Union, ohne Cookies und ohne IP-Adressen.</li></ul><p>Wenn die Institution alles im eigenen Haus braucht, wird dieselbe Anwendung auf ihrer eigenen Infrastruktur installiert (siehe unten).</p>" },
+        { "titulo": "Verschlüsselung", "html": "<p>Der gesamte Verkehr läuft über HTTPS mit TLS und HSTS. Cloudflare verschlüsselt die D1-Datenbank und die R2-Objekte im Ruhezustand. Passwörter und Geheimnisse des Dienstes werden nie im Klartext gespeichert, und API-Tokens werden als Hash gespeichert.</p>" },
+        { "titulo": "Zugang und Authentifizierung", "html": "<p>Auf andarama.com verwaltet Clerk den Zugang, mit verfügbarer Zwei-Faktor-Authentifizierung. Innerhalb der Anwendung haben Organisationen Rollen (verwalten, bearbeiten, mitarbeiten, lesen), und die Berechtigungen werden auf jeder Route serverseitig geprüft. Bei einer eigenen Installation gibt es außerdem lokale Konten mit Zwei-Faktor-Authentifizierung (TOTP) und institutionelles SSO per OIDC.</p>" },
+        { "titulo": "Schutz der Anwendung", "html": "<p>Content Security Policy (CSP) mit Nonces, CSRF-Schutz mit doppeltem Token, Anfragelimits, Turnstile gegen Missbrauch von Formularen, Bereinigung von SVG, Markdown und CSS und ein Audit-Log der Verwaltungsaktionen. Die Continuous Integration führt bei jeder Änderung die Tests und das Abhängigkeits-Audit aus.</p>" },
+        { "titulo": "Backups", "html": "<p>D1 erlaubt es, die Datenbank innerhalb des von Cloudflare angebotenen Zeitraums auf einen Zeitpunkt zurückzusetzen (Time Travel), und das Admin-Panel exportiert eine vollständige Kopie der Datenbank. Die Medien in R2 haben keine automatische Versionierung: Deshalb empfehlen wir, die Originale der Fotos aufzubewahren und wichtige Rundgänge zu exportieren.</p>" },
+        { "titulo": "Prüfbarer Code", "html": "<p>Der vollständige Code ist unter EUPL-1.2 auf <a href=\"https://github.com/joseluissaorin/andarama\">GitHub</a> veröffentlicht: Jeder kann nachsehen, wie die Daten verarbeitet werden. Sicherheitslücken werden vertraulich gemeldet, wie in der Datei <code>SECURITY.md</code> des Repositorys beschrieben. Mehr auf der Seite <a href=\"{codigo_abierto}\">Open Source</a>.</p>" },
+        { "titulo": "Ausstiegsplan", "html": "<p>Nichts, was entsteht, bleibt gefangen. Die Rundgänge lassen sich jederzeit als statisches ZIP, einzelne HTML-Datei oder PWA exportieren, die ohne Andarama funktionieren, und als Datei <code>.andarama</code>. Das Format <code>tour.json</code> ist dokumentiert. Und dieselbe Anwendung lässt sich auf der Infrastruktur der Institution installieren (Docker, ihr Cloudflare-Konto oder eine ausführbare Desktop-Datei); an dem Tag, an dem der gehostete Dienst nicht mehr gebucht wird, geht die Arbeit also weiter.</p>" },
+        { "titulo": "Was wir (noch) nicht haben", "html": "<p>Andarama hat keine eigene Zertifizierung nach dem spanischen Esquema Nacional de Seguridad (ENS) oder nach ISO 27001. Cloudflare und Clerk haben als Anbieter ihre eigenen Zertifizierungen. Verlangt die Institution ENS, fällt die eigene Installation auf ihrer Infrastruktur unter ihr ENS. Auf Anfrage bereiten wir den Auftragsverarbeitungsvertrag (Artikel 28 DSGVO) und ein technisches Datenblatt mit diesen Informationen vor.</p>" }
+      ],
+      "cta": { "titulo": "Braucht ihr die Unterlagen?", "texto": "Auftragsverarbeitungsvertrag, technisches Datenblatt, Erklärung zur Barrierefreiheit oder ein Termin mit eurer IT-Abteilung: Fragt uns, und wir schicken es euch.", "boton": "Unterlagen oder Demo anfragen" }
+    },
+    "accesibilidad": {
+      "title": "Erklärung zur Barrierefreiheit | andarama",
+      "description": "Erklärung zur Barrierefreiheit von andarama.com und dem Andarama-Viewer: teilweise konform mit WCAG 2.1 AA, Audit ausstehend, und wie du uns erreichst.",
+      "h1": "Erklärung zur Barrierefreiheit",
+      "lead": "Wir wollen, dass jeder durch einen Andarama-Rundgang gehen kann und dass die Institutionen, die ihn nutzen, ihre Pflicht zur Barrierefreiheit erfüllen können. Das ist der tatsächliche Stand.",
+      "secciones": [
+        { "titulo": "Geltungsbereich", "html": "<p>Diese Erklärung gilt für andarama.com (die öffentliche Website), für den Viewer, mit dem die veröffentlichten Rundgänge angezeigt werden, und für app.andarama.com (das Studio, den Editor). Als Bezugsrahmen dienen das spanische Real Decreto 1112/2018 und die Norm UNE-EN 301 549, die auf die WCAG 2.1 auf Stufe AA verweist.</p>" },
+        { "titulo": "Stand der Konformität", "html": "<p><strong>Teilweise konform.</strong> Wir arbeiten daran, WCAG 2.1 AA zu erfüllen, es wurde aber noch kein externes Audit durchgeführt: Diese Bewertung ist eine Selbsteinschätzung und wird überprüft, sobald das Audit vorliegt.</p>" },
+        { "titulo": "Was der Viewer schon kann", "html": "<ul><li>Linearer, barrierefreier Inhaltsmodus: Der ganze Rundgang lässt sich als Text lesen, mit Screenreader oder ohne Maus.</li><li>Vollständige Bedienung per Tastatur und sichtbarer Fokus.</li><li>Touch-Ziele von mindestens 44 Pixeln.</li><li>Ansage des Szenenwechsels für Screenreader.</li><li>Berücksichtigung der Einstellung für reduzierte Bewegung (<code>prefers-reduced-motion</code>).</li><li>WebVTT-Untertitel im 360-Grad-Video und in den Video-Hotspots.</li><li>Alternativtext je Szene, mit prüfbarem Vorschlag; der Editor weist darauf hin, wenn er fehlt.</li></ul>" },
+        { "titulo": "Was nicht barrierefrei ist oder nicht geprüft wurde", "html": "<ul><li>Das Erkunden eines 360-Grad-Fotos ist naturgemäß visuell: Die Alternative ist der lineare Modus, dessen Qualität von den Texten abhängt, die die Person schreibt, die den Rundgang erstellt.</li><li>Der Alternativtext ist nicht verpflichtend: Ein ohne ihn veröffentlichter Rundgang hat keinen.</li><li>Eingebettete Inhalte Dritter (Webseiten, YouTube- oder Vimeo-Videos, 3D-Modelle) hängen von ihrer Quelle ab.</li><li>Eigene Designs und Farben erreichen unter Umständen nicht den Mindestkontrast.</li><li>Das Studio (der Editor) wurde noch nicht mit Screenreadern geprüft.</li><li>Die Virtual Reality mit Brille hat innerhalb der immersiven Sitzung keine gleichwertige Alternative.</li></ul>" },
+        { "titulo": "Wenn du Rundgänge für eine öffentliche Einrichtung veröffentlichst", "html": "<p>Jede Stelle ist für die Barrierefreiheit dessen verantwortlich, was sie veröffentlicht. Damit ein Rundgang so barrierefrei wie möglich ist: Schreib einen Alternativtext zu jeder Szene und jedem Bild, gib den Hotspots Text, untertitle die Videos und prüf den Kontrast, wenn du die Farben änderst. Diese Erklärung dient dir als Anbieterinformation für deine eigene.</p>" },
+        { "titulo": "Kontakt und Meldungen", "html": "<p>Wenn du auf eine Barriere stößt oder einen Inhalt in barrierefreiem Format brauchst, schreib uns an <a href=\"mailto:{correo}\">{correo}</a>. Wir antworten innerhalb von höchstens 20 Werktagen.</p>" },
+        { "titulo": "Erstellung dieser Erklärung", "html": "<p>Erklärung erstellt am 27. September 2026 durch Selbsteinschätzung des eigenen Teams. Sie wird nach dem externen Audit und in jedem Fall jährlich überprüft.</p>" }
+      ]
+    },
+    "codigoAbierto": {
+      "title": "Open Source: EUPL-1.2, eigene Installation und Repository | andarama",
+      "description": "Andarama ist Open Source unter EUPL-1.2: Man kann es lesen, prüfen, auf dem eigenen Server installieren und verändern. Was im Repository steckt und was passiert, wenn Andarama schließt.",
+      "h1": "Open Source, wirklich",
+      "lead": "Andarama ist keine abgespeckte Version mit einer Cloud dahinter: Der Dienst auf andarama.com und das, was du selbst installierst, sind dasselbe Programm, vollständig veröffentlicht.",
+      "secciones": [
+        { "titulo": "Die Lizenz: EUPL-1.2", "html": "<p>Andarama wird unter der <a href=\"https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12\">Öffentlichen Lizenz der Europäischen Union (EUPL) 1.2</a> veröffentlicht, der Lizenz der Europäischen Kommission, mit amtlicher Fassung in allen Sprachen der Union. Sie erlaubt es, das Programm zu nutzen, zu untersuchen, zu verändern und weiterzugeben, auch zu kommerziellen Zwecken. Wer eine veränderte Version verbreitet oder sie als Netzdienst anbietet, muss seine Änderungen unter derselben (oder einer kompatiblen) Lizenz veröffentlichen.</p>" },
+        { "titulo": "Das Repository", "html": "<p>Alles liegt auf <a href=\"https://github.com/joseluissaorin/andarama\">github.com/joseluissaorin/andarama</a>: die API, das Studio, der Viewer, der Exporter, der Kachel-Generator für Panoramen, das Datenschema, die Dokumentation und die Deployments. Striktes TypeScript, Unit- und End-to-End-Tests und Continuous Integration mit Abhängigkeits-Audit. Issues und Vorschläge werden dort eröffnet.</p>" },
+        { "titulo": "Selbst installieren", "html": "<p>Drei Wege, dasselbe Programm und keine Gebühren:</p><ul><li><strong>Desktop:</strong> eine ausführbare Datei für macOS, Windows und Linux, per Doppelklick (<a href=\"https://docs.andarama.com/despliegue/escritorio/\">Anleitung</a>).</li><li><strong>Docker:</strong> Node und SQLite in einem Image, mit einem Volume und einem Port (<a href=\"https://docs.andarama.com/despliegue/docker/\">Anleitung</a>).</li><li><strong>Cloudflare:</strong> dein eigenes Konto, mit einem Befehl, der die Ressourcen anlegt und die Datenbank migriert (<a href=\"https://docs.andarama.com/despliegue/cloudflare/\">Anleitung</a>).</li></ul><p>Bei einer eigenen Installation gibt es keine Pläne und keine Grenzen außer denen, die die Administration festlegt, und man kann lokale Konten mit Zwei-Faktor-Authentifizierung oder institutionelles SSO per OIDC nutzen.</p>" },
+        { "titulo": "Ein Format, das nicht veraltet", "html": "<p>Die Rundgänge werden in <code>tour.json</code> gespeichert, einem dokumentierten und versionierten Format (<a href=\"https://docs.andarama.com/referencia/tour-json/\">Referenz</a>). Das Exportierte (statisches ZIP, einzelne HTML-Datei, PWA) funktioniert ohne Andarama im Hintergrund, auf jedem Hosting oder vom USB-Stick.</p>" },
+        { "titulo": "Und wenn Andarama schließt?", "html": "<p>Das ist die Frage, die über eine öffentliche Beschaffung entscheidet, und sie hat eine Antwort: Der Code bliebe veröffentlicht, und jeder könnte ihn weiter nutzen, installieren und pflegen; die exportierten Rundgänge würden weiter funktionieren, und der gehostete Dienst würde rechtzeitig Bescheid geben, damit man alles mitnehmen kann. Niemand hängt davon ab, dass wir weiter da sind.</p>" },
+        { "titulo": "Gehostet oder im eigenen Haus", "html": "<p>Der Dienst auf andarama.com ergänzt, was ein laufender Server erfordert: Hosting, Backups, Updates, Konten mit Clerk und die Pläne. Wenn du nichts selbst pflegen willst, ist er da; wenn du es lieber auf deiner Infrastruktur hast, geht das auch. Für Institutionen bieten wir eine eigene Installation mit Support an: siehe <a href=\"{contratacion}\">Beschaffung</a>.</p>" }
+      ],
+      "cta": { "titulo": "Sollen wir es bei euch installieren?", "texto": "Wenn eure Institution es lieber auf der eigenen Infrastruktur hat, rollen wir es gemeinsam mit euch aus, und ihr bucht Support und Updates dazu.", "boton": "Lass uns reden" }
+    },
+    "contratacion": {
+      "title": "Beschaffung für Institutionen: Direktauftrag, Rechnung in Euro und FACe | andarama",
+      "description": "So beschafft eine Hochschule, ein Museum oder eine Behörde Andarama: Direktauftrag (contrato menor), elektronische Rechnung in Euro über FACe und Unterlagen auf Anfrage.",
+      "h1": "Beschaffung für Institutionen",
+      "lead": "Was die Vergabestelle wissen muss, um Andarama ohne Umwege zu beschaffen: wer die Rechnung stellt, wie und mit welchen Unterlagen.",
+      "secciones": [
+        { "titulo": "Angaben zum Anbieter", "html": "<ul><li><strong>Inhaber:</strong> {titular} (natürliche Person, Selbstständiger)</li><li><strong>NIF (Steuernummer):</strong> {nif}</li><li><strong>Anschrift:</strong> {domicilio} (Spanien)</li><li><strong>E-Mail:</strong> <a href=\"mailto:{correo}\">{correo}</a></li></ul>" },
+        { "titulo": "Direktauftrag (contrato menor)", "html": "<p>Üblich ist ein Direktauftrag, in Spanien <em>contrato menor</em> (Artikel 118 der Ley 9/2017 de Contratos del Sector Público), unter 15 000 € ohne Mehrwertsteuer bei Dienst- und Lieferleistungen. Je nachdem, wie die jeweilige Stelle ihn abwickelt, passt er als <strong>Lieferung</strong> (Abonnement oder Nutzungslizenz für den gehosteten Dienst) oder als <strong>Dienstleistung</strong> (Hosting, Produktion von Rundgängen, eigene Installation mit Support oder Schulung des Personals). Als CPV-Codes schlagen wir zur Orientierung 48000000-8 (Softwarepakete und Informationssysteme) und 72416000-9 (Application Service Provider) vor; die endgültigen legt die Vergabestelle fest.</p>" },
+        { "titulo": "Was sich beschaffen lässt", "html": "<ul><li>Jeder gehostete Plan, monatlich oder jährlich (der Plan Formación zum Beispiel für 990 $ im Jahr; in Euro laut Angebot).</li><li>Eigene Installation auf der Infrastruktur der Institution, mit Support und Updates.</li><li>Schlüsselfertige Produktion von Rundgängen und Schulung des Personals.</li></ul><p>Die Preise der Pläne stehen auf der Seite <a href=\"{precios}\">Preise</a>; alles andere wird angeboten.</p>" },
+        { "titulo": "Rechnung in Euro und FACe", "html": "<p>Wir stellen eine Rechnung in Euro mit den Steuerdaten der Institution aus. Wenn die Institution es verlangt, wird die elektronische Rechnung über FACe mit den DIR3-Codes eingereicht, die ihr uns nennt (Buchhaltungsstelle, verwaltendes Organ und bearbeitende Einheit). Bezahlt wird per Banküberweisung.</p>" },
+        { "titulo": "Unterlagen auf Anfrage", "html": "<ul><li>Auftragsverarbeitungsvertrag (Artikel 28 DSGVO), mit der Liste der Unterauftragsverarbeiter und ihrer Länder.</li><li>Technisches Datenblatt zu Architektur und Sicherheit (zusammengefasst auf der Seite <a href=\"{seguridad}\">Sicherheit</a>).</li><li>Erklärung zur <a href=\"{accesibilidad}\">Barrierefreiheit</a>.</li><li>Angebot oder Leistungsbeschreibung für die Vergabeakte.</li><li>Bescheinigungen über die Erfüllung der steuerlichen Pflichten und der Pflichten gegenüber der Sozialversicherung.</li></ul><p>Ohne Zertifizierungen, die wir nicht haben: Andarama hat kein eigenes ENS; wenn die Institution es verlangt, fällt die eigene Installation unter ihr ENS.</p>" },
+        { "titulo": "Zeitplan", "html": "<p>Wenn ihr die Beschaffung noch im laufenden Haushaltsjahr abschließen wollt, schreibt uns rechtzeitig: Wir erstellen das Angebot innerhalb von ein bis zwei Werktagen und die Rechnung, sobald wir die Bestellung erhalten.</p>" }
+      ],
+      "cta": { "titulo": "Angebot oder Unterlagen anfragen", "texto": "Erzählt uns, was ihr braucht, und wir schicken euch das Angebot und die Unterlagen für die Vergabeakte.", "boton": "Schreibt uns" }
+    },
+    "inmobiliaria": {
+      "title": "Virtueller Rundgang für Immobilienmakler: 10 Objekte für 20 $ im Monat | andarama",
+      "description": "Virtuelle 360-Grad-Rundgänge für Immobilienmakler mit jeder 360-Grad-Kamera: 10 gleichzeitig veröffentlichte Objekte für 20 $ im Monat. 14 Tage kostenlos, ohne Kreditkarte.",
+      "h1": "Virtueller Rundgang für Immobilienmakler: 10 Objekte für 20 $ im Monat",
+      "lead": "Fotografiere die Wohnung mit einer beliebigen 360-Grad-Kamera, lade die Fotos hoch, verbinde die Räume und veröffentliche einen Link, der sich in die Website der Agentur einbetten und aus dem Inserat im Immobilienportal verlinken lässt.",
+      "precio": "20 $ im Monat · 10 gleichzeitig veröffentlichte Objekte · austauschbar, sobald sie verkauft sind",
+      "cta": { "prueba": "Kostenlos testen", "excursion": "Mehr als 10 Objekte? Sieh dir Excursión an" },
+      "bloques": [
+        { "titulo": "Von der Kamera zum Inserat an einem Nachmittag", "texto": "Mach die 360-Grad-Fotos mit einer Insta360, einer Ricoh Theta oder jeder Kamera, die equirektanguläre Bilder liefert. Lade sie in einem Rutsch hoch: Der Importer sortiert sie und zerlegt sie in deinem Browser in Kacheln. Zieh einen Raum auf einen anderen, um den Übergang zu erstellen, veröffentliche und füge den Link ein, wo du willst." },
+        { "titulo": "Was jedes Objekt kostet", "texto": "Der Plan Paseo kostet 20 $ im Monat (oder 200 $ im Jahr) mit 10 Rundgängen gleichzeitig: etwa 2 $ im Monat pro Objekt. Wenn eines verkauft ist, nimmst du es offline und nutzt den Platz für das nächste. Keine Gebühren pro Besuch oder pro Foto." },
+        { "titulo": "Auf der Website der Agentur und im Portal", "texto": "Jeder Rundgang hat seinen Link, einen QR-Code fürs Schaufenster und einen iframe oder eine Script-Zeile zum Einbetten in das Exposé. Er lässt sich auf dem Handy mit Gyroskop und in einer VR-Brille ansehen, ohne etwas zu installieren." },
+        { "titulo": "Mit deiner Marke", "texto": "Mit dem Plan Excursión (500 $ im Jahr, bis zu 500 Rundgänge) erscheinen die Touren ohne das Andarama-Abzeichen und unter der Domain der Agentur." },
+        { "titulo": "Grundrisse, Texte und Fotos", "texto": "Grundriss mit der Position jedes Raums, Texte mit Quadratmetern und Ausstattung, Detailfotos, Video und ein Kontaktformular direkt im Rundgang." },
+        { "titulo": "Was es nicht kann", "texto": "Andarama arbeitet mit 360-Grad-Fotos: Es macht keine LiDAR-Scans, keine 3D-Puppenhausansichten und keine vermessenen Grundrisse wie Matterport. Wenn du das brauchst, bleibt Matterport die richtige Wahl; wenn du eine Wohnung gut und günstig zeigen willst, reicht das hier." }
+      ],
+      "faq": {
+        "titulo": "Häufige Fragen",
+        "lista": [
+          { "q": "Welche Kamera brauche ich?", "a": "Jede, die equirektanguläre Fotos im Verhältnis 2:1 liefert: Insta360 X3 oder X4, Ricoh Theta, Kandao, GoPro Max … oder das Handy mit einer Panorama-App. Es gibt keine eigene Kamera und keine Hardware zur Miete." },
+          { "q": "Kann ich mehr als 10 Objekte haben?", "a": "Ja: Der Plan Excursión erlaubt bis zu 500 Rundgänge für 500 $ im Jahr, ohne Abzeichen und mit eigener Domain." },
+          { "q": "Lässt sich der Rundgang in Immobilienportale einbinden?", "a": "Immobilienportale haben in der Regel ein Feld für den Link zu einem virtuellen Rundgang; dafür eignet sich der Andarama-Link. Auf der Website der Agentur wird er mit einem iframe oder mit dem WordPress-Plugin eingebettet." },
+          { "q": "Was passiert, wenn ich nicht mehr bezahle?", "a": "Du kannst jeden Rundgang als statisches ZIP exportieren und hosten, wo du willst, ohne Andarama im Hintergrund." }
+        ]
+      }
     }
+  },
+  "consentimiento": {
+    "aria": "Hinweis zur Anzeige",
+    "texto": "Du bist über eine Anzeige gekommen. Dürfen wir das Google mitteilen, um zu erfahren, ob sie funktioniert?",
+    "si": "Ja",
+    "no": "Nein",
+    "mas": "Mehr erfahren"
+  },
+  "demo": {
+    "enviando": "Wird gesendet …",
+    "ok": "Angekommen. Wir melden uns innerhalb von ein bis zwei Werktagen.",
+    "error": "Das Senden hat nicht geklappt. Versuch es noch einmal oder schreib uns an {correo}.",
+    "aviso": "Wir verwenden diese Daten nur, um dir zu antworten. Mehr dazu in der <a href=\"{privacidad}\">Datenschutzerklärung</a>."
   },
   "herramientas": {
     "indice": {
@@ -564,7 +783,7 @@
   },
   "jsonld": {
     "app_nombre": "Andarama",
-    "app_descripcion": "Virtuelle 360-Grad-Rundgänge als Open Source: visueller Editor, WebGL-Viewer mit Virtual Reality, Quiz, LTI, SCORM und offener Export.",
+    "app_descripcion": "Virtuelle 360-Grad-Rundgänge als Open Source: visueller Editor, WebGL-Viewer mit Virtual Reality, Quiz, SCORM und offener Export.",
     "categoria": "MultimediaApplication"
   }
 }
