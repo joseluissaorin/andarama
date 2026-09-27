@@ -123,6 +123,7 @@ const optionalSecrets = [
   ["OIDC_ISSUER", "Issuer OIDC del SSO institucional (vacío = sin SSO)"],
   ["CLERK_PUBLISHABLE_KEY", "Clave publicable de Clerk (vacío = cuentas propias, sin planes)"],
   ["CLERK_SECRET_KEY", "Clave secreta de Clerk"],
+  ["CLERK_WEBHOOK_SECRET", "Secreto de firma del webhook de Clerk (whsec_...; vacío = sin webhook)"],
 ];
 if (process.stdin.isTTY) {
   for (const [name, prompt] of optionalSecrets) {

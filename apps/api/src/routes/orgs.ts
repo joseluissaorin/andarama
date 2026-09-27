@@ -1,15 +1,16 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, isNull, sql } from "drizzle-orm";
-import { media, orgInvites, orgMembers, orgs, projects, users } from "@andarama/db";
+import { and, eq, isNull } from "drizzle-orm";
+import { orgInvites, orgMembers, orgs, projects, users } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, newToken, nowMs, parseJson, sha256Hex, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
-import { orgQuota } from "../lib/quota.js";
+import { orgQuota, usedBytes, usedTours } from "../lib/quota.js";
 import { orgPlanActive } from "../lib/capabilities.js";
+import { buildOrgExport } from "../lib/org-export.js";
 import { INHERITED_KEYS, propagateOrgDefaults, type OrgDefaults } from "../lib/defaults.js";
 
 const roleSchema = z.enum(["admin", "editor", "collaborator", "reader"]);
@@ -140,26 +141,42 @@ export function orgRoutes(): Hono<AppEnv> {
     await requireOrgRole(db, orgId, auth.user, "reader");
     const org = (await db.select().from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
     if (org == null) throw notFound();
-    const bytesRow = await db
-      .select({ total: sql<number>`coalesce(sum(${media.bytes}), 0)` })
-      .from(media)
-      .where(and(eq(media.orgId, orgId), isNull(media.deletedAt)));
-    const projectsRow = await db
-      .select({ total: sql<number>`count(*)` })
-      .from(projects)
-      // El tour de ejemplo no cuenta en la cuota
-      .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt), eq(projects.isSample, false)));
+    // Con plan, el uso es el de todas las organizaciones del dueño
     const quota = await orgQuota(db, c.get("config"), org);
     return c.json({
       quotaBytes: quota.quotaBytes,
-      usedBytes: Number(bytesRow[0]?.total ?? 0),
+      usedBytes: await usedBytes(db, quota),
       quotaTours: quota.quotaTours,
-      usedTours: Number(projectsRow[0]?.total ?? 0),
+      usedTours: await usedTours(db, quota),
       plan: quota.plan,
       fromPlan: quota.fromPlan,
       ownerId: quota.ownerId,
       /** Instancia alojada sin plan vigente: editar, republicar y subir piden plan. */
       planLocked: !(await orgPlanActive(db, c.get("config"), orgId)),
+    });
+  });
+
+  /**
+   * Exportación completa de la organización (portabilidad): proyectos,
+   * recorridos compilados, formularios, resultados e inventario de medios en
+   * un ZIP. Solo para quien la administra.
+   */
+  r.get("/:orgId/export", async (c) => {
+    const auth = requireAuth(c);
+    requireScope(auth, "projects:read");
+    const db = c.get("db");
+    const orgId = c.req.param("orgId");
+    await requireOrgRole(db, orgId, auth.user, "admin");
+    const org = (await db.select({ id: orgs.id }).from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
+    if (org == null) throw notFound();
+    const { zip, slug } = await buildOrgExport(db, orgId, c.get("config").publicUrl);
+    await audit(c, "org.export", "org", orgId, { bytes: zip.byteLength }, orgId);
+    return new Response(zip as unknown as BodyInit, {
+      headers: {
+        "content-type": "application/zip",
+        "content-disposition": `attachment; filename="andarama-${slug}-${new Date().toISOString().slice(0, 10)}.zip"`,
+        "cache-control": "no-store",
+      },
     });
   });
 

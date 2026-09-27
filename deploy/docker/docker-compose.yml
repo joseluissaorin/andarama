@@ -16,6 +16,9 @@ services:
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8788}
       # Secreto de instancia: genera uno con `openssl rand -hex 32`
       APP_SECRET: ${APP_SECRET:?Define APP_SECRET en .env}
+      # Administradores de la instancia, separados por comas. Si se deja vacia,
+      # el primer usuario registrado administra la instancia.
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       # SMTP opcional (verificacion de email, invitaciones)
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
@@ -38,6 +41,7 @@ services:
       # Clerk opcional (cuentas y planes como en andarama.com; el self-host no lo necesita)
       CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:-}
       CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
+      CLERK_WEBHOOK_SECRET: ${CLERK_WEBHOOK_SECRET:-}
 
   # TLS automatico opcional con Caddy (descomenta y apunta tu dominio):
   # caddy:

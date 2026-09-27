@@ -8,6 +8,7 @@ import { newId, newToken, nowMs, sha256Hex, slugify, dailyIpHash } from "../lib/
 import { createSession, destroySession, requireAuth } from "../lib/session.js";
 import { audit, clientIp, getSettings, rateLimit } from "../lib/helpers.js";
 import { generateTotpSecret, totpUri, verifyTotp } from "../lib/totp.js";
+import { initialRole, promoteListedAdmin } from "../lib/admins.js";
 
 const registerSchema = z.object({
   email: z.string().email().max(200),
@@ -64,8 +65,10 @@ export function authRoutes(): Hono<AppEnv> {
 
     const anyUser = await db.select({ id: users.id }).from(users).limit(1);
     const isFirstUser = anyUser.length === 0;
+    // Con ADMIN_EMAILS manda la lista; sin ella, el primer usuario administra
+    const roleGlobal = initialRole(c.get("config"), emailNorm, isFirstUser);
 
-    if (!isFirstUser) {
+    if (!isFirstUser && roleGlobal !== "admin") {
       if (settings.registration === "invite") {
         throw forbidden("El registro es solo por invitación");
       }
@@ -85,7 +88,7 @@ export function authRoutes(): Hono<AppEnv> {
       email: emailNorm,
       name: body.name.trim(),
       passwordHash,
-      roleGlobal: isFirstUser ? "admin" : "user",
+      roleGlobal,
       emailVerified: !emailConfigured, // sin transporte de email: alta directa
       createdAt: nowMs(),
       updatedAt: nowMs(),
@@ -130,8 +133,8 @@ export function authRoutes(): Hono<AppEnv> {
     }
 
     await createSession(c, userId, { totpOk: true, ipHash: await dailyIpHash(clientIp(c), c.get("config").secret) });
-    await audit(c, "user.register", "user", userId, { firstUser: isFirstUser }, orgId);
-    return c.json({ id: userId, emailVerificationPending: emailConfigured, isInstanceAdmin: isFirstUser }, 201);
+    await audit(c, "user.register", "user", userId, { firstUser: isFirstUser, roleGlobal }, orgId, userId);
+    return c.json({ id: userId, emailVerificationPending: emailConfigured, isInstanceAdmin: roleGlobal === "admin" }, 201);
   });
 
   r.get("/verify", async (c) => {
@@ -173,7 +176,8 @@ export function authRoutes(): Hono<AppEnv> {
       if (!totpOk) throw unauthorized("Código de verificación incorrecto");
     }
     await createSession(c, user.id, { totpOk, ipHash: await dailyIpHash(clientIp(c), c.get("config").secret) });
-    await audit(c, "user.login", "user", user.id);
+    await audit(c, "user.login", "user", user.id, undefined, undefined, user.id);
+    await promoteListedAdmin(c, user, "login");
     return c.json({ id: user.id, name: user.name, email: user.email });
   });
 
@@ -346,7 +350,8 @@ export function authRoutes(): Hono<AppEnv> {
       userRow = (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0]!;
     }
     await createSession(c, userRow.id, { totpOk: true, ipHash: await dailyIpHash(clientIp(c), c.get("config").secret) });
-    await audit(c, "user.login_oidc", "user", userRow.id);
+    await audit(c, "user.login_oidc", "user", userRow.id, undefined, undefined, userRow.id);
+    await promoteListedAdmin(c, userRow, "oidc");
     return c.redirect("/studio/");
   });
 

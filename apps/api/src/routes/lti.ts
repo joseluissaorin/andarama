@@ -1,13 +1,46 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
-import { ltiRegistrations, publications } from "@andarama/db";
+import { ltiRegistrations, orgs, projects, publications } from "@andarama/db";
+import { hmacSign, hmacVerify } from "@andarama/adapters";
 import type { AppEnv } from "../lib/context.js";
-import { badRequest, forbidden, notFound } from "../lib/errors.js";
+import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, newToken, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
-import { isInstanceAdmin } from "../lib/authz.js";
+import { isInstanceAdmin, requireOrgRole } from "../lib/authz.js";
 import { orgIdOfSlug, requireOrgCapability } from "../lib/capabilities.js";
+import { audit } from "../lib/helpers.js";
+
+const LTI_VERSION = "1.3.0";
+const CLAIM = "https://purl.imsglobal.org/spec/lti/claim/";
+/** Vigencia del formulario firmado del selector de Deep Linking. */
+export const DEEPLINK_TTL_SECONDS = 15 * 60;
+
+/** Campos del formulario de Deep Linking que viajan por el navegador. */
+export interface DeepLinkForm {
+  registrationId: string;
+  slug: string;
+  returnUrl: string;
+  deploymentId: string;
+  data: string;
+  /** Caducidad, en segundos desde epoch. */
+  exp: number;
+}
+
+function deepLinkPayload(f: DeepLinkForm): string {
+  return JSON.stringify(["lti-deeplink", f.registrationId, f.slug, f.returnUrl, f.deploymentId, f.data, f.exp]);
+}
+
+/** Firma HMAC del formulario con el secreto de la instancia. */
+export async function signDeepLinkForm(secret: string, form: DeepLinkForm): Promise<string> {
+  return hmacSign(secret, deepLinkPayload(form));
+}
+
+/** Verifica firma y caducidad; false si algo se tocó por el camino o ya caducó. */
+export async function verifyDeepLinkForm(secret: string, form: DeepLinkForm, sig: string): Promise<boolean> {
+  if (!Number.isFinite(form.exp) || form.exp < Math.floor(Date.now() / 1000)) return false;
+  return hmacVerify(secret, deepLinkPayload(form), sig);
+}
 
 /**
  * LTI 1.3 Advantage (§2.16): OIDC login initiation, launch (Resource Link),
@@ -103,9 +136,21 @@ export function ltiRoutes(): Hono<AppEnv> {
     const { payload } = await jwtVerify(idToken, jwks, { issuer: reg.issuer, audience: reg.clientId });
     if (payload.nonce !== stateData.nonce) throw forbidden("Nonce LTI inválido");
 
-    const messageType = payload["https://purl.imsglobal.org/spec/lti/claim/message_type"];
+    // Versión, tipo de mensaje y despliegue: lo que no cuadre con el registro se rechaza
+    if (payload[`${CLAIM}version`] !== LTI_VERSION) throw badRequest("Versión de LTI no admitida (se espera 1.3.0)");
+    const messageType = payload[`${CLAIM}message_type`];
+    if (messageType !== "LtiResourceLinkRequest" && messageType !== "LtiDeepLinkingRequest") {
+      throw badRequest("Tipo de mensaje LTI no admitido");
+    }
+    const deploymentId = payload[`${CLAIM}deployment_id`];
+    if (typeof deploymentId !== "string" || deploymentId === "") throw forbidden("El launch LTI no trae deployment_id");
+    if (reg.deploymentId != null && reg.deploymentId !== "" && reg.deploymentId !== deploymentId) {
+      throw forbidden("El deployment_id no corresponde a este registro LTI");
+    }
+
     if (messageType === "LtiDeepLinkingRequest") {
-      return deepLinkingPicker(c, reg.id, payload as Record<string, unknown>);
+      if (reg.orgId != null) await requireOrgCapability(db, c.get("config"), reg.orgId, "lti");
+      return deepLinkingPicker(c, reg, payload as Record<string, unknown>);
     }
 
     // Resource Link launch
@@ -120,6 +165,8 @@ export function ltiRoutes(): Hono<AppEnv> {
     // En la instancia alojada, el LTI es de los planes de formación: manda el
     // plan de quien responde del recorrido. En el self-host no se limita.
     const orgId = await orgIdOfSlug(db, slug);
+    // Un registro de organización solo lanza recorridos de esa organización
+    if (reg.orgId != null && orgId !== reg.orgId) throw forbidden("Ese recorrido no pertenece a la organización de este registro LTI");
     if (orgId != null) await requireOrgCapability(db, c.get("config"), orgId, "lti");
     const ags = payload["https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"] as
       | { lineitem?: string; lineitems?: string; scope?: string[] }
@@ -142,16 +189,28 @@ export function ltiRoutes(): Hono<AppEnv> {
   r.post("/deeplink", async (c) => {
     const db = c.get("db");
     const body = await c.req.parseBody();
-    const registrationId = String(body.registrationId ?? "");
-    const slug = String(body.slug ?? "");
-    const returnUrl = String(body.returnUrl ?? "");
-    const deploymentId = String(body.deploymentId ?? "");
-    const dataToken = String(body.data ?? "");
+    const form: DeepLinkForm = {
+      registrationId: String(body.registrationId ?? ""),
+      slug: String(body.slug ?? ""),
+      returnUrl: String(body.returnUrl ?? ""),
+      deploymentId: String(body.deploymentId ?? ""),
+      data: String(body.data ?? ""),
+      exp: Number.parseInt(String(body.exp ?? ""), 10),
+    };
+    const { registrationId, slug, returnUrl, deploymentId } = form;
+    const dataToken = form.data;
     if (registrationId === "" || slug === "" || returnUrl === "") throw badRequest("Deep link incompleto");
+    // El formulario lo firmó el selector: sin firma válida y vigente no se firma nada
+    if (!(await verifyDeepLinkForm(c.get("config").secret, form, String(body.sig ?? "")))) {
+      throw forbidden("Formulario de Deep Linking no válido o caducado");
+    }
     const reg = (await db.select().from(ltiRegistrations).where(eq(ltiRegistrations.id, registrationId)).limit(1))[0];
     if (reg == null) throw notFound();
     const pub = (await db.select().from(publications).where(eq(publications.slug, slug)).limit(1))[0];
     if (pub == null) throw notFound("Tour no publicado");
+    const pubOrg = await orgIdOfSlug(db, slug);
+    if (reg.orgId == null || pubOrg !== reg.orgId) throw forbidden("Ese recorrido no pertenece a la organización de este registro LTI");
+    await requireOrgCapability(db, c.get("config"), reg.orgId, "lti");
 
     const keyData = parseJson<{ pkcs8: string; kid: string }>(reg.toolKeyJson, { pkcs8: "", kid: "" });
     const { importPKCS8, SignJWT } = await import("jose");
@@ -179,22 +238,45 @@ export function ltiRoutes(): Hono<AppEnv> {
       .setExpirationTime("5m")
       .sign(key);
 
+    // La respuesta se envía sola a la plataforma: la CSP general (form-action
+    // 'self', frame-ancestors 'self') la bloquearía dentro del LMS
+    const nonce = c.get("cspNonce");
+    c.header("content-security-policy", ltiPageCsp(nonce, reg.issuer, returnUrl));
     return c.html(`<!doctype html><html><body>
 <form id="f" method="post" action="${escapeAttr(returnUrl)}">
 <input type="hidden" name="JWT" value="${escapeAttr(jwt)}">
-</form><script>document.getElementById("f").submit();</script></body></html>`);
+</form><script nonce="${nonce}">document.getElementById("f").submit();</script></body></html>`);
   });
 
-  // ------- Administracion de registros LTI (admin de instancia) -------
+  // ------- Registros LTI -------
+  // El operador (administrador de la instancia) los ve y gestiona todos; el
+  // administrador de una organización cliente da de alta y retira los de su
+  // organización, si su plan incluye LTI.
+
+  const toolEndpoints = (publicUrl: string): Record<string, string> => ({
+    login: `${publicUrl}/api/v1/lti/login`,
+    launch: `${publicUrl}/api/v1/lti/launch`,
+    jwks: `${publicUrl}/api/v1/lti/jwks`,
+    deepLinking: `${publicUrl}/api/v1/lti/launch`,
+  });
 
   r.get("/registrations", async (c) => {
     const auth = requireAuth(c);
-    if (!isInstanceAdmin(auth.user)) throw forbidden();
     const db = c.get("db");
-    const rows = await db.select().from(ltiRegistrations);
+    const orgId = c.req.query("orgId");
+    let rows;
+    if (orgId != null && orgId !== "") {
+      await requireOrgRole(db, orgId, auth.user, "admin");
+      rows = await db.select().from(ltiRegistrations).where(eq(ltiRegistrations.orgId, orgId));
+    } else {
+      if (!isInstanceAdmin(auth.user)) throw forbidden();
+      rows = await db.select().from(ltiRegistrations);
+    }
+    const publicUrl = c.get("config").publicUrl;
     return c.json(
       rows.map((row) => ({
         id: row.id,
+        orgId: row.orgId,
         issuer: row.issuer,
         clientId: row.clientId,
         deploymentId: row.deploymentId,
@@ -202,22 +284,17 @@ export function ltiRoutes(): Hono<AppEnv> {
         tokenUrl: row.tokenUrl,
         jwksUrl: row.jwksUrl,
         createdAt: row.createdAt,
-        toolEndpoints: {
-          login: `${c.get("config").publicUrl}/api/v1/lti/login`,
-          launch: `${c.get("config").publicUrl}/api/v1/lti/launch`,
-          jwks: `${c.get("config").publicUrl}/api/v1/lti/jwks`,
-          deepLinking: `${c.get("config").publicUrl}/api/v1/lti/launch`,
-        },
+        toolEndpoints: toolEndpoints(publicUrl),
       })),
     );
   });
 
   r.post("/registrations", async (c) => {
     const auth = requireAuth(c);
-    if (!isInstanceAdmin(auth.user)) throw forbidden();
     const db = c.get("db");
     const body = z
       .object({
+        orgId: z.string().min(1).optional(),
         issuer: z.string().url(),
         clientId: z.string().min(1),
         deploymentId: z.string().optional(),
@@ -226,6 +303,21 @@ export function ltiRoutes(): Hono<AppEnv> {
         jwksUrl: z.string().url(),
       })
       .parse(await c.req.json());
+    if (!isInstanceAdmin(auth.user)) {
+      // Cliente: su organización, como administrador, y con LTI en el plan
+      if (body.orgId == null) throw badRequest("Indica la organización del registro LTI");
+      await requireOrgRole(db, body.orgId, auth.user, "admin");
+      await requireOrgCapability(db, c.get("config"), body.orgId, "lti");
+    } else if (body.orgId != null) {
+      const org = (await db.select({ id: orgs.id }).from(orgs).where(eq(orgs.id, body.orgId)).limit(1))[0];
+      if (org == null) throw notFound("Organización no encontrada");
+    }
+    const taken = (await db
+      .select({ id: ltiRegistrations.id })
+      .from(ltiRegistrations)
+      .where(and(eq(ltiRegistrations.issuer, body.issuer), eq(ltiRegistrations.clientId, body.clientId)))
+      .limit(1))[0];
+    if (taken != null) throw conflict("Esa plataforma (emisor e identificador de cliente) ya está registrada");
     // Generar par de claves RSA de la herramienta
     const { generateKeyPair, exportPKCS8 } = await import("jose");
     const { privateKey } = await generateKeyPair("RS256", { extractable: true });
@@ -234,6 +326,7 @@ export function ltiRoutes(): Hono<AppEnv> {
     const id = newId();
     await db.insert(ltiRegistrations).values({
       id,
+      orgId: body.orgId ?? null,
       issuer: body.issuer,
       clientId: body.clientId,
       deploymentId: body.deploymentId ?? null,
@@ -243,45 +336,98 @@ export function ltiRoutes(): Hono<AppEnv> {
       toolKeyJson: JSON.stringify({ pkcs8, kid }),
       createdAt: nowMs(),
     });
-    return c.json({ id }, 201);
+    await audit(c, "lti.registration_create", "lti_registration", id, { issuer: body.issuer, clientId: body.clientId }, body.orgId);
+    return c.json({ id, toolEndpoints: toolEndpoints(c.get("config").publicUrl) }, 201);
+  });
+
+  /** El operador asigna un registro (por ejemplo, uno anterior a la columna) a una organización. */
+  r.patch("/registrations/:id", async (c) => {
+    const auth = requireAuth(c);
+    if (!isInstanceAdmin(auth.user)) throw forbidden();
+    const db = c.get("db");
+    const body = z
+      .object({ orgId: z.string().min(1).nullable(), deploymentId: z.string().nullable().optional() })
+      .parse(await c.req.json());
+    if (body.orgId != null) {
+      const org = (await db.select({ id: orgs.id }).from(orgs).where(eq(orgs.id, body.orgId)).limit(1))[0];
+      if (org == null) throw notFound("Organización no encontrada");
+    }
+    await db
+      .update(ltiRegistrations)
+      .set({ orgId: body.orgId, ...(body.deploymentId !== undefined ? { deploymentId: body.deploymentId } : {}) })
+      .where(eq(ltiRegistrations.id, c.req.param("id")));
+    await audit(c, "lti.registration_update", "lti_registration", c.req.param("id"), body, body.orgId ?? undefined);
+    return c.json({ ok: true });
   });
 
   r.delete("/registrations/:id", async (c) => {
     const auth = requireAuth(c);
-    if (!isInstanceAdmin(auth.user)) throw forbidden();
-    await c.get("db").delete(ltiRegistrations).where(eq(ltiRegistrations.id, c.req.param("id")));
+    const db = c.get("db");
+    const reg = (await db.select().from(ltiRegistrations).where(eq(ltiRegistrations.id, c.req.param("id"))).limit(1))[0];
+    if (reg == null) throw notFound();
+    if (!isInstanceAdmin(auth.user)) {
+      if (reg.orgId == null) throw forbidden();
+      await requireOrgRole(db, reg.orgId, auth.user, "admin");
+    }
+    await db.delete(ltiRegistrations).where(eq(ltiRegistrations.id, reg.id));
+    await audit(c, "lti.registration_delete", "lti_registration", reg.id, { issuer: reg.issuer, clientId: reg.clientId }, reg.orgId ?? undefined);
     return c.json({ ok: true });
   });
 
   return r;
 }
 
-/** Selector de tours publicados para Deep Linking. */
-async function deepLinkingPicker(c: any, registrationId: string, payload: Record<string, unknown>): Promise<Response> {
+/**
+ * Selector de tours publicados para Deep Linking: solo los de la
+ * organización dueña del registro, y cada opción con su formulario firmado.
+ */
+async function deepLinkingPicker(
+  c: any,
+  reg: typeof ltiRegistrations.$inferSelect,
+  payload: Record<string, unknown>,
+): Promise<Response> {
   const db = c.get("db");
-  const pubs = await db.select().from(publications);
+  const pubs: { slug: string; title: string }[] =
+    reg.orgId == null
+      ? []
+      : await db
+          .select({ slug: publications.slug, title: projects.title })
+          .from(publications)
+          .innerJoin(projects, eq(publications.projectId, projects.id))
+          .where(eq(projects.orgId, reg.orgId));
   const settings = payload["https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings"] as
     | { deep_link_return_url?: string; data?: string }
     | undefined;
-  const deploymentId = String(payload["https://purl.imsglobal.org/spec/lti/claim/deployment_id"] ?? "");
+  const deploymentId = String(payload[`${CLAIM}deployment_id`] ?? "");
   const returnUrl = settings?.deep_link_return_url ?? "";
-  const rows = (pubs as { slug: string }[])
-    .map(
-      (p) => `<li><form method="post" action="/api/v1/lti/deeplink">
-<input type="hidden" name="registrationId" value="${escapeAttr(registrationId)}">
-<input type="hidden" name="slug" value="${escapeAttr(p.slug)}">
-<input type="hidden" name="returnUrl" value="${escapeAttr(returnUrl)}">
-<input type="hidden" name="deploymentId" value="${escapeAttr(deploymentId)}">
-<input type="hidden" name="data" value="${escapeAttr(settings?.data ?? "")}">
-<button type="submit">${escapeHtml(p.slug)}</button></form></li>`,
-    )
-    .join("\n");
-  return c.html(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Elegir tour</title>
+  if (returnUrl === "") throw badRequest("La petición de Deep Linking no trae deep_link_return_url");
+  const exp = Math.floor(Date.now() / 1000) + DEEPLINK_TTL_SECONDS;
+  const secret = c.get("config").secret as string;
+  const items: string[] = [];
+  for (const p of pubs) {
+    const form: DeepLinkForm = { registrationId: reg.id, slug: p.slug, returnUrl, deploymentId, data: settings?.data ?? "", exp };
+    const sig = await signDeepLinkForm(secret, form);
+    items.push(`<li><form method="post" action="/api/v1/lti/deeplink">
+<input type="hidden" name="registrationId" value="${escapeAttr(form.registrationId)}">
+<input type="hidden" name="slug" value="${escapeAttr(form.slug)}">
+<input type="hidden" name="returnUrl" value="${escapeAttr(form.returnUrl)}">
+<input type="hidden" name="deploymentId" value="${escapeAttr(form.deploymentId)}">
+<input type="hidden" name="data" value="${escapeAttr(form.data)}">
+<input type="hidden" name="exp" value="${exp}">
+<input type="hidden" name="sig" value="${escapeAttr(sig)}">
+<button type="submit">${escapeHtml(p.title !== "" ? p.title : p.slug)}</button></form></li>`);
+  }
+  const vacio =
+    reg.orgId == null
+      ? "<p>Este registro LTI no está asociado a ninguna organización. Pide al administrador de la instancia que lo asigne.</p>"
+      : "<p>Tu organización todavía no tiene recorridos publicados.</p>";
+  c.header("content-security-policy", ltiPageCsp(null, reg.issuer, null));
+  return c.html(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Elegir recorrido</title>
 <style>body{font-family:system-ui;background:#f6f7fb;color:#1c2340;padding:32px;max-width:640px;margin:0 auto}
 h1{font-size:20px}ul{list-style:none;padding:0}li{margin:8px 0}
 button{width:100%;text-align:left;padding:14px 18px;border:1px solid #d8dcea;border-radius:10px;background:#fff;font-size:15px;cursor:pointer}
 button:hover{border-color:#5c68a5;background:#eef0f7}</style></head>
-<body><h1>Elige el tour a incrustar en el curso</h1><ul>${rows}</ul></body></html>`);
+<body><h1>Elige el recorrido que quieres incrustar en el curso</h1>${items.length > 0 ? `<ul>${items.join("")}</ul>` : vacio}</body></html>`);
 }
 
 /** Devolucion de calificacion AGS (la llama el endpoint publico de quiz). */
@@ -349,6 +495,32 @@ export async function sendAgsScore(
   } catch (err) {
     console.error("[lti] error en AGS:", err);
   }
+}
+
+function originOf(url: string | null): string | null {
+  if (url == null) return null;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * CSP de las páginas LTI: se muestran dentro del LMS (iframe o ventana
+ * modal) y la respuesta de Deep Linking envía un formulario a la plataforma.
+ */
+function ltiPageCsp(nonce: string | null, issuer: string, formTarget: string | null): string {
+  const frame = originOf(issuer);
+  const target = originOf(formTarget);
+  return [
+    "default-src 'none'",
+    "style-src 'unsafe-inline'",
+    nonce != null ? `script-src 'nonce-${nonce}'` : "script-src 'none'",
+    `form-action 'self'${target != null ? ` ${target}` : ""}`,
+    `frame-ancestors 'self'${frame != null ? ` ${frame}` : ""}`,
+    "base-uri 'none'",
+  ].join("; ");
 }
 
 function escapeHtml(s: string): string {

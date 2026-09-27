@@ -10,6 +10,7 @@ import { requireAuth } from "../lib/session.js";
 import { isInstanceAdmin } from "../lib/authz.js";
 import { audit, getSettings, saveSettings } from "../lib/helpers.js";
 import { createCoupons, normalizeCouponCode } from "../lib/coupons.js";
+import { isListedAdmin } from "../lib/admins.js";
 import { PLANS, type PlanSlug } from "../lib/plans.js";
 import { attributionCsv, type Attribution } from "../lib/attribution.js";
 import { bumpGalleryGeneration, galleryInfo, galleryStatus } from "./publish.js";
@@ -123,6 +124,9 @@ export function adminRoutes(): Hono<AppEnv> {
       await db.insert(orgMembers).values({ orgId: body.orgId, userId: id, role: body.orgRole, createdAt: nowMs() });
     }
     await audit(c, "admin.user_create", "user", id, { email: body.email, roleGlobal: body.roleGlobal });
+    if (body.roleGlobal === "admin") {
+      await audit(c, "admin.role_change", "user", id, { from: null, to: "admin", via: "user_create" });
+    }
     return c.json({ id }, 201);
   });
 
@@ -140,6 +144,8 @@ export function adminRoutes(): Hono<AppEnv> {
       })
       .parse(await c.req.json());
     const auth = requireAuth(c);
+    const target = (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0];
+    if (target == null) throw notFound("Usuario no encontrado");
     if (userId === auth.user.id && body.roleGlobal === "user") {
       const admins = await db.select().from(users).where(eq(users.roleGlobal, "admin"));
       if (admins.length <= 1) throw badRequest("No puedes quitarte el rol de administrador siendo el último");
@@ -155,6 +161,9 @@ export function adminRoutes(): Hono<AppEnv> {
       })
       .where(eq(users.id, userId));
     await audit(c, "admin.user_update", "user", userId, body);
+    if (body.roleGlobal != null && body.roleGlobal !== target.roleGlobal) {
+      await audit(c, "admin.role_change", "user", userId, { from: target.roleGlobal, to: body.roleGlobal, via: "panel" });
+    }
     return c.json({ ok: true });
   });
 
@@ -251,6 +260,7 @@ export function adminRoutes(): Hono<AppEnv> {
         planOverride: u.planOverride,
         createdAt: u.createdAt,
         planUpdatedAt: u.planUpdatedAt,
+        firstPaidAt: u.firstPaidAt,
         attributedAt: u.attributedAt,
         attribution: u.attributionJson != null ? parseJson<Attribution | null>(u.attributionJson, null) : null,
       }));
@@ -526,21 +536,42 @@ export function adminRoutes(): Hono<AppEnv> {
       "media", "mediaDerivatives", "versions", "publications", "translations",
       "comments", "formSubmissions", "quizResults", "instanceSettings", "webhooks", "ltiRegistrations",
     ];
+    const config = c.get("config");
+    const roleChanges: { id: string; email: string; from: unknown; to: "admin" | "user" }[] = [];
     for (const name of order) {
       const rows = doc.tables[name];
       const table = (schema as Record<string, any>)[name];
       if (rows == null || table == null) continue;
-      for (const row of rows) {
+      for (const original of rows) {
+        let row = original;
+        if (name === "users") {
+          // Una copia no concede administración: el rol se decide aquí, con
+          // la lista ADMIN_EMAILS, y no con lo que diga el fichero
+          const email = typeof row.email === "string" ? row.email : "";
+          const role: "admin" | "user" = isListedAdmin(config, email) ? "admin" : "user";
+          const existing = typeof row.id === "string" ? (await db.select({ id: users.id }).from(users).where(eq(users.id, row.id)).limit(1))[0] : undefined;
+          if (existing == null && (row.roleGlobal !== role || role === "admin")) {
+            roleChanges.push({ id: String(row.id), email, from: row.roleGlobal ?? null, to: role });
+          }
+          row = { ...row, roleGlobal: role };
+        }
         try {
           await db.insert(table).values(row as never);
           imported++;
         } catch {
           // fila ya existente: se omite (import idempotente)
+          if (name === "users") {
+            const i = roleChanges.findIndex((ch) => ch.id === String(row.id));
+            if (i >= 0) roleChanges.splice(i, 1);
+          }
         }
       }
     }
-    await audit(c, "admin.backup_import", "instance", null, { imported });
-    return c.json({ imported });
+    for (const change of roleChanges) {
+      await audit(c, "admin.role_change", "user", change.id, { from: change.from, to: change.to, via: "backup_import", email: change.email });
+    }
+    await audit(c, "admin.backup_import", "instance", null, { imported, roleChanges: roleChanges.length });
+    return c.json({ imported, roleChanges: roleChanges.length });
   });
 
   return r;
