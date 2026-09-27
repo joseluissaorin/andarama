@@ -1,98 +1,64 @@
 {
   "slug": "notre-dame",
   "lang": "fr",
-  "title": "TODO: título SEO con el nombre del lugar (3 a 120 caracteres), por ejemplo «Notre Dame en 360: recorrido virtual»",
-  "description": "TODO: un párrafo de 300 a 600 caracteres sobre el lugar y lo que se ve en las escenas; solo hechos comprobados, sin inventar",
-  "placeName": "Notre Dame",
+  "title": "Notre-Dame en 360 : visite virtuelle à Paris, Laon et Dijon",
+  "description": "Trois panoramas sphériques libres autour de Notre-Dame. Le parcours s'ouvre sur le parvis de Notre-Dame de Paris, photographié de nuit en février 2007, avant l'incendie du 15 avril 2019 : commencée en 1163 et achevée vers 1345, la cathédrale de l'île de la Cité est l'un des monuments les plus visités au monde. Il se poursuit dans deux autres Notre-Dame de France : la cathédrale de Laon, l'un des premiers grands édifices gothiques du pays, et l'église Notre-Dame de Dijon, chef-d'œuvre gothique bâti vers 1220-1250, qui abrite la Vierge noire, le Jacquemart et la chouette.",
+  "placeName": "Notre-Dame de Paris",
   "placeCountry": "FR",
-  "lat": null,
-  "lng": null,
-  "startScene": "laon-cathedral-interior-360x180-picardy",
+  "lat": 48.853056,
+  "lng": 2.349722,
+  "startScene": "parvis-notre-dame-de-paris",
   "scenes": [
     {
-      "id": "laon-cathedral-interior-360x180-picardy",
-      "file": "https://upload.wikimedia.org/wikipedia/commons/0/08/Laon_Cathedral_Interior_360x180%2C_Picardy%2C_France_-_Diliff.jpg",
-      "commonsPage": "https://commons.wikimedia.org/wiki/File:Laon_Cathedral_Interior_360x180,_Picardy,_France_-_Diliff.jpg",
-      "title": "TODO: título corto de la escena (fichero: Laon Cathedral Interior 360x180, Picardy, France - Diliff)",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
-      "author": "Diliff",
-      "license": "CC BY-SA 3.0",
-      "width": 13644,
-      "height": 6822,
-      "categories": [
-        "2015 in Laon",
-        "360° panoramas",
-        "360° panoramas with equirectangular projection",
-        "April 2015 in Picardie",
-        "CC-BY-SA-3.0",
-        "Featured pictures by User:Diliff"
-      ]
-    },
-    {
-      "id": "eglise-notre-dame-de-la-croix-de-menilmo",
-      "file": "https://upload.wikimedia.org/wikipedia/commons/3/31/%C3%89glise_Notre-Dame-de-la-Croix_de_M%C3%A9nilmontant%2C_Paris_2_June_2007.jpg",
-      "commonsPage": "https://commons.wikimedia.org/wiki/File:%C3%89glise_Notre-Dame-de-la-Croix_de_M%C3%A9nilmontant,_Paris_2_June_2007.jpg",
-      "title": "TODO: título corto de la escena (fichero: Église Notre-Dame-de-la-Croix de Ménilmontant, Paris 2 June 2007)",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
-      "author": "Alexandre Duret-Lutz from Paris, France",
-      "license": "CC BY-SA 2.0",
-      "width": 10000,
-      "height": 5000,
-      "categories": []
-    },
-    {
-      "id": "dijon-notre-dame",
-      "file": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Dijon_Notre-Dame.jpg",
-      "commonsPage": "https://commons.wikimedia.org/wiki/File:Dijon_Notre-Dame.jpg",
-      "title": "TODO: título corto de la escena (fichero: Dijon Notre-Dame)",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
-      "author": "Bernard Marti",
-      "license": "CC BY-SA 4.0",
-      "width": 9142,
-      "height": 4571,
-      "categories": []
-    },
-    {
-      "id": "panorama-notre-dame-de-paris",
+      "id": "parvis-notre-dame-de-paris",
       "file": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Panorama_Notre-Dame_de_Paris.jpg",
       "commonsPage": "https://commons.wikimedia.org/wiki/File:Panorama_Notre-Dame_de_Paris.jpg",
-      "title": "TODO: título corto de la escena (fichero: Panorama Notre-Dame de Paris)",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "title": "Parvis de Notre-Dame de Paris, de nuit (2007)",
+      "alt": "Panorama sphérique nocturne du parvis de Notre-Dame de Paris : la façade occidentale illuminée avec ses deux tours et sa rosace, le parvis pavé et mouillé, les lampadaires, l'Hôtel-Dieu et la préfecture de police sur les côtés",
+      "desc": "La façade occidentale de la cathédrale vue depuis le parvis, en février 2007, avant l'incendie de 2019. Construite de 1163 à 1345 environ, Notre-Dame est le siège de l'archidiocèse de Paris.",
       "author": "User gadl on Flickr",
       "license": "CC BY-SA 2.0",
       "width": 7500,
       "height": 3750,
-      "categories": []
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
     },
     {
-      "id": "notre-dame-de-l-assomption-de-neuchatel",
-      "file": "https://upload.wikimedia.org/wikipedia/commons/c/cb/Notre-Dame-de-l%27Assomption_de_Neuch%C3%A2tel_02.jpg",
-      "commonsPage": "https://commons.wikimedia.org/wiki/File:Notre-Dame-de-l%27Assomption_de_Neuch%C3%A2tel_02.jpg",
-      "title": "TODO: título corto de la escena (fichero: Notre-Dame-de-l'Assomption de Neuchâtel 02)",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
-      "author": "Nfriedli",
-      "license": "CC BY-SA 4.0",
-      "width": 5376,
-      "height": 2688,
-      "categories": []
+      "id": "cathedrale-de-laon",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/0/08/Laon_Cathedral_Interior_360x180%2C_Picardy%2C_France_-_Diliff.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Laon_Cathedral_Interior_360x180,_Picardy,_France_-_Diliff.jpg",
+      "title": "Cathédrale Notre-Dame de Laon : la croisée du transept",
+      "alt": "Panorama sphérique de l'intérieur de la cathédrale de Laon depuis la croisée du transept : l'autel devant la grille dorée du chœur, l'élévation gothique à quatre niveaux, les voûtes d'ogives claires, deux rosaces et des rangées de chaises",
+      "desc": "Intérieur de l'ancienne cathédrale de Laon (Aisne), l'un des premiers grands édifices gothiques de France, contemporaine de Notre-Dame de Paris et protégée comme monument historique depuis 1840.",
+      "author": "Diliff",
+      "license": "CC BY-SA 3.0",
+      "width": 13644,
+      "height": 6822,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
     },
     {
-      "id": "notre-dame-de-l-assomption-de-neuchatel-2",
-      "file": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Notre-Dame-de-l%27Assomption_de_Neuch%C3%A2tel_01.jpg",
-      "commonsPage": "https://commons.wikimedia.org/wiki/File:Notre-Dame-de-l%27Assomption_de_Neuch%C3%A2tel_01.jpg",
-      "title": "TODO: título corto de la escena (fichero: Notre-Dame-de-l'Assomption de Neuchâtel 01)",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
-      "author": "Nfriedli",
+      "id": "notre-dame-de-dijon",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Dijon_Notre-Dame.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Dijon_Notre-Dame.jpg",
+      "title": "Église Notre-Dame de Dijon : la croisée du transept",
+      "alt": "Panorama sphérique de l'intérieur de Notre-Dame de Dijon depuis la croisée du transept : l'autel sur une estrade rouge, le chœur et ses vitraux, les piliers cylindriques, les rosaces des bras du transept et des chaises paillées",
+      "desc": "Vue depuis la croisée du transept de l'église Notre-Dame de Dijon, construite vers 1220-1250 au cœur du secteur sauvegardé de Dijon, inscrit au patrimoine mondial de l'UNESCO depuis 2015.",
+      "author": "Bernard Marti",
       "license": "CC BY-SA 4.0",
-      "width": 5376,
-      "height": 2688,
-      "categories": []
+      "width": 9142,
+      "height": 4571,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
     }
   ],
   "_demanda": {
@@ -115,5 +81,10 @@
       "pt": 10
     }
   },
-  "_notas": "Revisa placeName (acentos y forma oficial), placeCountry (ISO-2) y pon lat/lng del lugar. Sustituye todos los TODO. Quita las escenas que no sean del lugar o no sean panoramas esféricos completos. Otras 0 panorámicas coincidentes quedan fuera del encargo."
+  "_fuentes": [
+    "https://fr.wikipedia.org/wiki/Cath%C3%A9drale_Notre-Dame_de_Paris",
+    "https://fr.wikipedia.org/wiki/Cath%C3%A9drale_Notre-Dame_de_Laon",
+    "https://fr.wikipedia.org/wiki/%C3%89glise_Notre-Dame_de_Dijon"
+  ],
+  "_notas": "Commons solo tiene UNA panorámica esférica de Notre-Dame de Paris (exterior, nocturna, 2007). Las otras coincidencias por nombre eran otras iglesias (Laon, Dijon, Neuchâtel, Ménilmontant); se conservan Laon y Dijon como recorrido honesto «Notre-Dame en Francia», con el título que lo dice. Descartadas Neuchâtel (Suiza) y Ménilmontant (iglesia parroquial sin relación). Coordenadas: las de la catedral de París."
 }

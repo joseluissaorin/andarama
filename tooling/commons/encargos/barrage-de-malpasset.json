@@ -1,0 +1,86 @@
+{
+  "slug": "barrage-de-malpasset",
+  "lang": "fr",
+  "title": "Barrage de Malpasset en 360 : visite virtuelle des ruines",
+  "description": "Quatre panoramas sphériques des ruines du barrage de Malpasset, à Fréjus (Var), photographiés en novembre 2009. Ce barrage voûte sur le Reyran devait alimenter en eau Fréjus, Saint-Raphaël et leur plaine agricole. Le 2 décembre 1959, cinq ans après la fin des travaux, une crue fait monter le lac et le barrage rompt : une cinquantaine de millions de mètres cubes d'eau déferlent vers l'aval et font 423 morts, l'une des plus grandes catastrophes civiles françaises du XXe siècle. Le parcours remonte le lit du Reyran jusqu'aux restes de la voûte, puis grimpe sur le pan de béton resté debout.",
+  "placeName": "Barrage de Malpasset",
+  "placeCountry": "FR",
+  "lat": 43.51224,
+  "lng": 6.757,
+  "startScene": "lit-du-reyran",
+  "scenes": [
+    {
+      "id": "lit-du-reyran",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/0/00/Barrage_de_Malpasset_-_Panorama_2.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Barrage_de_Malpasset_-_Panorama_2.jpg",
+      "title": "Le lit du Reyran en aval du barrage",
+      "alt": "Panorama sphérique dans la vallée du Reyran en aval de Malpasset : un lit de galets à sec, deux pistes de terre, des collines couvertes de pins et de maquis et un ciel voilé",
+      "desc": "La vallée du Reyran en aval du barrage, par où la vague de 1959 est descendue vers Fréjus.",
+      "author": "Esby",
+      "license": "CC BY-SA 3.0",
+      "width": 12000,
+      "height": 6000,
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "ruines-depuis-la-riviere",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Barrage_de_Malpasset_-_Panorama_5.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Barrage_de_Malpasset_-_Panorama_5.jpg",
+      "title": "Les ruines vues du lit de la rivière",
+      "alt": "Panorama sphérique depuis le lit de gravier du Reyran : au centre, le pan de voûte en béton du barrage accroché au flanc rocheux, avec les culées restées sur les deux versants et des pins",
+      "desc": "Ce qui reste de la voûte, vu depuis le lit de la rivière. Le barrage a cédé le 2 décembre 1959, cinq ans après la fin de sa construction.",
+      "author": "Esby",
+      "license": "CC BY-SA 3.0",
+      "width": 12000,
+      "height": 6000,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "ruines-depuis-les-rochers",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/39/Barrage_de_Malpasset_-_Panorama_6.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Barrage_de_Malpasset_-_Panorama_6.jpg",
+      "title": "Les ruines depuis les rochers de la rive",
+      "alt": "Panorama sphérique depuis les rochers gris qui dominent le Reyran : le pan de barrage restant au fond de la gorge, une culée de béton sur la crête à gauche, des pins et un ciel de traîne",
+      "desc": "Les restes du barrage vus depuis les rochers d'une rive, avec l'une des culées sur la crête.",
+      "author": "Esby",
+      "license": "CC BY-SA 3.0",
+      "width": 12000,
+      "height": 6000,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "sur-la-voute",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Barrage_de_Malpasset_-_Panorama_7.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Barrage_de_Malpasset_-_Panorama_7.jpg",
+      "title": "Sur le pan de voûte qui subsiste",
+      "alt": "Panorama sphérique sur les restes du barrage : le béton lisse et incurvé de la voûte sous les pieds, une retenue d'eau résiduelle en contrebas, les culées de part et d'autre de la gorge et deux visiteurs au loin",
+      "desc": "Sur le pan de voûte resté debout, avec la petite retenue d'eau qui subsiste au pied de l'ouvrage.",
+      "author": "Esby",
+      "license": "CC BY-SA 3.0",
+      "width": 12000,
+      "height": 6000,
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_fuentes": [
+    "https://fr.wikipedia.org/wiki/Barrage_de_Malpasset",
+    "https://en.wikipedia.org/wiki/Malpasset_Dam"
+  ],
+  "_notas": "Demanda por sondear. Fotografías de 2009 con el trípode visible en el nadir. El autor figura en Commons como «Esby (talk) 11:06, 1 December 2009 (UTC)» en tres de los ficheros; se acredita como Esby."
+}

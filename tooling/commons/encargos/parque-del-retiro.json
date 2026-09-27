@@ -1,0 +1,71 @@
+{
+  "slug": "parque-del-retiro",
+  "lang": "es",
+  "title": "Parque del Retiro en 360: visita virtual por Madrid",
+  "description": "Tres panorámicas esféricas del parque del Retiro, el jardín histórico de Madrid, tomadas en agosto de 2026. Construido en el siglo XVII para el palacio del Buen Retiro de Felipe IV, abierto al público en 1767 y municipal desde 1868, ocupa 118 hectáreas y es Patrimonio de la Humanidad desde 2021. El recorrido empieza junto al Estanque Grande, ante el Monumento a Alfonso XII, inaugurado en 1922 con la estatua ecuestre de Mariano Benlliure; sigue por el palacio de Velázquez, levantado en 1881-1883 para la Exposición Nacional de Minería, y termina en la fuente del Ángel Caído, de Ricardo Bellver.",
+  "placeName": "Parque del Retiro",
+  "placeCountry": "ES",
+  "lat": 40.415,
+  "lng": -3.683889,
+  "startScene": "monumento-a-alfonso-xii",
+  "scenes": [
+    {
+      "id": "monumento-a-alfonso-xii",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/f/fc/360_panorama_Monument_to_Alfonso_XII_Madrid_2026-08-15_04-29-59_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_panorama_Monument_to_Alfonso_XII_Madrid_2026-08-15_04-29-59_1.jpg",
+      "title": "Monumento a Alfonso XII y Estanque Grande",
+      "alt": "Panorámica esférica al pie del Monumento a Alfonso XII en el Retiro: la escalinata y la columnata semicircular, el pedestal con la estatua ecuestre, el Estanque Grande con sus leones de piedra y paseantes bajo un cielo con nubes",
+      "desc": "Proyectado por José Grases Riera tras el concurso de 1902 y financiado por suscripción popular, el monumento se inauguró el 22 de julio de 1922 a orillas del Estanque Grande. La estatua ecuestre del rey es de Mariano Benlliure (1904).",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.15,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "palacio-de-velazquez",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/8/85/360_panorama_Vel%C3%A1zquez_Palace_Madrid_2026-08-15_04-47-44_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_panorama_Vel%C3%A1zquez_Palace_Madrid_2026-08-15_04-47-44_1.jpg",
+      "title": "Palacio de Velázquez",
+      "alt": "Panorámica esférica frente al palacio de Velázquez: fachada de ladrillo con tres arcos, cerámica y cúpula acristalada, escalinata de acceso con esculturas y los paseos arbolados del Retiro alrededor",
+      "desc": "Construido entre 1881 y 1883 por el arquitecto Ricardo Velázquez Bosco para la Exposición Nacional de Minería, con el ingeniero Alberto del Palacio y el ceramista Daniel Zuloaga.",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "fuente-del-angel-caido",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/8/81/360_panorama_Fountain_of_the_Fallen_Angel_Madrid_2026-08-15_05-06-50_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_panorama_Fountain_of_the_Fallen_Angel_Madrid_2026-08-15_05-06-50_1.jpg",
+      "title": "Fuente del Ángel Caído",
+      "alt": "Panorámica esférica en la glorieta del Ángel Caído: la fuente con la escultura del ángel sobre un alto pedestal, el parterre de flores rojas y setos que la rodea, los paseos de tierra y los árboles del Retiro bajo nubes de tormenta",
+      "desc": "La fuente ocupa el solar de la antigua fábrica de porcelana de la China, destruida en 1813 durante la guerra de la Independencia. La escultura es de Ricardo Bellver y el pedestal, de Francisco Jareño.",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_fuentes": [
+    "https://es.wikipedia.org/wiki/Parque_del_Retiro_de_Madrid",
+    "https://es.wikipedia.org/wiki/Monumento_a_Alfonso_XII_(Madrid)",
+    "https://es.wikipedia.org/wiki/Palacio_de_Vel%C3%A1zquez",
+    "https://es.wikipedia.org/wiki/Fuente_del_%C3%81ngel_Ca%C3%ADdo"
+  ],
+  "_notas": "Demanda por sondear. Descartadas del mismo autor y día: «Madrid from Temple of Debod» (no es el Retiro y está lleno de gente) y «Big Bus Av de la Memoria» (interior de un autobús turístico). Las tres fotos llevan el sombrero del fotógrafo en el nadir."
+}

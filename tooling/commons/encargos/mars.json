@@ -1,92 +1,81 @@
 {
   "slug": "mars",
   "lang": "en",
-  "title": "TODO: título SEO con el nombre del lugar (3 a 120 caracteres), por ejemplo «Mars en 360: recorrido virtual»",
-  "description": "TODO: un párrafo de 300 a 600 caracteres sobre el lugar y lo que se ve en las escenas; solo hechos comprobados, sin inventar",
+  "title": "Mars in 360: virtual tour of four craters seen from the ground",
+  "description": "Four 360-degree views of the surface of Mars, the fourth planet from the Sun, a desert-like rocky world with a thin carbon dioxide atmosphere and a diameter about half the Earth's. These are not rover photographs: Kevin M. Gill projected them from digital terrain models and orthoimages of HiRISE, the camera of NASA's Mars Reconnaissance Orbiter, in orbit since 2006. The tour visits Domoni crater, a crater in western Arabia Terra with stair-stepped hills and dark dunes, a well-preserved 9-kilometre impact crater and the inside of Rauna crater. Data: NASA/JPL/University of Arizona/USGS.",
   "placeName": "Mars",
-  "placeCountry": "TODO",
+  "placeCountry": "US",
   "lat": null,
   "lng": null,
-  "startScene": "360-projected-image-domoni-crater-343288",
+  "startScene": "domoni-crater",
   "scenes": [
     {
-      "id": "360-projected-image-domoni-crater-343288",
+      "id": "domoni-crater",
       "file": "https://upload.wikimedia.org/wikipedia/commons/c/cd/360%CB%9A_Projected_Image-_Domoni_Crater_%2834328838116%29.jpg",
       "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_Projected_Image-_Domoni_Crater_(34328838116).jpg",
-      "title": "TODO: título corto de la escena (fichero: 360˚ Projected Image- Domoni Crater (34328838116))",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "title": "Domoni crater",
+      "alt": "Rendered 360-degree view from inside Domoni crater on Mars: orange-brown rippled slopes and dunes rising to the crater rim, a small low sun on the horizon and a dark blue-violet sky",
+      "desc": "Domoni crater, in the Diacria quadrangle of Mars, projected from HiRISE digital terrain and image data by Kevin M. Gill (2017).",
       "author": "Kevin M. Gill",
       "license": "CC BY 2.0",
       "width": 8192,
       "height": 4096,
-      "categories": [
-        "360° panoramas of Mars",
-        "CC-BY-2.0",
-        "Domoni (martian crater)",
-        "Flickr images reviewed by FlickreviewR 2",
-        "Photographs by Kevin M. Gill",
-        "Photographs taken on 2017-04-30"
-      ]
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
     },
     {
-      "id": "360-view-crater-in-western-arabia-terra",
+      "id": "arabia-terra-crater",
       "file": "https://upload.wikimedia.org/wikipedia/commons/a/a4/360%CB%9A_View-_Crater_in_Western_Arabia_Terra_with_Stair-Stepped_Hills_and_Dark_Dunes_%2832974048184%29.jpg",
       "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_View-_Crater_in_Western_Arabia_Terra_with_Stair-Stepped_Hills_and_Dark_Dunes_(32974048184).jpg",
-      "title": "TODO: título corto de la escena (fichero: 360˚ View- Crater in Western Arabia Terra with Stair-Stepped Hills and Dark Dunes (32974048184))",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "title": "Crater in western Arabia Terra",
+      "alt": "Rendered 360-degree view of a crater floor in western Arabia Terra on Mars: yellow-ochre plains pitted with small craters, stair-stepped hills on the horizon, dark dunes and a hazy sky lit by a low sun",
+      "desc": "A crater floor in western Arabia Terra, a large, densely cratered and heavily eroded upland in the north of Mars, presumed to be one of the oldest terrains on the planet. HiRISE data set PSP_002047_1890.",
       "author": "Kevin M. Gill",
       "license": "Public domain",
       "width": 8192,
       "height": 4096,
-      "categories": [
-        "360° panoramas of Mars",
-        "Arabia Terra",
-        "CC-BY-2.0",
-        "Flickr images reviewed by FlickreviewR 2",
-        "Impact craters in Oxia Palus quadrangle",
-        "PD NASA"
-      ]
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
     },
     {
-      "id": "360-view-very-well-preserved-9-kilometer",
+      "id": "impact-crater-9-km",
       "file": "https://upload.wikimedia.org/wikipedia/commons/0/0c/360%CB%9A_View-_Very_Well-Preserved_9-Kilometer_Diameter_Impact_Crater_%2833432247000%29.jpg",
       "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_View-_Very_Well-Preserved_9-Kilometer_Diameter_Impact_Crater_(33432247000).jpg",
-      "title": "TODO: título corto de la escena (fichero: 360˚ View- Very Well-Preserved 9-Kilometer Diameter Impact Crater (33432247000))",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "title": "A well-preserved 9-kilometre impact crater",
+      "alt": "Rendered 360-degree view from the floor of a well-preserved 9-kilometre impact crater on Mars: a ring of terraced cliffs all around the horizon, ochre ground and a bright sun glowing over the rim; a thin line across the floor is a seam between data sets",
+      "desc": "The floor of a very well preserved impact crater about 9 km in diameter. The long line visible on the ground is a seam between overlapping HiRISE data sets, not a real feature.",
       "author": "Kevin M. Gill",
       "license": "Public domain",
       "width": 8192,
       "height": 4096,
-      "categories": [
-        "360° panoramas of Mars",
-        "CC-BY-2.0",
-        "Flickr images reviewed by FlickreviewR 2",
-        "PD NASA",
-        "Photographs by Kevin M. Gill",
-        "Photographs taken on 2017-04-03"
-      ]
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
     },
     {
-      "id": "360-view-within-rauna-crater-on-mars-336",
+      "id": "rauna-crater",
       "file": "https://upload.wikimedia.org/wikipedia/commons/9/9c/360%CB%9A_View_within_Rauna_Crater_on_Mars_%2833660895232%29.jpg",
       "commonsPage": "https://commons.wikimedia.org/wiki/File:360%CB%9A_View_within_Rauna_Crater_on_Mars_(33660895232).jpg",
-      "title": "TODO: título corto de la escena (fichero: 360˚ View within Rauna Crater on Mars (33660895232))",
-      "alt": "TODO: texto alternativo accesible, una frase que describa lo que se ve",
-      "desc": "TODO: una o dos frases sobre la escena (opcional)",
+      "title": "Inside Rauna crater",
+      "alt": "Rendered 360-degree view within Rauna crater on Mars: a smooth ochre bowl with the crater rim running around the horizon and the sun rising behind it in a pale violet sky",
+      "desc": "The interior of Rauna crater, projected from HiRISE digital terrain model ESP_034934_2155.",
       "author": "Kevin M. Gill",
       "license": "Public domain",
       "width": 8000,
       "height": 4000,
-      "categories": [
-        "2017 on Mars",
-        "360° panoramas of Mars",
-        "CC-BY-2.0",
-        "Flickr images reviewed by FlickreviewR 2",
-        "PD NASA"
-      ]
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
     }
   ],
   "_demanda": {
@@ -103,5 +92,11 @@
       "fr": 10
     }
   },
-  "_notas": "Revisa placeName (acentos y forma oficial), placeCountry (ISO-2) y pon lat/lng del lugar. Sustituye todos los TODO. Quita las escenas que no sean del lugar o no sean panoramas esféricos completos. Otras 0 panorámicas coincidentes quedan fuera del encargo."
+  "_fuentes": [
+    "https://en.wikipedia.org/wiki/Mars",
+    "https://en.wikipedia.org/wiki/HiRISE",
+    "https://en.wikipedia.org/wiki/Arabia_Terra",
+    "https://commons.wikimedia.org/wiki/File:360%CB%9A_View-_Crater_in_Western_Arabia_Terra_with_Stair-Stepped_Hills_and_Dark_Dunes_(32974048184).jpg"
+  ],
+  "_notas": "Las cuatro imágenes son proyecciones 360 generadas por Kevin M. Gill a partir de modelos digitales del terreno de HiRISE (NASA/JPL/Universidad de Arizona/USGS), no fotografías tomadas en superficie; la descripción lo dice. placeCountry «US» porque Marte no tiene país: es el origen de los datos (NASA); sin lat/lng terrestres. Licencias según Commons: la de Domoni es CC BY 2.0 (Flickr de Gill); las otras tres, dominio público (PD NASA)."
 }
