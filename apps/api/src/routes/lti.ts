@@ -4,7 +4,8 @@ import { and, eq } from "drizzle-orm";
 import { ltiRegistrations, orgs, projects, publications } from "@andarama/db";
 import { hmacSign, hmacVerify } from "@andarama/adapters";
 import type { AppEnv } from "../lib/context.js";
-import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
+import { ZodError } from "zod";
+import { ApiError, badRequest, conflict, forbidden, notFound, problem, serverError } from "../lib/errors.js";
 import { newId, newToken, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
 import { isInstanceAdmin, requireOrgRole } from "../lib/authz.js";
@@ -60,6 +61,22 @@ interface LaunchContext {
 
 export function ltiRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
+
+  // El login, el lanzamiento y el Deep Linking se abren dentro del LMS: un
+  // error ahí tiene que verse como una página (y poder mostrarse en el iframe
+  // de la plataforma), no como JSON bloqueado por X-Frame-Options.
+  r.onError((err, c) => {
+    const apiErr =
+      err instanceof ApiError
+        ? err
+        : err instanceof ZodError
+          ? badRequest("El cuerpo de la petición no es válido", { issues: err.issues })
+          : null;
+    if (apiErr == null) console.error("[lti] error no controlado:", err);
+    const final = apiErr ?? serverError();
+    if (wantsHtml(c.req.header("accept"))) return ltiErrorPage(final);
+    return problem(c, final);
+  });
 
   /** JWKS de la herramienta (claves publicas para la plataforma). */
   r.get("/jwks", async (c) => {
@@ -133,7 +150,13 @@ export function ltiRoutes(): Hono<AppEnv> {
 
     const { createRemoteJWKSet, jwtVerify } = await import("jose");
     const jwks = createRemoteJWKSet(new URL(reg.jwksUrl));
-    const { payload } = await jwtVerify(idToken, jwks, { issuer: reg.issuer, audience: reg.clientId });
+    let payload: Awaited<ReturnType<typeof jwtVerify>>["payload"];
+    try {
+      ({ payload } = await jwtVerify(idToken, jwks, { issuer: reg.issuer, audience: reg.clientId }));
+    } catch (err) {
+      // Firma, caducidad, emisor o JWKS inalcanzable: es un 403 explicable, no un 500
+      throw forbidden(`La plataforma envió un mensaje que no se ha podido validar (${idTokenErrorText(err)})`);
+    }
     if (payload.nonce !== stateData.nonce) throw forbidden("Nonce LTI inválido");
 
     // Versión, tipo de mensaje y despliegue: lo que no cuadre con el registro se rechaza
@@ -206,7 +229,12 @@ export function ltiRoutes(): Hono<AppEnv> {
     }
     const reg = (await db.select().from(ltiRegistrations).where(eq(ltiRegistrations.id, registrationId)).limit(1))[0];
     if (reg == null) throw notFound();
-    const pub = (await db.select().from(publications).where(eq(publications.slug, slug)).limit(1))[0];
+    const pub = (await db
+      .select({ slug: publications.slug, title: projects.title })
+      .from(publications)
+      .innerJoin(projects, eq(publications.projectId, projects.id))
+      .where(eq(publications.slug, slug))
+      .limit(1))[0];
     if (pub == null) throw notFound("Tour no publicado");
     const pubOrg = await orgIdOfSlug(db, slug);
     if (reg.orgId == null || pubOrg !== reg.orgId) throw forbidden("Ese recorrido no pertenece a la organización de este registro LTI");
@@ -216,12 +244,14 @@ export function ltiRoutes(): Hono<AppEnv> {
     const { importPKCS8, SignJWT } = await import("jose");
     const key = await importPKCS8(keyData.pkcs8, "RS256");
     const publicUrl = c.get("config").publicUrl;
+    // El título es el nombre que Moodle propone para la actividad
+    const title = pub.title.trim() !== "" ? pub.title.trim() : pub.slug;
     const contentItem = {
       type: "ltiResourceLink",
-      title: pub.slug,
+      title,
       url: `${publicUrl}/api/v1/lti/launch`,
       custom: { tour: slug },
-      lineItem: { scoreMaximum: 100, label: `Tour ${slug}` },
+      lineItem: { scoreMaximum: 100, label: title },
     };
     const jwt = await new SignJWT({
       iss: reg.clientId,
@@ -521,6 +551,58 @@ function ltiPageCsp(nonce: string | null, issuer: string, formTarget: string | n
     `frame-ancestors 'self'${frame != null ? ` ${frame}` : ""}`,
     "base-uri 'none'",
   ].join("; ");
+}
+
+/** Texto breve del fallo al validar el id_token (sin volcar el token). */
+export function idTokenErrorText(err: unknown): string {
+  const code = (err as { code?: unknown } | null)?.code;
+  switch (code) {
+    case "ERR_JWT_EXPIRED":
+      return "el mensaje ha caducado; revisa la hora del servidor de la plataforma";
+    case "ERR_JWT_CLAIM_VALIDATION_FAILED":
+      return "el emisor o el identificador de cliente no coinciden con el registro";
+    case "ERR_JWKS_NO_MATCHING_KEY":
+    case "ERR_JWS_SIGNATURE_VERIFICATION_FAILED":
+      return "la firma no corresponde a las claves públicas registradas";
+    case "ERR_JWKS_TIMEOUT":
+    case "ERR_JWKS_INVALID":
+      return "no se han podido leer las claves públicas de la plataforma";
+    default:
+      return err instanceof TypeError ? "no se han podido leer las claves públicas de la plataforma" : "firma no válida";
+  }
+}
+
+/** El navegador pide HTML; un cliente de API o una prueba, no. */
+export function wantsHtml(accept: string | undefined): boolean {
+  return (accept ?? "").includes("text/html");
+}
+
+/**
+ * Página de error de LTI: legible dentro del iframe del LMS. Se puede
+ * enmarcar desde cualquier origen porque no tiene nada que proteger: ni
+ * scripts, ni formularios, ni datos de la sesión.
+ */
+export function ltiErrorPage(err: ApiError): Response {
+  const detalle = err.detail ?? err.title;
+  const consejo =
+    err.status === 403
+      ? "Si eres docente o administras la plataforma, revisa el registro LTI en los ajustes de la organización de Andarama (emisor, identificador de cliente, identificador de despliegue y URL de claves)."
+      : "Vuelve a abrir la actividad desde el curso. Si el problema continúa, avisa a quien administra la plataforma.";
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>No se ha podido abrir el recorrido</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{font-family:system-ui,sans-serif;background:#f6f7fb;color:#1c2340;padding:32px;max-width:640px;margin:0 auto;line-height:1.5}
+h1{font-size:20px}.detalle{background:#fff;border:1px solid #d8dcea;border-radius:10px;padding:14px 18px}small{color:#5c6480}</style></head>
+<body><h1>No se ha podido abrir el recorrido</h1><p class="detalle">${escapeHtml(detalle)}</p><p>${consejo}</p>
+<p><small>Andarama · LTI 1.3 · error ${err.status}</small></p></body></html>`;
+  return new Response(html, {
+    status: err.status,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+      "content-security-policy":
+        "default-src 'none'; style-src 'unsafe-inline'; script-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors *",
+    },
+  });
 }
 
 function escapeHtml(s: string): string {
