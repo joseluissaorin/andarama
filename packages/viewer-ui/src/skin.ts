@@ -1,5 +1,5 @@
 import { langDir, langNativeName, type Projection, type Tour } from "@andarama/schema";
-import { createIconSvg, resolveUrl, TourViewer } from "@andarama/viewer";
+import { createIconSvg, resolveUrl, TourViewer, type QuizStateEvent } from "@andarama/viewer";
 import { injectStyles } from "./styles.js";
 import { createTranslator, ensureUiLang, type Translator } from "./i18n.js";
 import { registerUiIcons } from "./icons.js";
@@ -19,6 +19,9 @@ import { startGaze, type GazeHandle } from "./gaze.js";
 import { buildAccessibleView } from "./accessible.js";
 import { downloadCertificate } from "./certificate.js";
 import { LiveClient, type LiveOptions } from "./live.js";
+import { wasFormSent } from "./visitor.js";
+import { allowedProjections } from "./projections.js";
+import { buildQuizPayload, quizComplete, quizSignature, sendQuizResult } from "./quiz-result.js";
 
 export interface SkinOptions {
   container: HTMLElement;
@@ -27,6 +30,12 @@ export interface SkinOptions {
   lang?: string;
   analyticsEndpoint?: string | null;
   formEndpoint?: string | null;
+  /** Endpoint del resultado del quiz (null en un paquete exportado sin servidor). */
+  quizEndpoint?: string | null;
+  /** Lanzamiento LTI (`?lti=`): la nota vuelve al libro de calificaciones. */
+  ltiLaunchId?: string | null;
+  /** Nombre del participante (del LMS o de `?name=`). */
+  participantName?: string | null;
   turnstileSiteKey?: string | null;
   editMode?: boolean;
   deepLinks?: boolean;
@@ -135,6 +144,15 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     turnstileSiteKey: options.turnstileSiteKey ?? null,
   });
   viewer.on("hotspotActivate", (e) => panelHost.open(e.hotspot, e.element));
+  // Formularios de un solo envío ya enviados en otra visita: cuentan como
+  // enviados desde el principio (su compuerta, si la tienen, está abierta)
+  if (!edit) {
+    for (const scene of tour.scenes) {
+      for (const h of scene.hotspots) {
+        if (h.type === "form" && h.once === true && wasFormSent(h.id)) viewer.markFormSubmitted(h.id);
+      }
+    }
+  }
   viewer.on("hotspotDeactivate", () => panelHost.close());
 
   // Skip link accesible
@@ -265,8 +283,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   if (mapPanel.available) {
     controlsLeft.appendChild(iconButton("map", t("map"), mapPanel.toggle));
   }
-  // Volver a la escena anterior
-  if (!edit) {
+  // Volver a la escena anterior (se puede quitar en los ajustes del tour)
+  if (!edit && ui.backButton !== false) {
     const backBtn = iconButton("arrow-left", t("previous_scene"), () => void viewer.back());
     backBtn.disabled = true;
     viewer.on("sceneChange", () => {
@@ -433,8 +451,10 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     controls.appendChild(langBtn);
   }
 
-  // Selector de proyeccion
-  if (!edit) {
+  // Selector de proyeccion. El autor puede quitarlo o dejar solo algunas;
+  // con una sola no hay nada que elegir y el botón no aparece.
+  const projections = allowedProjections(ui.projections);
+  if (!edit && projections.length > 1) {
   const projBtn = iconButton("globe", t("projection"), () => {
     const existing = container.querySelector(".anda-menu-pop");
     if (existing != null) {
@@ -443,7 +463,6 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     }
     const pop = el("div", { className: "anda-menu-pop anda-menu-pop--wide", role: "menu" });
     pop.style.top = `${projBtn.getBoundingClientRect().top - container.getBoundingClientRect().top}px`;
-    const projections: Projection[] = ["rectilinear", "littlePlanet", "fisheye", "pannini", "architectural"];
     for (const p of projections) {
       // Cada proyección con una línea que dice qué es: «Panini» o
       // «arquitectónica» no le dicen nada a quien no viene de la fotografía
@@ -544,41 +563,146 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   viewer.on("ready", refreshVideoBar);
 
   // ------- Busqueda del tesoro -------
-  if (tour.treasureHunt?.enabled === true && !edit) {
-    const hud = el("div", {
-      className: "anda-toast anda-toast--hud",
-      role: "status",
-    });
-    const refresh = (found: number, total: number): void => {
-      hud.textContent = `${viewer.text(tour.treasureHunt!.title) || t("treasure_title")}: ${t("treasure_progress", { found, total })}`;
-    };
-    refresh(0, tour.treasureHunt.targets.length);
+  //
+  // El contador de arriba dice cuántos quedan y ofrece la pista del siguiente
+  // tesoro pendiente de la escena. Al encontrarlos todos lo dice con el
+  // mensaje final del autor (o el de serie), y ahí se queda.
+  let treasureHint: ((hotspotId?: string) => void) | null = null;
+  if (viewer.hasTreasureHunt() && !edit) {
+    const hunt = tour.treasureHunt;
+    const hud = el("div", { className: "anda-toast anda-toast--hud anda-treasure-hud" });
+    const estadoTxt = el("span", { role: "status" });
+    const hintBtn = el("button", { className: "anda-treasure-hud__btn", type: "button", text: t("treasure_hint"), title: t("treasure_show_hint") });
+    const hintTxt = el("p", { className: "anda-treasure-hud__hint", "aria-live": "polite", hidden: true });
+    hud.append(estadoTxt, hintBtn, hintTxt);
     container.appendChild(hud);
-    viewer.on("treasureProgress", (e) => {
-      refresh(e.found, e.total);
-      if (e.found === e.total) {
-        toast(container, viewer.text(tour.treasureHunt!.completionMessage) || t("treasure_complete"));
+
+    const pendientesAqui = (): { id: string; hint?: unknown }[] => {
+      const hallados = new Set(viewer.treasureState().foundIds);
+      const escena = tour.scenes.find((s) => s.id === viewer.currentSceneId());
+      return (escena?.hotspots ?? [])
+        .filter((h) => h.type === "treasure" && !hallados.has(h.id))
+        .map((h) => ({ id: h.id, hint: (h as { hint?: unknown }).hint }));
+    };
+    const refresh = (): void => {
+      const { found, total } = viewer.treasureState();
+      if (total > 0 && found >= total) {
+        estadoTxt.textContent = viewer.text(hunt?.completionMessage) || t("treasure_complete_all");
+        hud.classList.add("anda-treasure-hud--done");
+        hintBtn.hidden = true;
+        hintTxt.hidden = true;
+        return;
       }
+      estadoTxt.textContent = `${viewer.text(hunt?.title) || t("treasure_title")}: ${t("treasure_progress", { found, total })}`;
+      hintBtn.hidden = pendientesAqui().length === 0;
+    };
+    let hintTimer: ReturnType<typeof setTimeout> | null = null;
+    const showHint = (hotspotId?: string): void => {
+      const pendientes = pendientesAqui();
+      const objetivo = pendientes.find((p) => p.id === hotspotId) ?? pendientes[0];
+      const texto =
+        objetivo == null ? t("treasure_none_here") : viewer.text(objetivo.hint as never) || t("treasure_no_hint");
+      hintTxt.textContent = texto;
+      hintTxt.hidden = false;
+      if (hintTimer != null) clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => {
+        hintTxt.hidden = true;
+      }, 12000);
+    };
+    treasureHint = showHint;
+    hintBtn.addEventListener("click", () => {
+      if (!hintTxt.hidden) {
+        hintTxt.hidden = true;
+        return;
+      }
+      showHint();
+    });
+    viewer.on("sceneChange", () => {
+      hintTxt.hidden = true;
+      refresh();
+    });
+    viewer.on("treasureProgress", refresh);
+    refresh();
+    cleanups.push(() => {
+      if (hintTimer != null) clearTimeout(hintTimer);
     });
   }
 
+  // ------- Resultado del quiz al servidor (y a la plataforma LTI) -------
+  //
+  // Al terminar todas las preguntas, el resultado se manda al endpoint del
+  // tour publicado (en un paquete exportado no hay endpoint y no se manda).
+  // Si el tour pide el nombre y no llega del LMS, se pide antes de mandar.
+  const quizEndpoint = edit ? null : (options.quizEndpoint ?? null);
+  const quizSession = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+  let participantName = options.participantName?.trim() || null;
+  let lastSent: string | null = null;
+  const submitQuizResult = async (state: QuizStateEvent): Promise<boolean> => {
+    if (quizEndpoint == null) return true;
+    const firma = quizSignature(state, participantName);
+    if (firma === lastSent) return true;
+    const ok = await sendQuizResult(
+      quizEndpoint,
+      buildQuizPayload(state, { sessionId: quizSession, participantName, ltiLaunchId: options.ltiLaunchId ?? null }),
+    );
+    if (ok) lastSent = firma;
+    return ok;
+  };
+
   // ------- Informe de quiz + certificado -------
+  let lastReport: string | null = null;
   viewer.on("quizChange", (state) => {
-    if (edit) return;
-    if (state.total > 0 && state.answered === state.total && tour.quiz?.finalReport !== false) {
+    if (edit || !quizComplete(state)) return;
+    // Volver a abrir una pregunta para abrir su compuerta no cambia la nota:
+    // ni se repite el informe ni se vuelve a mandar el mismo resultado.
+    const firma = quizSignature(state);
+    if (firma === lastReport) return;
+    lastReport = firma;
+    const pideNombre = quizEndpoint != null && tour.quiz?.askName === true && participantName == null;
+    if (!pideNombre) void submitQuizResult(state);
+    const informe = tour.quiz?.finalReport !== false;
+    if (!informe && !pideNombre) return;
+    {
       panelHost.close();
       const card = el("div", { className: "anda-screen__card" });
       card.appendChild(el("h1", { text: t("quiz_report") }));
-      card.appendChild(el("p", { text: `${t("quiz_score")}: ${state.score} / ${state.maxScore}` }));
-      if (state.passed != null) {
-        card.appendChild(el("p", { text: state.passed ? t("quiz_passed") : t("quiz_failed"), style: `color:${state.passed ? "#34d399" : "#f87171"};font-weight:600;` }));
+      if (informe) {
+        card.appendChild(el("p", { text: `${t("quiz_score")}: ${state.score} / ${state.maxScore}` }));
+        if (state.passed != null) {
+          card.appendChild(el("p", { text: state.passed ? t("quiz_passed") : t("quiz_failed"), style: `color:${state.passed ? "#34d399" : "#f87171"};font-weight:600;` }));
+        }
       }
-      if (tour.quiz?.certificate?.enabled === true && state.passed !== false) {
+      const inputStyle =
+        "width:100%;padding:10px;border-radius:8px;border:1px solid rgba(128,128,160,.4);background:transparent;color:inherit;margin-top:10px;";
+      if (pideNombre) {
+        const nombre = el("input", { type: "text", placeholder: t("quiz_name_for_result"), "aria-label": t("quiz_name_for_result"), maxlength: "120", style: inputStyle });
+        const enviar = el("button", { className: "anda-primary-btn", type: "button", text: t("quiz_send_result") });
+        const aviso = el("p", { role: "status", style: "margin:8px 0 0;font-size:14px;" });
+        enviar.addEventListener("click", () => {
+          if (nombre.value.trim() === "") {
+            nombre.focus();
+            return;
+          }
+          participantName = nombre.value.trim();
+          enviar.disabled = true;
+          aviso.textContent = t("sending");
+          void submitQuizResult(state).then((ok) => {
+            aviso.textContent = ok ? t("quiz_result_sent") : t("quiz_result_error");
+            enviar.disabled = ok;
+            nombre.disabled = ok;
+          });
+        });
+        card.append(nombre, enviar, aviso);
+      }
+      if (informe && tour.quiz?.certificate?.enabled === true && state.passed !== false) {
         const nameInput = el("input", {
           type: "text",
           placeholder: t("quiz_your_name"),
           "aria-label": t("quiz_your_name"),
-          style: "width:100%;padding:10px;border-radius:8px;border:1px solid rgba(128,128,160,.4);background:transparent;color:inherit;margin-top:10px;",
+          value: participantName ?? undefined,
+          style: inputStyle,
         });
         const dl = el("button", { className: "anda-primary-btn", type: "button", text: t("quiz_certificate") });
         dl.addEventListener("click", () => {
@@ -615,9 +739,13 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // Intentar salir con algo pendiente: se dice por qué y, si es una pregunta
   // con compuerta, se abre para que se pueda contestar
   viewer.on("navBlocked", (e) => {
-    if (e.reason === "quiz") {
-      toast(container, t("quiz_gate_scene"));
+    if (e.reason === "quiz" || e.reason === "form") {
+      toast(container, t(e.reason === "quiz" ? "quiz_gate_scene" : "form_gate_scene"));
       if (e.hotspotId != null && !panelHost.isOpen) viewer.openHotspot(e.hotspotId);
+    } else if (e.reason === "treasure") {
+      // El tesoro no se abre: eso sería decir dónde está. Se da su pista.
+      toast(container, t("treasure_gate_scene"));
+      treasureHint?.(e.hotspotId);
     } else {
       toast(container, t("narration_wait"));
     }

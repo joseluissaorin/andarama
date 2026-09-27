@@ -240,6 +240,7 @@ export function tourRoutes(): Hono<AppEnv> {
       // normal, y ?kiosk=0 saca el recorrido suelto de uno publicado en bucle.
       kiosk: modoQuiosco(c.req.query("kiosk"), pointer.kiosk === true),
       formEndpoint: `/api/v1/public/forms/${slug}`,
+      quizEndpoint: `/api/v1/public/quiz/${slug}`,
       turnstileSiteKey: c.get("config").turnstileSiteKey ?? null,
       accessibleHtml: renderAccessibleHtml(tour, lang, `/t/${slug}`),
       // La insignia la decidió la publicación (plan sin marca blanca)

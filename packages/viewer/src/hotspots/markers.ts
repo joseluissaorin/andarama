@@ -292,6 +292,9 @@ export class SceneMarkers {
     }
     const tooltipText = resolveL10n(hotspot.tooltip, this.callbacks.lang(), this.callbacks.defaultLang);
     if (tooltipText !== "") el.title = tooltipText;
+    // La etiqueta se corta a tres líneas con puntos suspensivos: el texto
+    // entero queda al pasar el ratón (y en la burbuja, si es una etiqueta flotante)
+    else if (labelText.length > 60 && hotspot.labelVisibility !== "never") el.title = labelText;
 
     el.addEventListener("click", (e) => {
       e.stopPropagation();

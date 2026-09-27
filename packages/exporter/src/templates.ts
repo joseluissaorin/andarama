@@ -14,6 +14,8 @@ export interface IndexHtmlOptions {
   canonicalUrl?: string;
   analyticsEndpoint?: string | null;
   formEndpoint?: string | null;
+  /** Resultado del quiz (opcional: un paquete exportado no tiene servidor). */
+  quizEndpoint?: string | null;
   turnstileSiteKey?: string | null;
   kiosk?: boolean;
   serviceWorker?: boolean;
@@ -87,6 +89,7 @@ export function renderIndexHtml(opts: IndexHtmlOptions): string {
     tourUrl: opts.inlineConfig == null ? (opts.tourJsonPath ?? "tour.json") : undefined,
     analyticsEndpoint: opts.analyticsEndpoint ?? null,
     formEndpoint: opts.formEndpoint ?? null,
+    quizEndpoint: opts.quizEndpoint ?? undefined,
     turnstileSiteKey: opts.turnstileSiteKey ?? null,
     kiosk: opts.kiosk === true ? true : undefined,
     badge: opts.badge,

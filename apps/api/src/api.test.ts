@@ -29,6 +29,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const migrationsDir = resolve(here, "../../../packages/db/migrations");
 
 let app: Hono<AppEnv>;
+let testRuntime: PlatformRuntime;
 let cookies = "";
 let csrf = "";
 
@@ -76,6 +77,7 @@ beforeAll(async () => {
       void p.catch(() => {});
     },
   };
+  testRuntime = runtime;
   app = createApp({
     runtime,
     config: { publicUrl: "http://localhost", secret: "test-secret", emailFrom: "test@localhost", maxUploadBytes: 1024 * 1024 * 100 },
@@ -329,14 +331,170 @@ describe("flujo critico", () => {
   });
 
   it("resultados de quiz publicos", async () => {
+    // El tour publicado no tiene preguntas: la nota que diga el navegador
+    // no cuenta, no hay nada que puntuar
     const res = await call(`/api/v1/public/quiz/${publishedSlug}`, {
       auth: false,
       method: "POST",
       body: { sessionId: "s1", score: 2, maxScore: 3, passed: true, detail: [], participantName: "Estudiante" },
     });
     expect(res.status).toBe(201);
-    const list = (await (await call(`/api/v1/projects/${projectId}/quiz-results`)).json()) as { score: number }[];
-    expect(list[0]!.score).toBe(2);
+    const list = (await (await call(`/api/v1/projects/${projectId}/quiz-results`)).json()) as { score: number; maxScore: number; participantName: string }[];
+    expect(list[0]!.score).toBe(0);
+    expect(list[0]!.maxScore).toBe(0);
+    expect(list[0]!.participantName).toBe("Estudiante");
+  });
+
+  describe("quiz con nota del servidor, LTI y formulario de un solo envío", () => {
+    const quizA = "quizA-000001";
+    const quizB = "quizB-000001";
+    const formOnce = "formOnce-0001";
+
+    it("publica un tour con dos preguntas y un formulario de un solo envío", async () => {
+      const q1 = await call(`/api/v1/projects/${projectId}/scenes/${sceneA}/hotspots`, {
+        method: "POST",
+        body: {
+          id: quizA,
+          type: "quiz",
+          position: { yaw: 0.5, pitch: 0 },
+          content: {
+            question: "¿Capital de Canarias?",
+            kind: "single",
+            points: 2,
+            gate: true,
+            options: [
+              { id: "a", text: "Santa Cruz y Las Palmas", correct: true },
+              { id: "b", text: "La Laguna" },
+            ],
+          },
+        },
+      });
+      expect(q1.status).toBe(201);
+      const q2 = await call(`/api/v1/projects/${projectId}/scenes/${sceneA}/hotspots`, {
+        method: "POST",
+        body: {
+          id: quizB,
+          type: "quiz",
+          position: { yaw: 0.8, pitch: 0 },
+          content: {
+            question: "¿Qué islas son volcánicas?",
+            kind: "multiple",
+            options: [
+              { id: "x", text: "Tenerife", correct: true },
+              { id: "y", text: "La Palma", correct: true },
+              { id: "z", text: "Ninguna" },
+            ],
+          },
+        },
+      });
+      expect(q2.status).toBe(201);
+      const f = await call(`/api/v1/projects/${projectId}/scenes/${sceneA}/hotspots`, {
+        method: "POST",
+        body: {
+          id: formOnce,
+          type: "form",
+          position: { yaw: 1.2, pitch: 0 },
+          content: { once: true, fields: [{ id: "nombre", type: "text", label: "Nombre" }], destination: { api: true } },
+        },
+      });
+      expect(f.status).toBe(201);
+      const pub = await call(`/api/v1/projects/${projectId}/publish`, { method: "POST", body: { visibility: "public" } });
+      expect(pub.status).toBe(201);
+      // La página publicada lleva el endpoint del quiz
+      const html = await (await call(`/t/${publishedSlug}`, { auth: false })).text();
+      expect(html).toContain(`/api/v1/public/quiz/${publishedSlug}`);
+    });
+
+    it("el servidor recalcula la nota con las opciones marcadas e ignora la del navegador", async () => {
+      const res = await call(`/api/v1/public/quiz/${publishedSlug}`, {
+        auth: false,
+        method: "POST",
+        body: {
+          sessionId: "s-nota",
+          score: 999,
+          maxScore: 999,
+          passed: true,
+          detail: [
+            { hotspotId: quizA, correct: true, points: 2, selected: ["a"] },
+            // Dice que acertó, pero marcó solo una de las dos correctas
+            { hotspotId: quizB, correct: true, points: 50, selected: ["x"] },
+            { hotspotId: "inventada", correct: true, points: 100, selected: ["a"] },
+          ],
+        },
+      });
+      expect(res.status).toBe(201);
+      const nota = (await res.json()) as { score: number; maxScore: number };
+      expect(nota).toMatchObject({ score: 2, maxScore: 3 });
+      const list = (await (await call(`/api/v1/projects/${projectId}/quiz-results`)).json()) as { sessionId: string; score: number; maxScore: number }[];
+      const fila = list.find((r) => r.sessionId === "s-nota")!;
+      expect(fila.score).toBe(2);
+      expect(fila.maxScore).toBe(3);
+    });
+
+    it("sin opciones marcadas no hay acierto, diga lo que diga el navegador", async () => {
+      const res = await call(`/api/v1/public/quiz/${publishedSlug}`, {
+        auth: false,
+        method: "POST",
+        body: { sessionId: "s-trampa", detail: [{ hotspotId: quizA, correct: true, points: 2 }, { hotspotId: quizB, correct: true, points: 1 }] },
+      });
+      expect(((await res.json()) as { score: number }).score).toBe(0);
+    });
+
+    it("con ?lti= del mismo tour, el resultado queda ligado al lanzamiento y lleva su nombre", async () => {
+      await testRuntime.kv.put(
+        "lti-launch:0123456789abcdef",
+        JSON.stringify({ registrationId: "no-existe", issuer: "https://moodle.test", clientId: "c", sub: "u1", name: "Alumna LTI", slug: publishedSlug }),
+        { ttlSeconds: 600 },
+      );
+      await testRuntime.kv.put(
+        "lti-launch:fedcba9876543210",
+        JSON.stringify({ registrationId: "no-existe", issuer: "https://moodle.test", clientId: "c", sub: "u2", slug: "otro-tour" }),
+        { ttlSeconds: 600 },
+      );
+      const ok = await call(`/api/v1/public/quiz/${publishedSlug}`, {
+        auth: false,
+        method: "POST",
+        body: { sessionId: "s-lti", ltiLaunchId: "0123456789abcdef", detail: [{ hotspotId: quizA, selected: ["a"] }, { hotspotId: quizB, selected: ["x", "y"] }] },
+      });
+      expect(ok.status).toBe(201);
+      expect(await ok.json()).toMatchObject({ score: 3, maxScore: 3 });
+      const ajeno = await call(`/api/v1/public/quiz/${publishedSlug}`, {
+        auth: false,
+        method: "POST",
+        body: { sessionId: "s-lti-ajeno", ltiLaunchId: "fedcba9876543210", detail: [] },
+      });
+      expect(ajeno.status).toBe(201);
+      const list = (await (await call(`/api/v1/projects/${projectId}/quiz-results`)).json()) as { sessionId: string; lti: boolean; participantName: string | null }[];
+      const lti = list.find((r) => r.sessionId === "s-lti")!;
+      expect(lti.lti).toBe(true);
+      expect(lti.participantName).toBe("Alumna LTI");
+      // Un lanzamiento de otro tour no se reutiliza para devolver notas
+      expect(list.find((r) => r.sessionId === "s-lti-ajeno")!.lti).toBe(false);
+    });
+
+    it("el formulario de un solo envío rechaza el segundo del mismo visitante", async () => {
+      const enviar = (visitorId: string): Promise<Response> =>
+        call(`/api/v1/public/forms/${publishedSlug}`, {
+          auth: false,
+          method: "POST",
+          body: { hotspotId: formOnce, data: { nombre: "Ana" }, visitorId },
+        });
+      expect((await enviar("visitante-0001")).status).toBe(201);
+      const repetido = await enviar("visitante-0001");
+      expect(repetido.status).toBe(409);
+      expect(await repetido.json()).toMatchObject({ alreadySubmitted: true });
+      // Otro visitante (aunque salga por la misma IP del aula) sí puede
+      expect((await enviar("visitante-0002")).status).toBe(201);
+      // Un formulario normal admite varios envíos
+      const normal = (): Promise<Response> =>
+        call(`/api/v1/public/forms/${publishedSlug}`, {
+          auth: false,
+          method: "POST",
+          body: { hotspotId: "h-form", data: { nombre: "Luis" }, visitorId: "visitante-0001" },
+        });
+      expect((await normal()).status).toBe(201);
+      expect((await normal()).status).toBe(201);
+    });
   });
 
   it("tokens de API con scopes", async () => {

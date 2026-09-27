@@ -559,6 +559,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         <>
       <Field label={t("label")} htmlFor="hs-label">
         <Input id="hs-label" value={String(content.label ?? "")} disabled={!canEdit} onChange={(e) => setContent({ label: e.target.value })} />
+        <LabelLength value={String(content.label ?? "")} />
       </Field>
       <Field label={t("label_visibility")} htmlFor="hs-labelvis">
         <Select id="hs-labelvis" value={String(content.labelVisibility ?? "hover")} disabled={!canEdit} onChange={(e) => setContent({ labelVisibility: e.target.value === "hover" ? undefined : e.target.value })}>
@@ -855,6 +856,10 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             {text("successMessage", t("success_message"))}
             {text("submitLabel", t("submit_label"))}
             <FormEditor fields={(content.fields as any[]) ?? []} destination={content.destination ?? { api: true }} turnstile={content.turnstile === true} canEdit={canEdit} onChange={setContent} />
+            <Switch id="form-once" checked={content.once === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ once: v ? true : undefined })} label={t("form_once")} />
+            <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("form_once_hint")}</p>
+            <Switch id="form-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ gate: v ? true : undefined })} label={t("form_gate")} />
+            <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("form_gate_hint")}</p>
           </>
         )}
         {hotspot.type === "compare" && (
@@ -1038,7 +1043,10 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         )}
         {hotspot.type === "tooltip" && (
           <>
-            {text("text", t("tooltip_text"), { hint: t("tooltip_text_hint") })}
+            <Field label={t("tooltip_text")} htmlFor="hs-text" hint={t("tooltip_text_hint")}>
+              <Input id="hs-text" value={String(content.text ?? "")} disabled={!canEdit} onChange={(e) => setContent({ text: e.target.value })} />
+              <LabelLength value={String(content.text ?? "")} tooltip />
+            </Field>
             <Switch id="hs-perm" checked={content.permanent === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ permanent: v })} label={t("permanent")} />
           </>
         )}
@@ -1073,6 +1081,8 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
               <Input id="hs-thint" value={String(content.hint ?? "")} disabled={!canEdit}
                 onChange={(e) => setContent({ hint: e.target.value || undefined })} />
             </Field>
+            <Switch id="hs-tgate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => setContent({ gate: v ? true : undefined })} label={t("treasure_gate")} />
+            <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("treasure_gate_hint")}</p>
             <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("treasure_marker_hint")}</p>
           </>
         )}
@@ -1585,6 +1595,28 @@ function FormEditor({ fields, destination, turnstile, canEdit, onChange }: {
       </Field>
       <Switch id="form-ts" checked={turnstile} disabled={!canEdit} onCheckedChange={(v) => onChange({ turnstile: v })} label="Turnstile anti-spam" />
     </div>
+  );
+}
+
+/**
+ * Contador de la etiqueta. En el visor la etiqueta bajo el marcador ocupa
+ * como mucho tres líneas y el resto se corta con puntos suspensivos: se
+ * avisa antes de que el autor lo descubra publicado.
+ */
+const LABEL_SOFT_LIMIT = 70;
+function LabelLength({ value, tooltip = false }: { value: string; tooltip?: boolean }): React.ReactNode {
+  const t = useT();
+  const n = [...value].length;
+  if (n === 0) return null;
+  const largo = n > LABEL_SOFT_LIMIT;
+  return (
+    <p
+      className={`mt-1 text-xs leading-snug ${largo ? "text-amber-600" : "text-[var(--anda-text-dim)]"}`}
+      role={largo ? "status" : undefined}
+    >
+      {t("label_counter", { n: String(n), max: String(LABEL_SOFT_LIMIT) })}
+      {largo && <> · {t(tooltip ? "tooltip_too_long" : "label_too_long")}</>}
+    </p>
   );
 }
 

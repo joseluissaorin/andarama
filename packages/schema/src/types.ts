@@ -412,6 +412,13 @@ export interface FormHotspot extends HotspotBase {
   turnstile?: boolean;
   successMessage?: L10n;
   submitLabel?: L10n;
+  /**
+   * Un envío por visitante: el visor lo recuerda en el navegador y el
+   * servidor rechaza el segundo envío del mismo visitante.
+   */
+  once?: boolean;
+  /** Compuerta: no se sale de la escena sin haberlo enviado. */
+  gate?: boolean;
 }
 
 export interface CompareHotspot extends HotspotBase {
@@ -487,6 +494,8 @@ export interface TreasureHotspot extends HotspotBase {
   hint?: L10n;
   /** Cuenta para el marcador pero no se puede volver a encontrar. */
   once?: boolean;
+  /** Compuerta: no se sale de la escena sin haberlo encontrado. */
+  gate?: boolean;
 }
 
 export type Hotspot =
@@ -618,6 +627,11 @@ export interface QuizConfig {
   finalReport?: boolean;
   /** Certificado de finalizacion (PDF con nombre del participante). */
   certificate?: { enabled: boolean; title?: L10n; signature?: string };
+  /**
+   * Pedir el nombre antes de enviar el resultado al servidor. Si el tour se
+   * abre desde un LMS (LTI), el nombre llega con el lanzamiento y no se pide.
+   */
+  askName?: boolean;
 }
 
 export interface TreasureHuntConfig {
@@ -669,6 +683,13 @@ export interface UIConfig {
   /** Tamaño en px del botón de los hotspots (por defecto 44). */
   hotspotSize?: number;
   titleBar?: boolean;
+  /** Botón «Escena anterior» (abajo a la izquierda). */
+  backButton?: boolean;
+  /**
+   * Selector de proyección. `false` lo quita; una lista deja elegir solo
+   * esas proyecciones (con una sola, el botón no aparece).
+   */
+  projections?: boolean | Projection[];
   /** Botón de visita automática (abajo a la izquierda) cuando hay recorridos. */
   autopilotButton?: boolean;
   sceneMenu?: boolean;
