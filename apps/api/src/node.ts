@@ -94,6 +94,8 @@ async function main(): Promise<void> {
     emailFrom: process.env.EMAIL_FROM ?? "andarama@localhost",
     turnstileSiteKey: process.env.TURNSTILE_SITE_KEY,
     turnstileSecret: process.env.TURNSTILE_SECRET,
+    conversionsToken: process.env.CONVERSIONS_TOKEN,
+    demoNotifyTo: process.env.DEMO_NOTIFY_TO,
     maxUploadBytes: 512 * 1024 * 1024,
     oidc:
       process.env.OIDC_ISSUER != null && process.env.OIDC_CLIENT_ID != null && process.env.OIDC_CLIENT_SECRET != null

@@ -117,6 +117,37 @@ export const coupons = sqliteTable(
   (t) => [index("coupons_batch_idx").on(t.batch), index("coupons_redeemed_idx").on(t.redeemedBy)],
 );
 
+/**
+ * Solicitudes de demo desde la web pública (formación, universidades,
+ * museos). Guardan la atribución de la sesión (identificador de clic solo si
+ * la persona aceptó el aviso de anuncios) para subir la conversión
+ * «Solicitud de demo» a Google Ads.
+ */
+export const demoRequests = sqliteTable(
+  "demo_requests",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    institution: text("institution").notNull(),
+    email: text("email").notNull(),
+    message: text("message").notNull(),
+    lang: text("lang"),
+    /** Página de origen: formacion | universidades | museos… */
+    source: text("source"),
+    /** Ruta desde la que se envió. */
+    page: text("page"),
+    /** JSON con gclid/gbraid/wbraid, utm_*, landing_web y consent. */
+    attributionJson: text("attribution_json"),
+    /** Si aceptó el aviso de anuncios (solo entonces hay identificador de clic). */
+    adConsent: integer("ad_consent", { mode: "boolean" }).notNull().default(false),
+    ipHash: text("ip_hash"),
+    /** Cuándo salió el aviso por correo; null si no hay correo configurado. */
+    notifiedAt: integer("notified_at"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("demo_requests_created_idx").on(t.createdAt)],
+);
+
 // ---------------------------------------------------------------------------
 // Organizaciones y pertenencia
 // ---------------------------------------------------------------------------

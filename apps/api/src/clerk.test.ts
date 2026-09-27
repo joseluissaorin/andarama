@@ -95,6 +95,7 @@ beforeAll(async () => {
       emailFrom: "test@localhost",
       maxUploadBytes: 1024 * 1024 * 100,
       clerk: { publishableKey: "pk_test_x", secretKey: "sk_test_x" },
+      conversionsToken: "secreto-de-conversiones",
     },
     clerkVerifier: verifier,
   });
@@ -422,5 +423,80 @@ describe("instancia alojada con Clerk", () => {
     const bruno = (await (await call("tok-bruno", "/api/v1/me")).json()) as { orgs: { id: string }[] };
     const { slug: slugBruno } = await publicar("tok-bruno", bruno.orgs[0]!.id, "Demo pública");
     expect(await (await call(null, `/t/${slugBruno}`)).text()).not.toContain("utm_source=insignia");
+  });
+});
+
+describe("solicitudes de demo y conversiones para Google Ads", () => {
+  const demo = (extra: Record<string, unknown> = {}) => ({
+    name: "Marta Díaz",
+    institution: "Museo de Ejemplo",
+    email: "Marta@Museo.es",
+    message: "Queremos enseñar el depósito.",
+    lang: "es",
+    source: "museos",
+    page: "/museos/",
+    ...extra,
+  });
+
+  it("la web sabe si hay Turnstile", async () => {
+    const cfg = (await (await call(null, "/api/v1/public/demo/config")).json()) as { turnstileSiteKey: string | null };
+    expect(cfg.turnstileSiteKey).toBeNull();
+  });
+
+  it("guarda la solicitud con la atribución; sin consentimiento, sin identificador de clic", async () => {
+    const con = await call(null, "/api/v1/public/demo", {
+      method: "POST",
+      body: demo({ attribution: { gclid: "G-DEMO-SI", utm_source: "google", landing_web: "/museos/", consent: true } }),
+    });
+    expect(con.status).toBe(201);
+    const sin = await call(null, "/api/v1/public/demo", {
+      method: "POST",
+      body: demo({ institution: "Archivo Sin Consentimiento", attribution: { gclid: "G-DEMO-NO", utm_source: "google", consent: false } }),
+    });
+    expect(sin.status).toBe(201);
+    // La trampa para robots: se contesta igual, pero no se guarda
+    const robot = await call(null, "/api/v1/public/demo", { method: "POST", body: demo({ institution: "Robot", website: "http://spam" }) });
+    expect(robot.status).toBe(201);
+    // Campos que faltan o sobran se rechazan
+    expect((await call(null, "/api/v1/public/demo", { method: "POST", body: { name: "x" } })).status).toBe(400);
+    expect((await call(null, "/api/v1/public/demo", { method: "POST", body: demo({ attribution: { email: "x@y.z" } }) })).status).toBe(400);
+
+    // El panel las ve (y solo el administrador)
+    expect((await call("tok-dani", "/api/v1/admin/demo-requests")).status).toBe(403);
+    const lista = (await (await call("tok-bruno", "/api/v1/admin/demo-requests")).json()) as {
+      institution: string;
+      email: string;
+      adConsent: boolean;
+      clickId: boolean;
+      notifiedAt: number | null;
+    }[];
+    expect(lista.map((d) => d.institution).sort()).toEqual(["Archivo Sin Consentimiento", "Museo de Ejemplo"]);
+    const museo = lista.find((d) => d.institution === "Museo de Ejemplo")!;
+    expect(museo).toMatchObject({ email: "marta@museo.es", adConsent: true, clickId: true, notifiedAt: null });
+    expect(lista.find((d) => d.institution === "Archivo Sin Consentimiento")).toMatchObject({ adConsent: false, clickId: false });
+  });
+
+  it("exporta el CSV de conversiones con el secreto o con un administrador", async () => {
+    expect((await call(null, "/api/v1/admin/conversions.csv")).status).toBe(401);
+    expect((await call(null, "/api/v1/admin/conversions.csv?token=otro")).status).toBe(401);
+    expect((await call("tok-dani", "/api/v1/admin/conversions.csv")).status).toBe(403);
+    expect((await call("tok-bruno", "/api/v1/admin/conversions.csv")).status).toBe(200);
+
+    const res = await call(null, "/api/v1/admin/conversions.csv?token=secreto-de-conversiones");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/csv");
+    const lineas = (await res.text()).trim().split("\r\n");
+    expect(lineas[0]).toBe(
+      "Google Click ID,GBRAID,WBRAID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency,Ad User Data,Ad Personalization",
+    );
+    // La demo con consentimiento, con GRANTED; la otra no aparece (no guardó el clic)
+    expect(lineas.find((l) => l.startsWith("G-DEMO-SI,"))).toMatch(/^G-DEMO-SI,,,Solicitud de demo,\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+00:00,60,EUR,GRANTED,GRANTED$/);
+    expect(lineas.some((l) => l.includes("G-DEMO-NO"))).toBe(false);
+    // Dani se dio de alta con gclid antes de que existiera el aviso: prueba iniciada, DENIED
+    expect(lineas.find((l) => l.startsWith("Cj0KCQjw-abc,"))).toMatch(/,Prueba iniciada,.*,10,EUR,DENIED,DENIED$/);
+
+    // También por cabecera
+    const porCabecera = await app.request("http://localhost/api/v1/admin/conversions.csv", { headers: { "x-conversions-token": "secreto-de-conversiones" } });
+    expect(porCabecera.status).toBe(200);
   });
 });

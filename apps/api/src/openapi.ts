@@ -47,6 +47,8 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
         post: p("Generar una tanda de cupones", "admin"),
       },
       "/admin/coupons/{code}": { delete: p("Retirar un cupón sin canjear", "admin") },
+      "/admin/demo-requests": { get: p("Solicitudes de demo de la web pública", "admin") },
+      "/admin/conversions.csv": { get: p("CSV de conversiones para Google Ads (secreto CONVERSIONS_TOKEN o administrador)", "admin") },
       "/me/prefs": { put: p("Preferencias personales (idioma, valores por defecto)", "auth") },
       "/orgs/{id}/defaults": { get: p("Valores por defecto de la organización", "orgs"), put: p("Fijar valores por defecto y propagarlos a los borradores", "orgs") },
       "/orgs": { post: p("Crear organización", "orgs") },
@@ -110,6 +112,8 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/admin/backup": { get: p("Export completo de instancia", "admin") },
       "/admin/backup/import": { post: p("Import de instancia", "admin") },
       "/public/forms/{slug}": { post: p("Envio publico de formulario (Turnstile)", "public") },
+      "/public/demo": { post: p("Solicitud de demo desde la web pública (Turnstile opcional)", "public") },
+      "/public/demo/config": { get: p("Configuración del formulario de demo (clave de Turnstile)", "public") },
       "/public/quiz/{slug}": { post: p("Resultado publico de quiz (con passback LTI AGS)", "public") },
     },
     components: {

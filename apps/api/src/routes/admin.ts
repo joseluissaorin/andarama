@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { desc, eq, isNull, sql } from "drizzle-orm";
-import { auditLog, coupons, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@andarama/db";
+import { auditLog, coupons, demoRequests, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { hmacSign } from "@andarama/adapters";
@@ -11,7 +11,7 @@ import { isInstanceAdmin } from "../lib/authz.js";
 import { audit, getSettings, saveSettings } from "../lib/helpers.js";
 import { createCoupons, normalizeCouponCode } from "../lib/coupons.js";
 import { PLANS, type PlanSlug } from "../lib/plans.js";
-import { attributionCsv, type Attribution } from "../lib/attribution.js";
+import { attributionCsv, clickIdOf, type Attribution } from "../lib/attribution.js";
 
 /** Slugs de plan que se pueden conceder a mano o por cupón. */
 const PLAN_SLUGS = Object.keys(PLANS) as [PlanSlug, ...PlanSlug[]];
@@ -263,6 +263,33 @@ export function adminRoutes(): Hono<AppEnv> {
     });
   });
 
+  /** Solicitudes de demo de la web pública, de la más reciente a la más antigua. */
+  r.get("/demo-requests", async (c) => {
+    const db = c.get("db");
+    const rows = await db.select().from(demoRequests).orderBy(desc(demoRequests.createdAt)).limit(500);
+    return c.json(
+      rows.map((d) => {
+        const a = d.attributionJson != null ? parseJson<Attribution | null>(d.attributionJson, null) : null;
+        return {
+          id: d.id,
+          name: d.name,
+          institution: d.institution,
+          email: d.email,
+          message: d.message,
+          lang: d.lang,
+          source: d.source,
+          page: d.page,
+          adConsent: d.adConsent,
+          clickId: clickIdOf(a) != null,
+          utmSource: a?.utm_source ?? null,
+          utmCampaign: a?.utm_campaign ?? null,
+          notifiedAt: d.notifiedAt,
+          createdAt: d.createdAt,
+        };
+      }),
+    );
+  });
+
   /** Tanda nueva: devuelve los códigos en claro, que es cuando se reparten. */
   r.post("/coupons", async (c) => {
     const db = c.get("db");
@@ -448,7 +475,7 @@ export function adminRoutes(): Hono<AppEnv> {
     const tables = [
       "users", "orgs", "orgMembers", "projects", "projectMembers", "scenes", "hotspots",
       "media", "mediaDerivatives", "versions", "publications", "translations",
-      "comments", "formSubmissions", "quizResults", "auditLog", "instanceSettings", "webhooks", "ltiRegistrations",
+      "comments", "formSubmissions", "quizResults", "auditLog", "instanceSettings", "webhooks", "ltiRegistrations", "demoRequests",
     ] as const;
     const dump: Record<string, unknown[]> = {};
     for (const name of tables) {
@@ -473,7 +500,7 @@ export function adminRoutes(): Hono<AppEnv> {
     const order = [
       "users", "orgs", "orgMembers", "projects", "projectMembers", "scenes", "hotspots",
       "media", "mediaDerivatives", "versions", "publications", "translations",
-      "comments", "formSubmissions", "quizResults", "instanceSettings", "webhooks", "ltiRegistrations",
+      "comments", "formSubmissions", "quizResults", "instanceSettings", "webhooks", "ltiRegistrations", "demoRequests",
     ];
     for (const name of order) {
       const rows = doc.tables[name];
