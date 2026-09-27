@@ -37,7 +37,17 @@ interface MediaInfo {
   derivatives: (typeof mediaDerivatives.$inferSelect)[];
 }
 
-export async function compileProject(db: Db, projectId: string): Promise<CompiledTour> {
+export interface CompileOptions {
+  /**
+   * Organizaciones cuyos medios también se resuelven: las de las plantillas
+   * del operador. Un proyecto hecho desde una plantilla (y el tour de ejemplo)
+   * sigue apuntando a los medios de la organización Plantillas, que no se
+   * copian (lib/templates.ts).
+   */
+  sharedOrgIds?: ReadonlySet<string>;
+}
+
+export async function compileProject(db: Db, projectId: string, opts: CompileOptions = {}): Promise<CompiledTour> {
   const projectRows = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
   const project = projectRows[0];
   if (project == null) throw notFound("Proyecto no encontrado");
@@ -96,9 +106,9 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
       : [];
   const mediaMap = new Map<string, MediaInfo>();
   for (const row of mediaRows) {
-    // Solo medios de la organización del proyecto: una referencia a un medio
-    // ajeno (escena u hotspot) se queda sin resolver y no se publica
-    if (row.orgId !== project.orgId) continue;
+    // Solo medios de la organización del proyecto (o de las plantillas del
+    // operador): una referencia a un medio ajeno se queda sin resolver y no se publica
+    if (row.orgId !== project.orgId && opts.sharedOrgIds?.has(row.orgId) !== true) continue;
     mediaMap.set(row.id, { row, derivatives: derivativeRows.filter((d) => d.mediaId === row.id) });
   }
 

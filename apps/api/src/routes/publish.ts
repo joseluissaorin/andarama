@@ -6,6 +6,7 @@ import type { AppEnv, Db } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
+import { templateOrgIds } from "../lib/templates.js";
 import { isInstanceAdmin, projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
 import { assertTourQuota } from "../lib/quota.js";
@@ -252,7 +253,7 @@ export function publishRoutes(): Hono<AppEnv> {
       if (existing?.passwordHash == null) throw badRequest("La visibilidad por contraseña requiere una contraseña");
     }
 
-    const compiled = await compileProject(db, access.project.id);
+    const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
     const errors = compiled.issues.filter((i) => i.severity === "error");
     if (errors.length > 0) {
       throw badRequest("El tour tiene errores que impiden publicar", { issues: errors });
@@ -508,7 +509,7 @@ export function publishRoutes(): Hono<AppEnv> {
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     if (!access.canEdit) throw forbidden();
     const { note } = z.object({ note: z.string().max(500).optional() }).parse(await c.req.json().catch(() => ({})));
-    const compiled = await compileProject(db, access.project.id);
+    const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
     const last = (await db
       .select()
       .from(versions)
@@ -592,7 +593,7 @@ export function publishRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const runtime = c.get("runtime");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
-    const compiled = await compileProject(db, access.project.id);
+    const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
     const errors = compiled.issues.filter((i) => i.severity === "error");
     if (errors.length > 0) throw badRequest("El tour tiene errores", { issues: errors });
     // Enumerar assets: claves directas + expansion de prefijos (tiles)

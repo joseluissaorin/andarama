@@ -26,11 +26,11 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { basename, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const AQUI = fileURLToPath(new URL(".", import.meta.url));
-const CACHE = join(AQUI, "cache");
-const TILER = new URL("../../packages/tiler/dist/node/index.js", import.meta.url);
+export const CACHE = join(AQUI, "cache");
+export const TILER = new URL("../../packages/tiler/dist/node/index.js", import.meta.url);
 const UA = "Andarama/1.0 (https://andarama.com; montaje de tours desde Wikimedia Commons)";
 const COMMONS_API = "https://commons.wikimedia.org/w/api.php";
 const ANCHO_MAX = 16384;
@@ -67,7 +67,7 @@ function leerArgumentos(argv) {
 }
 
 /** Mismo slug que la API (apps/api/src/lib/util.ts) para poder compararlos. */
-function slugify(input) {
+export function slugify(input) {
   return (
     String(input)
       .toLowerCase()
@@ -146,7 +146,7 @@ const TEXTOS = {
   it: { ir: (t) => `Vai a ${t}`, volver: (t) => `Torna a ${t}`, foto: "Fotografia", fotos: "Fotografie", creditos: "Crediti", sobre: "Su questo tour", cuerpo: "Le fotografie sferiche di questo tour provengono da Wikimedia Commons e sono usate con la loro licenza libera:" },
   pt: { ir: (t) => `Ir para ${t}`, volver: (t) => `Voltar a ${t}`, foto: "Fotografia", fotos: "Fotografias", creditos: "Créditos", sobre: "Sobre este passeio", cuerpo: "As fotografias esféricas deste passeio vêm da Wikimedia Commons e são usadas com a sua licença livre:" },
 };
-const textos = (lang) => TEXTOS[String(lang).slice(0, 2)] ?? TEXTOS.es;
+export const textos = (lang) => TEXTOS[String(lang).slice(0, 2)] ?? TEXTOS.es;
 
 // ---------------------------------------------------------------------------
 // Wikimedia Commons: metadatos y descarga a la caché local
@@ -176,7 +176,7 @@ function tituloDePagina(commonsPage) {
 }
 
 /** Autor, licencia y URL del original según Commons (con caché en disco). */
-async function metadatosCommons(commonsPage) {
+export async function metadatosCommons(commonsPage) {
   const titulo = tituloDePagina(commonsPage);
   const f = join(CACHE, `meta-${sha1(titulo)}.json`);
   try {
@@ -242,7 +242,7 @@ async function existe(f) {
 }
 
 /** sharp del repo (dependencia opcional de packages/tiler); null si no está. */
-async function cargarSharp() {
+export async function cargarSharp() {
   try {
     const require = createRequire(new URL("../../packages/tiler/package.json", import.meta.url));
     return require("sharp");
@@ -256,7 +256,7 @@ async function cargarSharp() {
  * que es equirectangular 2:1 y de al menos 4000 px y, si supera 16 384 px
  * de ancho, lo reduce con sharp (o avisa si no está disponible).
  */
-async function obtenerPanorama(escena, info, log) {
+export async function obtenerPanorama(escena, info, log) {
   const url = escena.file ?? info.url;
   const nombre = decodeURIComponent(basename(new URL(url).pathname)).replace(/[^\w.\-]+/g, "_");
   const original = join(CACHE, `${sha1(url)}-${nombre}`);
@@ -299,7 +299,7 @@ async function obtenerPanorama(escena, info, log) {
 // Cliente de la API (token Bearer o sesión con cookie, como el seed)
 // ---------------------------------------------------------------------------
 
-function crearCliente(base, token) {
+export function crearCliente(base, token) {
   const cookies = new Map();
   let csrf = "";
   const cookieHeader = () => [...cookies.values()].join("; ");
@@ -344,7 +344,7 @@ function crearCliente(base, token) {
 // Subida + tiles (mismo flujo que scripts/seed-demo.mjs)
 // ---------------------------------------------------------------------------
 
-async function subirPanorama(api, tilePanoramaNode, orgId, pano, log) {
+export async function subirPanorama(api, tilePanoramaNode, orgId, pano, log) {
   const sha = createHash("sha256").update(pano.buf).digest("hex");
   const created = await api.call("/api/v1/media", {
     method: "POST",
@@ -626,7 +626,10 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(`ERROR: ${err.message}`);
-  process.exit(1);
-});
+// Solo se ejecuta como programa; importado (montar-plantilla.mjs) presta sus funciones
+if (process.argv[1] != null && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(`ERROR: ${err.message}`);
+    process.exit(1);
+  });
+}

@@ -232,6 +232,25 @@ describe("plantillas por sector (A6)", () => {
     expect(((await otro.json()) as { code: string }).code).toBe("quota_tours");
   });
 
+  it("el clon compila con los medios de Plantillas y su recorrido automático apunta a sus propias escenas", async () => {
+    const original = await json<{ scenes: { id: string }[] }>(call("tok-op", `/api/v1/projects/${escapeId}/scenes`));
+    const pasos = original.scenes.map((s) => ({ scene: s.id, dwell: 3 }));
+    await call("tok-op", `/api/v1/projects/${escapeId}`, { method: "PATCH", body: { settings: { autopilot: [{ id: "visita", title: "Visita", steps: pasos }] } } });
+    const max = await json<MeBody>(call("tok-max", "/api/v1/me"));
+    const res = await call("tok-max", "/api/v1/projects", { method: "POST", body: { orgId: max.orgs[0]!.id, title: "Escape de Max", fromTemplate: escapeId } });
+    expect(res.status).toBe(201);
+    const clon = (await json<{ id: string }>(res)).id;
+    const { tour } = await json<{ tour: { scenes: { id: string; source: unknown }[]; autopilot?: { steps: { scene: string }[] }[] } }>(
+      call("tok-max", `/api/v1/projects/${clon}/compile`, { method: "POST" }),
+    );
+    // Sin los medios de Plantillas el compilador no los resolvía: las escenas
+    // se quedaban sin imagen (o fuera del tour, si no llevaban fuente propia)
+    expect(tour.scenes).toHaveLength(2);
+    expect(tour.scenes.every((s) => !JSON.stringify(s.source).includes("media:"))).toBe(true);
+    const propias = new Set(tour.scenes.map((s) => s.id));
+    expect(tour.autopilot?.[0]?.steps.every((p) => propias.has(p.scene))).toBe(true);
+  });
+
   it("un proyecto cualquiera de otra organización sigue sin poder usarse de plantilla", async () => {
     const max = await json<MeBody>(call("tok-max", "/api/v1/me"));
     const res = await call("tok-max", "/api/v1/projects", {

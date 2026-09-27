@@ -20,7 +20,7 @@ import { galleryInfo } from "./publish.js";
 import { compileProject } from "../compiler.js";
 import { embedResponse } from "../lib/embed.js";
 import { orgPlanActive, requireActivePlan } from "../lib/capabilities.js";
-import { cloneProjectContent, isOperatorTemplate, listSectorTemplates } from "../lib/templates.js";
+import { cloneProjectContent, isOperatorTemplate, listSectorTemplates, templateOrgIds } from "../lib/templates.js";
 
 export function projectRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
@@ -333,7 +333,7 @@ export function projectRoutes(): Hono<AppEnv> {
     requireScope(auth, "projects:read");
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
-    const compiled = await compileProject(db, access.project.id);
+    const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
     // Cachear el mapa de assets para el servido de preview
     await c.get("runtime").kv.put(
       `preview-map:${access.project.id}`,
@@ -348,7 +348,7 @@ export function projectRoutes(): Hono<AppEnv> {
     const auth = requireAuth(c);
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
-    const compiled = await compileProject(db, access.project.id);
+    const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
     return embedResponse(compiled.tour, c.req.param("file"), compiled.tour.meta.defaultLang);
   });
 
@@ -364,7 +364,7 @@ export function projectRoutes(): Hono<AppEnv> {
       null,
     );
     if (map == null) {
-      const compiled = await compileProject(db, access.project.id);
+      const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
       map = { assets: compiled.assets, prefixes: compiled.prefixes };
       await runtime.kv.put(`preview-map:${access.project.id}`, JSON.stringify(map), { ttlSeconds: 3600 });
     }

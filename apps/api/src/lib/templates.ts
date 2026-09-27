@@ -120,9 +120,9 @@ export async function cloneProjectContent(db: Db, fromId: string, toId: string):
     await db.insert(scenesTable).values({ ...s, id: idMap.get(s.id)!, projectId: toId });
   }
   const sceneIds = sceneRows.map((s) => s.id);
+  const hsIdMap = new Map<string, string>();
   if (sceneIds.length > 0) {
     const hsRows = await db.select().from(hotspotsTable).where(inArray(hotspotsTable.sceneId, sceneIds));
-    const hsIdMap = new Map<string, string>();
     for (const h of hsRows) hsIdMap.set(h.id, newId());
     for (const h of hsRows) {
       let content = h.contentJson;
@@ -139,13 +139,16 @@ export async function cloneProjectContent(db: Db, fromId: string, toId: string):
       await db.insert(translationsTable).values({ ...t, id: newId(), projectId: toId, entityId: entityId ?? t.entityId });
     }
   }
-  // Actualizar startScene en settings
+  // Reapuntar en los ajustes todo lo que nombra escenas o hotspots: la escena
+  // inicial, las paradas de los recorridos automáticos (y sus pausas en
+  // hotspots), los tesoros escritos a mano... Sin esto, el recorrido
+  // automático de una plantilla apuntaba a escenas de otro proyecto.
   const proj = (await db.select().from(projects).where(eq(projects.id, toId)).limit(1))[0];
   if (proj != null) {
-    const settings = parseJson<Record<string, unknown>>(proj.settingsJson, {});
-    if (typeof settings.startScene === "string" && idMap.has(settings.startScene)) {
-      settings.startScene = idMap.get(settings.startScene);
-      await db.update(projects).set({ settingsJson: JSON.stringify(settings) }).where(eq(projects.id, toId));
+    let settingsJson = proj.settingsJson;
+    for (const [oldId, nuevo] of [...idMap, ...hsIdMap]) settingsJson = settingsJson.replaceAll(`"${oldId}"`, `"${nuevo}"`);
+    if (settingsJson !== proj.settingsJson) {
+      await db.update(projects).set({ settingsJson }).where(eq(projects.id, toId));
     }
   }
 }
