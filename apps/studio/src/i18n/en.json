@@ -926,5 +926,9 @@
   "coupon_code": "Coupon code",
   "coupon_redeem": "Redeem",
   "coupon_ok": "Coupon redeemed: you now have the {plan} plan.",
-  "coupon_kept_previous": "Coupon redeemed, but your current plan was already better: you keep the one you had."
+  "coupon_kept_previous": "Coupon redeemed, but your current plan was already better: you keep the one you had.",
+  "initial_view_saved": "Initial view saved: the tour will start looking here",
+  "mark_start_scene": "Set as start scene",
+  "is_start_scene": "This is the tour's start scene",
+  "start_scene_first": "The first one in the list"
 }

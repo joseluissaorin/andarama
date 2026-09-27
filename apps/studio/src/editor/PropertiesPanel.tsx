@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crosshair,
+  Flag,
   Heading2,
   ImagePlus,
   Italic,
@@ -86,6 +87,8 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const map = readJson<Record<string, any>>(scene.mapJson, {});
   const limits = readJson<Record<string, number>>(scene.limitsJson, {});
   const isVideo = scene.type === "video";
+  // Sin escena inicial elegida, el recorrido arranca en la primera
+  const isStartScene = ((editor.snapshot!.settings.startScene as string | undefined) ?? editor.snapshot!.scenes[0]?.id) === scene.id;
 
   const patchScene = (fn: (s: SceneRow) => void): void => {
     editor.apply((draft) => {
@@ -203,6 +206,24 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
             )}
           </Field>
           <Switch id="sc-hidden" checked={meta.hidden === true} onCheckedChange={(v) => patchMeta({ hidden: v })} label={t("hidden_scene")} disabled={!canEdit} />
+          {/* La escena inicial se elegía en el grafo o en Ajustes del tour;
+              desde aquí, que es donde se está mirando la escena, no había
+              manera. */}
+          {isStartScene ? (
+            <p className="flex items-center gap-1.5 rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[13px] font-medium text-[var(--anda-primary)]">
+              <Flag className="h-3.5 w-3.5" /> {t("is_start_scene")}
+            </p>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              disabled={!canEdit}
+              onClick={() => editor.apply((draft) => { draft.settings.startScene = scene.id; })}
+            >
+              <Flag className="h-4 w-4" /> {t("mark_start_scene")}
+            </Button>
+          )}
         </div>
       </div>
 

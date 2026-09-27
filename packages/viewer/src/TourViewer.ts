@@ -25,6 +25,7 @@ import { buildDeepLink, parseDeepLink, replaceHash } from "./engine/deeplink.js"
 import { DeviceOrientationControlMethod } from "./engine/gyro.js";
 import { littlePlanetIntroParams, ProjectionPass, projectToScreen, type ProjectionFrameState } from "./engine/projections.js";
 import { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
+import { resolveStartView } from "./engine/startView.js";
 import { VRManager, type VrEnvironment, type VrHotspot } from "./engine/vr.js";
 import { SceneMarkers } from "./hotspots/markers.js";
 import { AnalyticsClient } from "./analytics.js";
@@ -221,8 +222,10 @@ export class TourViewer {
     this.startFpsMonitor();
 
     const startScene = link.sceneId ?? this.tour.start.scene;
-    const startView = link.view ?? this.tour.start.view ?? DEFAULT_VIEW;
-    void this.bootstrap(startScene, startView as ViewParams, link.sceneId == null);
+    // La vista inicial de la escena («Usar vista actual») entra en juego si ni
+    // el enlace ni el tour fijan otra: antes se caía en DEFAULT_VIEW.
+    const startView = resolveStartView(this.tour, link);
+    void this.bootstrap(startScene, startView, link.sceneId == null);
   }
 
   private slugForAnalytics(): string {

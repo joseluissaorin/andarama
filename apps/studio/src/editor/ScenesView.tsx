@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Copy,
   Crosshair,
+  Flag,
   GripVertical,
   Image as ImageIcon,
   Lock,
@@ -240,6 +241,19 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
                 </button>
                 {canEdit && (
                   <div className="absolute right-1.5 top-1.5 hidden gap-0.5 rounded-md bg-[var(--anda-surface)] p-0.5 shadow-sm group-focus-within:flex group-hover:flex">
+                    {!isStart && (
+                      <Tooltip content={t("mark_start_scene")}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          aria-label={t("mark_start_scene")}
+                          onClick={() => editor.apply((draft) => { draft.settings.startScene = scene.id; })}
+                        >
+                          <Flag className="h-3.5 w-3.5" />
+                        </Button>
+                      </Tooltip>
+                    )}
                     <Tooltip content={t("duplicate")}>
                       <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("duplicate")} onClick={() => duplicate(scene.id)}>
                         <Copy className="h-3.5 w-3.5" />
@@ -727,7 +741,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
                   const s = draft.scenes.find((x) => x.id === sceneId);
                   if (s != null) s.initialViewJson = JSON.stringify(v);
                 });
-                toast.push(t("saved"), "ok");
+                toast.push(t("initial_view_saved"), "ok");
               }}
             >
               <Crosshair className="h-4 w-4" /> {t("use_current_view")}

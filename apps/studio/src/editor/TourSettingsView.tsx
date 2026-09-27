@@ -79,7 +79,18 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
               })} />
           </Field>
           <Field label={t("start_scene")} htmlFor="ts-start">
-            <Select id="ts-start" value={String(settings.startScene ?? "")} disabled={!canEdit} onChange={(e) => patch((s) => { s.startScene = e.target.value; })}>
+            {/* Sin opción vacía, un tour sin escena elegida aparentaba tener la
+                primera marcada, pero no guardaba nada. */}
+            <Select
+              id="ts-start"
+              value={String(settings.startScene ?? "")}
+              disabled={!canEdit}
+              onChange={(e) => patch((s) => {
+                if (e.target.value === "") delete s.startScene;
+                else s.startScene = e.target.value;
+              })}
+            >
+              <option value="">{t("start_scene_first")}</option>
               {snapshot.scenes.map((s) => (
                 <option key={s.id} value={s.id}>{s.title}</option>
               ))}
