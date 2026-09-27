@@ -190,7 +190,7 @@ export function OrgDefaultsPage(): React.ReactNode {
               id="od-dwell"
               type="number"
               step="0.5"
-              value={String(draft.vr?.dwellSeconds ?? 2.5)}
+              value={String(draft.vr?.dwellSeconds ?? 1.5)}
               onChange={(e) => patch((d) => { d.vr = { ...d.vr, dwellSeconds: Number(e.target.value) }; })}
             />
           </Field>

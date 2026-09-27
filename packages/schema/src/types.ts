@@ -736,7 +736,7 @@ export interface VrConfig {
   hotspots?: "all" | "navigationOnly" | "custom";
   /** Excepciones por tipo cuando `hotspots` es "custom" (true = disponible). */
   types?: Record<string, boolean>;
-  /** Retículo de mirada: segundos de permanencia para activar. */
+  /** Retículo de mirada: segundos de permanencia para activar (1,5 por defecto). */
   dwellSeconds?: number;
 }
 
