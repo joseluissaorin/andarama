@@ -119,6 +119,16 @@ describe("validateTour", () => {
     expect(result.issues.some((i) => i.code === "scene-no-alt")).toBe(true);
   });
 
+  it("con requireAlt, la falta de alt-text es un error que impide publicar", () => {
+    const tour = sampleTour();
+    delete tour.scenes[0]!.altText;
+    expect(validateTour(tour).valid).toBe(true);
+    tour.accessibility = { requireAlt: true };
+    const result = validateTour(tour);
+    expect(result.valid).toBe(false);
+    expect(result.issues.find((i) => i.code === "scene-no-alt")?.severity).toBe("error");
+  });
+
   it("valida quiz sin correcta", () => {
     const tour = sampleTour();
     tour.scenes[0]!.hotspots.push({

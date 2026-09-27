@@ -1110,5 +1110,7 @@
   "a11y_editing_now": "Personas editando",
   "a11y_editor_views": "Vistas del editor",
   "a11y_target_lang": "Idioma destino",
-  "a11y_skip_to_content": "Saltar al contenido"
+  "a11y_skip_to_content": "Saltar al contenido",
+  "a11y_require_alt": "Exigir texto alternativo para publicar",
+  "a11y_require_alt_desc": "Si una escena o un hotspot no tiene texto alternativo, el tour no se publica hasta que lo tenga. Recomendado en organismos públicos, que responden de la accesibilidad de lo que publican."
 }

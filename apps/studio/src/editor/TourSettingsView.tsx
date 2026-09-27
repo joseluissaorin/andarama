@@ -384,6 +384,21 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
           <Switch id="so-noindex" checked={social.noindex === true} disabled={!canEdit} onCheckedChange={(v) => patchSocial({ noindex: v || undefined })} label={t("social_noindex")} />
           <p className="ml-11 mt-0.5 text-xs text-[var(--anda-text-dim)]">{t("social_noindex_desc")}</p>
         </div>
+        <div className="mt-4">
+          <Switch
+            id="a11y-require-alt"
+            checked={(settings.accessibility as { requireAlt?: boolean } | undefined)?.requireAlt === true}
+            disabled={!canEdit}
+            onCheckedChange={(v) =>
+              patch((s) => {
+                if (v) s.accessibility = { ...(s.accessibility as object), requireAlt: true };
+                else delete s.accessibility;
+              })
+            }
+            label={t("a11y_require_alt")}
+          />
+          <p className="ml-11 mt-0.5 text-xs text-[var(--anda-text-dim)]">{t("a11y_require_alt_desc")}</p>
+        </div>
 
         <MediaPicker
           open={socialPicker}

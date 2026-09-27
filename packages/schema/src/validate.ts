@@ -116,7 +116,7 @@ export function validateTour(input: unknown): ValidationResult {
 
   for (const [i, scene] of tour.scenes.entries()) {
     const p = `$.scenes[${i}]`;
-    validateScene(scene, p, sceneIds, hotspotIds, referencedScenes, err, warn);
+    validateScene(scene, p, sceneIds, hotspotIds, referencedScenes, err, warn, tour.accessibility?.requireAlt === true);
   }
 
   // Alcanzabilidad: BFS desde la escena inicial por los hotspots que navegan.
@@ -185,10 +185,13 @@ function validateScene(
   referencedScenes: Set<string>,
   err: (c: string, p: string, m: string) => void,
   warn: (c: string, p: string, m: string) => void,
+  requireAlt = false,
 ): void {
+  // Con `accessibility.requireAlt` la falta de texto alternativo impide publicar
+  const altIssue = requireAlt ? err : warn;
   if (scene.title == null) err("scene-no-title", `${p}.title`, `Escena "${scene.id}" sin título`);
   if (scene.altText == null || scene.altText === "")
-    warn("scene-no-alt", `${p}.altText`, `Escena "${scene.id}" sin texto alternativo accesible`);
+    altIssue("scene-no-alt", `${p}.altText`, `Escena "${scene.id}" sin texto alternativo accesible`);
   if (scene.source == null || typeof scene.source !== "object") {
     err("scene-no-source", `${p}.source`, `Escena "${scene.id}" sin fuente de medios`);
   } else {
@@ -225,7 +228,7 @@ function validateScene(
         err("hotspot-no-pos", hp, `Hotspot "${hs.id}" sin posición yaw/pitch valida`);
     }
     if (hs.altText == null && hs.type !== "tooltip" && hs.type !== "polygon")
-      warn("hotspot-no-alt", `${hp}.altText`, `Hotspot "${hs.id}" sin texto alternativo accesible`);
+      altIssue("hotspot-no-alt", `${hp}.altText`, `Hotspot "${hs.id}" sin texto alternativo accesible`);
     validateHotspotContent(hs, hp, sceneIds, referencedScenes, err, warn);
   }
 }
