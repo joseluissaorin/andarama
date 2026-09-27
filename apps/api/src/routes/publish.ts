@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
 import { projects, publications, users, versions, webhooks } from "@andarama/db";
-import type { AppEnv } from "../lib/context.js";
+import type { AppEnv, Db } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
@@ -258,7 +258,12 @@ export function publishRoutes(): Hono<AppEnv> {
       throw badRequest("El tour tiene errores que impiden publicar", { issues: errors });
     }
 
-    // Slug de publicacion
+    // Slug de publicacion. Es único en toda la instancia, así que dos docentes
+    // con un proyecto «prueba» chocaban con un 409 sin salida. Ahora:
+    //  - el propio slug (republicar) se reutiliza siempre;
+    //  - si lo tiene otra organización, se añade un sufijo y se avisa;
+    //  - si lo tiene otro recorrido de la misma organización y se ha escrito a
+    //    mano, se pide otro con una sugerencia (es suyo: sabrá cuál elegir).
     const existingPub = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
     // La ficha de la galería se valida antes de congelar nada: un cuerpo
     // incoherente no debe dejar artefactos a medias en el almacenamiento
@@ -268,11 +273,20 @@ export function publishRoutes(): Hono<AppEnv> {
     const nuevaEnRevision =
       galleryStatus({ ...gallery, ...review }) === "pending" &&
       !(existingPub != null && galleryStatus(existingPub) === "pending" && sameGalleryTexts(existingPub, gallery));
-    let slug = body.slug ?? existingPub?.slug ?? slugify(access.project.title);
-    const slugOwner = (await db.select().from(publications).where(eq(publications.slug, slug)).limit(1))[0];
-    if (slugOwner != null && slugOwner.projectId !== access.project.id) {
-      if (body.slug != null) throw conflict("Ese slug ya esta en uso");
-      slug = `${slug}-${newId(6).toLowerCase()}`;
+    const requestedSlug = body.slug ?? existingPub?.slug ?? (access.project.slug || slugify(access.project.title));
+    const check = await checkSlug(db, requestedSlug, access.project.id, access.project.orgId);
+    let slug = requestedSlug;
+    let slugChanged: { requested: string; reason: "org" | "taken" } | undefined;
+    if (check.status === "org" || check.status === "taken") {
+      const explicit = body.slug != null && body.slug !== existingPub?.slug;
+      if (check.status === "org" && explicit) {
+        throw conflict(
+          `Otro recorrido de tu organización ya usa la dirección «${requestedSlug}». Elige otra; por ejemplo, «${check.suggested}».`,
+          { code: "slug_taken", reason: "org", suggestedSlug: check.suggested },
+        );
+      }
+      slug = check.suggested;
+      slugChanged = { requested: requestedSlug, reason: check.status };
     }
 
     // Numero de version
@@ -361,8 +375,9 @@ export function publishRoutes(): Hono<AppEnv> {
       badge: (await orgHas(db, c.get("config"), access.project.orgId, "whiteLabel")) ? undefined : true,
     };
     await runtime.storage.put(`pub/${slug}/current.json`, JSON.stringify(pointer), { contentType: "application/json" });
-    // Invalidar cache KV del puntero
-    await runtime.kv.delete(`pub:${slug}`);
+    // Cache KV del puntero: se escribe el nuevo en vez de solo borrarlo, así
+    // la siguiente lectura no depende de que el borrado se haya propagado.
+    await runtime.kv.put(`pub:${slug}`, JSON.stringify(pointer), { ttlSeconds: 60 });
 
     // Primera publicación de esta persona: el Studio lo cuenta como activación
     const firstForUser =
@@ -427,11 +442,28 @@ export function publishRoutes(): Hono<AppEnv> {
       tourUrl: `${c.get("config").publicUrl}/t/${slug}${kiosk ? "?kiosk=0" : ""}`,
       kiosk,
       firstForUser,
+      // La dirección pedida estaba ocupada y se ha usado otra: el Studio lo
+      // explica en vez de dejar que el docente lo descubra al compartir.
+      slugChanged,
       gallery: galleryInfo({ ...gallery, ...review }),
       // Solo hay ficha pública cuando un administrador la ha aprobado
       galleryUrl: galleryStatus({ ...gallery, ...review }) === "approved" ? `${c.get("config").publicUrl}/explorar/${slug}/` : null,
       warnings: compiled.issues.filter((i) => i.severity === "warning"),
     }, 201);
+  });
+
+  /**
+   * Disponibilidad de una dirección mientras se escribe en el diálogo de
+   * publicar: evita descubrir el conflicto al pulsar el botón.
+   */
+  r.get("/:projectId/publish/slug", async (c) => {
+    const auth = requireAuth(c);
+    const db = c.get("db");
+    const access = await projectAccess(db, c.req.param("projectId"), auth.user);
+    const parsed = z.string().min(3).max(80).regex(/^[a-z0-9-]+$/).safeParse(c.req.query("slug") ?? "");
+    if (!parsed.success) return c.json({ slug: c.req.query("slug") ?? "", status: "invalid" });
+    const check = await checkSlug(db, parsed.data, access.project.id, access.project.orgId);
+    return c.json({ slug: parsed.data, ...check });
   });
 
   r.post("/:projectId/unpublish", async (c) => {
@@ -756,4 +788,29 @@ async function notifyGalleryReview(
       })
       .catch((err: unknown) => console.warn("[galería] no se pudo avisar:", err instanceof Error ? err.message : String(err)));
   }
+}
+
+export type SlugCheck =
+  | { status: "own" | "free" }
+  | { status: "org" | "taken"; suggested: string };
+
+/**
+ * ¿Puede este proyecto publicar en esa dirección? «own»: ya es la suya;
+ * «free»: libre; «org»: la usa otro recorrido de la misma organización;
+ * «taken»: la usa otra organización. En los dos últimos casos se sugiere la
+ * primera variante libre (-2, -3… y, si no, un sufijo aleatorio).
+ */
+export async function checkSlug(db: Db, slug: string, projectId: string, orgId: string): Promise<SlugCheck> {
+  const owner = (await db.select().from(publications).where(eq(publications.slug, slug)).limit(1))[0];
+  if (owner == null) return { status: "free" };
+  if (owner.projectId === projectId) return { status: "own" };
+  const ownerProject = (await db.select({ orgId: projects.orgId }).from(projects).where(eq(projects.id, owner.projectId)).limit(1))[0];
+  const status = ownerProject?.orgId === orgId ? "org" : "taken";
+  const base = slug.slice(0, 72).replace(/-+$/, "");
+  for (let n = 2; n <= 9; n++) {
+    const candidate = `${base}-${n}`;
+    const used = (await db.select({ p: publications.projectId }).from(publications).where(eq(publications.slug, candidate)).limit(1))[0];
+    if (used == null || used.p === projectId) return { status, suggested: candidate };
+  }
+  return { status, suggested: `${base}-${newId(6).toLowerCase()}` };
 }

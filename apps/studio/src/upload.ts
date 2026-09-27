@@ -39,7 +39,7 @@ export function detectKind(file: File): MediaKind {
   if (file.type.startsWith("video/")) return "video";
   if (file.type.startsWith("audio/")) return "audio";
   if (file.type === "application/pdf") return "pdf";
-  if (name.endsWith(".glb") || name.endsWith(".gltf") || name.endsWith(".obj") || name.endsWith(".stl")) return "model";
+  if (/\.(glb|gltf|obj|stl|usdz)$/.test(name)) return "model";
   if (name.endsWith(".vtt") || name.endsWith(".srt")) return "subtitle";
   if (file.type.startsWith("image/")) return "image";
   return "file";

@@ -53,10 +53,12 @@ export function MediaPage(): React.ReactNode {
 }
 
 /** Biblioteca reutilizable: pagina completa y selector desde el editor. */
-export function MediaLibrary({ orgId, onSelect, kindFilter }: {
+export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
   orgId: string;
   onSelect: ((item: MediaItem) => void) | null;
   kindFilter?: string;
+  /** En el selector del editor: arranca mostrando solo los medios de este recorrido. */
+  tourId?: string;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -64,7 +66,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
   const [kind, setKind] = useState(kindFilter ?? "");
   const [search, setSearch] = useState("");
   const [searchQ, setSearchQ] = useState("");
-  const [project, setProject] = useState("");
+  const [project, setProject] = useState(tourId ?? "");
   const [order, setOrder] = useState("recent");
   const [uploads, setUploads] = useState<Record<string, UploadProgress & { name: string }>>({});
   const [detail, setDetail] = useState<MediaItem | null>(null);
@@ -301,16 +303,22 @@ export function MediaLibrary({ orgId, onSelect, kindFilter }: {
             ))}
           </Select>
         )}
-        {false && fullPage && (
-          <Select value={project} onChange={(e) => setProject(e.target.value)} className="max-w-48" aria-label={t("filter_by_tour")}>
-            <option value="">{t("all_tours")}</option>
-            <option value="none">{t("without_tour")}</option>
-            {(projects.data ?? []).map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
+        {/* En el selector del editor: lo de este recorrido o toda la
+            biblioteca, que sirve para reutilizar lo subido para otro tour. */}
+        {!fullPage && tourId != null && (
+          <div className="anda-pestanas" title={t("library_all_hint")}>
+            {([tourId, ""] as const).map((value) => (
+              <button
+                key={value || "todo"}
+                type="button"
+                aria-pressed={project === value}
+                onClick={() => setProject(value)}
+                className="!px-2.5 !py-1 !text-xs"
+              >
+                {value === "" ? t("dock_all_media") : t("dock_this_tour")}
+              </button>
             ))}
-          </Select>
+          </div>
         )}
         {!fullPage && (folders.data ?? []).length > 1 && (
           <Select value={folder} onChange={(e) => setFolder(e.target.value)} className="max-w-44" aria-label={t("folder")}>

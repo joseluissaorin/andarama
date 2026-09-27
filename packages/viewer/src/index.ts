@@ -1,6 +1,8 @@
 export { TourViewer } from "./TourViewer.js";
 export * from "./types.js";
 export { resolveUrl } from "./engine/sources.js";
+export { anglesToFlat, flatToAngles, viewCoordsToAngles, anglesToViewCoords } from "./engine/flatCoords.js";
+export { resolveStartView } from "./engine/startView.js";
 export { VariableStore, evalConditions, evalVarCondition } from "./engine/state.js";
 export { parseDeepLink, buildDeepLink } from "./engine/deeplink.js";
 export { AnalyticsClient, yawBucket, pitchBucket } from "./analytics.js";

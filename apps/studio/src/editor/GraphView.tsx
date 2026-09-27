@@ -1309,9 +1309,10 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 e.preventDefault();
                 const at = toWorld(e.clientX, e.clientY);
                 let ids: string[] = [];
+                let reused: string[] = [];
                 const area = mode === "plan" ? currentPlan?.id : mode === "scenes" ? areaHitAt(at.x, at.y) : null;
                 editor.apply((draft) => {
-                  ids = scenesFromMedia(draft, draft.scenes[0]?.projectId ?? "", items);
+                  ({ created: ids, reused } = scenesFromMedia(draft, draft.scenes[0]?.projectId ?? "", items));
                   if (area != null) for (const id of ids) assignScene(draft, id, area);
                   if (mode === "plan" && currentPlan != null) {
                     ids.forEach((id, i) => placeScene(draft, id, currentPlan.id, (at.x + i * 40 * k) / PLAN_W, (at.y + i * 24 * k) / planH));
@@ -1333,6 +1334,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                     draft.settings.graphLayout = next;
                   });
                 }
+                if (reused.length > 0) toast.push(t("media_already_scene", { count: String(reused.length) }), "info");
               }}
               onWheel={onWheel}
               onPointerDown={onPointerDown}

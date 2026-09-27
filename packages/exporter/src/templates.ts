@@ -43,6 +43,8 @@ export interface IndexHtmlOptions {
   };
   /** Adaptador SCORM. */
   scorm?: boolean;
+  /** Adaptador SCORM inline (HTML único: no hay fichero aparte que cargar). */
+  inlineScormJs?: string;
   /** Insignia «Hecho con Andarama» (instancia alojada, planes sin marca blanca). */
   badge?: { url: string };
 }
@@ -121,6 +123,7 @@ ${
     : `<script type="module" src="${esc(opts.viewerPath ?? "viewer/viewer.js")}"${nonceAttr}></script>`
 }
 ${opts.scorm === true ? `<script src="scorm-adapter.js"${nonceAttr}></script>` : ""}
+${opts.inlineScormJs != null ? `<script${nonceAttr}>${opts.inlineScormJs.replaceAll("</script", "<\\/script")}</script>` : ""}
 ${
   opts.serviceWorker === true
     ? `<script${nonceAttr}>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));}</script>`

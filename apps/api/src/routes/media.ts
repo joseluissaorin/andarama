@@ -12,7 +12,7 @@ import { requireOrgRole } from "../lib/authz.js";
 import { requireActivePlan } from "../lib/capabilities.js";
 import { templateOrgIds } from "../lib/templates.js";
 import { guessContentType } from "./projects.js";
-import { audit, getSettings, mimeAllowedForKind, sanitizeSvgServer, sniffMime } from "../lib/helpers.js";
+import { audit, getSettings, mimeAllowedForKind, sanitizeSvgServer, sniffMime, sniffModel } from "../lib/helpers.js";
 
 const KINDS = ["panorama", "image", "video", "audio", "pdf", "model", "floorplan", "subtitle", "file"] as const;
 
@@ -186,7 +186,7 @@ export function mediaRoutes(): Hono<AppEnv> {
     // Sniffing de magic bytes sobre los primeros KB
     const bytes = await runtime.storage.getBytes(row.r2Key);
     if (bytes == null) throw badRequest("El fichero no se ha subido");
-    const sniffed = sniffMime(bytes.slice(0, 4096));
+    const sniffed = row.kind === "model" ? sniffModel(bytes) : sniffMime(bytes.slice(0, 4096));
     if (!mimeAllowedForKind(row.kind, sniffed)) {
       await runtime.storage.delete(row.r2Key);
       await db.delete(media).where(eq(media.id, row.id));
@@ -417,6 +417,29 @@ export function mediaRoutes(): Hono<AppEnv> {
         .map(([folder, n]) => ({ folder, ...n }))
         .sort((a, b) => a.folder.localeCompare(b.folder, "es")),
     );
+  });
+
+  /**
+   * Nombre y uso de un medio. El editor lo consulta al renombrar una escena
+   * para ofrecer renombrar también la foto, solo si ninguna otra escena (de
+   * este u otro recorrido) la usa: las subidas se deduplican por contenido.
+   */
+  r.get("/:mediaId", async (c) => {
+    const auth = requireAuth(c);
+    requireScope(auth, "media:read");
+    const db = c.get("db");
+    const row = await ownedMedia(c, auth, c.req.param("mediaId"), "reader");
+    const usedBy = await db
+      .select({ id: scenes.id, projectId: scenes.projectId })
+      .from(scenes)
+      .where(eq(scenes.mediaId, row.id));
+    return c.json({
+      id: row.id,
+      filename: row.filename,
+      kind: row.kind,
+      scenes: usedBy.length,
+      projects: new Set(usedBy.map((s: { projectId: string }) => s.projectId)).size,
+    });
   });
 
   /** Renombrar, mover de carpeta o asignar a un tour. */

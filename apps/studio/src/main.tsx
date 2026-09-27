@@ -8,7 +8,8 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { ToastProvider } from "@andarama/ui";
+import { ToastProvider, UiTextProvider } from "@andarama/ui";
+import { useT } from "./i18n";
 import "./index.css";
 import { Shell } from "./components/Shell";
 import { setupPwa } from "./pwa";
@@ -28,10 +29,18 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 15_000, refetchOnWindowFocus: false } },
 });
 
+/** Textos del sistema de diseño (el icono de ayuda) en el idioma del Studio. */
+function UiTexts({ children }: { children: React.ReactNode }): React.ReactNode {
+  const t = useT();
+  return <UiTextProvider moreInfo={t("help_more_info")}>{children}</UiTextProvider>;
+}
+
 const rootRoute = createRootRoute({
   component: () => (
     <ToastProvider>
-      <Outlet />
+      <UiTexts>
+        <Outlet />
+      </UiTexts>
     </ToastProvider>
   ),
 });

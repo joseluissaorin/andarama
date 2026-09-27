@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { Copy } from "lucide-react";
-import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
+import { Button, Dialog, Field, HelpTip, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
-import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
+import type { ScormVersion } from "@andarama/exporter";
+import { openZipSink, runExportInWorker } from "./exportRunner";
 import { api, ApiRequestError, authHeaders } from "../api";
 import { canUse, useAuth, useEditor } from "../stores";
 import { useI18nStore, useT } from "../i18n";
@@ -18,17 +19,39 @@ import { reportFirstPublish, trackEvent } from "../growth";
 // Publicar (§3.6, §2.13)
 // ---------------------------------------------------------------------------
 
-export function PublishDialog({ open, onClose, project, onPublished }: {
+type SlugStatus =
+  | { slug: string; status: "own" | "free" | "invalid" }
+  | { slug: string; status: "org" | "taken"; suggested: string };
+
+interface PublishResult {
+  url: string;
+  kioskUrl: string;
+  tourUrl: string;
+  kiosk: boolean;
+  slug: string;
+  slugChanged?: { requested: string; reason: "org" | "taken" };
+  gallery?: GalleryInfo;
+  galleryUrl?: string | null;
+  firstForUser?: boolean;
+  warnings: { message: string }[];
+}
+
+export function PublishDialog({ open, onClose, project, onPublished, beforePublish }: {
   open: boolean;
   onClose: () => void;
   project: ProjectInfo;
   onPublished: (pub: { slug: string; visibility: string; hasPassword: boolean; kiosk: boolean; gallery?: GalleryInfo | null }) => void;
+  /** Espera a que el autoguardado termine: el servidor compila desde la base de datos. */
+  beforePublish?: () => Promise<void>;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
   const editorLang = useI18nStore((s) => s.lang);
   const snapshot = useEditor((s) => s.snapshot);
   const [slug, setSlug] = useState(project.publication?.slug ?? project.slug);
+  /** Solo se manda la dirección si se ha escrito a mano: si no, decide el servidor. */
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [slugStatus, setSlugStatus] = useState<SlugStatus | null>(null);
   const [visibility, setVisibility] = useState(project.publication?.visibility ?? "public");
   const [password, setPassword] = useState("");
   const [domains, setDomains] = useState("");
@@ -38,21 +61,57 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [note, setNote] = useState("");
   const [kiosk, setKiosk] = useState(project.publication?.kiosk === true);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{
-    url: string;
-    kioskUrl: string;
-    tourUrl: string;
-    kiosk: boolean;
-    galleryUrl: string | null;
-    galleryStatus: GalleryInfo["status"];
-    warnings: { message: string }[];
-  } | null>(null);
+  const [result, setResult] = useState<PublishResult | null>(null);
+  /** Errores que impiden publicar, con su lista: antes solo salía un aviso genérico. */
   const queryClient = useQueryClient();
+  const [blockers, setBlockers] = useState<string[] | null>(null);
+
+  // El diálogo se queda montado mientras se edita: al reabrirlo se veía el
+  // resultado de la publicación anterior, sin botón para volver a publicar,
+  // y solo funcionaba saliendo del proyecto. Cada apertura empieza de cero.
+  useEffect(() => {
+    if (!open) return;
+    setResult(null);
+    setBlockers(null);
+    setSlug(project.publication?.slug ?? project.slug);
+    setSlugTouched(false);
+    setSlugStatus(null);
+    setVisibility(project.publication?.visibility ?? "public");
+    setKiosk(project.publication?.kiosk === true);
+    setPassword("");
+    setNote("");
+    setGallery(initialGalleryForm(project.publication?.gallery, snapshot, project.title, defaultLang));
+  }, [open]);
+
+  // Disponibilidad de la dirección mientras se escribe
+  useEffect(() => {
+    if (!open || !slugTouched) return;
+    const timer = setTimeout(() => {
+      void api<SlugStatus>(`/projects/${project.id}/publish/slug?slug=${encodeURIComponent(slug)}`)
+        .then(setSlugStatus)
+        .catch(() => setSlugStatus(null));
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [slug, slugTouched, open]);
+
+  const slugHint = (): string | undefined => {
+    if (slugStatus == null || slugStatus.slug !== slug) return undefined;
+    switch (slugStatus.status) {
+      case "invalid":
+        return t("slug_invalid");
+      case "free":
+        return t("slug_free");
+      case "own":
+        return t("slug_own");
+      case "org":
+        return t("slug_taken_org", { suggested: slugStatus.suggested });
+      case "taken":
+        return t("slug_taken_other", { suggested: slugStatus.suggested });
+    }
+  };
   // El dominio propio es de los planes altos en la instancia alojada
   const me = useAuth((s) => s.me);
   const dominioPermitido = canUse(me, "customDomain");
-  /** Errores que impiden publicar, con su lista: antes solo salía un aviso genérico. */
-  const [blockers, setBlockers] = useState<string[] | null>(null);
 
   // La galería pública es de andarama.com: solo tiene sentido en la
   // instancia alojada, y solo para un tour público
@@ -74,24 +133,15 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
     setBusy(true);
     setBlockers(null);
     try {
+      await beforePublish?.();
       // La portada para compartir: la escena inicial con la proyección real
       // del visor. Si la captura falla, se publica igual y el servidor usa la
       // previsualización equirectangular.
       const shareImage = (await captureShareImage(project.id)) ?? undefined;
-      const res = await api<{
-        slug: string;
-        url: string;
-        kioskUrl: string;
-        tourUrl: string;
-        kiosk: boolean;
-        gallery?: GalleryInfo;
-        galleryUrl?: string | null;
-        firstForUser?: boolean;
-        warnings: { message: string }[];
-      }>(`/projects/${project.id}/publish`, {
+      const res = await api<PublishResult>(`/projects/${project.id}/publish`, {
         method: "POST",
         body: {
-          slug,
+          slug: slugTouched ? slug : undefined,
           shareImage,
           visibility,
           password: password !== "" ? password : undefined,
@@ -105,23 +155,29 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           gallery: alojada ? galleryPayload({ ...gallery, enabled: galeriaActiva }) : undefined,
         },
       });
-      setResult({
-        url: res.url,
-        kioskUrl: res.kioskUrl,
-        tourUrl: res.tourUrl,
-        kiosk: res.kiosk,
-        galleryUrl: res.galleryUrl ?? null,
-        galleryStatus: res.gallery?.status,
-        warnings: res.warnings,
-      });
+      setResult(res);
+      setSlug(res.slug);
+      setSlugTouched(false);
       // La activación: la primera vez que esta persona publica algo suyo
       reportFirstPublish(me, res.firstForUser, { storage: localStorage, track: trackEvent });
       void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEY });
-      onPublished({ slug: res.slug, visibility, hasPassword: password !== "", kiosk: res.kiosk, gallery: res.gallery ?? null });
+      onPublished({
+        slug: res.slug,
+        visibility,
+        hasPassword: visibility === "password" && (password !== "" || project.publication?.hasPassword === true),
+        kiosk: res.kiosk,
+        gallery: res.gallery ?? null,
+      });
       toast.push(t("publish_ok"), "ok");
     } catch (err) {
       const issues = err instanceof ApiRequestError ? (err.extra?.issues as { message?: string }[] | undefined) : undefined;
       if (issues != null && issues.length > 0) setBlockers(issues.map((i) => String(i.message ?? "")));
+      // Dirección ocupada por otro recorrido propio: se propone la sugerencia
+      const suggested = err instanceof ApiRequestError ? (err.extra?.suggestedSlug as string | undefined) : undefined;
+      if (suggested != null) {
+        setSlug(suggested);
+        setSlugTouched(true);
+      }
       if (err instanceof ApiRequestError && err.extra?.code === "plan_required") toast.push(t("plan_required_toast"), "error");
       else toast.push(String(err instanceof Error ? err.message : err), "error");
     } finally {
@@ -151,10 +207,16 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               </Button>
             )}
             <Button onClick={() => void publish()} loading={busy}>
-              {t("publish")}
+              {project.publication != null ? t("republish") : t("publish")}
             </Button>
           </>
-        ) : undefined
+        ) : (
+          // Tras publicar se puede seguir editando y volver a publicar sin
+          // cerrar el diálogo ni salir del proyecto.
+          <Button variant="secondary" onClick={() => setResult(null)}>
+            {t("publish_again")}
+          </Button>
+        )
       }
     >
       {result == null ? (
@@ -169,10 +231,28 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               </ul>
             </div>
           )}
-          <Field label={t("publish_slug")} htmlFor="pb-slug">
-            <Input id="pb-slug" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} />
+          <Field label={t("publish_slug")} htmlFor="pb-slug" hint={slugHint() ?? t("publish_slug_hint")}>
+            <div className="flex gap-2">
+              <Input
+                id="pb-slug"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"));
+                  setSlugTouched(true);
+                }}
+              />
+              {slugStatus != null && slugStatus.slug === slug && (slugStatus.status === "org" || slugStatus.status === "taken") && (
+                <Button
+                  variant="secondary"
+                  className="shrink-0"
+                  onClick={() => setSlug(slugStatus.suggested)}
+                >
+                  {t("slug_use_suggestion", { suggested: slugStatus.suggested })}
+                </Button>
+              )}
+            </div>
           </Field>
-          <Field label={t("visibility")} htmlFor="pb-vis">
+          <Field label={t("visibility")} htmlFor="pb-vis" help={t("help_visibility")}>
             <Select id="pb-vis" value={visibility} onChange={(e) => setVisibility(e.target.value)}>
               <option value="public">{t("vis_public")}</option>
               <option value="unlisted">{t("vis_unlisted")}</option>
@@ -219,6 +299,11 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           <Field label={t("version_note")} htmlFor="pb-note">
             <Input id="pb-note" value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
+          {/* La insignia sale o no según el plan, y se decide al publicar:
+              a unos docentes les salía y a otros no, sin saber por qué. */}
+          <p className="flex items-center gap-1.5 text-xs text-[var(--anda-text-dim)]">
+            {t("badge_question")} <HelpTip text={t("help_badge")} label={t("badge_question")} />
+          </p>
           {/* La galería pública de andarama.com: una página propia por tour,
               con el nombre del lugar, para que el buscador la encuentre.
               Solo en la instancia alojada y solo para tours públicos. */}
@@ -310,8 +395,16 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
         </div>
       ) : (
         <div className="space-y-3">
-          {result.galleryStatus != null && result.galleryStatus !== "off" && result.galleryStatus !== "approved" && (
-            <GalleryStatusNote status={result.galleryStatus} />
+          {result.gallery?.status != null && result.gallery.status !== "off" && result.gallery.status !== "approved" && (
+            <GalleryStatusNote status={result.gallery.status} />
+          )}
+          {result.slugChanged != null && (
+            <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] text-amber-700" role="status">
+              {t(result.slugChanged.reason === "org" ? "slug_changed_org" : "slug_changed_other", {
+                requested: result.slugChanged.requested,
+                slug: result.slug,
+              })}
+            </p>
           )}
           {result.galleryUrl != null && (
             <p className="text-sm">
@@ -455,7 +548,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()} title={t("share")}>
       <div className="space-y-4">
-        <Field label={t("publish_url")}>
+        <Field label={t("publish_url")} help={t("help_share_link")}>
           <div className="flex gap-2">
             <Input readOnly value={url} aria-label={t("publish_url")} />
             <Button variant="secondary" className="shrink-0" onClick={() => copy(url)}>
@@ -474,7 +567,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
             </Button>
           </div>
         </Field>
-        <Field label={t("embed_code")}>
+        <Field label={t("embed_code")} help={t("help_embed_code")}>
           <div className="flex gap-2">
             <Textarea readOnly value={embed} rows={3} className="font-mono text-xs" aria-label={t("embed_code")} />
             <Button variant="secondary" className="shrink-0" onClick={() => copy(embed)}>
@@ -482,7 +575,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
             </Button>
           </div>
         </Field>
-        <Field label={t("web_component")} hint={t("web_component_hint")}>
+        <Field label={t("web_component")} hint={t("web_component_hint")} help={t("help_web_component")}>
           <div className="flex gap-2">
             <Textarea readOnly value={webComponent} rows={3} className="font-mono text-xs" aria-label={t("web_component")} />
             <Button variant="secondary" className="shrink-0" onClick={() => copy(webComponent)}>
@@ -490,8 +583,13 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
             </Button>
           </div>
         </Field>
+        {/* Cómo meterlo en Moodle: la pregunta que más se repetía */}
+        <details className="rounded-xl bg-[var(--anda-surface-2)] px-4 py-3 text-[13px]">
+          <summary className="cursor-pointer font-medium">{t("share_moodle_title")}</summary>
+          <p className="mt-2 whitespace-pre-line leading-relaxed text-[var(--anda-text-dim)]">{t("help_moodle")}</p>
+        </details>
         {qr != null && (
-          <Field label={t("qr_code")}>
+          <Field label={t("qr_code")} help={t("help_qr")}>
             <div className="flex items-center gap-4">
               <img src={qr} alt={`${t("qr_code")}: ${url}`} className="rounded-lg border border-[var(--anda-border)]" />
               <a href={qr} download={`${project.slug}-qr.png`}>
@@ -539,62 +637,61 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
   const scormPermitido = canUse(me, "scorm");
 
   const doExport = async (): Promise<void> => {
+    const fileName = `${project.slug}${scorm !== "" ? "-scorm" : ""}.zip`;
+    // Primero el destino: el diálogo de guardar necesita el gesto del clic.
+    // Donde se puede, el ZIP va directo al disco sin quedarse en memoria.
+    const sink = await openZipSink(fileName);
+    if (sink == null) return;
     setBusy(true);
     setProgress(t("export_progress"));
+    const inicio = Date.now();
     try {
       const { tour, assets } = await api<{ tour: Tour; assets: { rel: string; key: string }[] }>(
         `/projects/${project.id}/export`,
         { method: "POST", body: {} },
       );
-      // Ficheros del visor
-      const viewerList = await fetch("/viewer/files.json").then((r) => (r.ok ? (r.json() as Promise<string[]>) : []));
-      const viewerFiles = await Promise.all(
-        // Los sourcemaps no se publican: ahorran ~1,5 MB en cada paquete
-        viewerList
-          .filter((path) => !path.endsWith(".map"))
-          .map(async (path) => ({
-            path,
-            data: new Uint8Array(await (await fetch(`/viewer/${path}`)).arrayBuffer()),
-          })),
-      );
-      const assetProvider: AssetProvider = {
-        list: async () => assets.map((a) => a.rel),
-        read: async (rel) => {
-          const res = await fetch(`/api/v1/projects/${project.id}/preview/${rel}`, { credentials: "same-origin", headers: await authHeaders() });
-          if (!res.ok) throw new Error(`No se pudo leer ${rel}`);
-          return new Uint8Array(await res.arrayBuffer());
-        },
-      };
-      const chunks: Uint8Array[] = [];
-      const writer = new ZipWriter((c) => {
-        chunks.push(c);
-      });
-      const result = await runExport(
-        tour,
-        viewerFiles,
-        assetProvider,
+      // Todo el trabajo pesado (descargas en paralelo, compresión y armado
+      // del ZIP) va en un Web Worker: el editor no se congela.
+      const result = await runExportInWorker(
         {
-          langs,
-          maxLevels: maxLevels !== "" ? parseInt(maxLevels, 10) : null,
-          includeDownloads: downloads,
-          analyticsEndpoint: analyticsEndpoint !== "" ? analyticsEndpoint : null,
-          serviceWorker: sw,
-          singleFile: single,
-          scorm: scorm !== "" ? scorm : null,
-          kiosk,
+          projectId: project.id,
+          tour,
+          assets: assets.map((a) => a.rel),
+          options: {
+            langs,
+            maxLevels: maxLevels !== "" ? parseInt(maxLevels, 10) : null,
+            includeDownloads: downloads,
+            analyticsEndpoint: analyticsEndpoint !== "" ? analyticsEndpoint : null,
+            serviceWorker: sw && !single,
+            singleFile: single && !hasMultires,
+            scorm: scorm !== "" ? scorm : null,
+            kiosk,
+          },
         },
-        writer,
-        (p) => setProgress(`${t("export_progress")}: ${p.phase} ${p.done}/${p.total}`),
+        {
+          getHeaders: authHeaders,
+          onChunk: sink.write,
+          onProgress: (p) =>
+            setProgress(
+              p.phase === "assets"
+                ? t("export_phase_assets", { done: p.done, total: p.total })
+                : p.phase === "viewer"
+                  ? t("export_phase_viewer")
+                  : t("export_phase_finalize"),
+            ),
+        },
       );
-      const blob = new Blob(chunks as BlobPart[], { type: "application/zip" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${project.slug}${scorm !== "" ? "-scorm" : ""}.zip`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-      setProgress(`${t("export_done")}: ${result.files} ficheros, ${(result.bytes / 1024 / 1024).toFixed(1)} MB`);
+      await sink.close();
+      setProgress(
+        t("export_done_detail", {
+          files: result.files,
+          mb: (result.bytes / 1024 / 1024).toFixed(1),
+          s: Math.max(1, Math.round((Date.now() - inicio) / 1000)),
+        }),
+      );
       toast.push(t("export_done"), "ok");
     } catch (err) {
+      await sink.abort();
       setProgress(null);
       toast.push(String(err instanceof Error ? err.message : err), "error");
     } finally {
@@ -628,7 +725,7 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
             ))}
           </div>
         </Field>
-        <Field label={t("export_max_res")} htmlFor="ex-res">
+        <Field label={t("export_max_res")} htmlFor="ex-res" help={t("help_export_max_res")}>
           <Select id="ex-res" value={maxLevels} onChange={(e) => setMaxLevels(e.target.value)}>
             <option value="">{t("export_full_res")}</option>
             <option value="3">~2K</option>
@@ -636,27 +733,29 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
             <option value="5">~8K</option>
           </Select>
         </Field>
-        <Switch id="ex-dl" checked={downloads} onCheckedChange={setDownloads} label={t("export_downloads")} />
-        <Field label={t("export_analytics")} htmlFor="ex-analytics">
+        <Switch id="ex-dl" checked={downloads} onCheckedChange={setDownloads} label={t("export_downloads")} help={t("help_export_downloads")} />
+        <Field label={t("export_analytics")} htmlFor="ex-analytics" help={t("help_export_analytics")}>
           <Input id="ex-analytics" value={analyticsEndpoint} onChange={(e) => setAnalyticsEndpoint(e.target.value)} placeholder="https://mi-instancia/ingest/e" />
         </Field>
-        <Switch id="ex-sw" checked={sw} onCheckedChange={setSw} label={t("export_sw")} />
+        {/* El HTML único no puede llevar service worker: se desactiva a la vista */}
+        <Switch id="ex-sw" checked={sw && !single} disabled={single} onCheckedChange={setSw} label={t("export_sw")} help={t("help_export_sw")} />
         <Switch
           id="ex-single"
           checked={single && !hasMultires}
           disabled={hasMultires}
           onCheckedChange={setSingle}
           label={t("export_single")}
+          help={t("help_export_single")}
         />
         {hasMultires && <p className="-mt-2 pl-1 text-xs text-[var(--anda-text-dim)]">{t("export_single_multires")}</p>}
-        <Field label={t("export_scorm")} htmlFor="ex-scorm" hint={scormPermitido ? undefined : t("capability_scorm_hint")}>
+        <Field label={t("export_scorm")} htmlFor="ex-scorm" hint={scormPermitido ? undefined : t("capability_scorm_hint")} help={t("help_export_scorm")}>
           <Select id="ex-scorm" value={scorm} disabled={!scormPermitido} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
             <option value="">-</option>
             <option value="1.2">SCORM 1.2</option>
             <option value="2004">SCORM 2004 (3rd Ed.)</option>
           </Select>
         </Field>
-        <Switch id="ex-kiosk" checked={kiosk} onCheckedChange={setKiosk} label={t("export_kiosk")} />
+        <Switch id="ex-kiosk" checked={kiosk} onCheckedChange={setKiosk} label={t("export_kiosk")} help={t("help_export_kiosk")} />
         <p className="rounded-lg bg-[var(--anda-surface-2)] p-3 text-xs text-[var(--anda-text-dim)]">{t("export_vr_note")}</p>
         {progress != null && <p className="text-sm text-[var(--anda-text-dim)]">{progress}</p>}
       </div>
@@ -686,7 +785,10 @@ export function LiveDialog({ open, onClose, project }: { open: boolean; onClose:
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()} title={t("live_tour")}>
       <div className="space-y-4">
-        <p className="text-sm text-[var(--anda-text-dim)]">{t("live_note")}</p>
+        <p className="flex items-start gap-1.5 text-sm text-[var(--anda-text-dim)]">
+          <span>{t("live_note")}</span>
+          <HelpTip text={t("help_live")} label={t("live_tour")} />
+        </p>
         {base == null ? (
           <p className="text-sm text-[var(--anda-danger)]">{t("publish")} primero.</p>
         ) : room == null ? (

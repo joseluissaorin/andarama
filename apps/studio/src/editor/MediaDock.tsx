@@ -35,6 +35,8 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   const [open, setOpen] = useState(() => localStorage.getItem("andarama.mediaDock") !== "off");
   const [scope, setScope] = useState<"tour" | "all">("tour");
   const [folder, setFolder] = useState("");
+  /** Con «toda la biblioteca», filtro por recorrido ("" = todos, "none" = sin recorrido). */
+  const [tourFilter, setTourFilter] = useState("");
   const [search, setSearch] = useState("");
   const [preview, setPreview] = useState<MediaItem | null>(null);
   const [uploads, setUploads] = useState<Record<string, UploadProgress & { name: string }>>({});
@@ -42,12 +44,20 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   const fileInput = useRef<HTMLInputElement>(null);
 
   const list = useQuery({
-    queryKey: ["media", orgId, scope, projectId, folder],
+    queryKey: ["media", orgId, scope, projectId, folder, tourFilter],
     queryFn: () =>
       api<MediaItem[]>(
-        `/media?org=${orgId}${scope === "tour" ? `&project=${projectId}` : ""}${folder !== "" ? `&folder=${encodeURIComponent(folder === "root" ? "" : folder)}` : ""}&order=recent`,
+        `/media?org=${orgId}${scope === "tour" ? `&project=${projectId}` : tourFilter !== "" ? `&project=${tourFilter}` : ""}${folder !== "" ? `&folder=${encodeURIComponent(folder === "root" ? "" : folder)}` : ""}&order=recent`,
       ),
     enabled: open,
+  });
+
+  // «Toda la biblioteca» mezclaba las fotos de todos los recorridos sin decir
+  // de cuál era cada una: ahora se puede acotar a otro recorrido concreto.
+  const tours = useQuery({
+    queryKey: ["projects", orgId],
+    queryFn: () => api<{ id: string; title: string }[]>(`/projects?org=${orgId}`),
+    enabled: open && scope === "all",
   });
 
   const folders = useQuery({
@@ -120,7 +130,9 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
               onClick={() => {
                 setScope(s);
                 setFolder("");
+                setTourFilter("");
               }}
+              title={s === "all" ? t("library_all_hint") : t("library_tour_hint")}
               className="!px-2.5 !py-1 !text-xs"
             >
               {s === "tour" ? t("dock_this_tour") : t("dock_all_media")}
@@ -128,6 +140,19 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
           ))}
         </div>
 
+        {scope === "all" && (
+          <Select value={tourFilter} onChange={(e) => setTourFilter(e.target.value)} aria-label={t("filter_by_tour")} className="max-w-44">
+            <option value="">{t("all_tours")}</option>
+            <option value="none">{t("without_tour")}</option>
+            {(tours.data ?? [])
+              .filter((p) => p.id !== projectId)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title}
+                </option>
+              ))}
+          </Select>
+        )}
         {scope === "all" && (folders.data ?? []).length > 1 && (
           <Select value={folder} onChange={(e) => setFolder(e.target.value)} aria-label={t("folder")} className="max-w-40">
             <option value="">{t("all_folders")}</option>

@@ -56,6 +56,8 @@ export function CommentsView({ project }: { project: ProjectInfo }): React.React
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 p-6">
+      {/* Nadie sabía para qué servía esta pestaña: se explica arriba */}
+      <p className="rounded-xl bg-[var(--anda-surface-2)] px-4 py-3 text-[13px] leading-relaxed text-[var(--anda-text-dim)]">{t("help_comments")}</p>
       {roots.map((c) => (
         <div key={c.id} className={`rounded-xl border p-4 ${c.resolved ? "border-[var(--anda-border)] opacity-60" : "border-[var(--anda-border)] bg-[var(--anda-surface)]"}`}>
           <div className="flex items-center gap-2 text-sm">

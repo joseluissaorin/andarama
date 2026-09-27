@@ -3,6 +3,7 @@ import { resolveL10n } from "@andarama/schema";
 import { createIconSvg, DEFAULT_ICON_BY_TYPE, sanitizeSvg } from "./icons.js";
 import { evalConditions, type VariableStore } from "../engine/state.js";
 import { resolveUrl } from "../engine/sources.js";
+import { anglesToViewCoords, viewCoordsToAngles } from "../engine/flatCoords.js";
 
 /**
  * Gestor de marcadores de hotspot de una escena.
@@ -74,7 +75,16 @@ export class SceneMarkers {
     private vars: VariableStore,
     private callbacks: MarkerCallbacks,
   ) {
+    this.flat = scene.source.kind === "flat";
     this.build();
+  }
+
+  /** Escena gigapíxel 2D: la vista trabaja en {x, y}, no en ángulos. */
+  private readonly flat: boolean;
+
+  /** Posición que entiende la vista de Marzipano para un yaw/pitch guardado. */
+  private toView(yaw: number, pitch: number): unknown {
+    return anglesToViewCoords({ yaw, pitch }, this.flat);
   }
 
   private label(hotspot: Hotspot): string {
@@ -103,7 +113,7 @@ export class SceneMarkers {
       anchor.className = "anda-hotspot-anchor";
       const el = this.buildMarkerElement(hotspot);
       anchor.appendChild(el);
-      const marz = hotspotContainer.createHotspot(anchor, { yaw: hotspot.yaw, pitch: hotspot.pitch });
+      const marz = hotspotContainer.createHotspot(anchor, this.toView(hotspot.yaw, hotspot.pitch));
       const managed: ManagedMarker = { hotspot, anchor, element: el, marzipanoHotspot: marz, visible: true, offProjection: false };
       if (this.callbacks.editable === true) this.attachDrag(managed);
       this.markers.push(managed);
@@ -147,7 +157,7 @@ export class SceneMarkers {
       return { x: p.x * this.container.clientWidth, y: p.y * this.container.clientHeight };
     }
     try {
-      return (this.view.coordinatesToScreen({ yaw, pitch }) as { x: number; y: number } | null) ?? null;
+      return (this.view.coordinatesToScreen(this.toView(yaw, pitch)) as { x: number; y: number } | null) ?? null;
     } catch {
       return null;
     }
@@ -205,7 +215,7 @@ export class SceneMarkers {
     for (const p of this.projected) {
       const pts = p.hotspot.corners.map((c) => {
         try {
-          return this.view.coordinatesToScreen({ yaw: c.yaw, pitch: c.pitch }) as { x: number; y: number } | null;
+          return this.view.coordinatesToScreen(this.toView(c.yaw, c.pitch)) as { x: number; y: number } | null;
         } catch {
           return null;
         }
@@ -321,7 +331,7 @@ export class SceneMarkers {
       const toCoords = (e: PointerEvent): { yaw: number; pitch: number } | null => {
         const r = rect();
         try {
-          return this.view.screenToCoordinates({ x: e.clientX - r.left, y: e.clientY - r.top });
+          return viewCoordsToAngles(this.view.screenToCoordinates({ x: e.clientX - r.left, y: e.clientY - r.top }), this.flat);
         } catch {
           return null;
         }
@@ -336,7 +346,7 @@ export class SceneMarkers {
         m.hotspot.yaw = c.yaw;
         m.hotspot.pitch = c.pitch;
         try {
-          m.marzipanoHotspot.setPosition({ yaw: c.yaw, pitch: c.pitch });
+          m.marzipanoHotspot.setPosition(this.toView(c.yaw, c.pitch));
         } catch {
           // la escena pudo destruirse durante el arrastre
         }

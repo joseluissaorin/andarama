@@ -4,12 +4,13 @@ import * as RadixPopover from "@radix-ui/react-popover";
 import * as RadixSwitch from "@radix-ui/react-switch";
 import * as RadixTabs from "@radix-ui/react-tabs";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
-import { Loader2, X } from "lucide-react";
+import { Info, Loader2, X } from "lucide-react";
 import {
   createContext,
   forwardRef,
   useCallback,
   useContext,
+  useRef,
   useState,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
@@ -119,18 +120,87 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
   );
 });
 
-export function Field({ label, htmlFor, hint, error, children }: {
+// ---------------------------------------------------------------------------
+// Ayuda contextual
+// ---------------------------------------------------------------------------
+
+/** Textos propios del sistema de diseño; el Studio los traduce con su i18n. */
+const UiTextContext = createContext<{ moreInfo: string }>({ moreInfo: "Más información" });
+
+export function UiTextProvider({ moreInfo, children }: { moreInfo: string; children: ReactNode }): ReactNode {
+  return <UiTextContext.Provider value={{ moreInfo }}>{children}</UiTextContext.Provider>;
+}
+
+/**
+ * Icono de información con la explicación de una opción. Se abre al pasar el
+ * ratón (como pedían los docentes), al enfocarlo con el teclado y al tocarlo en
+ * pantallas táctiles; el texto puede ser largo, así que es un popover y no un
+ * tooltip de una línea.
+ */
+export function HelpTip({ text, label }: { text: string; label?: string }): ReactNode {
+  const { moreInfo } = useContext(UiTextContext);
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keepOpen = (): void => {
+    if (closeTimer.current != null) clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const closeSoon = (): void => {
+    if (closeTimer.current != null) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpen(false), 150);
+  };
+  return (
+    <RadixPopover.Root open={open} onOpenChange={setOpen}>
+      <RadixPopover.Trigger asChild>
+        <button
+          type="button"
+          aria-label={label != null ? `${moreInfo}: ${label}` : moreInfo}
+          className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[var(--anda-text-dim)] hover:text-[var(--anda-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--anda-primary)]"
+          onPointerEnter={(e) => {
+            if (e.pointerType === "mouse") keepOpen();
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse") closeSoon();
+          }}
+        >
+          <Info className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      </RadixPopover.Trigger>
+      <RadixPopover.Portal>
+        <RadixPopover.Content
+          side="top"
+          align="start"
+          sideOffset={6}
+          collisionPadding={12}
+          onPointerEnter={keepOpen}
+          onPointerLeave={closeSoon}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="z-50 max-w-[20rem] whitespace-pre-line rounded-lg border border-[var(--anda-border)] bg-[var(--anda-surface)] px-3 py-2 text-[12.5px] leading-snug text-[var(--anda-text)] shadow-[var(--anda-shadow-lg)]"
+        >
+          {text}
+        </RadixPopover.Content>
+      </RadixPopover.Portal>
+    </RadixPopover.Root>
+  );
+}
+
+export function Field({ label, htmlFor, hint, error, help, children }: {
   label: string;
   htmlFor?: string;
   hint?: string;
   error?: string;
+  /** Explicación larga detrás de un icono de información junto a la etiqueta. */
+  help?: string;
   children: ReactNode;
 }): ReactNode {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-[13px] font-medium text-[var(--anda-text)]">
-        {label}
-      </label>
+      <div className="flex items-center gap-1.5">
+        <label htmlFor={htmlFor} className="block text-[13px] font-medium text-[var(--anda-text)]">
+          {label}
+        </label>
+        {help != null && <HelpTip text={help} label={label} />}
+      </div>
       {children}
       {hint != null && error == null && <p className="text-xs text-[var(--anda-text-dim)]">{hint}</p>}
       {error != null && <p className="text-xs text-[var(--anda-danger)]">{error}</p>}
@@ -138,12 +208,14 @@ export function Field({ label, htmlFor, hint, error, children }: {
   );
 }
 
-export function Switch({ checked, onCheckedChange, id, label, disabled }: {
+export function Switch({ checked, onCheckedChange, id, label, disabled, help }: {
   checked: boolean;
   onCheckedChange: (v: boolean) => void;
   id?: string;
   label?: string;
   disabled?: boolean;
+  /** Explicación larga detrás de un icono de información junto a la etiqueta. */
+  help?: string;
 }): ReactNode {
   return (
     <div className="flex items-center gap-2">
@@ -161,6 +233,7 @@ export function Switch({ checked, onCheckedChange, id, label, disabled }: {
           {label}
         </label>
       )}
+      {help != null && <HelpTip text={help} label={label} />}
     </div>
   );
 }

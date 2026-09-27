@@ -4,12 +4,16 @@ import {
   ArrowRight,
   Copy,
   Crosshair,
+  Flag,
   GripVertical,
   Image as ImageIcon,
   Lock,
+  Play,
   Plus,
   Search,
   Trash2,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { Badge, Button, Dialog, EmptyState, Field, Input, Tooltip, useToast } from "@andarama/ui";
@@ -149,12 +153,15 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
           const items = canEdit ? readMediaDrag(e.dataTransfer) : null;
           if (items == null) return;
           e.preventDefault();
-          let first: string | undefined;
+          let result: { created: string[]; reused: string[] } = { created: [], reused: [] };
           editor.apply((draft) => {
-            first = scenesFromMedia(draft, project.id, items)[0];
+            result = scenesFromMedia(draft, project.id, items);
           });
+          const first = result.created[0] ?? result.reused[0];
           if (first != null) editor.select(first);
-          toast.push(t("scenes_created", { count: String(items.length) }), "ok");
+          if (result.created.length > 0) toast.push(t("scenes_created", { count: String(result.created.length) }), "ok");
+          // Soltar otra vez la misma foto ya no duplica la escena: se avisa
+          if (result.reused.length > 0) toast.push(t("media_already_scene", { count: String(result.reused.length) }), "info");
         }}
       >
         <div className="flex items-center justify-between px-3 py-2.5">
@@ -240,6 +247,19 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
                 </button>
                 {canEdit && (
                   <div className="absolute right-1.5 top-1.5 hidden gap-0.5 rounded-md bg-[var(--anda-surface)] p-0.5 shadow-sm group-focus-within:flex group-hover:flex">
+                    {!isStart && (
+                      <Tooltip content={t("mark_start_scene")}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          aria-label={t("mark_start_scene")}
+                          onClick={() => editor.apply((draft) => { draft.settings.startScene = scene.id; })}
+                        >
+                          <Flag className="h-3.5 w-3.5" />
+                        </Button>
+                      </Tooltip>
+                    )}
                     <Tooltip content={t("duplicate")}>
                       <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={t("duplicate")} onClick={() => duplicate(scene.id)}>
                         <Copy className="h-3.5 w-3.5" />
@@ -337,7 +357,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
           </Field>
         </div>
       </Dialog>
-      <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={setNewMedia} />
+      <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={setNewMedia} projectId={project.id} />
     </div>
   );
 }
@@ -406,6 +426,22 @@ export function usePlacementMode(): PlacementMode {
   return mode;
 }
 
+const EDITOR_MUTED_KEY = "andarama:editor-muted";
+function readEditorMuted(): boolean {
+  try {
+    return localStorage.getItem(EDITOR_MUTED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function writeEditorMuted(value: boolean): void {
+  try {
+    localStorage.setItem(EDITOR_MUTED_KEY, value ? "1" : "0");
+  } catch {
+    // modo privado: la preferencia dura lo que la pestaña
+  }
+}
+
 /** Vista actual del visor embebido (para "usar vista actual"). */
 let lastView: { yaw: number; pitch: number; fov: number } = { yaw: 0, pitch: 0, fov: 1.2 };
 export function getCurrentEditorView(): { yaw: number; pitch: number; fov: number } {
@@ -449,6 +485,12 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   const [compiling, setCompiling] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const firstMount = useRef(true);
+  // El ambiente de la escena suena también mientras se edita: se puede
+  // silenciar desde la barra del lienzo y la preferencia se recuerda aparte de
+  // la del visitante (comparten origen y no deben pisarse).
+  const [muted, setMuted] = useState(() => readEditorMuted());
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
 
   // Arrastrar una escena de la lista sobre el panorama crea el paso hacia ella
   // justo donde se suelta: es la acción más repetida al construir un tour.
@@ -473,7 +515,8 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         e.preventDefault();
         const viewer = skinRef.current?.viewer;
         const rect = node.getBoundingClientRect();
-        const coords = viewer?.marzipanoViewer().view()?.screenToCoordinates?.({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        // También en escenas planas (gigapíxel 2D), donde la vista no da ángulos
+        const coords = viewer?.screenToHotspotCoords(e.clientX - rect.left, e.clientY - rect.top);
         if (coords == null) return;
         const id = clientId();
         editor.apply((draft) => {
@@ -508,9 +551,8 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
     const coordsFor = (e: MouseEvent): { yaw: number; pitch: number } | null => {
       const viewer = skinRef.current?.viewer;
       if (viewer == null) return null;
-      const view = viewer.marzipanoViewer().view();
       const rect = node.getBoundingClientRect();
-      return view?.screenToCoordinates?.({ x: e.clientX - rect.left, y: e.clientY - rect.top }) ?? null;
+      return viewer.screenToHotspotCoords(e.clientX - rect.left, e.clientY - rect.top);
     };
     const isChrome = (e: MouseEvent): boolean => {
       const el = e.target as HTMLElement;
@@ -639,6 +681,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
       });
       skinRef.current = mounted;
       mountedViewer = mounted;
+      mounted.viewer.audioEngine().setMuted(mutedRef.current, false);
       mounted.viewer.on("viewChange", (v) => {
         lastView = v;
       });
@@ -716,6 +759,22 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
             <Plus className="h-4 w-4" /> {t("add_hotspot_button")}
           </Button>
         )}
+        <Tooltip content={muted ? t("editor_unmute") : t("editor_mute")}>
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label={muted ? t("editor_unmute") : t("editor_mute")}
+            aria-pressed={muted}
+            onClick={() => {
+              const next = !muted;
+              setMuted(next);
+              writeEditorMuted(next);
+              skinRef.current?.viewer.audioEngine().setMuted(next, false);
+            }}
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </Button>
+        </Tooltip>
         {canEdit && (
           <Tooltip content={t("use_current_view_hint")}>
             <Button
@@ -727,7 +786,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
                   const s = draft.scenes.find((x) => x.id === sceneId);
                   if (s != null) s.initialViewJson = JSON.stringify(v);
                 });
-                toast.push(t("saved"), "ok");
+                toast.push(t("initial_view_saved"), "ok");
               }}
             >
               <Crosshair className="h-4 w-4" /> {t("use_current_view")}
@@ -740,7 +799,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
           ref={containerRef}
           className={`absolute inset-0 bg-[#0b1020] ${placement.kind !== "none" ? "cursor-crosshair" : ""}`}
         />
-        <SaltoDeHotspot contenedor={containerRef} sceneId={sceneId} />
+        <SaltoDeHotspot contenedor={containerRef} sceneId={sceneId} viewer={skinRef} />
         {placement.kind === "polygon" && (
           <PoligonoEnCurso contenedor={containerRef} puntos={placement.points} viewer={skinRef} />
         )}
@@ -792,14 +851,8 @@ function PoligonoEnCurso({ contenedor, puntos, viewer }: {
     caja.addEventListener("pointerleave", onLeave);
     const seguir = (): void => {
       if (!vivo) return;
-      const view = viewer.current?.viewer.marzipanoViewer().view();
-      const pts = puntos.map((p) => {
-        try {
-          return (view?.coordinatesToScreen?.({ yaw: p.yaw, pitch: p.pitch }) as { x: number; y: number } | null) ?? null;
-        } catch {
-          return null;
-        }
-      });
+      const v = viewer.current?.viewer;
+      const pts = puntos.map((p) => v?.hotspotCoordsToScreen(p.yaw, p.pitch) ?? null);
       setPantalla((prev) => {
         const next = { pts, raton: ratonRef.current, w: caja.clientWidth, h: caja.clientHeight };
         const igual =
@@ -868,9 +921,17 @@ function PoligonoEnCurso({ contenedor, puntos, viewer }: {
  * viaja pegado al marcador: cada fotograma lee dónde ha quedado, porque quien
  * mueve los marcadores es el motor del panorama, no React.
  */
-function SaltoDeHotspot({ contenedor, sceneId }: {
+/**
+ * Tipos cuyo contenido se abre en un panel: se pueden «probar» desde el
+ * editor para verlo como lo verá el visitante. Enlace, contador y polígono no
+ * abren nada propio; la navegación tiene su propio botón de salto.
+ */
+const PROBABLES = new Set(["text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf", "model3d", "quiz", "form", "web", "compare", "treasure", "tooltip"]);
+
+function SaltoDeHotspot({ contenedor, sceneId, viewer }: {
   contenedor: React.RefObject<HTMLDivElement>;
   sceneId: string;
+  viewer: React.MutableRefObject<MountedSkin | null>;
 }): React.ReactNode {
   const t = useT();
   const editor = useEditor();
@@ -883,9 +944,11 @@ function SaltoDeHotspot({ contenedor, sceneId }: {
     ? (readJson<{ target?: string }>(hotspot.contentJson, {}).target ?? null)
     : null;
   const destino = destinoId == null ? null : snapshot?.scenes.find((s) => s.id === destinoId) ?? null;
+  const probable = hotspot != null && PROBABLES.has(hotspot.type);
+  const conBoton = destino != null || probable;
 
   useEffect(() => {
-    if (hotspotId == null || destino == null || contenedor.current == null) {
+    if (hotspotId == null || !conBoton || contenedor.current == null) {
       setPos(null);
       return;
     }
@@ -917,9 +980,33 @@ function SaltoDeHotspot({ contenedor, sceneId }: {
       vivo = false;
       cancelAnimationFrame(frame);
     };
-  }, [hotspotId, destino, contenedor, sceneId]);
+  }, [hotspotId, conBoton, contenedor, sceneId]);
 
-  if (destino == null || pos == null) return null;
+  if (!conBoton || pos == null) return null;
+  const pillClass =
+    "anda-salto absolute z-20 flex max-w-56 -translate-x-1/2 items-center gap-1.5 truncate rounded-full border border-[var(--anda-border)] bg-[image:var(--anda-tecla)] px-3 py-1.5 text-[12.5px] font-semibold text-[#33260f] shadow-[var(--anda-relieve)] hover:brightness-105";
+  if (destino == null) {
+    // Probar el contenido: el editor cierra el panel al seleccionar, así que
+    // no había manera de ver el texto, el quiz o la galería como el visitante.
+    return (
+      <button
+        type="button"
+        title={t("hotspot_try_hint")}
+        onClick={() => {
+          const mounted = viewer.current;
+          const compilado = mounted?.viewer.tour.scenes.find((sc) => sc.id === sceneId)?.hotspots.find((h) => h.id === hotspotId);
+          if (mounted == null || compilado == null) return;
+          const marcador = contenedor.current?.querySelector<HTMLElement>(`.anda-hotspot[data-hotspot-id="${hotspotId}"]`) ?? null;
+          mounted.panelHost.open(compilado, marcador);
+        }}
+        style={{ left: pos.x, top: pos.y }}
+        className={pillClass}
+      >
+        <Play className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{t("hotspot_try")}</span>
+      </button>
+    );
+  }
   return (
     <button
       type="button"
@@ -932,7 +1019,7 @@ function SaltoDeHotspot({ contenedor, sceneId }: {
         editor.select(destino.id);
       }}
       style={{ left: pos.x, top: pos.y }}
-      className="anda-salto absolute z-20 flex max-w-56 -translate-x-1/2 items-center gap-1.5 truncate rounded-full border border-[var(--anda-border)] bg-[image:var(--anda-tecla)] px-3 py-1.5 text-[12.5px] font-semibold text-[#33260f] shadow-[var(--anda-relieve)] hover:brightness-105"
+      className={pillClass}
     >
       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
       <span className="truncate">{t("go_to_scene")} {destino.title}</span>

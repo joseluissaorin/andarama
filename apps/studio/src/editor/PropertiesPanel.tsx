@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crosshair,
+  Flag,
   Heading2,
   ImagePlus,
   Italic,
@@ -15,7 +16,8 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@andarama/ui";
+import { Button, Dialog, Field, HelpTip, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
+import { api } from "../api";
 import { parseVideoRef, renderMarkdown } from "@andarama/viewer-ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
@@ -41,6 +43,12 @@ function mediaRefUrl(ref: string): string {
 function num(value: string, fallback: number): number {
   const n = parseInt(value, 10);
   return Number.isFinite(n) ? n : fallback;
+}
+
+/** Formato del hotspot de modelo 3D según la extensión del fichero. */
+export function modelFormatFromName(filename: string): "glb" | "gltf" | "obj" | "stl" | null {
+  const ext = /\.([a-z0-9]+)$/i.exec(filename)?.[1]?.toLowerCase();
+  return ext === "glb" || ext === "gltf" || ext === "obj" || ext === "stl" ? ext : null;
 }
 
 const RAD = Math.PI / 180;
@@ -77,6 +85,26 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const [pickerFor, setPickerFor] = useState<"panorama" | "ambient" | "narration" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [newCategory, setNewCategory] = useState<string | null>(null);
+  const toast = useToast();
+  /** Oferta de renombrar también la foto tras cambiar el título de la escena. */
+  const [renameOffer, setRenameOffer] = useState<{ mediaId: string; from: string; to: string } | null>(null);
+  useEffect(() => setRenameOffer(null), [scene.id]);
+  const offerMediaRename = async (): Promise<void> => {
+    const mediaId = scene.mediaId;
+    const title = scene.title.trim();
+    if (!canEdit || mediaId == null || title === "") return;
+    try {
+      const info = await api<{ filename: string; scenes: number }>(`/media/${mediaId}`);
+      // Una foto que usan otras escenas (de este u otro recorrido) no se toca
+      if (info.scenes > 1) return;
+      const ext = /\.[a-z0-9]+$/i.exec(info.filename)?.[0] ?? "";
+      const to = `${title.replace(/[\\/:*?"<>|]+/g, "-").slice(0, 190)}${ext}`;
+      if (to === info.filename) return;
+      setRenameOffer({ mediaId, from: info.filename, to });
+    } catch {
+      // sin permiso sobre el medio o sin red: no se ofrece nada
+    }
+  };
   // Áreas del tour: la misma cosa que agrupa el grafo, da la categoría del
   // menú de escenas y, si tiene plano, es la planta del minimapa.
   const areas = areasOf(editor.snapshot!);
@@ -86,6 +114,8 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const map = readJson<Record<string, any>>(scene.mapJson, {});
   const limits = readJson<Record<string, number>>(scene.limitsJson, {});
   const isVideo = scene.type === "video";
+  // Sin escena inicial elegida, el recorrido arranca en la primera
+  const isStartScene = ((editor.snapshot!.settings.startScene as string | undefined) ?? editor.snapshot!.scenes[0]?.id) === scene.id;
 
   const patchScene = (fn: (s: SceneRow) => void): void => {
     editor.apply((draft) => {
@@ -113,7 +143,40 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{scene.title}</h3>
         <div className="space-y-3">
           <Field label={t("scene_title")} htmlFor="sc-title">
-            <Input id="sc-title" value={scene.title} disabled={!canEdit} onChange={(e) => patchScene((s) => { s.title = e.target.value; })} />
+            <Input
+              id="sc-title"
+              value={scene.title}
+              disabled={!canEdit}
+              onChange={(e) => {
+                setRenameOffer(null);
+                patchScene((s) => { s.title = e.target.value; });
+              }}
+              onBlur={() => void offerMediaRename()}
+            />
+            {/* El título de la escena y el nombre de la foto iban por separado:
+                en la biblioteca seguía saliendo «IMG_20240312_1015.jpg». */}
+            {renameOffer != null && (
+              <div className="mt-1.5 rounded-lg bg-[var(--anda-surface-2)] p-2 text-[12px]" role="status">
+                <p>{t("rename_media_offer", { from: renameOffer.from, to: renameOffer.to })}</p>
+                <div className="mt-1.5 flex gap-1.5">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const offer = renameOffer;
+                      setRenameOffer(null);
+                      void api(`/media/${offer.mediaId}`, { method: "PATCH", body: { filename: offer.to } })
+                        .then(() => toast.push(t("rename_media_done", { name: offer.to }), "ok"))
+                        .catch((err: unknown) => toast.push(String(err instanceof Error ? err.message : err), "error"));
+                    }}
+                  >
+                    {t("rename_media_yes")}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setRenameOffer(null)}>
+                    {t("rename_media_no")}
+                  </Button>
+                </div>
+              </div>
+            )}
           </Field>
           <Field label={t("type")} htmlFor="sc-type">
             <Select id="sc-type" value={scene.type} disabled={!canEdit} onChange={(e) => patchScene((s) => { s.type = e.target.value as SceneRow["type"]; })}>
@@ -202,12 +265,30 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
               </div>
             )}
           </Field>
-          <Switch id="sc-hidden" checked={meta.hidden === true} onCheckedChange={(v) => patchMeta({ hidden: v })} label={t("hidden_scene")} disabled={!canEdit} />
+          <Switch id="sc-hidden" checked={meta.hidden === true} onCheckedChange={(v) => patchMeta({ hidden: v })} label={t("hidden_scene")} disabled={!canEdit} help={t("help_hidden_scene")} />
+          {/* La escena inicial se elegía en el grafo o en Ajustes del tour;
+              desde aquí, que es donde se está mirando la escena, no había
+              manera. */}
+          {isStartScene ? (
+            <p className="flex items-center gap-1.5 rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[13px] font-medium text-[var(--anda-primary)]">
+              <Flag className="h-3.5 w-3.5" /> {t("is_start_scene")}
+            </p>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full"
+              disabled={!canEdit}
+              onClick={() => editor.apply((draft) => { draft.settings.startScene = scene.id; })}
+            >
+              <Flag className="h-4 w-4" /> {t("mark_start_scene")}
+            </Button>
+          )}
         </div>
       </div>
 
 
-      <Section title={t("view_limits")}>
+      <Section title={t("view_limits")} help={t("help_view_limits")}>
         <div className="grid grid-cols-2 gap-2">
           {(["pitchMin", "pitchMax", "yawMin", "yawMax", "fovMin", "fovMax"] as const).map((key) => (
             <Field key={key} label={key} htmlFor={`lim-${key}`}>
@@ -229,7 +310,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         </div>
       </Section>
 
-      <Section title={t("scene_audio")}>
+      <Section title={t("scene_audio")} help={t("help_scene_audio")}>
         <Field label={t("ambient")}>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setPickerFor("ambient")}>
@@ -264,6 +345,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
               s.audioJson = JSON.stringify(a);
             })}
             label={t("block_navigation")}
+            help={t("help_block_navigation")}
           />
         )}
       </Section>
@@ -334,6 +416,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
       <MediaPicker
         open={pickerFor != null}
         onClose={() => setPickerFor(null)}
+        projectId={scene.projectId}
         kind={pickerFor === "panorama" ? undefined : "audio"}
         onSelect={(item: MediaItem) => {
           if (pickerFor === "panorama") {
@@ -956,7 +1039,9 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         )}
         {hotspot.type === "polygon" && (
           <>
-            <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("polygon_purpose")}</p>
+            <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">
+              {t("polygon_purpose")} <HelpTip text={t("help_polygon")} label={t("hotspot_polygon")} />
+            </p>
             <div className="grid grid-cols-2 gap-2">
               <Field label={t("fill")} htmlFor="hs-fill">
                 <Input id="hs-fill" type="color" value={String(content.fill ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ fill: e.target.value })} />
@@ -1062,6 +1147,9 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             </Field>
             <Switch id="hs-newtab" checked={content.newTab !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ newTab: v })} label={t("open_new_tab")} />
           </>
+        )}
+        {hotspot.type === "state" && (
+          <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("help_state")}</p>
         )}
         {hotspot.type === "state" && (
           <StateEditor content={content} scenes={snapshot.scenes} canEdit={canEdit} onChange={setContent} />
@@ -1266,7 +1354,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       )}
 
       {activeTab === "conditions" && (
-      <Section title={t("conditions")}>
+      <Section title={t("conditions")} help={t("help_conditions")}>
         <Field label={t("visibility_by_lang")} htmlFor="hs-langs" hint="es, en (vacio = todos)">
           <Input
             id="hs-langs"
@@ -1349,6 +1437,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       <MediaPicker
         open={pickerField != null}
         onClose={() => setPickerField(null)}
+        projectId={scene.projectId}
         kind={pickerField?.split(":")[1] === "" ? undefined : pickerField?.split(":")[1]}
         onSelect={(item) => {
           const field = pickerField?.split(":")[0];
@@ -1362,6 +1451,11 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             setContent({ after: { ...content.after, url: `media:${item.id}` } });
           } else if (field === "icono") {
             setStyle({ icon: { ...(style.icon ?? {}), url: `media:${item.id}`, name: undefined } });
+          } else if (field === "url" && hotspot.type === "model3d") {
+            // El formato sale de la extensión: con un STL y el selector en
+            // GLB, el visor intentaba abrirlo como glTF y no se veía nada.
+            const format = modelFormatFromName(item.filename);
+            setContent({ url: `media:${item.id}`, ...(format != null ? { format } : {}) });
           } else {
             setContent({ [field]: `media:${item.id}` });
           }
@@ -1495,11 +1589,19 @@ function MarkdownField({ id, value, onChange, rows, disabled, placeholder, autoF
   );
 }
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }): React.ReactNode {
+function Section({ title, hint, help, children }: { title: string; hint?: string; help?: string; children: React.ReactNode }): React.ReactNode {
   return (
     <details open className="group rounded-xl border border-[var(--anda-border)] bg-[var(--anda-bg)] shadow-sm">
       <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--anda-text-dim)] transition-colors hover:text-[var(--anda-text)]">
-        {title}
+        <span className="flex items-center gap-1.5">
+          {title}
+          {/* El icono abre la ayuda sin plegar la sección */}
+          {help != null && (
+            <span className="normal-case tracking-normal" onClick={(e) => e.preventDefault()}>
+              <HelpTip text={help} label={title} />
+            </span>
+          )}
+        </span>
         <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </span>
@@ -1673,7 +1775,7 @@ function QuizEditor({ content, canEdit, onChange }: {
       <Field label="Feedback incorrecto" htmlFor="qz-fw">
         <Input id="qz-fw" value={String(content.feedbackWrong ?? "")} disabled={!canEdit} onChange={(e) => onChange({ feedbackWrong: e.target.value })} />
       </Field>
-      <Switch id="qz-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => onChange({ gate: v })} label={t("gate")} />
+      <Switch id="qz-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => onChange({ gate: v })} label={t("gate")} help={t("help_quiz_gate")} />
       <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("gate_hint")}</p>
     </div>
   );

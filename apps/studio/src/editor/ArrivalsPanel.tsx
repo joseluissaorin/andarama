@@ -1,5 +1,5 @@
 import { AlertTriangle, Crosshair, DoorOpen, Play } from "lucide-react";
-import { Button, Tooltip } from "@andarama/ui";
+import { Button, Tooltip, useToast } from "@andarama/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import {
@@ -31,6 +31,7 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
   getCurrentView: () => { yaw: number; pitch: number; fov: number };
 }): React.ReactNode {
   const t = useT();
+  const toast = useToast();
   const editor = useEditor();
   const snapshot = editor.snapshot!;
   const arrivals = arrivalsOf(snapshot, sceneId);
@@ -89,7 +90,10 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
                   variant="outline"
                   className="h-7 px-2 text-[11px]"
                   disabled={!canEdit}
-                  onClick={() => editor.apply((draft) => setArrivalView(draft, sceneId, a, getCurrentView()))}
+                  onClick={() => {
+                    editor.apply((draft) => setArrivalView(draft, sceneId, a, getCurrentView()));
+                    toast.push(a.kind === "start" ? t("initial_view_saved") : t("saved"), "ok");
+                  }}
                 >
                   <Crosshair className="h-3.5 w-3.5" /> {t("use_current_view")}
                 </Button>
