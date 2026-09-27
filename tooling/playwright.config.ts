@@ -21,7 +21,7 @@ export default defineConfig({
     // en el node_modules del propio paquete, y en un runner limpio npx no lo
     // encontraba (salía con 127 y las E2E no llegaban a arrancar).
     command:
-      "DATA_DIR=/tmp/anda-e2e-$RANDOM PORT=8799 ASSETS_DIR=../studio/dist-root pnpm --filter @andarama/api exec tsx src/node.ts",
+      "DATA_DIR=/tmp/anda-e2e-$RANDOM PORT=8799 SHOW_LANDING=1 ASSETS_DIR=../studio/dist-root pnpm --filter @andarama/api exec tsx src/node.ts",
     cwd: __dirname,
     url: "http://localhost:8799/api/v1/health",
     reuseExistingServer: false,

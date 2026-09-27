@@ -367,7 +367,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
           {items.length === 0 ? (
             <button
               type="button"
-              className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--anda-border)] p-12 text-[var(--anda-text-dim)] hover:border-[var(--anda-primary)] hover:text-[var(--anda-primary)]"
+              className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[var(--anda-border)] p-12 text-[var(--anda-text-dim)] hover:border-[var(--anda-primary)] hover:text-[var(--anda-primary-ink)]"
               onClick={() => fileInput.current?.click()}
             >
               <UploadCloud className="h-8 w-8" />
@@ -549,7 +549,7 @@ export function ImportWizard({ orgId, open, onClose, project }: {
                 {items.map((item) => (
                   <li key={item.key}>
                     {item.name}
-                    {item.plan != null && <MapPin className="ml-1 inline h-3.5 w-3.5 text-[var(--anda-primary)]" aria-label={t("placed_on_plan")} />}
+                    {item.plan != null && <MapPin className="ml-1 inline h-3.5 w-3.5 text-[var(--anda-primary-ink)]" aria-label={t("placed_on_plan")} />}
                   </li>
                 ))}
               </ol>

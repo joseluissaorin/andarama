@@ -333,7 +333,7 @@ export function EditorPage(): React.ReactNode {
           {editor.saving === "saving" ? t("saving") : editor.saving === "error" ? t("save_failed_short") : editor.dirty ? "..." : t("saved")}
         </span>
         {others.length > 0 && (
-          <div className="flex items-center gap-1" aria-label="Personas editando">
+          <div className="flex items-center gap-1" aria-label={t("a11y_editing_now")}>
             {others.map((u) => (
               <Tooltip key={u.connectionId} content={`${u.name} (${t("presence_editing")})`}>
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--anda-accent)] text-[11px] font-bold text-white">
@@ -383,16 +383,16 @@ export function EditorPage(): React.ReactNode {
 
       {project.planLocked === true && (
         <div role="status" className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] px-4 py-2 text-[13px] font-medium">
-          <Lock className="h-4 w-4 shrink-0 text-[var(--anda-primary)]" aria-hidden="true" />
+          <Lock className="h-4 w-4 shrink-0 text-[var(--anda-primary-ink)]" aria-hidden="true" />
           <span className="flex-1">{t("editor_plan_locked")}</span>
-          <Link to="/plan" className="font-semibold text-[var(--anda-primary)] hover:underline">
+          <Link to="/plan" className="font-semibold text-[var(--anda-primary-ink)] hover:underline">
             {t("plan_trial_cta")}
           </Link>
         </div>
       )}
       {project.planLocked !== true && <OnboardingChecklist compact />}
 
-      <nav className="anda-barra flex px-3 py-2" aria-label="Vistas del editor">
+      <nav className="anda-barra flex px-3 py-2" aria-label={t("a11y_editor_views")}>
         {/* El raíl hundido y la pestaña elegida como tecla ámbar: el mismo
             relieve del botón principal, aquí en pequeño. */}
         <div className="anda-pestanas overflow-x-auto">
@@ -405,7 +405,7 @@ export function EditorPage(): React.ReactNode {
         </div>
       </nav>
 
-      <div className="flex min-h-0 flex-1 flex-col">
+      <main id="contenido" className="flex min-h-0 flex-1 flex-col">
         {/* Escenas y grafo comparten el panel de biblioteca: es donde se
             arrastran los panoramas para convertirlos en escenas. */}
         <div className="min-h-0 flex-1">
@@ -431,7 +431,7 @@ export function EditorPage(): React.ReactNode {
         {(tab === "scenes" || tab === "graph") && (
           <MediaDock orgId={project.orgId} projectId={project.id} projectTitle={project.title} canEdit={canEdit} />
         )}
-      </div>
+      </main>
 
       <PublishDialog
         open={dialog === "publish"}

@@ -200,7 +200,7 @@ function Overview({ onNavigate }: { onNavigate: (tab: string) => void }): React.
                   rel="noopener noreferrer"
                   className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-[var(--anda-surface-2)]"
                 >
-                  <span className="truncate font-medium text-[var(--anda-primary)]">{p.title}</span>
+                  <span className="truncate font-medium text-[var(--anda-primary-ink)]">{p.title}</span>
                   <span className="shrink-0 text-xs text-[var(--anda-text-dim)]">{new Date(p.publishedAt).toLocaleDateString()}</span>
                 </a>
               ))}
@@ -593,7 +593,7 @@ function PubsTable(): React.ReactNode {
       <div className="space-y-2 text-sm">
         {rows.map((p) => (
           <div key={p.projectId} className="flex items-center gap-3 anda-ficha px-4 py-2.5">
-            <a href={`/t/${p.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 font-medium text-[var(--anda-primary)] hover:underline">
+            <a href={`/t/${p.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 font-medium text-[var(--anda-primary-ink)] hover:underline">
               {p.title} <ExternalLink className="h-3.5 w-3.5" />
             </a>
             <span className="font-mono text-xs text-[var(--anda-text-dim)]">/t/{p.slug}</span>
@@ -692,7 +692,7 @@ function GalleryModeration(): React.ReactNode {
                   href={`/t/${row.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 font-medium text-[var(--anda-primary)] hover:underline"
+                  className="inline-flex items-center gap-1.5 font-medium text-[var(--anda-primary-ink)] hover:underline"
                 >
                   /t/{row.slug} <ExternalLink className="h-3.5 w-3.5" />
                 </a>

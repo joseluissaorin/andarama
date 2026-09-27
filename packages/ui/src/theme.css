@@ -11,6 +11,9 @@
   --anda-primary-dark: #d97c00;
   --anda-primary-light: #ffc233;
   --anda-primary-soft: #fdefd2;
+  /* El naranja de la marca no llega a 4,5:1 sobre papel: para texto e iconos
+     sueltos se usa esta tinta, más tostada (5,5:1 sobre la superficie). */
+  --anda-primary-ink: #9a5800;
   --anda-accent: #ff6b1a;
   --anda-yellow: #ffd900;
   --anda-grad: linear-gradient(135deg, #ffd900 0%, #ffb300 55%, #ff8a00 100%);
@@ -20,8 +23,8 @@
   --anda-surface-2: #f5edda;
   --anda-border: #e8ddc4;
   --anda-text: #33260f;
-  --anda-text-dim: #85764f;
-  --anda-danger: #d64533;
+  --anda-text-dim: #72643e;
+  --anda-danger: #c73e2d;
   --anda-ok: #3d8b40;
   --anda-radius: 12px;
   --anda-font: "Baloo 2", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -43,6 +46,7 @@
   --anda-primary-dark: #e69500;
   --anda-primary-light: #ffcf4d;
   --anda-primary-soft: #4a3608;
+  --anda-primary-ink: #ffb300;
   --anda-bg: #201808;
   --anda-surface: #2b2110;
   --anda-surface-2: #382c15;
@@ -78,3 +82,18 @@
 @media (prefers-reduced-motion: reduce) {
   .anda-anim-overlay, .anda-anim-dialog, .anda-anim-toast { animation: none; }
 }
+
+/* Enlace «Saltar al contenido»: fuera de la vista hasta que el teclado llega a él. */
+.anda-salto {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 100;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--anda-surface);
+  color: var(--anda-text);
+  font-weight: 600;
+  box-shadow: var(--anda-shadow-lg);
+}
+.anda-salto:focus { top: 12px; outline: 2px solid var(--anda-primary-ink); outline-offset: 2px; }

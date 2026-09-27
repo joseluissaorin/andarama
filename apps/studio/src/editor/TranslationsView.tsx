@@ -132,7 +132,7 @@ export function TranslationsView({ project, canEdit }: { project: ProjectInfo; c
         <span className="text-sm text-[var(--anda-text-dim)]">
           {t("source_lang")}: <strong>{defaultLang}</strong>
         </span>
-        <Select value={lang} onChange={(e) => setLang(e.target.value)} className="max-w-32" aria-label="Idioma destino">
+        <Select value={lang} onChange={(e) => setLang(e.target.value)} className="max-w-32" aria-label={t("a11y_target_lang")}>
           {langs.length === 0 && <option value="">-</option>}
           {langs.map((l) => (
             <option key={l} value={l}>

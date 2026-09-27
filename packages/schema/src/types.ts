@@ -792,6 +792,15 @@ export interface TourStart {
   intro?: "none" | "littlePlanet" | "fade";
 }
 
+export interface AccessibilityConfig {
+  /**
+   * El texto alternativo de escenas y hotspots deja de ser un aviso y pasa a
+   * ser un error que impide publicar. Pensado para organismos públicos, que
+   * responden de la accesibilidad de lo que publican.
+   */
+  requireAlt?: boolean;
+}
+
 export interface ControlsConfig {
   /** Sensibilidad de arrastre (multiplicador). */
   sensitivity?: number;
@@ -815,6 +824,8 @@ export interface Tour {
   geoMap?: GeoMapConfig;
   ui?: UIConfig;
   controls?: ControlsConfig;
+  /** Exigencias de accesibilidad que el autor impone a su propio tour. */
+  accessibility?: AccessibilityConfig;
   /** Comportamiento en gafas y cardboard. */
   vr?: VrConfig;
   /** Metadatos de compartición (Open Graph y tarjetas de X/Twitter). */

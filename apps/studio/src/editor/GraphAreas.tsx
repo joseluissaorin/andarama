@@ -114,7 +114,7 @@ export function GraphAreas({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className={`h-6 w-6 ${area.plan.widthMeters != null ? "text-[var(--anda-primary)]" : ""}`}
+                  className={`h-6 w-6 ${area.plan.widthMeters != null ? "text-[var(--anda-primary-ink)]" : ""}`}
                   aria-label={t("calibrate_plan")}
                   disabled={!canEdit}
                   onClick={() => onCalibrate(area.id)}
@@ -168,7 +168,7 @@ export function GraphAreas({
   return (
     <aside className="flex w-72 shrink-0 flex-col overflow-hidden border-l border-[var(--anda-border)] bg-[var(--anda-surface)]">
       <header className="flex items-center gap-2 border-b border-[var(--anda-border)] px-3 py-2">
-        <Layers className="h-4 w-4 text-[var(--anda-primary)]" />
+        <Layers className="h-4 w-4 text-[var(--anda-primary-ink)]" />
         <h3 className="flex-1 text-[13px] font-semibold">{t("areas")}</h3>
         <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => onCreate()}>
           <Plus className="h-3.5 w-3.5" /> {t("new_area")}

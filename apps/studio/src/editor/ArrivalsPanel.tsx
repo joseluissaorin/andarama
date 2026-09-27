@@ -76,7 +76,7 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
                   onClick={() => editor.apply((draft) => setArrivalMode(draft, sceneId, a, m))}
                   className={`rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${
                     a.mode === m
-                      ? "bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                      ? "bg-[var(--anda-primary-soft)] text-[var(--anda-primary-ink)]"
                       : "text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
                   } disabled:opacity-60`}
                 >

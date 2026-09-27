@@ -267,7 +267,7 @@ export function ProjectsPage(): React.ReactNode {
               {usage.data.usedTours} {t("of")} {usage.data.quotaTours} {t("tours")}
             </span>
             {usage.data.fromPlan === true && (
-              <Link to="/plan" className="ml-3 font-semibold text-[var(--anda-primary)] hover:underline">
+              <Link to="/plan" className="ml-3 font-semibold text-[var(--anda-primary-ink)] hover:underline">
                 {usage.data.plan == null ? t("quota_reached_plan") : t("plan")}
               </Link>
             )}
@@ -660,7 +660,7 @@ function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
         </button>
         <Dropdown.Root>
           <Dropdown.Trigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Acciones">
+            <Button variant="ghost" size="icon" aria-label={t("actions")}>
               <MoreVertical className="h-4 w-4" />
             </Button>
           </Dropdown.Trigger>

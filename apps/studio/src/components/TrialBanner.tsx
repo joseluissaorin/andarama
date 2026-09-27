@@ -31,9 +31,9 @@ export function TrialBanner(): React.ReactNode {
           : "border-[var(--anda-border)] bg-[var(--anda-surface-2)] text-[var(--anda-text-dim)]"
       }`}
     >
-      <Hourglass className="h-4 w-4 shrink-0 text-[var(--anda-primary)]" aria-hidden="true" />
+      <Hourglass className="h-4 w-4 shrink-0 text-[var(--anda-primary-ink)]" aria-hidden="true" />
       <span className="flex-1">{texto}</span>
-      <Link to="/plan" className="font-semibold text-[var(--anda-primary)] hover:underline">
+      <Link to="/plan" className="font-semibold text-[var(--anda-primary-ink)] hover:underline">
         {t("plan_trial_cta")}
       </Link>
     </div>
@@ -51,7 +51,7 @@ export function TrialOverCard(): React.ReactNode {
   return (
     <section className="anda-bloque mb-6 border-[var(--anda-primary)] p-5" aria-labelledby="trial-over-title">
       <h2 id="trial-over-title" className="mb-2 flex items-center gap-2 text-[16px] font-bold">
-        <Hourglass className="h-4 w-4 text-[var(--anda-primary)]" aria-hidden="true" /> {t("trial_over_title")}
+        <Hourglass className="h-4 w-4 text-[var(--anda-primary-ink)]" aria-hidden="true" /> {t("trial_over_title")}
       </h2>
       <ul className="mb-4 space-y-1 text-[13.5px]">
         <li>

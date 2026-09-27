@@ -40,7 +40,7 @@ export const notFound = (detail = "Recurso no encontrado"): ApiError =>
   new ApiError(404, "No encontrado", detail, "https://andarama.com/errors/not-found");
 export const conflict = (detail?: string, extra?: Record<string, unknown>): ApiError =>
   new ApiError(409, "Conflicto", detail, "https://andarama.com/errors/conflict", extra);
-export const tooMany = (detail = "Demasiadas peticiones; inténtalo mas tarde"): ApiError =>
+export const tooMany = (detail = "Demasiadas peticiones; inténtalo más tarde"): ApiError =>
   new ApiError(429, "Límite de peticiones", detail, "https://andarama.com/errors/rate-limit");
 export const payloadTooLarge = (detail?: string): ApiError =>
   new ApiError(413, "Contenido demasiado grande", detail, "https://andarama.com/errors/too-large");

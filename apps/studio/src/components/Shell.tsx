@@ -61,18 +61,19 @@ export function Shell(): React.ReactNode {
 
   return (
     <div className="flex h-full flex-col md:flex-row">
+      <a href="#contenido" className="anda-salto">{t("a11y_skip_to_content")}</a>
       {/* Cabecera móvil: la marca y el botón del cajón */}
       <header className="flex items-center gap-3 border-b border-[var(--anda-border)] bg-[var(--anda-surface)] px-4 py-2.5 md:hidden">
         <img src={logoAndarama} alt="" width={30} height={30} className="rounded-lg" />
         <span className="flex-1 text-[15px] font-bold tracking-tight">andarama</span>
-        <Button variant="ghost" size="icon" aria-label="Menú" aria-expanded={menuAbierto} onClick={() => setMenuAbierto((v) => !v)}>
+        <Button variant="ghost" size="icon" aria-label={t("a11y_menu")} aria-expanded={menuAbierto} onClick={() => setMenuAbierto((v) => !v)}>
           {menuAbierto ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       </header>
       {menuAbierto && (
         <button
           type="button"
-          aria-label="Cerrar el menú"
+          aria-label={t("a11y_close_menu")}
           className="fixed inset-0 z-30 bg-[#0a0e20]/40 md:hidden"
           onClick={() => setMenuAbierto(false)}
         />
@@ -103,7 +104,7 @@ export function Shell(): React.ReactNode {
         {me.orgs.length > 0 && (
           <div className="px-3 pb-4">
             <Select
-              aria-label="Organización"
+              aria-label={t("organization")}
               value={currentOrgId ?? ""}
               onChange={(e) => setOrg(e.target.value)}
               className="bg-[var(--anda-surface-2)] text-[13px] font-medium"
@@ -119,7 +120,7 @@ export function Shell(): React.ReactNode {
         <p className="px-5 pb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--anda-text-dim)]">
           {t("projects")}
         </p>
-        <nav className="flex-1 space-y-0.5 px-3" aria-label="Principal">
+        <nav className="flex-1 space-y-0.5 px-3" aria-label={t("a11y_main_nav")}>
           <NavItem to="/" icon={<FolderKanban className="h-4 w-4" />} label={t("projects")} />
           <NavItem to="/media" icon={<Image className="h-4 w-4" />} label={t("media_library")} />
           <NavItem to="/org" icon={<Building2 className="h-4 w-4" />} label={t("org_defaults")} />
@@ -141,7 +142,7 @@ export function Shell(): React.ReactNode {
           <button
             type="button"
             onClick={pwa.applyUpdate}
-            className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-[var(--anda-primary-soft)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--anda-primary)]"
+            className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-[var(--anda-primary-soft)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--anda-primary-ink)]"
           >
             <RefreshCw className="h-4 w-4 shrink-0" />
             {t("update_ready")}
@@ -154,7 +155,7 @@ export function Shell(): React.ReactNode {
               if (pwa.installable) void pwa.install();
               else setIosHelp(true);
             }}
-            className="mx-3 mb-2 flex items-center gap-2 rounded-xl border border-dashed border-[var(--anda-border)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--anda-text-dim)] hover:border-[var(--anda-primary)] hover:text-[var(--anda-primary)]"
+            className="mx-3 mb-2 flex items-center gap-2 rounded-xl border border-dashed border-[var(--anda-border)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--anda-text-dim)] hover:border-[var(--anda-primary)] hover:text-[var(--anda-primary-ink)]"
           >
             <Download className="h-4 w-4 shrink-0" />
             {t("install_app")}
@@ -182,7 +183,7 @@ export function Shell(): React.ReactNode {
           </Tooltip>
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto">
+      <main id="contenido" tabIndex={-1} className="flex-1 overflow-y-auto focus:outline-none">
         <TrialBanner />
         <div className="anda-enter h-full">
           <Outlet />
@@ -192,7 +193,7 @@ export function Shell(): React.ReactNode {
       <Dialog open={iosHelp} onOpenChange={setIosHelp} title={t("install_app")} description={t("install_ios_hint")}>
         <ol className="list-decimal space-y-1.5 pl-5 text-[13px]">
           <li className="flex items-center gap-1.5">
-            <Share className="h-4 w-4 text-[var(--anda-primary)]" /> {t("install_ios_step_share")}
+            <Share className="h-4 w-4 text-[var(--anda-primary-ink)]" /> {t("install_ios_step_share")}
           </li>
           <li>{t("install_ios_step_add")}</li>
           <li>{t("install_ios_step_confirm")}</li>

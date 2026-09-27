@@ -155,7 +155,7 @@ export function HelpTip({ text, label }: { text: string; label?: string }): Reac
         <button
           type="button"
           aria-label={label != null ? `${moreInfo}: ${label}` : moreInfo}
-          className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[var(--anda-text-dim)] hover:text-[var(--anda-primary)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--anda-primary)]"
+          className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[var(--anda-text-dim)] hover:text-[var(--anda-primary-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--anda-primary)]"
           onPointerEnter={(e) => {
             if (e.pointerType === "mouse") keepOpen();
           }}
@@ -412,7 +412,7 @@ export function ToastProvider({ children }: { children: ReactNode }): ReactNode 
 // ---------------------------------------------------------------------------
 
 export function Spinner({ className }: { className?: string }): ReactNode {
-  return <Loader2 className={cx("h-5 w-5 animate-spin text-[var(--anda-primary)]", className)} aria-label="Cargando" />;
+  return <Loader2 className={cx("h-5 w-5 animate-spin text-[var(--anda-primary-ink)]", className)} aria-label="Cargando" />;
 }
 
 export function Badge({ children, tone = "default" }: { children: ReactNode; tone?: "default" | "ok" | "warn" | "danger" }): ReactNode {

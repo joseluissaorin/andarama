@@ -340,6 +340,7 @@ export async function compileProject(db: Db, projectId: string, opts: CompileOpt
     geoMap: (settings.geoMap as Tour["geoMap"]) ?? undefined,
     ui: deepResolve(settings.ui as Tour["ui"]) ?? undefined,
     controls: (settings.controls as Tour["controls"]) ?? undefined,
+    accessibility: (settings.accessibility as Tour["accessibility"]) ?? undefined,
     vr: (settings.vr as Tour["vr"]) ?? undefined,
     social: deepResolve(settings.social as Tour["social"]) ?? undefined,
     transition: (settings.transition as Tour["transition"]) ?? undefined,

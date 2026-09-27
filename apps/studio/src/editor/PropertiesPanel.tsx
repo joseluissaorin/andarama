@@ -270,7 +270,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
               desde aquí, que es donde se está mirando la escena, no había
               manera. */}
           {isStartScene ? (
-            <p className="flex items-center gap-1.5 rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[13px] font-medium text-[var(--anda-primary)]">
+            <p className="flex items-center gap-1.5 rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[13px] font-medium text-[var(--anda-primary-ink)]">
               <Flag className="h-3.5 w-3.5" /> {t("is_start_scene")}
             </p>
           ) : (
@@ -595,7 +595,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            className="flex min-w-0 items-center gap-1 text-[13px] text-[var(--anda-primary)] hover:underline"
+            className="flex min-w-0 items-center gap-1 text-[13px] text-[var(--anda-primary-ink)] hover:underline"
             onClick={() => editor.select(scene.id, null)}
           >
             <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
@@ -1214,7 +1214,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                   onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name: undefined } })}
                   className={`flex h-8 items-center justify-center rounded-lg border text-[10px] font-semibold ${
                     style.icon?.name == null
-                      ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                      ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary-ink)]"
                       : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
                   }`}
                 >
@@ -1230,7 +1230,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                     onClick={() => setStyle({ icon: { ...(style.icon ?? {}), name } })}
                     className={`flex h-8 items-center justify-center rounded-lg border ${
                       style.icon?.name === name
-                        ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary)]"
+                        ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-primary-ink)]"
                         : "border-[var(--anda-border)] text-[var(--anda-text-dim)] hover:bg-[var(--anda-surface-2)]"
                     }`}
                   >
@@ -1327,7 +1327,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             />
             <span
               aria-hidden
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--anda-border)] bg-[var(--anda-surface-2)] text-[var(--anda-primary)]"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--anda-border)] bg-[var(--anda-surface-2)] text-[var(--anda-primary-ink)]"
             >
               <ArrowUp className="h-4 w-4 transition-transform" style={{ transform: `rotate(${hotspotRotation}deg)` }} />
             </span>
@@ -1591,21 +1591,21 @@ function MarkdownField({ id, value, onChange, rows, disabled, placeholder, autoF
 
 function Section({ title, hint, help, children }: { title: string; hint?: string; help?: string; children: React.ReactNode }): React.ReactNode {
   return (
-    <details open className="group rounded-xl border border-[var(--anda-border)] bg-[var(--anda-bg)] shadow-sm">
+    <details open className="group relative rounded-xl border border-[var(--anda-border)] bg-[var(--anda-bg)] shadow-sm">
       <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--anda-text-dim)] transition-colors hover:text-[var(--anda-text)]">
-        <span className="flex items-center gap-1.5">
-          {title}
-          {/* El icono abre la ayuda sin plegar la sección */}
-          {help != null && (
-            <span className="normal-case tracking-normal" onClick={(e) => e.preventDefault()}>
-              <HelpTip text={help} label={title} />
-            </span>
-          )}
-        </span>
+        <span className={help != null ? "pr-5" : undefined}>{title}</span>
         <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </span>
       </summary>
+      {/* La ayuda va fuera del <summary>: un botón dentro de otro control no
+          se alcanza bien con teclado ni con lector de pantalla. Se coloca
+          encima, a la derecha del título, sin plegar la sección. */}
+      {help != null && (
+        <span className="absolute right-9 top-[11px] normal-case tracking-normal">
+          <HelpTip text={help} label={title} />
+        </span>
+      )}
       <div className="space-y-3 px-3.5 pb-4 pt-1">
         {hint != null && <p className="text-xs text-[var(--anda-text-dim)]">{hint}</p>}
         {children}

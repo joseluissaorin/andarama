@@ -97,7 +97,7 @@ export function CommentsView({ project }: { project: ProjectInfo }): React.React
               <p className="mt-1 whitespace-pre-wrap text-sm">{reply.body}</p>
             </div>
           ))}
-          <button type="button" className="mt-2 flex items-center gap-1 text-xs text-[var(--anda-primary)] hover:underline" onClick={() => setReplyTo(c.id)}>
+          <button type="button" className="mt-2 flex items-center gap-1 text-xs text-[var(--anda-primary-ink)] hover:underline" onClick={() => setReplyTo(c.id)}>
             <CornerDownRight className="h-3 w-3" /> {t("reply")}
           </button>
         </div>
