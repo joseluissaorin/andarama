@@ -122,10 +122,21 @@ Sitio Astro 5 estático con i18n por ruta que sustituye a la landing a mano de `
   `analitica_sin_cookies` es `null` en todas. En las tablas salen con asterisco.
 - **Artículos**: solo hay versión en español; las traducciones se añaden con
   `translationOf: <slug-es>` en el frontmatter (el hreflang y el índice salen solos).
-- **WordPress**: el enlace a wordpress.org apunta a `/plugins/andarama-360/` con
-  `rel="nofollow"` hasta que el plugin esté aprobado.
-- **Formulario de universidades**: `mailto:` de momento; pasar a un endpoint cuando haya
-  correo saliente en la API.
+- **WordPress**: mientras el plugin espera en wordpress.org, `/wordpress/` ofrece el ZIP
+  (`/descargas/andarama-360.zip`, lo empaqueta `scripts/empaquetar-plugin-wp.mjs` al
+  construir) con los pasos de instalación manual.
+- **Formularios de demo** (27-9-2026): formación, universidades y museos envían a
+  `POST /api/v1/public/demo` (`components/FormularioDemo.astro`); el aviso por correo sale
+  si la API tiene `DEMO_NOTIFY_TO` y correo configurado; si no, en el log y en la pestaña
+  Demos del panel.
+- **Blog programado**: los artículos con fecha futura no se construyen (ni índices, ni
+  sitemap, ni RSS) y los enlaces hacia ellos se quedan en texto: hay que **reconstruir y
+  desplegar la web a diario** para que salgan el día que toca.
+- **Textos legales** (aviso legal, condiciones, privacidad, contratación): redactados sin
+  revisión jurídica; el domicilio del titular está en `src/data/titular.ts`.
+- **Aviso de anuncio** (`layouts/Base.astro`, `scripts/atribucion.ts`): solo con `gclid`,
+  `gbraid`, `wbraid` o `utm_*` en la URL; con «Sí» guarda el clic en `sessionStorage` y lo
+  añade a los enlaces hacia app.andarama.com; con «No», solo las utm.
 - **Visor con RV**: comprobado solo en escritorio; el botón de gafas depende de WebXR y hay
   que probarlo en unas Quest.
 - **Little planet «túnel»** (cielo en el centro): no implementado; se menciona en la FAQ.
