@@ -1,13 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import QRCode from "qrcode";
-import { KeyRound, Plus, ShieldCheck, Trash2, Users } from "lucide-react";
+import { KeyRound, Languages, Plus, ShieldCheck, Trash2, Users } from "lucide-react";
 import { Badge, Button, Dialog, Field, Input, Select, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { getClerk, isClerkMode } from "../clerk";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { Cabecera } from "../components/Cabecera";
+import { LangPicker } from "../components/LangPicker";
 
 export function AccountPage(): React.ReactNode {
   const t = useT();
@@ -85,6 +86,15 @@ export function AccountPage(): React.ReactNode {
   return (
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       <Cabecera title={me?.user?.name ?? ""} hint={me?.user?.email} />
+
+      <section className="anda-bloque p-5">
+        <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold">
+          <Languages className="h-4 w-4" /> {t("preferences")}
+        </h2>
+        <Field label={t("ui_language")} htmlFor="pref-lang" hint={t("ui_language_hint")}>
+          <LangPicker id="pref-lang" className="max-w-64" />
+        </Field>
+      </section>
 
       {isClerkMode() ? (
         <section className="anda-bloque p-5">

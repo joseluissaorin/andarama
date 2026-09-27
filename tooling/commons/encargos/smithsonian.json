@@ -1,0 +1,102 @@
+{
+  "slug": "smithsonian",
+  "lang": "en",
+  "title": "Smithsonian virtual tour in 360: the Castle and the National Mall",
+  "description": "Four free spherical panoramas of the Smithsonian Institution in Washington, D.C. Founded on August 10, 1846, and named after its donor, the British scientist James Smithson, the Smithsonian is a group of 21 museums, 21 libraries and 14 research centers, most of them on the National Mall, with some 30 million visitors a year, almost all admitted free. The tour starts on the Mall, stops at the entrance of the National Air and Space Museum and ends inside the Smithsonian Castle, the first Smithsonian building, completed in 1855 in red Seneca sandstone.",
+  "placeName": "Smithsonian Institution",
+  "placeCountry": "US",
+  "lat": 38.888747,
+  "lng": -77.025997,
+  "startScene": "national-mall",
+  "scenes": [
+    {
+      "id": "national-mall",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/5/5c/360_panorama_National_Mall_Washington_DC_2025-08-17_08-41-44_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_panorama_National_Mall_Washington_DC_2025-08-17_08-41-44_1.jpg",
+      "title": "The National Mall",
+      "alt": "360-degree photo from the middle of the National Mall in Washington, D.C.: a road with yellow crossings, lawns and gravel paths on both sides, rows of trees and the dome of the U.S. Capitol at the far end under a bright, hazy sky",
+      "desc": "The National Mall, the landscaped park that contains and borders most Smithsonian museums. The U.S. Capitol stands at one end and the Washington Monument at the other. Photo of August 2025.",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "air-and-space-museum-entrance",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/7/71/360_panorama_Entrance_mall_side_National_Air_and_Space_museum_Washington_DC_2025-08-17_08-25-34_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_panorama_Entrance_mall_side_National_Air_and_Space_museum_Washington_DC_2025-08-17_08-25-34_1.jpg",
+      "title": "National Air and Space Museum, Mall-side entrance",
+      "alt": "360-degree photo in front of the National Air and Space Museum: its pale stone facade and curved glass entrance canopy, a crosswalk, gravel paths, the lawns and trees of the Mall and the dome of the National Gallery of Art in the distance",
+      "desc": "Mall-side entrance of the National Air and Space Museum, the Smithsonian museum dedicated to human flight and space exploration, at 601 Independence Avenue SW. The National Gallery of Art is visible across the Mall.",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "castle-the-commons",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Smithsonian_Castle_-_The_Commons_-_panosphere_-_2022-07-14.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Smithsonian_Castle_-_The_Commons_-_panosphere_-_2022-07-14.jpg",
+      "title": "Smithsonian Castle: The Commons",
+      "alt": "360-degree photo of The Commons inside the Smithsonian Castle: a long stone hall with ribbed vaults, rows of tall arched windows, glass display cases along the walls, potted palms, a rose window and a blue carpet",
+      "desc": "The Commons, a vaulted hall of the Smithsonian Institution Building, better known as the Castle, built in the Norman Revival style and completed in 1855. Photo of July 2022.",
+      "author": "Fuzheado",
+      "license": "CC BY-SA 4.0",
+      "width": 6528,
+      "height": 3264,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "castle-great-hall",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/3d/Smithsonian_Castle_-_Great_Hall_-_panosphere_-_2022-07-14.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Smithsonian_Castle_-_Great_Hall_-_panosphere_-_2022-07-14.jpg",
+      "title": "Smithsonian Castle: the Great Hall",
+      "alt": "360-degree photo of the Great Hall of the Smithsonian Castle: dark marble columns, a white vaulted ceiling, arched doorways, a terrazzo floor with the seal reading Smithsonian Institution 1846 and visitors at the information desks",
+      "desc": "The Great Hall was the Castle's original main entry and museum space; its wooden floor was replaced with terrazzo around 1900. The building houses the Smithsonian's administrative offices and information center and was designated a National Historic Landmark in 1965.",
+      "author": "Fuzheado",
+      "license": "CC BY-SA 4.0",
+      "width": 6528,
+      "height": 3264,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_demanda": {
+    "total": 780,
+    "mercados": {
+      "en-US": 730,
+      "en-GB": 20,
+      "es-ES": 20,
+      "pt-BR": 10
+    },
+    "idiomas": {
+      "en": 750,
+      "es": 20,
+      "pt": 10
+    }
+  },
+  "_fuentes": [
+    "https://en.wikipedia.org/wiki/Smithsonian_Institution",
+    "https://en.wikipedia.org/wiki/Smithsonian_Institution_Building",
+    "https://en.wikipedia.org/wiki/National_Air_and_Space_Museum",
+    "https://en.wikipedia.org/wiki/National_Mall"
+  ],
+  "_notas": "Descartadas: «Smithsonian-nasm-panorama-20160716» (exterior del NASM con un hombre identificable en primer plano) y «Kayak-interior-Smithsonian-NMAI» (interior de un kayak expuesto; escena confusa). Las dos fotos del Mall llevan el sombrero del fotógrafo en el nadir. Coordenadas: las del Castle."
+}

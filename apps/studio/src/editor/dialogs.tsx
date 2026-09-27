@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { Copy } from "lucide-react";
 import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
 import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
 import { api, ApiRequestError, authHeaders } from "../api";
-import { useEditor } from "../stores";
-import { useT } from "../i18n";
+import { canUse, useAuth, useEditor } from "../stores";
+import { useI18nStore, useT } from "../i18n";
 import { captureShareImage } from "./shareCapture";
+import { countryOptions, GALLERY_LIMITS, galleryPayload, initialGalleryForm, validateGallery, type GalleryError, type GalleryInfo } from "./gallery";
 import type { ProjectInfo } from "./EditorPage";
 
 // ---------------------------------------------------------------------------
@@ -18,10 +19,12 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   open: boolean;
   onClose: () => void;
   project: ProjectInfo;
-  onPublished: (pub: { slug: string; visibility: string; hasPassword: boolean; kiosk: boolean }) => void;
+  onPublished: (pub: { slug: string; visibility: string; hasPassword: boolean; kiosk: boolean; gallery?: GalleryInfo | null }) => void;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
+  const editorLang = useI18nStore((s) => s.lang);
+  const snapshot = useEditor((s) => s.snapshot);
   const [slug, setSlug] = useState(project.publication?.slug ?? project.slug);
   const [visibility, setVisibility] = useState(project.publication?.visibility ?? "public");
   const [password, setPassword] = useState("");
@@ -32,11 +35,30 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [note, setNote] = useState("");
   const [kiosk, setKiosk] = useState(project.publication?.kiosk === true);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] } | null>(null);
+  const [result, setResult] = useState<{ url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; galleryUrl: string | null; warnings: { message: string }[] } | null>(null);
+  // El dominio propio es de los planes altos en la instancia alojada
+  const me = useAuth((s) => s.me);
+  const dominioPermitido = canUse(me, "customDomain");
   /** Errores que impiden publicar, con su lista: antes solo salía un aviso genérico. */
   const [blockers, setBlockers] = useState<string[] | null>(null);
 
+  // La galería pública es de andarama.com: solo tiene sentido en la
+  // instancia alojada, y solo para un tour público
+  const alojada = me?.billing?.mode === "clerk";
+  const tourLangs = (snapshot?.settings.langs as string[] | undefined) ?? ["es"];
+  const defaultLang = (snapshot?.settings.defaultLang as string | undefined) ?? tourLangs[0] ?? "es";
+  const [gallery, setGallery] = useState(() => initialGalleryForm(project.publication?.gallery, snapshot, project.title, defaultLang));
+  const galeriaPosible = visibility === "public";
+  const galeriaActiva = alojada && galeriaPosible && gallery.enabled;
+  const erroresGaleria = useMemo(() => (galeriaActiva ? validateGallery(gallery) : []), [galeriaActiva, gallery]);
+  const paises = useMemo(() => countryOptions(editorLang), [editorLang]);
+  const descripcionLen = gallery.description.trim().length;
+
   const publish = async (): Promise<void> => {
+    if (erroresGaleria.length > 0) {
+      toast.push(mensajeGaleria(t, erroresGaleria[0]!), "error");
+      return;
+    }
     setBusy(true);
     setBlockers(null);
     try {
@@ -44,7 +66,16 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
       // del visor. Si la captura falla, se publica igual y el servidor usa la
       // previsualización equirectangular.
       const shareImage = (await captureShareImage(project.id)) ?? undefined;
-      const res = await api<{ slug: string; url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] }>(`/projects/${project.id}/publish`, {
+      const res = await api<{
+        slug: string;
+        url: string;
+        kioskUrl: string;
+        tourUrl: string;
+        kiosk: boolean;
+        gallery?: GalleryInfo;
+        galleryUrl?: string | null;
+        warnings: { message: string }[];
+      }>(`/projects/${project.id}/publish`, {
         method: "POST",
         body: {
           slug,
@@ -57,10 +88,12 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           expireAt: expireAt !== "" ? new Date(expireAt).getTime() : undefined,
           kiosk,
           note: note !== "" ? note : undefined,
+          // Sin ser pública, la ficha se apaga; en el self-host no se manda nada
+          gallery: alojada ? galleryPayload({ ...gallery, enabled: galeriaActiva }) : undefined,
         },
       });
-      setResult({ url: res.url, kioskUrl: res.kioskUrl, tourUrl: res.tourUrl, kiosk: res.kiosk, warnings: res.warnings });
-      onPublished({ slug: res.slug, visibility, hasPassword: password !== "", kiosk: res.kiosk });
+      setResult({ url: res.url, kioskUrl: res.kioskUrl, tourUrl: res.tourUrl, kiosk: res.kiosk, galleryUrl: res.galleryUrl ?? null, warnings: res.warnings });
+      onPublished({ slug: res.slug, visibility, hasPassword: password !== "", kiosk: res.kiosk, gallery: res.gallery ?? null });
       toast.push(t("publish_ok"), "ok");
     } catch (err) {
       const issues = err instanceof ApiRequestError ? (err.extra?.issues as { message?: string }[] | undefined) : undefined;
@@ -141,8 +174,14 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               <Textarea id="pb-domains" rows={3} value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="tours.museodelaciudad.es" />
             </Field>
           )}
-          <Field label={t("custom_domain")} htmlFor="pb-cdom" hint={t("custom_domain_hint")}>
-            <Input id="pb-cdom" value={customDomain} onChange={(e) => setCustomDomain(e.target.value)} placeholder="tour.midominio.es" />
+          <Field label={t("custom_domain")} htmlFor="pb-cdom" hint={dominioPermitido ? t("custom_domain_hint") : t("capability_custom_domain_hint")}>
+            <Input
+              id="pb-cdom"
+              value={customDomain}
+              disabled={!dominioPermitido}
+              onChange={(e) => setCustomDomain(e.target.value)}
+              placeholder="tour.midominio.es"
+            />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("publish_at")} htmlFor="pb-at">
@@ -155,9 +194,104 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           <Field label={t("version_note")} htmlFor="pb-note">
             <Input id="pb-note" value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
+          {/* La galería pública de andarama.com: una página propia por tour,
+              con el nombre del lugar, para que el buscador la encuentre.
+              Solo en la instancia alojada y solo para tours públicos. */}
+          {alojada && (
+            <section className="space-y-3 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-3" aria-labelledby="pb-gal-titulo">
+              <Switch
+                id="pb-gal"
+                checked={galeriaActiva}
+                disabled={!galeriaPosible}
+                onCheckedChange={(v) => setGallery((g) => ({ ...g, enabled: v }))}
+                label={t("gallery_title")}
+              />
+              <p id="pb-gal-titulo" className="text-xs text-[var(--anda-text-dim)]">{galeriaPosible ? t("gallery_hint") : t("gallery_needs_public")}</p>
+              {galeriaActiva && (
+                <div className="space-y-3">
+                  <Field
+                    label={t("gallery_field_title")}
+                    htmlFor="pb-gal-title"
+                    hint={t("gallery_field_title_hint")}
+                    error={erroresGaleria.includes("title") ? t("gallery_invalid_title") : undefined}
+                  >
+                    <Input id="pb-gal-title" value={gallery.title} maxLength={GALLERY_LIMITS.title.max} onChange={(e) => setGallery((g) => ({ ...g, title: e.target.value }))} />
+                  </Field>
+                  <Field
+                    label={t("gallery_field_description")}
+                    htmlFor="pb-gal-desc"
+                    hint={
+                      erroresGaleria.includes("description_short") || erroresGaleria.includes("description_long")
+                        ? undefined
+                        : `${t("gallery_field_description_hint")} ${t("gallery_chars", { n: descripcionLen, max: GALLERY_LIMITS.description.max })}`
+                    }
+                    error={
+                      erroresGaleria.includes("description_short")
+                        ? t("gallery_chars_short", { n: GALLERY_LIMITS.description.min - descripcionLen, min: GALLERY_LIMITS.description.min })
+                        : erroresGaleria.includes("description_long")
+                          ? t("gallery_chars_long", { n: descripcionLen - GALLERY_LIMITS.description.max, max: GALLERY_LIMITS.description.max })
+                          : undefined
+                    }
+                  >
+                    <Textarea id="pb-gal-desc" rows={5} value={gallery.description} onChange={(e) => setGallery((g) => ({ ...g, description: e.target.value }))} />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field
+                      label={t("gallery_field_place")}
+                      htmlFor="pb-gal-place"
+                      hint={t("gallery_field_place_hint")}
+                      error={erroresGaleria.includes("place") ? t("gallery_invalid_place") : undefined}
+                    >
+                      <Input id="pb-gal-place" value={gallery.placeName} maxLength={GALLERY_LIMITS.place.max} onChange={(e) => setGallery((g) => ({ ...g, placeName: e.target.value }))} />
+                    </Field>
+                    <Field label={t("gallery_field_country")} htmlFor="pb-gal-country" error={erroresGaleria.includes("country") ? t("gallery_invalid_country") : undefined}>
+                      <Select id="pb-gal-country" value={gallery.placeCountry} onChange={(e) => setGallery((g) => ({ ...g, placeCountry: e.target.value }))}>
+                        <option value="">-</option>
+                        {paises.map((p) => (
+                          <option key={p.code} value={p.code}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  </div>
+                  <Field label={t("gallery_field_lang")} htmlFor="pb-gal-lang">
+                    <Select id="pb-gal-lang" value={gallery.lang} onChange={(e) => setGallery((g) => ({ ...g, lang: e.target.value }))}>
+                      {(tourLangs.includes(gallery.lang) ? tourLangs : [gallery.lang, ...tourLangs]).map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <Field
+                    label={t("gallery_field_coords")}
+                    hint={t("gallery_field_coords_hint")}
+                    error={erroresGaleria.includes("coords") ? t("gallery_invalid_coords") : undefined}
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input aria-label={t("gallery_lat")} placeholder={t("gallery_lat")} inputMode="decimal" value={gallery.lat} onChange={(e) => setGallery((g) => ({ ...g, lat: e.target.value }))} />
+                      <Input aria-label={t("gallery_lng")} placeholder={t("gallery_lng")} inputMode="decimal" value={gallery.lng} onChange={(e) => setGallery((g) => ({ ...g, lng: e.target.value }))} />
+                    </div>
+                  </Field>
+                  <Field label={t("gallery_field_credits")} htmlFor="pb-gal-credits" hint={t("gallery_field_credits_hint")}>
+                    <Textarea id="pb-gal-credits" rows={2} value={gallery.credits} maxLength={GALLERY_LIMITS.credits.max} onChange={(e) => setGallery((g) => ({ ...g, credits: e.target.value }))} />
+                  </Field>
+                </div>
+              )}
+            </section>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
+          {result.galleryUrl != null && (
+            <p className="text-sm">
+              <span className="mr-1.5 font-semibold">{t("gallery_url")}:</span>
+              <a href={result.galleryUrl} target="_blank" rel="noopener noreferrer" className="break-all text-[var(--anda-primary)]">
+                {result.galleryUrl}
+              </a>
+            </p>
+          )}
           <p className="text-sm">{result.kiosk ? t("open_mode_kiosk") : t("publish_url")}:</p>
           {/* El enlace recién publicado se va a pegar en algún sitio: el botón
               de copiar tiene que estar aquí, no en otro diálogo. */}
@@ -220,6 +354,23 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
       )}
     </Dialog>
   );
+}
+
+/** El primer error de la ficha de la galería, en palabras. */
+function mensajeGaleria(t: (key: string, vars?: Record<string, string | number>) => string, error: GalleryError): string {
+  switch (error) {
+    case "title":
+      return t("gallery_invalid_title");
+    case "description_short":
+    case "description_long":
+      return t("gallery_field_description_hint");
+    case "place":
+      return t("gallery_invalid_place");
+    case "country":
+      return t("gallery_invalid_country");
+    case "coords":
+      return t("gallery_invalid_coords");
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +484,9 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
   const [kiosk, setKiosk] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // En la instancia alojada el SCORM es del plan Formación; en el self-host, de todos
+  const me = useAuth((s) => s.me);
+  const scormPermitido = canUse(me, "scorm");
 
   const doExport = async (): Promise<void> => {
     setBusy(true);
@@ -445,8 +599,8 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
           label={t("export_single")}
         />
         {hasMultires && <p className="-mt-2 pl-1 text-xs text-[var(--anda-text-dim)]">{t("export_single_multires")}</p>}
-        <Field label={t("export_scorm")} htmlFor="ex-scorm">
-          <Select id="ex-scorm" value={scorm} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
+        <Field label={t("export_scorm")} htmlFor="ex-scorm" hint={scormPermitido ? undefined : t("capability_scorm_hint")}>
+          <Select id="ex-scorm" value={scorm} disabled={!scormPermitido} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
             <option value="">-</option>
             <option value="1.2">SCORM 1.2</option>
             <option value="2004">SCORM 2004 (3rd Ed.)</option>

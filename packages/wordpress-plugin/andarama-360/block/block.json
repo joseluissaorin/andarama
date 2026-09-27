@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 2,
+	"name": "andarama-360/tour",
+	"version": "1.0.0",
+	"title": "Andarama 360 Tour",
+	"category": "embed",
+	"icon": "location-alt",
+	"description": "Embed a 360 virtual tour from Andarama or from your own Andarama instance.",
+	"keywords": [ "virtual tour", "360", "panorama", "vr", "andarama" ],
+	"textdomain": "andarama-360",
+	"attributes": {
+		"url": { "type": "string", "default": "" },
+		"height": { "type": "number", "default": 0 },
+		"ratio": { "type": "string", "default": "" },
+		"title": { "type": "string", "default": "" }
+	},
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"align": [ "wide", "full" ]
+	},
+	"example": {
+		"attributes": { "url": "https://andarama.com/t/example" }
+	},
+	"editorScript": "andarama-360-editor",
+	"editorStyle": "andarama-360-editor",
+	"style": "andarama-360"
+}

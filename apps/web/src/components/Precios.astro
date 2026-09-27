@@ -1,0 +1,34 @@
+---
+/**
+ * La sección de precios, a partir de `plans.ts` de la API. Siete tarjetas:
+ * la gratuita (instalártelo) y los seis planes alojados.
+ */
+import { planCards, TRIAL_DAYS } from "../data/planes";
+import { t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const cards = planCards(lang);
+---
+
+<section class="precios" id="precios">
+  <h2>{t(lang, "precios.titulo")}</h2>
+  <p set:html={t(lang, "precios.texto")} />
+  <p><strong>{t(lang, "precios.prueba", { n: TRIAL_DAYS })}</strong></p>
+  <div class="precios__malla">
+    {cards.map((c) => (
+      <article class:list={["precio", { "precio--casa": c.kind === "casa", "precio--vida": c.kind === "vida" }]}>
+        <h3>{c.name}</h3>
+        <p class="precio__cifra">{c.figure}</p>
+        <p class="precio__cuando">{c.when}{c.yearly != null && <><br />{c.yearly}</>}</p>
+        <ul>
+          {c.items.map((i) => <li set:html={i} />)}
+        </ul>
+        <a class:list={["btn", { "btn--fantasma": c.kind === "casa" }]} href={c.href} data-cta={c.kind === "casa" ? undefined : "registro"}>{c.cta}<span class="vh"> · {c.name}</span></a>
+      </article>
+    ))}
+  </div>
+  <p class="susurro">{t(lang, "precios.susurro")}</p>
+</section>

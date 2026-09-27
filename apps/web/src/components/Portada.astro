@@ -1,0 +1,249 @@
+---
+/**
+ * La portada, sección a sección, en el orden de `apps/landing/index.html`.
+ * Los textos salen de `src/i18n/{lang}.json`; las capturas pasan por
+ * `astro:assets` (AVIF y WebP con srcset).
+ */
+import { Picture } from "astro:assets";
+import editor from "../assets/editor.jpg";
+import grafo from "../assets/grafo.png";
+import proyectos from "../assets/proyectos.png";
+import visor from "../assets/visor.jpg";
+import Precios from "./Precios.astro";
+import Preguntas from "./Preguntas.astro";
+import { pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+
+type Paso = { titulo: string; texto: string };
+type Hotspot = { b: string; t: string };
+type Col = { titulo: string; texto: string };
+type PubCol = { titulo: string; tics: string[] };
+type Faq = { q: string; a: string };
+
+const pasos = tv<Paso[]>(lang, "home.pasos.lista");
+const hotspots = tv<Hotspot[]>(lang, "home.hotspots.lista");
+const gafasCols = tv<Col[]>(lang, "home.gafas.cols");
+const docencia = tv<Col[]>(lang, "home.docencia.lista");
+const publicar = tv<PubCol[]>(lang, "home.publicar.cols");
+const nube = tv<Col[]>(lang, "home.nube.lista");
+const faq = tv<Faq[]>(lang, "home.faq.lista");
+const editorTics = tv<string[]>(lang, "home.editor.tics");
+const tableroTics = tv<string[]>(lang, "home.tablero.tics");
+const visorTics = tv<string[]>(lang, "home.visor.tics");
+
+const pictureProps = { formats: ["avif", "webp"] as const, fallbackFormat: "jpg" as const, widths: [480, 800, 1120, 1440], sizes: "(max-width: 800px) 100vw, 640px", loading: "lazy" as const, decoding: "async" as const };
+
+const iconos = [
+  '<path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />',
+  '<path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9L9.5 8Z" />',
+  '<path d="M4 17V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10" /><path d="M2 17h20v2H2Z" />',
+  '<circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" />',
+  '<path d="M4 4h16v16H4Z" /><path d="M8 9h8M8 13h5" />',
+  '<path d="M3 20h18" /><path d="M6 16V9M10 16V5M14 16v-6M18 16v-3" />',
+];
+---
+
+<!-- El grito y el susurro: una sola cosa gigante, todo lo demás pequeño -->
+<section class="portada">
+  <h1 class="grito" aria-label="¡anda!">
+    <span aria-hidden="true">¡anda!</span>
+  </h1>
+  <p class="subtitulo" set:html={t(lang, "home.portada.subtitulo")} />
+  <p class="explica">{t(lang, "home.portada.explica")}</p>
+  <div class="acciones">
+    <a class="btn" href="https://app.andarama.com" data-cta="registro">{t(lang, "comunes.entrar")}</a>
+    <a class="btn btn--fantasma" href="https://docs.andarama.com">{t(lang, "comunes.documentacion")}</a>
+  </div>
+  <p class="susurro">{t(lang, "home.portada.susurro")}</p>
+
+  <!-- Las criaturas pasan andando: la transgresión sobre la retícula -->
+  <div class="paseo" aria-hidden="true">
+    <div class="suelo"></div>
+    <div class="criatura criatura--1"><svg viewBox="0 0 64 64"><use href="#anda-criatura" /></svg></div>
+    <div class="criatura criatura--2"><svg viewBox="0 0 64 64"><use href="#anda-criatura" /></svg></div>
+    <div class="criatura criatura--3"><svg viewBox="0 0 64 64"><use href="#anda-criatura" /></svg></div>
+  </div>
+</section>
+
+<!-- Un tour de verdad, para andar sin registrarse -->
+<section class="demo">
+  <h2>{t(lang, "home.demo.titulo")}</h2>
+  <p>{t(lang, "home.demo.texto")}</p>
+  <div class="demo__marco">
+    <iframe
+      src="/t/recorrido-real"
+      title={t(lang, "home.demo.iframe")}
+      loading="lazy"
+      allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer"
+      allowfullscreen
+    ></iframe>
+  </div>
+  <p class="susurro">{t(lang, "home.demo.susurro")}</p>
+</section>
+
+<!-- Cuatro pasos: lo que tarda en entenderse el producto -->
+<section class="pasos">
+  <h2>{t(lang, "home.pasos.titulo")}</h2>
+  <ol class="pasos__lista">
+    {pasos.map((p, i) => (
+      <li>
+        <span class="pasos__num">{i + 1}</span>
+        <h3>{p.titulo}</h3>
+        <p set:html={p.texto} />
+      </li>
+    ))}
+  </ol>
+</section>
+
+<!-- El editor: captura grande y el argumento de las llegadas por camino -->
+<section class="bloque" id="editor">
+  <div class="bloque__texto">
+    <p class="susurro">{t(lang, "home.editor.susurro")}</p>
+    <h2>{t(lang, "home.editor.titulo")}</h2>
+    <p set:html={t(lang, "home.editor.p1")} />
+    <p set:html={t(lang, "home.editor.p2")} />
+    <ul class="tics">
+      {editorTics.map((x) => <li set:html={x} />)}
+    </ul>
+  </div>
+  <figure class="bloque__figura">
+    <Picture src={editor} alt={t(lang, "home.editor.alt")} {...pictureProps} />
+  </figure>
+</section>
+
+<section class="bloque bloque--invertido">
+  <div class="bloque__texto">
+    <p class="susurro">{t(lang, "home.grafo.susurro")}</p>
+    <h2>{t(lang, "home.grafo.titulo")}</h2>
+    <p set:html={t(lang, "home.grafo.p1")} />
+    <p set:html={t(lang, "home.grafo.p2")} />
+  </div>
+  <figure class="bloque__figura">
+    <Picture src={grafo} alt={t(lang, "home.grafo.alt")} {...pictureProps} />
+  </figure>
+</section>
+
+<section class="bloque">
+  <div class="bloque__texto">
+    <p class="susurro">{t(lang, "home.tablero.susurro")}</p>
+    <h2>{t(lang, "home.tablero.titulo")}</h2>
+    <p set:html={t(lang, "home.tablero.p1")} />
+    <p set:html={t(lang, "home.tablero.p2")} />
+    <ul class="tics">
+      {tableroTics.map((x) => <li set:html={x} />)}
+    </ul>
+  </div>
+  <figure class="bloque__figura">
+    <Picture src={proyectos} alt={t(lang, "home.tablero.alt")} {...pictureProps} />
+  </figure>
+</section>
+
+<!-- Los diecisiete: la retícula estricta -->
+<section class="hotspots">
+  <h2>{t(lang, "home.hotspots.titulo")}</h2>
+  <p>{t(lang, "home.hotspots.texto")}</p>
+  <ul class="hotspots__malla">
+    {hotspots.map((h) => <li><b>{h.b}</b> {h.t}</li>)}
+  </ul>
+</section>
+
+<!-- El visor -->
+<section class="bloque bloque--invertido" id="visor">
+  <div class="bloque__texto">
+    <p class="susurro">{t(lang, "home.visor.susurro")}</p>
+    <h2>{t(lang, "home.visor.titulo")}</h2>
+    <p set:html={t(lang, "home.visor.p1")} />
+    <ul class="tics">
+      {visorTics.map((x) => <li set:html={x} />)}
+    </ul>
+  </div>
+  <figure class="bloque__figura">
+    <Picture src={visor} alt={t(lang, "home.visor.alt")} {...pictureProps} />
+  </figure>
+</section>
+
+<!-- Gafas: la caja amarilla, como el nombre -->
+<section class="gafas" id="gafas">
+  <div class="gafas__caja">
+    <p class="susurro">{t(lang, "home.gafas.susurro")}</p>
+    <h2>{t(lang, "home.gafas.titulo")}</h2>
+    <div class="gafas__cols">
+      {gafasCols.map((c) => (
+        <div>
+          <h3>{c.titulo}</h3>
+          <p>{c.texto}</p>
+        </div>
+      ))}
+    </div>
+    <p class="susurro">{t(lang, "home.gafas.susurro_final")}</p>
+  </div>
+</section>
+
+<!-- Docencia -->
+<section class="docencia" id="docencia">
+  <h2>{t(lang, "home.docencia.titulo")}</h2>
+  <p>{t(lang, "home.docencia.texto")}</p>
+  <div class="rasgos__malla">
+    {docencia.map((d, i) => (
+      <article>
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true" set:html={iconos[i] ?? iconos[0]} />
+        <h3>{d.titulo}</h3>
+        <p>{d.texto}</p>
+      </article>
+    ))}
+  </div>
+  <p class="susurro">
+    {t(lang, "paginas.museos.enlace_desde.texto")}
+    <a href={pagePath(lang, "museos")}>{t(lang, "paginas.museos.enlace_desde.boton")}</a>
+  </p>
+</section>
+
+<!-- Publicar -->
+<section class="publicar">
+  <h2>{t(lang, "home.publicar.titulo")}</h2>
+  <div class="publicar__cols">
+    {publicar.map((c) => (
+      <div>
+        <h3>{c.titulo}</h3>
+        <ul class="tics">
+          {c.tics.map((x) => <li set:html={x} />)}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<!-- Arquitectura y confianza -->
+<section class="nube">
+  <h2>{t(lang, "home.nube.titulo")}</h2>
+  <p set:html={t(lang, "home.nube.texto")} />
+  <div class="nube__cols">
+    {nube.map((n) => (
+      <article>
+        <h3>{n.titulo}</h3>
+        <p set:html={n.texto} />
+      </article>
+    ))}
+  </div>
+  <p class="susurro">{t(lang, "home.nube.susurro")}</p>
+</section>
+
+<!-- El porqué del nombre: la sorpresa es que es literal -->
+<section class="nombre">
+  <div class="nombre__caja">
+    <h2>{t(lang, "home.nombre.titulo")}</h2>
+    <p set:html={t(lang, "home.nombre.p1")} />
+    <p set:html={t(lang, "home.nombre.p2")} />
+    <p class="susurro">{t(lang, "home.nombre.susurro")}</p>
+  </div>
+</section>
+
+<!-- Lo que cuesta -->
+<Precios lang={lang} />
+
+<!-- Preguntas: las que llegan por correo -->
+<Preguntas titulo={t(lang, "home.faq.titulo")} lista={faq} />

@@ -1,0 +1,59 @@
+---
+/**
+ * Armazón de una herramienta gratuita: migas, H1 con la palabra clave,
+ * entradilla, la herramienta (slot), el texto largo, las preguntas con su
+ * JSON-LD y la caja final hacia el Studio.
+ */
+import Base from "../layouts/Base.astro";
+import Migas from "./Migas.astro";
+import Preguntas from "./Preguntas.astro";
+import CtaRegistro from "./CtaRegistro.astro";
+import { breadcrumbJsonLd, faqJsonLd, organizationJsonLd, webApplicationJsonLd } from "../data/jsonld";
+import { pagePath, t, tv, type Lang, type PageKey } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  key: Extract<PageKey, "visor" | "planeta" | "cubemap">;
+}
+const { lang, key } = Astro.props;
+const k = `herramientas.${key}`;
+const path = pagePath(lang, key);
+const h1 = t(lang, `${k}.h1`);
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "herramientas.indice.h1"), path: pagePath(lang, "herramientas") },
+  { name: h1, path },
+];
+const faq = tv<{ q: string; a: string }[]>(lang, `${k}.faq`);
+const textos = {
+  ...tv<Record<string, string>>(lang, "herramientas.comunes"),
+  ...Object.fromEntries(Object.entries(tv<Record<string, unknown>>(lang, k)).filter(([, v]) => typeof v === "string")),
+};
+---
+
+<Base
+  lang={lang}
+  title={t(lang, `${k}.title`)}
+  description={t(lang, `${k}.description`)}
+  path={path}
+  pageKey={key}
+  jsonld={[organizationJsonLd(), webApplicationJsonLd(lang, h1, t(lang, `${k}.description`), path), breadcrumbJsonLd(migas), faqJsonLd(faq)]}
+>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.herramientas")}</p>
+      <h1>{h1}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+    </div>
+    <div class="herramienta" data-herramienta={key} data-textos={JSON.stringify(textos)} data-caras={JSON.stringify(tv(lang, "herramientas.cubemap.caras"))}>
+      <slot />
+    </div>
+    <p class="susurro" style="margin-top: 14px">{t(lang, "herramientas.comunes.local")}</p>
+    <div class="prosa" set:html={t(lang, `${k}.cuerpo`)} />
+  </section>
+  <Preguntas titulo={t(lang, "herramientas.comunes.faq_titulo")} lista={faq} />
+  <section class="pagina">
+    <CtaRegistro lang={lang} />
+  </section>
+</Base>

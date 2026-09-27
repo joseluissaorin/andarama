@@ -1,0 +1,47 @@
+---
+/**
+ * La cabecera de la portada, con dos añadidos: enlaces a las herramientas y
+ * al blog, y el selector de idioma, que lleva a la misma página en el idioma
+ * elegido (las alternativas las calcula la página).
+ */
+import { LANGS, langName, pagePath, t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  alternates: { lang: Lang; path: string }[];
+}
+const { lang, alternates } = Astro.props;
+const home = pagePath(lang, "home");
+const byLang = new Map(alternates.map((a) => [a.lang, a.path]));
+---
+
+<header class="cabecera">
+  <a class="marca" href={home} aria-label={t(lang, "comunes.marca_aria")}>
+    <img src="/logo-andarama.svg" alt="" width="48" height="48" />
+    <span>andarama</span>
+  </a>
+  <nav class="cabecera__nav" aria-label="Principal">
+    <a href={`${home}#editor`}>{t(lang, "nav.editor")}</a>
+    <a href={`${home}#visor`}>{t(lang, "nav.visor")}</a>
+    <a href={`${home}#gafas`}>{t(lang, "nav.gafas")}</a>
+    <a href={`${home}#docencia`}>{t(lang, "nav.docencia")}</a>
+    <a href={`${home}#precios`}>{t(lang, "nav.precios")}</a>
+    <a href={pagePath(lang, "herramientas")}>{t(lang, "nav.herramientas")}</a>
+    <a href={pagePath(lang, "blog")}>{t(lang, "nav.blog")}</a>
+    <a href="https://docs.andarama.com">{t(lang, "nav.documentacion")}</a>
+    <a href="https://github.com/joseluissaorin/andarama">{t(lang, "nav.github")}</a>
+    <details class="idiomas">
+      <summary><span class="vh">{t(lang, "comunes.idioma")}: </span>{lang}</summary>
+      <ul class="idiomas__lista">
+        {LANGS.map((l) => (
+          <li>
+            <a href={byLang.get(l) ?? pagePath(l, "home")} hreflang={l} lang={l} aria-current={l === lang ? "true" : undefined}>
+              {langName(l)}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </details>
+    <a class="btn btn--chico" href="https://app.andarama.com" data-cta="registro">{t(lang, "comunes.entrar")}</a>
+  </nav>
+</header>

@@ -1,0 +1,103 @@
+{
+  "slug": "konzerthaus-wien",
+  "lang": "de",
+  "title": "Wiener Konzerthaus in 360: virtueller Rundgang durch die Säle",
+  "description": "Fünf Kugelpanoramen aus dem Wiener Konzerthaus, aufgenommen im Juli 2023. Das 1913 eröffnete Haus liegt im 3. Bezirk Landstraße, zwischen Schwarzenbergplatz und Stadtpark, und pflegt seit seiner Gründung traditionelle wie neue Musik. Der Rundgang führt durch die drei historischen Säle: den Großen Saal mit 1865 Plätzen, vom Parterre und von der Bühne aus gesehen; den Mozart-Saal mit 704 Plätzen, aus dem Zuschauerraum und vom Podium; und den Schubert-Saal mit 366 Plätzen. Alle Aufnahmen entstanden in leeren Sälen, so dass Decken, Wandschmuck und Bestuhlung frei zu sehen sind.",
+  "placeName": "Wiener Konzerthaus",
+  "placeCountry": "AT",
+  "lat": 48.200875,
+  "lng": 16.377377,
+  "startScene": "grosser-saal-parterre",
+  "scenes": [
+    {
+      "id": "grosser-saal-parterre",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Konzerthaus_Wien_gro%C3%9Fer_Saal_Parterre_Kugelpanorama_360%C2%B0_%282023%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Konzerthaus_Wien_gro%C3%9Fer_Saal_Parterre_Kugelpanorama_360%C2%B0_(2023).jpg",
+      "title": "Großer Saal, vom Parterre",
+      "alt": "Kugelpanorama im Parterre des Großen Saals: Reihen roter Klappsessel auf Parkettboden, die weiß-goldene Kassettendecke, Säulen und blau verhängte Fenster an den Seitenwänden, Balkone und Galerie und die Bühne mit der Orgelfront im Hintergrund",
+      "desc": "Der Große Saal fasst 1865 Besucher, davon 1116 im Parterre, 361 auf Balkon und Logen und 388 auf der Galerie. In den 1960er Jahren wurde er von Heinrich Keilholz akustisch optimiert.",
+      "author": "DrTrumpet",
+      "license": "CC BY-SA 4.0",
+      "width": 7680,
+      "height": 3840,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "grosser-saal-buehne",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/0/07/Konzerthaus_Wien_gro%C3%9Fer_Saal_B%C3%BChne_Kugelpanorama_360%C2%B0_%282023%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Konzerthaus_Wien_gro%C3%9Fer_Saal_B%C3%BChne_Kugelpanorama_360%C2%B0_(2023).jpg",
+      "title": "Großer Saal, von der Bühne",
+      "alt": "Kugelpanorama auf der Bühne des Großen Saals: das abgenutzte Holzpodium mit Markierungen, zwei Flügel und ein Schlagzeug, dahinter die Orgelgalerie mit Säulen und vergoldeten Gittern, und gegenüber die leeren roten Sitzreihen unter der Stuckdecke",
+      "desc": "Blick vom 170 m² großen Podium in den leeren Saal, mit Flügeln und Schlagzeug für die nächste Probe.",
+      "author": "DrTrumpet",
+      "license": "CC BY-SA 4.0",
+      "width": 7680,
+      "height": 3840,
+      "view": {
+        "yaw": 3.1416,
+        "pitch": 0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "mozart-saal-parterre",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Konzerthaus_Wien_Mozartsaal_Parterre_Kugelpanorama_360%C2%B0_%282023%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Konzerthaus_Wien_Mozartsaal_Parterre_Kugelpanorama_360%C2%B0_(2023).jpg",
+      "title": "Mozart-Saal, vom Parterre",
+      "alt": "Kugelpanorama im Mozart-Saal: Reihen heller Holzsessel mit blauen Polstern auf Parkett, blau bespannte Wände, ein umlaufender Balkon mit weißem Geländer, eine weiße Decke mit Leuchten und das Podium mit Stühlen rechts",
+      "desc": "Der Mozart-Saal hat 704 Plätze und ist der mittlere der drei historischen Säle des Konzerthauses.",
+      "author": "DrTrumpet",
+      "license": "CC BY-SA 4.0",
+      "width": 7680,
+      "height": 3840,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "mozart-saal-buehne",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/4/41/Konzerthaus_Wien_Mozartsaal_B%C3%BChne_Kugelpanorama_360%C2%B0_%282023%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Konzerthaus_Wien_Mozartsaal_B%C3%BChne_Kugelpanorama_360%C2%B0_(2023).jpg",
+      "title": "Mozart-Saal, vom Podium",
+      "alt": "Kugelpanorama auf dem Podium des Mozart-Saals: Orchesterstühle und Notenpulte auf hellem Holzboden, große Bleiglasfenster mit gelbem Rautenmuster, blaue Wände, Balkone und die Sitzreihen des Saals gegenüber",
+      "desc": "Blick vom Podium des Mozart-Saals auf die Fenster und in den leeren Zuschauerraum.",
+      "author": "DrTrumpet",
+      "license": "CC BY-SA 4.0",
+      "width": 7680,
+      "height": 3840,
+      "view": {
+        "yaw": 3.1416,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "schubert-saal",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Konzerthaus_Wien_Schubertsaal_Kugelpanorama_360%C2%B0_%282023%29.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Konzerthaus_Wien_Schubertsaal_Kugelpanorama_360%C2%B0_(2023).jpg",
+      "title": "Schubert-Saal",
+      "alt": "Kugelpanorama im Schubert-Saal: gelbe Wände mit Wandleuchtern, eine weiße Kassettendecke mit Rosetten, Fischgrätparkett, Reihen von Stühlen mit rotbraunen Sitzen und eine Bühnennische mit gelben Türen",
+      "desc": "Der Schubert-Saal mit 366 Plätzen ist der kleinste der drei historischen Säle.",
+      "author": "DrTrumpet",
+      "license": "CC BY-SA 4.0",
+      "width": 7680,
+      "height": 3840,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_fuentes": [
+    "https://de.wikipedia.org/wiki/Wiener_Konzerthaus",
+    "https://en.wikipedia.org/wiki/Konzerthaus,_Vienna"
+  ],
+  "_notas": "Demanda por sondear. FALSO POSITIVO descartado: el fichero «Konzerthaus Panorama (Greg Zaal via Poly Haven)» (CC0, 16 384 px) es el Konzerthaus de BERLÍN (Gendarmenmarkt, se ven las dos catedrales), no el de Viena. No hay exterior libre del Konzerthaus vienés en el inventario. Sin GPS en Commons: coordenadas de Wikipedia."
+}

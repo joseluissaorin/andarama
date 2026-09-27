@@ -1,0 +1,37 @@
+nombre: 3DVista
+web: https://www.3dvista.com
+pais: "ES"
+tipo: desktop
+gratis: false
+gratis_detalle: "Solo versión de prueba; no hay plan gratuito"
+planes:
+  - nombre: Virtual Tour Pro
+    precio: 499
+    moneda: USD
+    periodo: once
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+  - nombre: Alojamiento (opcional)
+    precio: 99
+    moneda: EUR
+    periodo: year
+    precio_mes_anual: null
+    precio_anual: 99
+    verificado: true
+cuotas: "Sin límite de proyectos con la licencia de escritorio; el alojamiento opcional tiene límites de espacio"
+rv: true
+scorm: true
+lti: false
+exportacion: true
+exportacion_detalle: "Exporta el tour completo en HTML5 para alojarlo en cualquier servidor"
+codigo_abierto: false
+marca_blanca: true
+dominio_propio: true
+analitica_sin_cookies: null
+street_view: true
+verificado: true
+descripcion:
+  es: "Software de escritorio profesional de pago único (Granada, España), muy completo pero con curva de aprendizaje."
+  en: "Professional desktop software with a one-time fee (Granada, Spain), very complete but with a learning curve."
+notas: "Empresa española. Licencia perpetua para Windows y Mac; ofrece descuentos educativos bajo solicitud. La exportación SCORM está pensada para formación y LMS."

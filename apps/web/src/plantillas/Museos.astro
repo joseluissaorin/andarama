@@ -1,0 +1,140 @@
+---
+/**
+ * Página para museos, archivos, bibliotecas, patrimonio y cabildos: hermana
+ * de la de universidades, con secciones H2 pensadas para las palabras clave
+ * del estudio («visita virtual museo», «museum virtual tour», «museu
+ * virtual», «visite virtuelle musée», «tour virtuale musei»), una FAQ con
+ * `FAQPage`, enlaces a las páginas y artículos afines y el mismo formulario
+ * de contacto por `mailto:` que universidades, con asunto propio.
+ */
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import Preguntas from "../components/Preguntas.astro";
+import { breadcrumbJsonLd, faqJsonLd, organizationJsonLd } from "../data/jsonld";
+import { blogPostPath, DEFAULT_LANG, langName, pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "paginas.museos";
+const path = pagePath(lang, "museos");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "nav.museos"), path },
+];
+
+/**
+ * Artículo del blog en el idioma de la página; si aún no está traducido, el
+ * original en español (y se avisa junto al enlace).
+ */
+const posts = await getCollection("blog", (entry) => import.meta.env.DEV || !entry.data.borrador);
+function articulo(slugEs: string): { path: string; lang: Lang } {
+  const version = posts.find((p) => p.data.lang === lang && (p.data.slug === slugEs || p.data.translationOf === slugEs));
+  if (version != null) return { path: blogPostPath(lang, version.data.slug), lang };
+  return { path: blogPostPath(DEFAULT_LANG, slugEs), lang: DEFAULT_LANG };
+}
+const articuloMuseo = articulo("visita-virtual-museo");
+const articuloArchivo = articulo("recorrido-360-archivo-biblioteca");
+
+/** Los textos del JSON llevan marcadores «{explorar}», «{formacion}»… que se vuelven rutas. */
+const rutas: Record<string, string> = {
+  universidades: pagePath(lang, "universidades"),
+  formacion: pagePath(lang, "formacion"),
+  aula: pagePath(lang, "aula"),
+  explorar: "/explorar/",
+  articulo_museo: articuloMuseo.path,
+  articulo_archivo: articuloArchivo.path,
+};
+const conRutas = (s: string): string => s.replace(/\{(\w+)\}/g, (m, clave: string) => rutas[clave] ?? m);
+
+const usos = tv<string[]>(lang, `${k}.usos.lista`);
+const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`).map((b) => ({ ...b, texto: conRutas(b.texto) }));
+const faq = tv<{ q: string; a: string }[]>(lang, `${k}.faq.lista`).map((f) => ({ ...f, a: conRutas(f.a) }));
+const c = `${k}.contacto`;
+
+const enlaces: { href: string; texto: string; lang?: Lang }[] = [
+  { href: rutas.universidades!, texto: t(lang, `${k}.enlaces.universidades`) },
+  { href: rutas.formacion!, texto: t(lang, `${k}.enlaces.formacion`) },
+  { href: rutas.explorar!, texto: t(lang, `${k}.enlaces.explorar`) },
+  { href: articuloMuseo.path, texto: t(lang, `${k}.enlaces.articulo_museo`), lang: articuloMuseo.lang },
+  { href: articuloArchivo.path, texto: t(lang, `${k}.enlaces.articulo_archivo`), lang: articuloArchivo.lang },
+];
+---
+
+<Base
+  lang={lang}
+  title={t(lang, `${k}.title`)}
+  description={t(lang, `${k}.description`)}
+  path={path}
+  pageKey="museos"
+  jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas), faqJsonLd(faq)]}
+>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.museos")}</p>
+      <h1>{t(lang, `${k}.h1`)}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+      <div class="acciones" style="margin-top: 24px">
+        <a class="btn" href="#contacto">{t(lang, `${k}.cta.contacto`)}</a>
+        <a class="btn btn--fantasma" href={rutas.explorar}>{t(lang, `${k}.cta.explorar`)}</a>
+      </div>
+    </div>
+    <section class="caja">
+      <h2>{t(lang, `${k}.usos.titulo`)}</h2>
+      <p>{t(lang, `${k}.usos.texto`)}</p>
+      <ul class="tics">
+        {usos.map((x) => <li set:html={x} />)}
+      </ul>
+    </section>
+    <div class="malla">
+      {bloques.map((b) => (
+        <article>
+          <h2>{b.titulo}</h2>
+          <p set:html={b.texto} />
+        </article>
+      ))}
+    </div>
+    <Preguntas titulo={t(lang, `${k}.faq.titulo`)} lista={faq} id="preguntas" />
+    <section class="caja">
+      <h2>{t(lang, `${k}.enlaces.titulo`)}</h2>
+      <p>{t(lang, `${k}.enlaces.texto`)}</p>
+      <ul class="tics">
+        {enlaces.map((e) => (
+          <li>
+            <a href={e.href} hreflang={e.lang != null && e.lang !== lang ? e.lang : undefined}>{e.texto}</a>
+            {e.lang != null && e.lang !== lang && <span class="susurro"> ({langName(e.lang)})</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+    <section class="caja caja--naranja" id="contacto">
+      <h2>{t(lang, `${c}.titulo`)}</h2>
+      <p>{t(lang, `${c}.texto`)}</p>
+      <form class="formulario" data-contacto data-asunto={t(lang, `${c}.asunto`)}>
+        <label>{t(lang, `${c}.institucion`)}<input type="text" name="institucion" required autocomplete="organization" /></label>
+        <label>{t(lang, `${c}.nombre`)}<input type="text" name="nombre" required autocomplete="name" /></label>
+        <label>{t(lang, `${c}.email`)}<input type="email" name="email" required autocomplete="email" /></label>
+        <label>{t(lang, `${c}.mensaje`)}<textarea name="mensaje" required></textarea></label>
+        <button class="btn" type="submit">{t(lang, `${c}.enviar`)}</button>
+      </form>
+    </section>
+  </section>
+  <script>
+    // Igual que en universidades: el formulario abre el programa de correo
+    // con el asunto (con el nombre del museo) y el cuerpo preparados.
+    const form = document.querySelector<HTMLFormElement>("form[data-contacto]");
+    form?.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const data = new FormData(form);
+      const institucion = String(data.get("institucion") ?? "");
+      const asunto = (form.dataset.asunto ?? "Andarama: {institucion}").replace("{institucion}", institucion);
+      const cuerpo = `${data.get("nombre")} <${data.get("email")}>\n${institucion}\n\n${data.get("mensaje")}`;
+      const w = window as unknown as { plausible?: (n: string, o?: object) => void };
+      w.plausible?.("contacto_museos");
+      location.href = `mailto:jl@joseluissaorin.com?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    });
+  </script>
+</Base>

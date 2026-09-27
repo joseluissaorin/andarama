@@ -1,0 +1,28 @@
+{
+  "name": "@andarama/web",
+  "version": "0.1.0",
+  "description": "Sitio público de andarama.com: portada, páginas, blog y herramientas gratuitas (Astro, i18n)",
+  "license": "EUPL-1.2",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "echo skip",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@andarama/schema": "workspace:*",
+    "@andarama/tiler": "workspace:*",
+    "@andarama/viewer": "workspace:*",
+    "@andarama/viewer-ui": "workspace:*",
+    "@astrojs/rss": "^4.0.11",
+    "astro": "^5.4.1",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}

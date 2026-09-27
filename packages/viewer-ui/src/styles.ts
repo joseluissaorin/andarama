@@ -33,6 +33,11 @@ export const VIEWER_CSS = `
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
+/* Alfabetos que Inter no cubre: la fuente del sistema, que sí los trae, sin
+   mezclar dos voces. El tema del tour (estilo en línea) sigue mandando. */
+.anda-viewer:lang(ar), .anda-viewer:lang(he), .anda-viewer:lang(th), .anda-viewer:lang(ja), .anda-viewer:lang(ko), .anda-viewer:lang(zh) {
+  --u3-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
 .anda-viewer[data-theme="light"] {
   --u3-glass: rgba(252, 253, 255, 0.78);
   --u3-glass-strong: rgba(252, 253, 255, 0.92);
@@ -411,6 +416,19 @@ export const VIEWER_CSS = `
   opacity: .92; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); transition: opacity .15s ease; }
 .anda-watermark:hover { opacity: 1; }
 .anda-watermark img { height: 42px; }
+
+/* ============ Insignia «Hecho con Andarama» ============ */
+/* Sobre los controles de la esquina inferior derecha, sin tapar el panorama.
+   Sigue el tema: cristal y texto del tema activo. */
+.anda-badge { position: absolute; right: 16px; bottom: max(66px, calc(env(safe-area-inset-bottom) + 58px)); z-index: 16;
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
+  background: var(--u3-glass); color: var(--u3-glass-fg); border: 1px solid var(--u3-border);
+  font: 600 11.5px/1 var(--u3-font, system-ui, sans-serif); letter-spacing: 0.01em; text-decoration: none;
+  opacity: .78; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: opacity .15s ease; }
+.anda-badge:hover, .anda-badge:focus-visible { opacity: 1; }
+.anda-badge:focus-visible { outline: 2px solid var(--u3-primary); outline-offset: 2px; }
+.anda-badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--u3-primary, #ff8a00); }
+.anda-con-kiosko .anda-badge { bottom: max(150px, calc(env(safe-area-inset-bottom) + 142px)); }
 
 /* ============ Toast ============ */
 .anda-toast { position: absolute; left: 50%; bottom: 92px; transform: translateX(-50%); background: var(--u3-glass-strong);

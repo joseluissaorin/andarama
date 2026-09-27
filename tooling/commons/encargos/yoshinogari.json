@@ -1,0 +1,96 @@
+{
+  "slug": "yoshinogari",
+  "lang": "ja",
+  "title": "吉野ヶ里遺跡 360度バーチャルツアー：弥生時代の環壕集落を歩く",
+  "description": "佐賀県神埼郡吉野ヶ里町と神埼市にまたがる吉野ヶ里丘陵に残る、弥生時代の大規模な環壕集落跡・吉野ヶ里遺跡を、6枚の360度パノラマ（CC0）でめぐるバーチャルツアーです。1986年（昭和61年）からの発掘調査で発見され、1991年（平成3年）に国の特別史跡に指定、現在は国営吉野ヶ里歴史公園として整備されています。弥生時代後期には外壕と内壕の二重の環壕が集落を囲み、総延長約2.5キロメートルの外壕の内側は約40ヘクタールに及びました。公園には環壕、竪穴建物、高床倉庫、物見櫓、柵などが復元されています。ツアーは公園の入口から環壕へ下り、北内郭の板壁と門、南内郭の物見櫓を経て、主祭殿の2階、そして竪穴建物の内部へと進みます。撮影：AsPJT、2024年1月。",
+  "placeName": "吉野ヶ里遺跡",
+  "placeCountry": "JP",
+  "lat": 33.323611,
+  "lng": 130.390694,
+  "startScene": "iriguchi",
+  "scenes": [
+    {
+      "id": "iriguchi",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/b/be/Yoshinogari_site%2C_Entrance_360-degree.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Yoshinogari_site,_Entrance_360-degree.jpg",
+      "title": "遺跡の入口",
+      "alt": "吉野ヶ里遺跡の入口の360度パノラマ。赤い舗装の園路の先に丸太の門が立ち、その奥に環壕と木の柵、復元された建物の屋根が見える。冬枯れの木々と曇り空",
+      "desc": "吉野ヶ里歴史公園の遺跡エリアへの入口。丸太の門の向こうに環壕と柵が続く。",
+      "author": "AsPJT",
+      "license": "CC0",
+      "width": 5952,
+      "height": 2976,
+      "view": { "yaw": 0, "pitch": 0.05, "fov": 1.2 }
+    },
+    {
+      "id": "kango",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Yoshinogari_site%2C_Circular_Moats_360-degree.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Yoshinogari_site,_Circular_Moats_360-degree.jpg",
+      "title": "環壕の底",
+      "alt": "復元された環壕の底から見た360度パノラマ。V字形に深く掘られた土の壁が両側にそびえ、上の土塁には木の柵が並ぶ。青空と木々",
+      "desc": "V字形に掘られた環壕。弥生時代後期には外壕と内壕の二重の環壕が集落を守り、壕の内外には木柵や土塁、逆茂木が設けられていた。",
+      "author": "AsPJT",
+      "license": "CC0",
+      "width": 5952,
+      "height": 2976,
+      "view": { "yaw": 0, "pitch": 0.1, "fov": 1.2 }
+    },
+    {
+      "id": "kitanaikaku-itakabe",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/4/47/Yoshinogari_site%2C_Wooden_Walls_360-degree.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Yoshinogari_site,_Wooden_Walls_360-degree.jpg",
+      "title": "北内郭の板壁と門",
+      "alt": "北内郭の板壁の前の360度パノラマ。灰色の板を並べた壁と木の門、赤土の園路、右手に環壕、奥に高くそびえる主祭殿と物見櫓の屋根",
+      "desc": "板壁と門に囲まれた北内郭。奥に見えるのは祭祀が行われたと考えられる主祭殿。",
+      "author": "AsPJT",
+      "license": "CC0",
+      "width": 5952,
+      "height": 2976,
+      "view": { "yaw": 0, "pitch": 0.05, "fov": 1.2 }
+    },
+    {
+      "id": "monomiyagura",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Yoshinogari_site%2C_MONOMIYAGURA_%28Watchtower%29_1_360-degree.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Yoshinogari_site,_MONOMIYAGURA_(Watchtower)_1_360-degree.jpg",
+      "title": "南内郭の物見櫓の上",
+      "alt": "復元された物見櫓の上からの360度パノラマ。縄で縛った梁と茅葺きの屋根の下、木の手すり越しに、柵と環壕に囲まれた集落、竪穴建物、遠くの物見櫓と平野が見渡せる",
+      "desc": "見張りや威嚇のために環壕内に複数置かれていた物見櫓。柱の跡をもとに復元されている。",
+      "author": "AsPJT",
+      "license": "CC0",
+      "width": 5952,
+      "height": 2976,
+      "view": { "yaw": 0, "pitch": -0.1, "fov": 1.2 }
+    },
+    {
+      "id": "shusaiden-2f",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/31/Yoshinogari_site%2C_The_2nd_floor_of_the_Main_Shrine_360-degree.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Yoshinogari_site,_The_2nd_floor_of_the_Main_Shrine_360-degree.jpg",
+      "title": "主祭殿の2階",
+      "alt": "主祭殿2階の内部の360度パノラマ。太い木の柱に囲まれた板敷きの広間で、白い衣の人形が輪になって座り、中央に首長役の人形が座る集会の再現展示",
+      "desc": "北内郭の主祭殿。2階には集落の指導者たちが集まる会議の様子が人形で再現されている。",
+      "author": "AsPJT",
+      "license": "CC0",
+      "width": 5952,
+      "height": 2976,
+      "view": { "yaw": 0, "pitch": 0, "fov": 1.2 }
+    },
+    {
+      "id": "tateana-tatemono",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/6/60/Yoshinogari_site%2C_Pit-house-01_360-degree.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Yoshinogari_site,_Pit-house-01_360-degree.jpg",
+      "title": "竪穴建物の内部",
+      "alt": "復元された竪穴建物の内部の360度パノラマ。茅葺きの屋根を内側から見上げ、木の柱と梁、土の床、炉と生活道具、弥生人の姿をした人形が置かれている",
+      "desc": "南内郭に復元された竪穴建物。祭祀に携わる人々やその側近が暮らしたと考えられている。",
+      "author": "AsPJT",
+      "license": "CC0",
+      "width": 5952,
+      "height": 2976,
+      "view": { "yaw": 0, "pitch": 0, "fov": 1.2 }
+    }
+  ],
+  "_fuentes": [
+    "https://ja.wikipedia.org/wiki/%E5%90%89%E9%87%8E%E3%83%B6%E9%87%8C%E9%81%BA%E8%B7%A1",
+    "https://en.wikipedia.org/wiki/Yoshinogari_site"
+  ],
+  "_notas": "Demanda por sondear. 128 panorámicas CC0 del mismo autor y día; se eligen seis que forman un recorrido (entrada → foso → recinto norte → torre del recinto sur → santuario → vivienda). Descartadas «Mysterious excavation area» (excavación tapada con lonas) y «Altar» (explanada sin referencias). Las figuras humanas son maniquíes. Coordenadas: las del artículo de Wikipedia (ja)."
+}

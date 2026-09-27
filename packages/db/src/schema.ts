@@ -1,4 +1,4 @@
-import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /**
  * Esquema de base de datos de Andarama. Dialecto SQLite, compartido entre
@@ -33,6 +33,11 @@ export const users = sqliteTable(
     /** Plan concedido al margen de Clerk (vitalicio, cortesía): manda sobre `plan`. */
     planOverride: text("plan_override"),
     planUpdatedAt: integer("plan_updated_at"),
+    /** Fin de la prueba gratuita (instancia alojada); null si nunca la tuvo. */
+    trialEndsAt: integer("trial_ends_at"),
+    /** JSON con gclid, msclkid y utm_* del primer toque; nunca datos personales. */
+    attributionJson: text("attribution_json"),
+    attributedAt: integer("attributed_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
@@ -365,10 +370,29 @@ export const publications = sqliteTable(
     /** El enlace abre el recorrido en modo quiosco: bucle y liberación. */
     kiosk: integer("kiosk", { mode: "boolean" }).notNull().default(false),
     ltiJson: text("lti_json"),
+    /**
+     * Galería pública (/explorar/): la publicación pide una ficha propia con
+     * textos pensados para posicionar por el nombre del lugar. Solo se lista
+     * si además la visibilidad es pública.
+     */
+    inGallery: integer("in_gallery", { mode: "boolean" }).notNull().default(false),
+    galleryTitle: text("gallery_title"),
+    /** Texto corto (300 a 600 caracteres) en el idioma `galleryLang`. */
+    galleryDescription: text("gallery_description"),
+    /** Atribuciones de las fotografías (licencias, autores), texto plano. */
+    galleryCredits: text("gallery_credits"),
+    placeName: text("place_name"),
+    /** País del lugar, ISO 3166-1 alfa-2 en mayúsculas. */
+    placeCountry: text("place_country"),
+    placeLat: real("place_lat"),
+    placeLng: real("place_lng"),
+    galleryLang: text("gallery_lang"),
+    /** Clave en el almacenamiento de la portada capturada al publicar, si la hay. */
+    posterKey: text("poster_key"),
     publishedAt: integer("published_at").notNull(),
     publishedBy: text("published_by").notNull(),
   },
-  (t) => [uniqueIndex("publications_slug_idx").on(t.slug)],
+  (t) => [uniqueIndex("publications_slug_idx").on(t.slug), index("publications_gallery_idx").on(t.inGallery, t.publishedAt)],
 );
 
 // ---------------------------------------------------------------------------

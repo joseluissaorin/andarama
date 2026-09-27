@@ -1,0 +1,73 @@
+---
+import HerramientaBase from "../components/HerramientaBase.astro";
+import { t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "herramientas.cubemap";
+const caras = tv<Record<string, string>>(lang, `${k}.caras`);
+const orden = ["f", "b", "l", "r", "u", "d"];
+---
+
+<HerramientaBase lang={lang} key="cubemap">
+  <div class="herramienta__barra" role="radiogroup">
+    <label><input type="radio" name="modo" value="cubo" checked /> {t(lang, `${k}.modo_a_cubo`)}</label>
+    <label><input type="radio" name="modo" value="equi" /> {t(lang, `${k}.modo_a_equi`)}</label>
+  </div>
+  <div class="progreso"><span></span></div>
+  <p class="herramienta__aviso" role="status" aria-live="polite"></p>
+
+  <div data-panel="cubo">
+    <div class="zona">
+      <label class="btn" for="cubemap-fichero">{t(lang, "herramientas.comunes.abrir")}</label>
+      <input id="cubemap-fichero" type="file" accept="image/jpeg,image/png,image/webp" />
+      <p>{t(lang, "herramientas.comunes.arrastrar")}</p>
+    </div>
+    <div class="caras"></div>
+    <div class="herramienta__barra oculto">
+      <label>{t(lang, `${k}.tamano_cara`)}
+        <select data-tamano>
+          <option value="256">256 px</option>
+          <option value="512">512 px</option>
+          <option value="1024" selected>1024 px</option>
+          <option value="2048">2048 px</option>
+          <option value="4096">4096 px</option>
+        </select>
+      </label>
+      <label>{t(lang, `${k}.orden`)}
+        <select data-orden>
+          <option value="marzipano">f b l r u d (Marzipano, krpano)</option>
+          <option value="three">px nx py ny pz nz (Unity, Three.js)</option>
+        </select>
+      </label>
+      <button type="button" class="btn empuje" data-zip disabled>{t(lang, `${k}.descargar_zip`)}</button>
+      <button type="button" class="btn btn--fantasma" data-otra>{t(lang, "herramientas.comunes.otra")}</button>
+    </div>
+  </div>
+
+  <div data-panel="equi" class="oculto">
+    <p class="susurro" style="margin: 16px 16px 0">{t(lang, `${k}.elige_caras`)}</p>
+    <div class="caras es-visible">
+      {orden.map((f) => (
+        <figure>
+          <label>
+            <span class="zona"><span class="btn btn--chico">{f} · {caras[f]}</span></span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" data-cara={f} />
+          </label>
+        </figure>
+      ))}
+    </div>
+    <div class="lienzo"></div>
+    <div class="herramienta__barra">
+      <button type="button" class="btn empuje" data-equi disabled>{t(lang, `${k}.descargar_equi`)}</button>
+    </div>
+  </div>
+</HerramientaBase>
+
+<script>
+  import { montarCubemap } from "../tools/cubemap";
+  const root = document.querySelector<HTMLElement>("[data-herramienta=cubemap]");
+  if (root != null) montarCubemap(root);
+</script>

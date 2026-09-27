@@ -17,10 +17,15 @@ del tour. Es el mismo `tour.json` que ya está publicado.
 | Gesto del usuario | La sesión inmersiva la tiene que iniciar una pulsación: el botón **Modo VR** del visor |
 | Permisos en iframe | Si el tour va embebido, el iframe necesita `allow="xr-spatial-tracking"` |
 
-Si el navegador no expone WebXR (móviles Android e iOS corrientes), el mismo
-botón entra en **modo cardboard**: pantalla partida en dos, seguimiento por
-giroscopio y selección por mirada. Sirve para visores de cartón y para gafas de
-móvil sin WebXR.
+Si el navegador no expone WebXR (el iPhone, por ejemplo), el mismo botón entra
+en **modo cardboard**: pantalla partida en dos, seguimiento por giroscopio y
+selección por mirada. Sirve para visores de cartón y para gafas de móvil sin
+WebXR.
+
+Chrome en Android sí expone WebXR (con su propio modo Cardboard), así que ahí el
+botón abre una sesión WebXR. Como esa sesión no tiene mandos ni manos, Andarama
+se comporta igual que en el modo cartón: punto en el centro, anillo de
+permanencia y el botón del visor como atajo.
 
 ## Las manos
 
@@ -31,7 +36,7 @@ dedos con metacarpo, falanges y yema). No hay que configurar nada: si el visor
 publica las manos, se ven; si no, se ven los mandos.
 
 - **Apuntar**: de cada mano sale un rayo fino. Al cruzarse con un hotspot el rayo
-  se acorta hasta él, se tiñe de violeta ULL y el hotspot crece un poco.
+  se acorta hasta él, se tiñe del violeta de Andarama y el hotspot crece un poco.
 - **Pinza**: juntar el pulgar y el índice acciona lo que esté apuntado. El umbral
   tiene histéresis (cierra por debajo de 22 mm y no vuelve a abrirse hasta los
   32 mm), así que no hay parpadeos ni activaciones dobles.
@@ -122,8 +127,8 @@ cualquiera de las tres formas de apuntar:
 - **Manos**: apuntar con el rayo y hacer la pinza, o tocar el aspa con la yema
   del índice.
 - **Mandos**: apuntar y apretar el gatillo.
-- **Sin mando ni manos** (cardboard o giroscopio): mirar el aspa y sostener la
-  vista hasta que el anillo se complete.
+- **Sin mando ni manos** (cardboard, giroscopio o Chrome en Android): mirar el
+  aspa y sostener la vista hasta que el anillo se complete.
 
 El panel se ancla siempre delante de donde mira la cabeza al abrirlo, de modo
 que el aspa queda a unos veinte grados a la derecha: un giro corto, no un
@@ -138,7 +143,7 @@ En **Ajustes del tour › Gafas y modo cartón**:
   Audiovisual, Didácticos) o tipo a tipo. La navegación nunca se puede apagar:
   sin ella el tour sería una fotografía fija.
 - **Permanencia de la mirada**: los segundos que hay que sostener la vista sobre
-  un marcador para que se accione solo. Por defecto 2,5 s.
+  un marcador para que se accione solo. Por defecto 1,5 s.
 
 Un recorrido de puertas abiertas puede querer que en gafas solo se camine y que
 el contenido se lea después en pantalla; una práctica de laboratorio querrá justo

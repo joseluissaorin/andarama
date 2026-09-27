@@ -1,0 +1,84 @@
+{
+  "slug": "niagara-falls",
+  "lang": "en",
+  "title": "Niagara Falls virtual tour in 360: American and Horseshoe Falls",
+  "description": "Three free 360-degree photos of Niagara Falls, taken in September 2025 on both sides of the border. Niagara Falls is a group of three waterfalls at the southern end of Niagara Gorge, between Ontario, Canada, and New York State: Horseshoe Falls, the largest and the most powerful waterfall in North America, straddles the border; the smaller American Falls and Bridal Veil Falls lie in the United States. The Niagara River drains Lake Erie into Lake Ontario. The tour starts at the Prospect Point Observation Tower, continues to Luna Island and ends at Table Rock, above Horseshoe Falls.",
+  "placeName": "Niagara Falls",
+  "placeCountry": "CA",
+  "lat": 43.0799,
+  "lng": -79.0747,
+  "startScene": "prospect-point-observation-tower",
+  "scenes": [
+    {
+      "id": "prospect-point-observation-tower",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/1/12/360_photo_American_Falls_from_Observation_Tower_Niagara_Falls_NY_2025-09-06_15-06-06_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_photo_American_Falls_from_Observation_Tower_Niagara_Falls_NY_2025-09-06_15-06-06_1.jpg",
+      "title": "American Falls from the Prospect Point Observation Tower",
+      "alt": "360-degree photo from the Prospect Point Observation Tower: the American Falls plunging into the gorge in a cloud of mist, the green Niagara River below, the Canadian shore with the Skylon Tower and the Rainbow Bridge, and visitors along the railings",
+      "desc": "The American Falls and the Niagara River seen from the Prospect Point Observation Tower in Niagara Falls State Park, New York, with Horseshoe Falls in the far distance.",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": 0,
+        "pitch": -0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "luna-island",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/b/b6/360_photo_American_Falls_from_Luna_Island_Niagara_Falls_NY_2025-09-05_17-54-08_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_photo_American_Falls_from_Luna_Island_Niagara_Falls_NY_2025-09-05_17-54-08_1.jpg",
+      "title": "Luna Island, on the crest of the American Falls",
+      "alt": "360-degree photo from Luna Island: white water rushing over the crest of the American Falls on one side and Bridal Veil Falls on the other, a paved viewpoint with trees and visitors, and the hotels and Skylon Tower of Niagara Falls, Ontario, across the river",
+      "desc": "Luna Island is a very small island in the Niagara River, in New York State, that separates the American Falls from Bridal Veil Falls. Canada and the Skylon Tower are across the river.",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "table-rock-horseshoe-falls",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/e/e9/360_photo_between_Horseshoe_and_American_Falls_Niagara_Falls_Canada_2025-09-06_19-12-46_1.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:360_photo_between_Horseshoe_and_American_Falls_Niagara_Falls_Canada_2025-09-06_19-12-46_1.jpg",
+      "title": "Horseshoe Falls from Table Rock, Canada",
+      "alt": "360-degree photo from Table Rock at dusk: the Horseshoe Falls curving around a great cloud of mist, the turquoise Niagara River, the Table Rock Centre with its flower beds, the promenade with visitors and the hotel towers of Niagara Falls, Ontario",
+      "desc": "The top of Horseshoe Falls from Table Rock, Niagara Falls, Ontario. About 90% of the Niagara River flows over Horseshoe Falls, which lies between Terrapin Point on Goat Island and Table Rock.",
+      "author": "G. Edward Johnson",
+      "license": "CC BY 4.0",
+      "width": 5760,
+      "height": 2880,
+      "view": {
+        "yaw": -0.5,
+        "pitch": 0,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_demanda": {
+    "total": 60,
+    "mercados": {
+      "en-US": 40,
+      "de-DE": 10,
+      "en-GB": 10
+    },
+    "idiomas": {
+      "en": 50,
+      "de": 10
+    }
+  },
+  "_fuentes": [
+    "https://en.wikipedia.org/wiki/Niagara_Falls",
+    "https://en.wikipedia.org/wiki/Horseshoe_Falls",
+    "https://en.wikipedia.org/wiki/American_Falls",
+    "https://en.wikipedia.org/wiki/Luna_Island",
+    "https://en.wikipedia.org/wiki/Prospect_Point_Observation_Tower"
+  ],
+  "_notas": "Descartada «360 photo Horseshoe Falls top ... 19-10-09» por ser el mismo punto (Table Rock, dos minutos antes) y con caras cercanas. Las tres escenas tienen turistas, inevitables en el lugar; ninguna está en la categoría «Personality rights warning». Los cinco ficheros «upper Malmö - Construction near Niagara» del inventario son un falso positivo (Suecia). Las cataratas están en la frontera; placeCountry CA porque la escena final y la catarata mayor son canadienses."
+}

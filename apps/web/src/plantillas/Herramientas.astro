@@ -1,0 +1,44 @@
+---
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import CtaRegistro from "../components/CtaRegistro.astro";
+import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { pagePath, t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const path = pagePath(lang, "herramientas");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "nav.herramientas"), path },
+];
+const tools = (["visor", "planeta", "cubemap"] as const).map((key) => ({
+  key,
+  path: pagePath(lang, key),
+  h1: t(lang, `herramientas.${key}.h1`),
+  lead: t(lang, `herramientas.${key}.lead`),
+}));
+---
+
+<Base lang={lang} title={t(lang, "herramientas.indice.title")} description={t(lang, "herramientas.indice.description")} path={path} pageKey="herramientas" jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.herramientas")}</p>
+      <h1>{t(lang, "herramientas.indice.h1")}</h1>
+      <p class="lead">{t(lang, "herramientas.indice.lead")}</p>
+    </div>
+    <div class="malla herramientas__lista">
+      {tools.map((tool) => (
+        <article>
+          <h2><a href={tool.path}>{tool.h1}</a></h2>
+          <p>{tool.lead}</p>
+          <p style="margin-top: 14px"><a class="btn btn--chico" href={tool.path}>{t(lang, "comunes.leer_mas")}</a></p>
+        </article>
+      ))}
+    </div>
+    <CtaRegistro lang={lang} />
+  </section>
+</Base>

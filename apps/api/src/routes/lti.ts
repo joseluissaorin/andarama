@@ -7,6 +7,7 @@ import { badRequest, forbidden, notFound } from "../lib/errors.js";
 import { newId, newToken, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
 import { isInstanceAdmin } from "../lib/authz.js";
+import { orgIdOfSlug, requireOrgCapability } from "../lib/capabilities.js";
 
 /**
  * LTI 1.3 Advantage (§2.16): OIDC login initiation, launch (Resource Link),
@@ -116,6 +117,10 @@ export function ltiRoutes(): Hono<AppEnv> {
       if (m != null) slug = m[1]!;
     }
     if (slug === "") throw badRequest("El launch no indica ningún tour (custom.tour)");
+    // En la instancia alojada, el LTI es de los planes de formación: manda el
+    // plan de quien responde del recorrido. En el self-host no se limita.
+    const orgId = await orgIdOfSlug(db, slug);
+    if (orgId != null) await requireOrgCapability(db, c.get("config"), orgId, "lti");
     const ags = payload["https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"] as
       | { lineitem?: string; lineitems?: string; scope?: string[] }
       | undefined;

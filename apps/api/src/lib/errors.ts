@@ -47,5 +47,8 @@ export const payloadTooLarge = (detail?: string): ApiError =>
 /** Cuota agotada: el cliente sabe por `code` qué cuota y por `plan` cuál es el plan vigente. */
 export const quotaExceeded = (detail: string, extra: { code: "quota_tours" | "quota_bytes"; plan: string | null; limit: number }): ApiError =>
   new ApiError(403, "Cuota agotada", detail, "https://andarama.com/errors/quota", extra);
+/** El plan vigente no incluye la capacidad: el cliente sabe cuál por `capability`. */
+export const capabilityMissing = (detail: string, extra: { capability: string; plan: string | null }): ApiError =>
+  new ApiError(403, "No incluido en el plan", detail, "https://andarama.com/errors/capability", { code: "capability", ...extra });
 export const serverError = (detail = "Error interno"): ApiError =>
   new ApiError(500, "Error interno", detail, "https://andarama.com/errors/internal");

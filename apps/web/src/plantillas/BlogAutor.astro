@@ -1,0 +1,61 @@
+---
+import type { CollectionEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { publishedPosts } from "../data/rutas";
+import { absolute, authorPath, blogPostPath, LANGS, pagePath, t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+  entry: CollectionEntry<"autores">;
+}
+const { lang, entry } = Astro.props;
+const path = authorPath(lang, entry.id);
+const alternates = LANGS.map((l) => ({ lang: l, path: authorPath(l, entry.id) }));
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "blog.h1"), path: pagePath(lang, "blog") },
+  { name: entry.data.nombre, path },
+];
+const posts = (await publishedPosts()).filter((p) => p.data.lang === lang && p.data.autor === entry.id);
+const bio = entry.data.bio[lang] ?? entry.data.bio.es ?? "";
+const rol = entry.data.rol[lang] ?? entry.data.rol.es ?? "";
+const fecha = new Intl.DateTimeFormat(lang, { dateStyle: "long" });
+const persona = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: entry.data.nombre,
+  url: entry.data.web ?? absolute(path),
+  jobTitle: rol,
+  description: bio,
+  sameAs: [entry.data.web, entry.data.github].filter(Boolean),
+  worksFor: { "@id": absolute("/#organizacion") },
+};
+---
+
+<Base lang={lang} title={t(lang, "blog.autor_title", { nombre: entry.data.nombre })} description={bio.slice(0, 160)} path={path} alternates={alternates} jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas), persona]}>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{rol}</p>
+      <h1>{entry.data.nombre}</h1>
+      <p class="lead">{bio}</p>
+      <p class="susurro">
+        {entry.data.web != null && <a href={entry.data.web} rel="me">{entry.data.web.replace(/^https?:\/\//, "")}</a>}
+        {entry.data.github != null && <> · <a href={entry.data.github} rel="me">GitHub</a></>}
+      </p>
+    </div>
+    <h2 style="margin-top: 40px">{t(lang, "blog.autor_articulos", { nombre: entry.data.nombre })}</h2>
+    <ul class="entradas">
+      {posts.map((p) => (
+        <li>
+          <span class="susurro">{p.data.cluster}</span>
+          <h2><a href={blogPostPath(lang, p.data.slug)}>{p.data.title}</a></h2>
+          <p>{p.data.description}</p>
+          <span class="susurro">{fecha.format(p.data.fecha)}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

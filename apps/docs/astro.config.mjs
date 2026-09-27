@@ -41,6 +41,7 @@ export default defineConfig({
             { label: "El lienzo del tour", slug: "usuario/grafo" },
             { label: "Publicar y exportar", slug: "usuario/publicar" },
             { label: "Realidad virtual (WebXR)", slug: "usuario/realidad-virtual" },
+            { label: "Comprobar la realidad virtual", slug: "usuario/comprobar-realidad-virtual" },
             { label: "Embeber un tour", slug: "usuario/embeber" },
             { label: "Docencia: quiz, LTI y SCORM", slug: "usuario/docencia" },
             { label: "Visitas guiadas en vivo", slug: "usuario/en-vivo" },

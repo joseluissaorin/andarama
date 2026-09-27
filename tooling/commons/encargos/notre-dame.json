@@ -1,0 +1,90 @@
+{
+  "slug": "notre-dame",
+  "lang": "fr",
+  "title": "Notre-Dame en 360 : visite virtuelle à Paris, Laon et Dijon",
+  "description": "Trois panoramas sphériques libres autour de Notre-Dame. Le parcours s'ouvre sur le parvis de Notre-Dame de Paris, photographié de nuit en février 2007, avant l'incendie du 15 avril 2019 : commencée en 1163 et achevée vers 1345, la cathédrale de l'île de la Cité est l'un des monuments les plus visités au monde. Il se poursuit dans deux autres Notre-Dame de France : la cathédrale de Laon, l'un des premiers grands édifices gothiques du pays, et l'église Notre-Dame de Dijon, chef-d'œuvre gothique bâti vers 1220-1250, qui abrite la Vierge noire, le Jacquemart et la chouette.",
+  "placeName": "Notre-Dame de Paris",
+  "placeCountry": "FR",
+  "lat": 48.853056,
+  "lng": 2.349722,
+  "startScene": "parvis-notre-dame-de-paris",
+  "scenes": [
+    {
+      "id": "parvis-notre-dame-de-paris",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Panorama_Notre-Dame_de_Paris.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Panorama_Notre-Dame_de_Paris.jpg",
+      "title": "Parvis de Notre-Dame de Paris, de nuit (2007)",
+      "alt": "Panorama sphérique nocturne du parvis de Notre-Dame de Paris : la façade occidentale illuminée avec ses deux tours et sa rosace, le parvis pavé et mouillé, les lampadaires, l'Hôtel-Dieu et la préfecture de police sur les côtés",
+      "desc": "La façade occidentale de la cathédrale vue depuis le parvis, en février 2007, avant l'incendie de 2019. Construite de 1163 à 1345 environ, Notre-Dame est le siège de l'archidiocèse de Paris.",
+      "author": "User gadl on Flickr",
+      "license": "CC BY-SA 2.0",
+      "width": 7500,
+      "height": 3750,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "cathedrale-de-laon",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/0/08/Laon_Cathedral_Interior_360x180%2C_Picardy%2C_France_-_Diliff.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Laon_Cathedral_Interior_360x180,_Picardy,_France_-_Diliff.jpg",
+      "title": "Cathédrale Notre-Dame de Laon : la croisée du transept",
+      "alt": "Panorama sphérique de l'intérieur de la cathédrale de Laon depuis la croisée du transept : l'autel devant la grille dorée du chœur, l'élévation gothique à quatre niveaux, les voûtes d'ogives claires, deux rosaces et des rangées de chaises",
+      "desc": "Intérieur de l'ancienne cathédrale de Laon (Aisne), l'un des premiers grands édifices gothiques de France, contemporaine de Notre-Dame de Paris et protégée comme monument historique depuis 1840.",
+      "author": "Diliff",
+      "license": "CC BY-SA 3.0",
+      "width": 13644,
+      "height": 6822,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "notre-dame-de-dijon",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/a/a6/Dijon_Notre-Dame.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Dijon_Notre-Dame.jpg",
+      "title": "Église Notre-Dame de Dijon : la croisée du transept",
+      "alt": "Panorama sphérique de l'intérieur de Notre-Dame de Dijon depuis la croisée du transept : l'autel sur une estrade rouge, le chœur et ses vitraux, les piliers cylindriques, les rosaces des bras du transept et des chaises paillées",
+      "desc": "Vue depuis la croisée du transept de l'église Notre-Dame de Dijon, construite vers 1220-1250 au cœur du secteur sauvegardé de Dijon, inscrit au patrimoine mondial de l'UNESCO depuis 2015.",
+      "author": "Bernard Marti",
+      "license": "CC BY-SA 4.0",
+      "width": 9142,
+      "height": 4571,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_demanda": {
+    "total": 900,
+    "mercados": {
+      "fr-FR": 480,
+      "en-US": 340,
+      "de-DE": 20,
+      "en-GB": 20,
+      "es-ES": 20,
+      "it-IT": 10,
+      "pt-BR": 10
+    },
+    "idiomas": {
+      "fr": 480,
+      "en": 360,
+      "de": 20,
+      "es": 20,
+      "it": 10,
+      "pt": 10
+    }
+  },
+  "_fuentes": [
+    "https://fr.wikipedia.org/wiki/Cath%C3%A9drale_Notre-Dame_de_Paris",
+    "https://fr.wikipedia.org/wiki/Cath%C3%A9drale_Notre-Dame_de_Laon",
+    "https://fr.wikipedia.org/wiki/%C3%89glise_Notre-Dame_de_Dijon"
+  ],
+  "_notas": "Commons solo tiene UNA panorámica esférica de Notre-Dame de Paris (exterior, nocturna, 2007). Las otras coincidencias por nombre eran otras iglesias (Laon, Dijon, Neuchâtel, Ménilmontant); se conservan Laon y Dijon como recorrido honesto «Notre-Dame en Francia», con el título que lo dice. Descartadas Neuchâtel (Suiza) y Ménilmontant (iglesia parroquial sin relación). Coordenadas: las de la catedral de París."
+}

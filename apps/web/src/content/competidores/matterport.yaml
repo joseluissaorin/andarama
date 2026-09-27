@@ -1,0 +1,44 @@
+nombre: Matterport
+web: https://matterport.com
+pais: "US"
+tipo: saas
+gratis: true
+gratis_detalle: "Plan gratuito con 1 espacio activo y marca de Matterport"
+planes:
+  - nombre: Starter
+    precio: 9.99
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+  - nombre: Pro
+    precio: 69
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+  - nombre: Business
+    precio: 309
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+cuotas: "Gratis: 1 espacio activo; los planes de pago amplían el número de espacios activos"
+rv: true
+scorm: false
+lti: false
+exportacion: parcial
+exportacion_detalle: "El tour interactivo solo funciona alojado en Matterport; se pueden comprar exportaciones de datos (MatterPak, modelos 3D) por espacio"
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: false
+analitica_sin_cookies: null
+street_view: true
+verificado: false
+descripcion:
+  es: "Gemelos digitales 3D con captura por cámara o LiDAR; el estándar del sector inmobiliario, con planes anuales caros."
+  en: "3D digital twins captured with a camera or LiDAR; the real-estate industry standard, with pricey annual plans."
+notas: "Los planes de pago se facturan anualmente; las cifras de Starter, Pro y Business son de memoria y deben comprobarse. Orientado a modelos 3D, no a panoramas 360 clásicos; requiere cámara compatible o app móvil."
