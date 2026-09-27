@@ -27,6 +27,8 @@ export interface GalleryForm {
 }
 
 export interface GalleryInfo {
+  /** Moderación: solo las aprobadas se listan en /explorar/ (off si no pide ficha). */
+  status?: "off" | "pending" | "approved" | "rejected";
   enabled: boolean;
   title: string | null;
   description: string | null;

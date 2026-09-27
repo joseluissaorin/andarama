@@ -38,6 +38,8 @@ export const users = sqliteTable(
     /** JSON con gclid, msclkid y utm_* del primer toque; nunca datos personales. */
     attributionJson: text("attribution_json"),
     attributedAt: integer("attributed_at"),
+    /** Fecha real del primer pago (webhook de Clerk Billing); null si nunca ha pagado. */
+    firstPaidAt: integer("first_paid_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
@@ -193,6 +195,8 @@ export const projects = sqliteTable(
     settingsJson: text("settings_json").notNull().default("{}"),
     /** Este proyecto es una plantilla reutilizable. */
     isTemplate: integer("is_template", { mode: "boolean" }).notNull().default(false),
+    /** Tour de ejemplo clonado al dar de alta (instancia alojada): no cuenta en la cuota. */
+    isSample: integer("is_sample", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").notNull(),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -387,6 +391,10 @@ export const publications = sqliteTable(
     placeLat: real("place_lat"),
     placeLng: real("place_lng"),
     galleryLang: text("gallery_lang"),
+    /** Un administrador aprobó la ficha: solo entonces se lista en /explorar/. */
+    galleryApproved: integer("gallery_approved", { mode: "boolean" }).notNull().default(false),
+    /** Cuándo se revisó la ficha; sin aprobar y con fecha = rechazada. */
+    galleryReviewedAt: integer("gallery_reviewed_at"),
     /** Clave en el almacenamiento de la portada capturada al publicar, si la hay. */
     posterKey: text("poster_key"),
     publishedAt: integer("published_at").notNull(),
@@ -450,8 +458,13 @@ export const formSubmissions = sqliteTable(
     lang: text("lang"),
     createdAt: integer("created_at").notNull(),
     ipHash: text("ip_hash"),
+    /** Identificador anónimo del visitante (formularios de un solo envío). */
+    visitorId: text("visitor_id"),
   },
-  (t) => [index("form_submissions_project_idx").on(t.projectId)],
+  (t) => [
+    index("form_submissions_project_idx").on(t.projectId),
+    index("form_submissions_visitor_idx").on(t.projectId, t.hotspotId, t.visitorId),
+  ],
 );
 
 export const quizResults = sqliteTable(
@@ -535,6 +548,11 @@ export const ltiRegistrations = sqliteTable(
   "lti_registrations",
   {
     id: text("id").primaryKey(),
+    /**
+     * Organización dueña del registro: el selector de Deep Linking solo
+     * ofrece sus recorridos. Null en los registros anteriores a la columna.
+     */
+    orgId: text("org_id"),
     issuer: text("issuer").notNull(),
     clientId: text("client_id").notNull(),
     deploymentId: text("deployment_id"),
@@ -545,7 +563,7 @@ export const ltiRegistrations = sqliteTable(
     toolKeyJson: text("tool_key_json").notNull(),
     createdAt: integer("created_at").notNull(),
   },
-  (t) => [uniqueIndex("lti_issuer_client_idx").on(t.issuer, t.clientId)],
+  (t) => [uniqueIndex("lti_issuer_client_idx").on(t.issuer, t.clientId), index("lti_org_idx").on(t.orgId)],
 );
 
 /** Analitica en self-host (en Cloudflare se usa Workers Analytics Engine). */

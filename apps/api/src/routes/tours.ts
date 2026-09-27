@@ -240,6 +240,7 @@ export function tourRoutes(): Hono<AppEnv> {
       // normal, y ?kiosk=0 saca el recorrido suelto de uno publicado en bucle.
       kiosk: modoQuiosco(c.req.query("kiosk"), pointer.kiosk === true),
       formEndpoint: `/api/v1/public/forms/${slug}`,
+      quizEndpoint: `/api/v1/public/quiz/${slug}`,
       turnstileSiteKey: c.get("config").turnstileSiteKey ?? null,
       accessibleHtml: renderAccessibleHtml(tour, lang, `/t/${slug}`),
       // La insignia la decidió la publicación (plan sin marca blanca)
@@ -392,7 +393,8 @@ export function tourRoutes(): Hono<AppEnv> {
     const base = c.get("config").publicUrl;
     const xml = (s: string): string => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
     const fecha = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
-    const enGaleria = pubs.filter((p) => p.inGallery);
+    // Solo las fichas aprobadas: una pendiente de moderación no se indexa
+    const enGaleria = pubs.filter((p) => p.inGallery && p.galleryApproved);
     const ultima = enGaleria.reduce((max, p) => Math.max(max, p.publishedAt), 0);
     const urls = [
       ...(enGaleria.length > 0 ? [`  <url><loc>${base}/explorar/</loc><lastmod>${fecha(ultima)}</lastmod></url>`] : []),

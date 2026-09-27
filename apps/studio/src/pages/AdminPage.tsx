@@ -5,6 +5,7 @@ import { Badge, Button, Dialog, Field, Input, Select, Spinner, Switch, Tabs, Tab
 import { api, ApiRequestError } from "../api";
 import { useT } from "../i18n";
 import { Cabecera } from "../components/Cabecera";
+import { LtiRegistrations } from "../components/LtiRegistrations";
 
 /** Panel de administración global de la instancia (§3.7). */
 export function AdminPage(): React.ReactNode {
@@ -20,6 +21,7 @@ export function AdminPage(): React.ReactNode {
           <TabTrigger value="users">{t("users")}</TabTrigger>
           <TabTrigger value="orgs">{t("organizations")}</TabTrigger>
           <TabTrigger value="pubs">{t("publications")}</TabTrigger>
+          <TabTrigger value="gallery">{t("admin_gallery")}</TabTrigger>
           <TabTrigger value="jobs">{t("jobs_queue")}</TabTrigger>
           <TabTrigger value="audit">{t("audit_log")}</TabTrigger>
           <TabTrigger value="hooks">{t("webhooks")}</TabTrigger>
@@ -43,6 +45,9 @@ export function AdminPage(): React.ReactNode {
           <Tabs.Content value="pubs">
             <PubsTable />
           </Tabs.Content>
+          <Tabs.Content value="gallery">
+            <GalleryModeration />
+          </Tabs.Content>
           <Tabs.Content value="jobs">
             <JobsTable />
           </Tabs.Content>
@@ -53,7 +58,7 @@ export function AdminPage(): React.ReactNode {
             <WebhooksPanel />
           </Tabs.Content>
           <Tabs.Content value="lti">
-            <LtiPanel />
+            <LtiRegistrations />
           </Tabs.Content>
           <Tabs.Content value="coupons">
             <CouponsPanel />
@@ -612,6 +617,103 @@ function PubsTable(): React.ReactNode {
 }
 
 // ---------------------------------------------------------------------------
+// Moderación de la galería (/explorar/): nada se lista sin aprobarlo
+// ---------------------------------------------------------------------------
+
+interface GalleryReviewRow {
+  projectId: string;
+  slug: string;
+  title: string;
+  orgName: string;
+  authorEmail: string | null;
+  publishedAt: number;
+  reviewedAt: number | null;
+  hasPoster: boolean;
+  gallery: {
+    title: string | null;
+    description: string | null;
+    credits: string | null;
+    placeName: string | null;
+    placeCountry: string | null;
+    lang: string | null;
+  };
+}
+
+function GalleryModeration(): React.ReactNode {
+  const t = useT();
+  const queryClient = useQueryClient();
+  const mutate = useMutate();
+  const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
+  const q = useQuery({
+    queryKey: ["admin-gallery", status],
+    queryFn: () => api<GalleryReviewRow[]>(`/admin/gallery?status=${status}`),
+  });
+  const decidir = (projectId: string, decision: "approve" | "reject"): void =>
+    mutate(
+      () => api(`/admin/gallery/${projectId}/${decision}`, { method: "POST", body: {} }),
+      () => void queryClient.invalidateQueries({ queryKey: ["admin-gallery"] }),
+    );
+  return (
+    <div className="space-y-3">
+      <p className="text-[13px] text-[var(--anda-text-dim)]">{t("admin_gallery_hint")}</p>
+      <div className="anda-seg" role="group" aria-label={t("admin_gallery")}>
+        {(["pending", "approved", "rejected"] as const).map((s) => (
+          <button key={s} type="button" aria-pressed={status === s} onClick={() => setStatus(s)}>
+            {t(`admin_gallery_${s}`)}
+          </button>
+        ))}
+      </div>
+      {q.isLoading ? (
+        <Spinner />
+      ) : (q.data ?? []).length === 0 ? (
+        <p className="text-sm text-[var(--anda-text-dim)]">{t("admin_gallery_empty")}</p>
+      ) : (
+        <div className="space-y-3 text-sm">
+          {(q.data ?? []).map((row) => (
+            <article key={row.projectId} className="anda-ficha flex flex-col gap-3 p-4 sm:flex-row">
+              {row.hasPoster && (
+                <img src={`/t/${row.slug}/share.jpg`} alt="" loading="lazy" className="h-28 w-48 shrink-0 rounded-lg object-cover" />
+              )}
+              <div className="min-w-0 flex-1 space-y-1">
+                <h3 className="text-[15px] font-bold">{row.gallery.title ?? row.title}</h3>
+                <p className="text-xs text-[var(--anda-text-dim)]">
+                  {[row.gallery.placeName, row.gallery.placeCountry, row.gallery.lang].filter((x) => x != null && x !== "").join(" · ")}
+                  {" · "}
+                  {row.orgName}
+                  {row.authorEmail != null && <> · {t("admin_gallery_by", { email: row.authorEmail })}</>}
+                </p>
+                <p className="whitespace-pre-line text-[13px]">{row.gallery.description}</p>
+                {row.gallery.credits != null && <p className="text-xs text-[var(--anda-text-dim)]">{row.gallery.credits}</p>}
+                <a
+                  href={`/t/${row.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-medium text-[var(--anda-primary)] hover:underline"
+                >
+                  /t/{row.slug} <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </div>
+              <div className="flex shrink-0 items-start gap-2">
+                {status !== "approved" && (
+                  <Button size="sm" onClick={() => decidir(row.projectId, "approve")}>
+                    {t("admin_gallery_approve")}
+                  </Button>
+                )}
+                {status !== "rejected" && (
+                  <Button size="sm" variant="outline" onClick={() => decidir(row.projectId, "reject")}>
+                    {t("admin_gallery_reject")}
+                  </Button>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Cola de trabajos: filtro por estado + reintentos
 // ---------------------------------------------------------------------------
 
@@ -798,83 +900,6 @@ function WebhooksPanel(): React.ReactNode {
             )
           }
           disabled={url === ""}
-        >
-          <Plus className="h-4 w-4" /> {t("create")}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// LTI
-// ---------------------------------------------------------------------------
-
-function LtiPanel(): React.ReactNode {
-  const t = useT();
-  const queryClient = useQueryClient();
-  const mutate = useMutate();
-  const q = useQuery({
-    queryKey: ["admin-lti"],
-    queryFn: () =>
-      api<{ id: string; issuer: string; clientId: string; toolEndpoints: Record<string, string> }[]>("/lti/registrations"),
-  });
-  const [form, setForm] = useState({ issuer: "", clientId: "", deploymentId: "", authUrl: "", tokenUrl: "", jwksUrl: "" });
-  const first = q.data?.[0];
-  return (
-    <div className="max-w-2xl space-y-5">
-      {first != null && (
-        <div className="anda-ficha p-4 text-xs">
-          <p className="mb-2 font-semibold">{t("lti_endpoints_hint")}</p>
-          {Object.entries(first.toolEndpoints).map(([k, v]) => (
-            <p key={k} className="font-mono">
-              {k}: {v}
-            </p>
-          ))}
-        </div>
-      )}
-      {(q.data ?? []).map((r) => (
-        <div key={r.id} className="flex items-center gap-3 anda-ficha px-4 py-2.5 text-sm">
-          <span className="flex-1 truncate">{r.issuer}</span>
-          <span className="font-mono text-xs text-[var(--anda-text-dim)]">{r.clientId}</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("delete")}
-            onClick={() =>
-              mutate(
-                () => api(`/lti/registrations/${r.id}`, { method: "DELETE" }),
-                () => void queryClient.invalidateQueries({ queryKey: ["admin-lti"] }),
-              )
-            }
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
-      <div className="space-y-3 rounded-lg border border-dashed border-[var(--anda-border)] p-4">
-        {(
-          [
-            ["issuer", "Issuer (https://moodle.example.org)"],
-            ["clientId", "Client ID"],
-            ["deploymentId", "Deployment ID"],
-            ["authUrl", "Auth URL (/mod/lti/auth.php)"],
-            ["tokenUrl", "Token URL (/mod/lti/token.php)"],
-            ["jwksUrl", "JWKS URL (/mod/lti/certs.php)"],
-          ] as const
-        ).map(([key, label]) => (
-          <Field key={key} label={label} htmlFor={`lti-${key}`}>
-            <Input id={`lti-${key}`} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
-          </Field>
-        ))}
-        <Button
-          onClick={() =>
-            mutate(
-              () => api("/lti/registrations", { method: "POST", body: { ...form, deploymentId: form.deploymentId || undefined } }),
-              () => void queryClient.invalidateQueries({ queryKey: ["admin-lti"] }),
-            )
-          }
-          disabled={form.issuer === "" || form.clientId === ""}
         >
           <Plus className="h-4 w-4" /> {t("create")}
         </Button>

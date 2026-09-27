@@ -53,7 +53,7 @@ export interface QuizStateEvent {
   answered: number;
   total: number;
   passed: boolean | null;
-  detail: { hotspotId: string; sceneId: string; correct: boolean; points: number }[];
+  detail: { hotspotId: string; sceneId: string; correct: boolean; points: number; selected?: string[] }[];
 }
 
 export type ViewerEventMap = {
@@ -72,9 +72,9 @@ export type ViewerEventMap = {
   autopilotChange: { active: boolean; routeId: string | null; reason: "start" | "next" | "finished" | "stopped" | "paused" };
   narrationBlock: { blocked: boolean };
   /** Se intentó salir de la escena y algo lo impide. */
-  navBlocked: { reason: "quiz" | "narration"; hotspotId?: string };
+  navBlocked: { reason: "quiz" | "form" | "treasure" | "narration"; hotspotId?: string };
   /** Cambia la pregunta con compuerta que retiene en la escena (null = libre). */
-  gateChange: { hotspotId: string | null };
+  gateChange: { hotspotId: string | null; reason: "quiz" | "form" | "treasure" | null };
   treasureProgress: { found: number; total: number; lastFound?: string };
   error: { message: string; cause?: unknown };
 };

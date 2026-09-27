@@ -125,11 +125,15 @@ herramientas › configurar una herramienta manualmente**:
 - **Public keyset URL** (JWKS): `https://tu-instancia/api/v1/lti/jwks`
 - Servicios: activar IMS LTI Assignment and Grade Services y Deep Linking.
 
-**En Andarama** (administración de la instancia, panel **Administración ›
-Plataformas LTI (Moodle)**): registra la plataforma con el Issuer de Moodle
-(la dirección del sitio), el Client ID que te dio Moodle, la Auth URL
-(`/mod/lti/auth.php`), la Token URL (`/mod/lti/token.php`) y el JWKS
-(`/mod/lti/certs.php`).
+**En Andarama** (el administrador de la organización, en **Ajustes de la organización → LTI: Moodle y otros LMS**; el operador de la
+instancia también puede hacerlo desde **Administración → LTI**): registra la
+plataforma con el Issuer de Moodle (la dirección del sitio), el Client ID y el
+**Deployment ID** que muestra Moodle en los detalles de la herramienta, la Auth
+URL (`/mod/lti/auth.php`), la Token URL (`/mod/lti/token.php`) y el JWKS
+(`/mod/lti/certs.php`). Cada plataforma pertenece a una organización: el
+selector solo ofrece sus recorridos publicados, la selección caduca a los
+quince minutos (basta con volver a abrirla desde Moodle) y se rechazan los
+lanzamientos con otro `deployment_id`.
 
 **Cada docente**: en el curso, **Añadir una actividad o un recurso ›
 Herramienta externa**, elige Andarama, pulsa **Seleccionar contenido** y escoge

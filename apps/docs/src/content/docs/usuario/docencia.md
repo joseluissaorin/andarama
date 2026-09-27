@@ -101,8 +101,12 @@ nota del quiz **todavía no vuelve** al libro de calificaciones por esta vía.
 Si necesitas la nota, usa SCORM.
 :::
 
-La configuración (URL de la herramienta, JWKS, registro de la plataforma en
-**Administración › Plataformas LTI (Moodle)**) está en
+La configuración la hace el **administrador de la organización** en **Ajustes de la organización → LTI: Moodle y otros LMS** (en andarama.com
+hace falta un plan que incluya LTI, como Formación); el operador de la
+instancia también puede dar de alta plataformas desde **Administración → LTI**.
+Cada plataforma pertenece a una organización: el selector de Deep Linking solo
+ofrece sus recorridos publicados, y se rechazan los lanzamientos con un
+`deployment_id` distinto del registrado. Los pasos completos están en
 [Insertar en Moodle](/docs/usuario/moodle/#5-lti-13-en-pruebas).
 
 ## Sin nota: enlace o iframe

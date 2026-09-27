@@ -75,7 +75,7 @@ El esquema está **versionado**: `@andarama/schema` incluye migradores automáti
     "vr": {
       "hotspots": "custom",
       "types": { "pdf": false, "form": false },
-      "dwellSeconds": 2.5
+      "dwellSeconds": 1.5
     }
   }
   ```

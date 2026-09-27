@@ -103,8 +103,12 @@ grade **does not flow back** to the gradebook this way yet. If you need grades,
 use SCORM.
 :::
 
-Setup (tool URLs, JWKS, registering the platform under **Administration › LTI
-platforms (Moodle)**) is covered in
+The organization admin sets it up under **Organisation settings → LTI: Moodle
+and other LMSs** (on andarama.com this needs a plan that includes LTI, such as
+Formación); the instance operator can also register platforms from
+**Administration → LTI**. Each platform belongs to one organization: Deep
+Linking only offers that organization's published tours, and launches with a
+different `deployment_id` are rejected. The full steps are in
 [Add to Moodle](/docs/en/usuario/moodle/#5-lti-13-en-pruebas).
 
 ## No grade needed: link or iframe

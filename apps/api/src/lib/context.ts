@@ -35,6 +35,21 @@ export interface AppConfig {
    * Sin esta clave la instancia usa sus cuentas propias, que es el self-host.
    */
   clerk?: import("./clerk.js").ClerkConfig;
+  /**
+   * Plantillas del operador: el tour de ejemplo que se clona al dar de alta
+   * y las plantillas por sector de «Nuevo proyecto» (SAMPLE_PROJECT_ID y
+   * TEMPLATE_PROJECTS). Sin ellas, ni ejemplo ni sección de plantillas.
+   */
+  templates?: import("./templates.js").TemplatesConfig;
+  /**
+   * Lista blanca de administradores de la instancia (`ADMIN_EMAILS`, en
+   * minúsculas). Si existe, solo estas direcciones son administradoras por
+   * alta o por inicio de sesión; si no existe y la instancia no usa Clerk,
+   * el primer usuario registrado administra la instancia (autoinstalación).
+   */
+  adminEmails?: string[];
+  /** Secreto de firma (svix) del webhook de Clerk: `CLERK_WEBHOOK_SECRET`. */
+  clerkWebhookSecret?: string;
 }
 
 export type UserRow = typeof users.$inferSelect;

@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, eq, inArray } from "drizzle-orm";
-import { hotspots as hotspotsTable, projects, scenes as scenesTable } from "@andarama/db";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { hotspots as hotspotsTable, media as mediaTable, projects, scenes as scenesTable } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
-import { forbidden, notFound } from "../lib/errors.js";
+import { badRequest, forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
+import { requireActivePlan } from "../lib/capabilities.js";
 
 const HOTSPOT_TYPES = [
   "navigation", "text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf",
@@ -52,7 +53,24 @@ async function editableProject(c: Parameters<typeof projectAccess>[0] extends ne
   requireScope(auth, "projects:write");
   const access = await projectAccess(c.get("db"), projectId, auth.user);
   if (!access.canEdit) throw forbidden();
+  // Al caducar la prueba el borrador queda de solo lectura
+  await requireActivePlan(c.get("db"), c.get("config"), access.project.orgId);
   return { project: access.project };
+}
+
+/**
+ * El medio de una escena tiene que ser de la organización del proyecto: si
+ * no, bastaría conocer el identificador de un medio ajeno para publicarlo
+ * dentro de un recorrido propio.
+ */
+async function assertMediaInOrg(db: any, mediaId: string | null | undefined, orgId: string): Promise<void> {
+  if (mediaId == null) return;
+  const row = (await db
+    .select({ id: mediaTable.id })
+    .from(mediaTable)
+    .where(and(eq(mediaTable.id, mediaId), eq(mediaTable.orgId, orgId), isNull(mediaTable.deletedAt)))
+    .limit(1))[0];
+  if (row == null) throw badRequest("El medio no existe o no pertenece a la organización del proyecto");
 }
 
 async function touchProject(c: any, projectId: string): Promise<void> {
@@ -84,6 +102,7 @@ export function contentRoutes(): Hono<AppEnv> {
     const { project } = await editableProject(c, c.req.param("projectId"));
     const db = c.get("db");
     const body = sceneCreateSchema.parse(await c.req.json());
+    await assertMediaInOrg(db, body.mediaId, project.orgId);
     const existing = await db.select({ sort: scenesTable.sort }).from(scenesTable).where(eq(scenesTable.projectId, project.id));
     const id = body.id ?? newId();
     await db.insert(scenesTable).values({
@@ -108,6 +127,7 @@ export function contentRoutes(): Hono<AppEnv> {
     const scene = (await db.select().from(scenesTable).where(and(eq(scenesTable.id, sceneId), eq(scenesTable.projectId, project.id))).limit(1))[0];
     if (scene == null) throw notFound("Escena no encontrada");
     const body = scenePatchSchema.parse(await c.req.json());
+    if (body.mediaId !== undefined && body.mediaId !== scene.mediaId) await assertMediaInOrg(db, body.mediaId, project.orgId);
     const patch: Record<string, unknown> = {};
     if (body.title != null) patch.title = body.title;
     if (body.type != null) patch.type = body.type;

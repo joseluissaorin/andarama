@@ -21,6 +21,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { PlanPage } from "./pages/PlanPage";
 import { AndaClerkProvider, isClerkMode, loadInstanceConfig } from "./clerk";
 import { captureAttributionFromBrowser } from "./attribution";
+import { rememberPlanIntent } from "./intent";
 import { EditorPage } from "./editor/EditorPage";
 
 const queryClient = new QueryClient({
@@ -75,6 +76,9 @@ const planRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: "/plan",
   component: PlanPage,
+  // `?plan=paseo`: la página abre ese plan directamente
+  validateSearch: (search: Record<string, unknown>): { plan?: string } =>
+    typeof search.plan === "string" ? { plan: search.plan } : {},
 });
 
 const editorRoute = createRoute({
@@ -93,6 +97,8 @@ const registerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/register",
   component: () => <AuthPage mode="register" />,
+  validateSearch: (search: Record<string, unknown>): { plan?: string } =>
+    typeof search.plan === "string" ? { plan: search.plan } : {},
 });
 
 const resetRoute = createRoute({
@@ -128,6 +134,10 @@ declare module "@tanstack/react-router" {
 }
 
 setupPwa();
+
+// El plan elegido en la web (`/register?plan=paseo`) sobrevive al alta y
+// llega hasta la página de planes
+rememberPlanIntent();
 
 // La instancia dice qué puerta usa antes de pintar nada: con Clerk, el
 // Studio entero vive dentro de su proveedor; sin él, como siempre.

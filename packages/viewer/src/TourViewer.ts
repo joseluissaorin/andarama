@@ -26,7 +26,10 @@ import { DeviceOrientationControlMethod } from "./engine/gyro.js";
 import { littlePlanetIntroParams, ProjectionPass, projectToScreen, type ProjectionFrameState } from "./engine/projections.js";
 import { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
 import { VRManager, type VrEnvironment, type VrHotspot } from "./engine/vr.js";
+import { marzipanoToVr } from "./engine/xr/math.js";
+import { switchMarzipanoScene } from "./engine/xr/transition.js";
 import { SceneMarkers } from "./hotspots/markers.js";
+import { pendingGates, type GateReason } from "./engine/gate.js";
 import { AnalyticsClient } from "./analytics.js";
 
 interface LoadedScene {
@@ -60,14 +63,22 @@ export class TourViewer {
   private analytics: AnalyticsClient;
   private reducedMotion: boolean;
   private navBlocked = false;
-  /** Pregunta con compuerta pendiente en la escena actual: nadie sale sin acertarla. */
+  /**
+   * Primera compuerta pendiente de la escena actual (pregunta sin acertar,
+   * formulario sin enviar o tesoro sin encontrar): nadie sale sin cumplirla.
+   */
   private gateId: string | null = null;
+  private gateReason: GateReason | null = null;
+  /** Formularios ya enviados (en esta visita o, si son de un solo envío, antes). */
+  private formsSent = new Set<string>();
+  /** Preguntas acertadas alguna vez: son las que abren la compuerta. */
+  private quizCleared = new Set<string>();
   /** Estado del último fotograma del pase de proyección. */
   private projectionState: ProjectionFrameState = { mode: "rectilinear", mix: 0, settled: true };
   private videoRaf = 0;
   private sceneEnterTime = 0;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private quizAnswers = new Map<string, { correct: boolean; points: number; sceneId: string }>();
+  private quizAnswers = new Map<string, { correct: boolean; points: number; sceneId: string; selected?: string[] }>();
   private treasureFound = new Set<string>();
   private fpsWindow: number[] = [];
   private lastFrame = 0;
@@ -154,7 +165,11 @@ export class TourViewer {
       getEnvironment: () => this.buildVrEnvironment(),
       getHotspots: () => this.vrHotspots(),
       onNavigate: async (target) => {
-        await this.goTo(target, { force: true });
+        // Dentro de las gafas no se espera a la transición de Marzipano: va
+        // con el requestAnimationFrame de la ventana, que Meta Quest suspende
+        // durante la sesión inmersiva, y la promesa no se resolvía nunca. El
+        // fundido lo pone el propio modo VR.
+        await this.goTo(target, { force: true, transition: { kind: "cut" }, awaitRender: false });
       },
       onDirectAction: (hs) => {
         // Enlace, estado y polígono se resuelven con la lógica normal del
@@ -168,7 +183,7 @@ export class TourViewer {
         }
         this.activateHotspot(hs.hotspot, null);
       },
-      onQuizAnswer: (hotspotId, correct, points) => this.reportQuizAnswer(hotspotId, correct, points),
+      onQuizAnswer: (hotspotId, correct, points, selected) => this.reportQuizAnswer(hotspotId, correct, points, selected),
       onExternalRequest: (url) => {
         this.pendingExternalUrl = url;
       },
@@ -178,16 +193,14 @@ export class TourViewer {
         this.pendingExternalUrl = null;
         if (url != null) window.open(url, "_blank", "noopener");
       },
-      getViewYawPitch: () => {
-        const v = this.view();
-        return { yaw: v.yaw, pitch: v.pitch };
-      },
+      // Marzipano mide el pitch hacia abajo y el modo VR hacia arriba
+      getViewYawPitch: () => marzipanoToVr(this.view()),
       text: (value) => this.text(value as never),
       url: (value) => resolveUrl(this.baseUrl, value),
       t: (key, params) => this.options.translate?.(key, params) ?? key,
     });
     // Permanencia de la mirada configurable por tour
-    this.vr.dwellMs = Math.max(800, Math.round((this.tour.vr?.dwellSeconds ?? 2.5) * 1000));
+    this.vr.dwellMs = Math.max(800, Math.round((this.tour.vr?.dwellSeconds ?? 1.5) * 1000));
     this.vr.onChange = (active, mode) => {
       this.emit("vrChange", { active, mode });
       if (active) this.analytics.track({ event: "vr", sceneId: this.currentId ?? undefined });
@@ -486,6 +499,11 @@ export class TourViewer {
       force?: boolean;
       skipHistory?: boolean;
       fromHotspot?: NavigationHotspot;
+      /**
+       * false: confirmar el cambio sin esperar a que Marzipano lo pinte. Lo
+       * usa el modo VR, que dibuja por su cuenta en el bucle de la sesión.
+       */
+      awaitRender?: boolean;
     } = {},
   ): Promise<void> {
     if (this.destroyed) return;
@@ -493,7 +511,10 @@ export class TourViewer {
       // Se avisa de por qué no se sale: una narración que aún suena o una
       // pregunta con compuerta sin acertar. Callarse dejaba al visitante
       // pulsando un paso que no hacía nada.
-      this.emit("navBlocked", this.gateId != null ? { reason: "quiz", hotspotId: this.gateId } : { reason: "narration" });
+      this.emit(
+        "navBlocked",
+        this.gateId != null ? { reason: this.gateReason ?? "quiz", hotspotId: this.gateId } : { reason: "narration" },
+      );
       return;
     }
     const previousId = this.currentId;
@@ -507,8 +528,10 @@ export class TourViewer {
       throw err;
     }
     // La escena anterior sigue visible hasta que el nivel base este listo:
-    // el fundido nunca ocurre sobre tiles a medio cargar.
-    await this.preloadBase(entry);
+    // el fundido nunca ocurre sobre tiles a medio cargar. (En VR no hace
+    // falta: allí no se ve Marzipano.)
+    const awaitRender = opts.awaitRender !== false;
+    if (awaitRender) await this.preloadBase(entry);
 
     // Registrar tiempo en la escena anterior
     if (previousId != null && previousId !== sceneId) {
@@ -554,9 +577,7 @@ export class TourViewer {
     if (this.destroyed) return;
     this.currentId = sceneId;
     this.sceneEnterTime = Date.now();
-    await new Promise<void>((resolve) => {
-      this.viewer.switchScene(entry.marzScene, switchOpts, () => resolve());
-    });
+    await switchMarzipanoScene(this.viewer, entry.marzScene, switchOpts, awaitRender);
     if (this.destroyed) return;
 
     if (!opts.skipHistory && previousId != null && previousId !== sceneId) {
@@ -764,6 +785,8 @@ export class TourViewer {
     this.autopilotCtl.pauseForInteraction();
     this.analytics.track({ event: "hotspot", sceneId: scene.id, hotspotId: hotspot.id });
     this.markTreasure(scene.id, hotspot.id);
+    // Encontrar el tesoro con compuerta abre la salida de su escena
+    if (hotspot.type === "treasure") this.updateGate(scene);
 
     switch (hotspot.type) {
       case "navigation":
@@ -852,12 +875,40 @@ export class TourViewer {
   // Quiz y busqueda del tesoro
   // -----------------------------------------------------------------------
 
-  reportQuizAnswer(hotspotId: string, correct: boolean, points: number): void {
+  /**
+   * Registra la respuesta a una pregunta. `selected` son las opciones
+   * marcadas: viajan con el resultado para que el servidor recalcule la nota
+   * con el tour publicado en vez de fiarse de la que manda el navegador.
+   */
+  reportQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[]): void {
     const sceneId = this.currentId ?? "";
-    this.quizAnswers.set(hotspotId, { correct, points: correct ? points : 0, sceneId });
-    if (correct) this.vars.set(`quiz_${hotspotId}`, true);
+    // La nota es la de la primera respuesta terminada: volver a abrir la
+    // pregunta sirve para abrir la compuerta, no para mejorar la puntuación.
+    if (!this.quizAnswers.has(hotspotId)) {
+      this.quizAnswers.set(hotspotId, { correct, points: correct ? points : 0, sceneId, selected });
+    }
+    if (correct) {
+      this.quizCleared.add(hotspotId);
+      this.vars.set(`quiz_${hotspotId}`, true);
+    }
     this.emit("quizChange", this.quizState());
     this.analytics.track({ event: "quiz", sceneId, hotspotId, meta: { correct } });
+    // La compuerta se recalcula entera: con varias preguntas con compuerta en
+    // la escena, solo se abre cuando todas están acertadas.
+    const scene = this.currentScene();
+    if (scene != null) this.updateGate(scene);
+  }
+
+  /** Un formulario se ha enviado (ahora o en una visita anterior, si es de un solo envío). */
+  markFormSubmitted(hotspotId: string): void {
+    if (this.formsSent.has(hotspotId)) return;
+    this.formsSent.add(hotspotId);
+    const scene = this.currentScene();
+    if (scene != null) this.updateGate(scene);
+  }
+
+  formSubmitted(hotspotId: string): boolean {
+    return this.formsSent.has(hotspotId);
   }
 
   quizState(): QuizStateEvent {
@@ -871,7 +922,13 @@ export class TourViewer {
           maxScore += hs.points ?? 1;
           const answer = this.quizAnswers.get(hs.id);
           if (answer != null) {
-            detail.push({ hotspotId: hs.id, sceneId: scene.id, correct: answer.correct, points: answer.points });
+            detail.push({
+              hotspotId: hs.id,
+              sceneId: scene.id,
+              correct: answer.correct,
+              points: answer.points,
+              ...(answer.selected != null ? { selected: answer.selected } : {}),
+            });
           }
         }
       }
@@ -884,40 +941,49 @@ export class TourViewer {
     return { score, maxScore, answered, total, passed, detail };
   }
 
-  /** Compuerta de quiz: bloquear/desbloquear la navegacion. */
+  /**
+   * Bloqueo manual de la navegación (integraciones).
+   *
+   * @deprecated Las compuertas de pregunta, formulario y tesoro las lleva el
+   * propio visor. Antes el quiz llamaba aquí y el visitante leía el aviso de
+   * la narración; ya no emite `narrationBlock` ni toca las compuertas.
+   */
   setNavigationBlocked(blocked: boolean): void {
     this.navBlocked = blocked;
-    if (!blocked) this.setGate(null);
-    this.emit("narrationBlock", { blocked });
   }
 
-  /** Pregunta con compuerta que retiene al visitante en esta escena, si la hay. */
+  /** Hotspot con compuerta que retiene al visitante en esta escena, si lo hay. */
   gateHotspotId(): string | null {
     return this.gateId;
   }
 
   /**
-   * Al entrar en una escena, una pregunta marcada como compuerta que aún no
-   * se ha acertado cierra la salida. Antes la compuerta solo actuaba después
-   * de fallar: quien no abría la pregunta se iba sin más, y eso no es una
-   * compuerta.
+   * Al entrar en una escena, y cada vez que se responde, se envía o se
+   * encuentra algo, se recalcula qué la retiene: preguntas con compuerta sin
+   * acertar, formularios con compuerta sin enviar y tesoros con compuerta sin
+   * encontrar. La salida se abre solo cuando no queda ninguno. Agotar los
+   * intentos de una pregunta no la abre: el panel ofrece volver a intentarlo
+   * (la nota ya quedó fijada con la primera respuesta).
    */
   private updateGate(scene: Scene): void {
     if (this.options.editMode === true) {
-      this.setGate(null);
+      this.setGate(null, null);
       return;
     }
-    const pendiente = scene.hotspots.find(
-      (h) => h.type === "quiz" && h.gate === true && this.quizAnswers.get(h.id)?.correct !== true,
-    );
-    this.setGate(pendiente?.id ?? null);
+    const pendiente = pendingGates(scene.hotspots, {
+      quizCorrect: (id) => this.quizCleared.has(id),
+      formSent: (id) => this.formsSent.has(id),
+      treasureFound: (id) => this.treasureFound.has(id),
+    })[0];
+    this.setGate(pendiente?.hotspotId ?? null, pendiente?.reason ?? null);
   }
 
-  private setGate(hotspotId: string | null): void {
+  private setGate(hotspotId: string | null, reason: GateReason | null): void {
     if (hotspotId === this.gateId) return;
     this.gateId = hotspotId;
+    this.gateReason = reason;
     this.container.classList.toggle("anda-nav-gated", hotspotId != null);
-    this.emit("gateChange", { hotspotId });
+    this.emit("gateChange", { hotspotId, reason });
   }
 
   /**
@@ -1268,10 +1334,13 @@ export class TourViewer {
           h.type === "polygon" && h.points.length > 0
             ? { yaw: h.points[0]!.yaw, pitch: h.points[0]!.pitch }
             : { yaw: h.yaw, pitch: h.pitch };
+        // Mismo punto de la panorámica que en el visor plano: el pitch cambia
+        // de signo al pasar al convenio VR (antes salían reflejados).
+        const vr = marzipanoToVr(anchor);
         return {
           id: h.id,
-          yaw: anchor.yaw,
-          pitch: anchor.pitch,
+          yaw: vr.yaw,
+          pitch: vr.pitch,
           // El tamaño elegido en el editor también vale dentro de las gafas
           scale: (h.style?.icon?.size ?? this.tour.ui?.hotspotSize ?? 44) / 44,
           label: this.text(h.label) || this.text(h.altText),

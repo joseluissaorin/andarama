@@ -81,16 +81,21 @@ export function perspective(fovY: number, aspect: number, near: number, far: num
   return new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0]);
 }
 
-/** Matriz de vista para el modo cardboard (cámara en el origen). */
+/**
+ * Matriz de vista para el modo cardboard (cámara en el origen), con yaw y
+ * pitch en el convenio VR. Es Rx(-pitch)·Ry(yaw): la inversa de la cámara que
+ * mira hacia `dirFromYawPitch(yaw, pitch)`. (Llevaba el yaw con el signo
+ * cambiado; solo se usa antes del primer evento del giroscopio o sin permiso
+ * de movimiento, y entonces la escena salía girada al revés.)
+ */
 export function viewMatrix(yaw: number, pitch: number): Float32Array {
-  const cy = Math.cos(-yaw);
-  const sy = Math.sin(-yaw);
+  const cy = Math.cos(yaw);
+  const sy = Math.sin(yaw);
   const cp = Math.cos(-pitch);
   const sp = Math.sin(-pitch);
   return new Float32Array([cy, sy * sp, -sy * cp, 0, 0, cp, sp, 0, sy, -cy * sp, cy * cp, 0, 0, 0, 0, 1]);
 }
 
-/** Dirección unitaria desde yaw/pitch en el convenio del visor (yaw 0 mira a -Z). */
 /** Diferencia angular mínima entre dos yaw, en (-PI, PI]. */
 export function angleDiff(a: number, b: number): number {
   let d = (a - b) % (2 * Math.PI);
@@ -99,8 +104,32 @@ export function angleDiff(a: number, b: number): number {
   return d;
 }
 
+/**
+ * Dirección unitaria desde yaw/pitch en el convenio del renderizador VR: yaw 0
+ * mira a -Z, yaw positivo gira a la derecha (+X) y **pitch positivo mira hacia
+ * arriba** (+Y). Marzipano usa el pitch al revés; ver `marzipanoToVr`.
+ */
 export function dirFromYawPitch(yaw: number, pitch: number): Vec3 {
   return [Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch), -Math.cos(pitch) * Math.cos(yaw)];
+}
+
+/**
+ * Frontera entre Marzipano y el renderizador VR.
+ *
+ * Marzipano —y con él el tour.json, el editor y el visor plano— usa pitch
+ * positivo **hacia abajo** (su dirección es `y = -sin(pitch)`). El
+ * renderizador VR, que es propio, lo usa hacia arriba. Pasar el pitch tal cual
+ * reflejaba cada hotspot respecto al horizonte: en el modo cartón del iPhone
+ * uno un poco por debajo de la vista salía un poco por encima. El signo se
+ * cambia aquí y solo aquí.
+ */
+export function marzipanoToVr(view: { yaw: number; pitch: number }): { yaw: number; pitch: number } {
+  return { yaw: view.yaw, pitch: -view.pitch };
+}
+
+/** Yaw y pitch (convenio VR) de una dirección unitaria; inversa de `dirFromYawPitch`. */
+export function yawPitchFromDir(dir: Vec3): { yaw: number; pitch: number } {
+  return { yaw: Math.atan2(dir[0], -dir[2]), pitch: Math.asin(Math.max(-1, Math.min(1, dir[1]))) };
 }
 
 export interface Ray {

@@ -25,7 +25,7 @@ Sitio Astro 5 estático con i18n por ruta que sustituye a la landing a mano de `
   `astro:assets` (`<Picture>` AVIF/WebP con `srcset`, fallback JPG, `loading="lazy"`).
 - **Precios** (`src/components/Precios.astro` + `src/data/planes.ts`): siete tarjetas a
   partir de `apps/api/src/lib/plans.ts` (importado por ruta relativa: una sola fuente de
-  verdad). Aula se anuncia a 39 €/año por docente; el resto en dólares. Línea «Prueba de 14
+  verdad). Aula se anuncia a 42 $/año por docente; todo en dólares. Línea «Prueba de 14
   días sin tarjeta» y nota de dólares y uso razonable.
 - **Páginas nuevas** en 7 idiomas: formación, universidades (formulario → `mailto:` con
   asunto y cuerpo preparados), aula, wordpress, privacidad. Plantillas en `src/plantillas/`.

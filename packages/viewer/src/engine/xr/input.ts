@@ -69,6 +69,17 @@ export interface XrPointer {
   /** La pinza acaba de cerrarse en este fotograma. */
   pinchStarted: boolean;
   isHand: boolean;
+  /**
+   * `tracked-pointer` para mandos y manos; `gaze` para la mirada (Chrome en
+   * Android con su runtime de Cardboard) y `screen` para toques en pantalla.
+   * Solo el primero tiene rayo propio que dibujar.
+   */
+  targetRayMode: string;
+}
+
+/** Un puntero con rayo propio (mando o mano), no la mirada ni un toque. */
+export function isTrackedPointer(source: { targetRayMode?: string } | null | undefined): boolean {
+  return (source?.targetRayMode ?? "tracked-pointer") === "tracked-pointer";
 }
 
 interface PointerMemory {
@@ -134,6 +145,7 @@ export class XrInput {
         pinching,
         pinchStarted: pinching && !previous,
         isHand,
+        targetRayMode: String(source.targetRayMode ?? "tracked-pointer"),
       });
     }
     // Limpiar memoria de punteros que ya no existen

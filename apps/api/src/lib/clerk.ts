@@ -3,8 +3,10 @@ import { eq } from "drizzle-orm";
 import { orgMembers, orgs, users } from "@andarama/db";
 import type { AppEnv, AuthState, UserRow } from "./context.js";
 import { newId, nowMs, slugify } from "./util.js";
-import { getSettings } from "./helpers.js";
+import { audit, getSettings } from "./helpers.js";
+import { initialRole, promoteListedAdmin } from "./admins.js";
 import { TRIAL_MS, planFromClaim } from "./plans.js";
+import { provisionSample } from "./templates.js";
 
 /**
  * Clerk como puerta de la instancia alojada.
@@ -128,11 +130,13 @@ export async function resolveClerkAuth(c: Context<AppEnv>, verifier: ClerkVerifi
     await db.update(users).set({ plan, planUpdatedAt: nowMs(), updatedAt: nowMs() }).where(eq(users.id, user.id));
     user = { ...user, plan, planUpdatedAt: nowMs() };
   }
+  // Lista blanca: quien figura en ADMIN_EMAILS administra desde que entra
+  user = await promoteListedAdmin(c, user, "clerk");
 
   return { user, session: null, tokenScopes: null, clerkSessionId: claims.sid ?? null };
 }
 
-/** Alta JIT: usuario y su organización propia (de la que responde). */
+/** Alta JIT: usuario, su organización propia (de la que responde) y el tour de ejemplo. */
 async function provisionUser(
   c: Context<AppEnv>,
   clerkId: string,
@@ -142,6 +146,8 @@ async function provisionUser(
   const db = c.get("db");
   const settings = await getSettings(db);
   const isFirstUser = (await db.select({ id: users.id }).from(users).limit(1)).length === 0;
+  // Con Clerk nadie es administrador por llegar primero: solo la lista ADMIN_EMAILS
+  const roleGlobal = initialRole(c.get("config"), profile.email, isFirstUser);
   const userId = newId();
   await db.insert(users).values({
     id: userId,
@@ -152,8 +158,8 @@ async function provisionUser(
     planUpdatedAt: nowMs(),
     // Sin plan al entrar: catorce días de prueba sin tarjeta. Quien llega ya
     // con plan (o administra la instancia) no la necesita.
-    trialEndsAt: plan == null && !isFirstUser ? nowMs() + TRIAL_MS : null,
-    roleGlobal: isFirstUser ? "admin" : "user",
+    trialEndsAt: plan == null && roleGlobal !== "admin" ? nowMs() + TRIAL_MS : null,
+    roleGlobal,
     emailVerified: true,
     createdAt: nowMs(),
     updatedAt: nowMs(),
@@ -174,5 +180,9 @@ async function provisionUser(
     createdAt: nowMs(),
   });
   await db.insert(orgMembers).values({ orgId, userId, role: "admin", createdAt: nowMs() });
+  // El primer minuto no es una pantalla vacía: un recorrido de ejemplo ya
+  // montado, clonado de la organización Plantillas (si el operador la tiene)
+  if (!isFirstUser) await provisionSample(db, c.get("config"), orgId, userId);
+  await audit(c, "user.provision", "user", userId, { firstUser: isFirstUser, via: "clerk", roleGlobal }, orgId, userId);
   return (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0]!;
 }

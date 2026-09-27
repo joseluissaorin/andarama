@@ -8,6 +8,7 @@ import { useT } from "../i18n";
 import { AndaLogo } from "../components/Shell";
 import { Criatura, CriaturaPaseo } from "../components/Criatura";
 import { isClerkMode, studioPrefix } from "../clerk";
+import { planQuery, takePlanIntent } from "../intent";
 
 type AuthMode = "login" | "register" | "reset" | "invite";
 
@@ -40,13 +41,11 @@ function MarcoAcceso({ title, children }: { title: string; children: React.React
             <p className="mt-4 max-w-[300px] text-[18px] font-bold leading-relaxed">
               andarama me deja <span className="rounded-md bg-[#ffd900] px-1.5 text-[#33260f]">andar</span> por panoramas
             </p>
-            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-[#fff8ec]/85">
-              Editor visual, publicación en un clic, realidad virtual y exportación abierta.
-            </p>
+            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-[#fff8ec]/85">{t("auth_pitch")}</p>
           </div>
           <div>
             <CriaturaPaseo size={54} className="text-[#33260f]" />
-            <p className="mt-3 font-mono text-[11px] text-[#fff8ec]/75">código abierto (EUPL-1.2)</p>
+            <p className="mt-3 font-mono text-[11px] text-[#fff8ec]/75">{t("auth_open_source")}</p>
           </div>
         </div>
 
@@ -94,7 +93,10 @@ function ClerkAuthPage({ mode }: { mode: AuthMode }): React.ReactNode {
           toast.push(err instanceof ApiRequestError ? (err.detail ?? err.title) : String(err), "error");
         }
       }
-      await navigate({ to: "/" });
+      // Quien venía de elegir un plan en la web va directo a pagarlo
+      const plan = takePlanIntent();
+      if (plan != null) await navigate({ to: "/plan", search: { plan } });
+      else await navigate({ to: "/" });
     })();
   }, [isLoaded, isSignedIn, mode, refresh, navigate]);
 
@@ -107,9 +109,9 @@ function ClerkAuthPage({ mode }: { mode: AuthMode }): React.ReactNode {
           <p className="text-[13px] font-medium text-[var(--anda-text-dim)]">{t("loading")}</p>
         </div>
       ) : mode === "register" ? (
-        <SignUp routing="hash" signInUrl={`${prefix}/login`} />
+        <SignUp routing="hash" signInUrl={`${prefix}/login${planQuery()}`} />
       ) : (
-        <SignIn routing="hash" signUpUrl={`${prefix}/register`} />
+        <SignIn routing="hash" signUpUrl={`${prefix}/register${planQuery()}`} />
       )}
       <p className="mt-4 text-[12.5px] text-[var(--anda-text-dim)]">{t("clerk_sign_in_hint")}</p>
     </MarcoAcceso>

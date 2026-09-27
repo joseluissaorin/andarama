@@ -16,7 +16,10 @@ import {
 } from "@andarama/adapters/node";
 import type { PlatformRuntime } from "@andarama/adapters";
 import { createApp } from "./app.js";
-import type { AppEnv } from "./lib/context.js";
+import type { AppEnv, Db } from "./lib/context.js";
+import { parseAdminEmails } from "./lib/admins.js";
+import { auditLog, media, users } from "@andarama/db";
+import { eq } from "drizzle-orm";
 import type { ClerkVerifier } from "./lib/clerk.js";
 
 /**
@@ -41,6 +44,9 @@ const people: Record<string, FakeUser> = {
   // Dani llega sin plan: catorce días de prueba
   "tok-dani": { email: "dani@ejemplo.es", name: "Dani", plan: null },
   "tok-eva": { email: "eva@ejemplo.es", name: "Eva", plan: "u:formacion" },
+  // Fede ya tenía cuenta de antes y figura en ADMIN_EMAILS
+  "tok-fede": { email: "fede@ejemplo.es", name: "Fede", plan: null },
+  "tok-gabi": { email: "gabi@ejemplo.es", name: "Gabi", plan: "u:andar" },
 };
 
 const verifier: ClerkVerifier = {
@@ -57,6 +63,7 @@ const verifier: ClerkVerifier = {
 };
 
 let app: Hono<AppEnv>;
+let db: Db;
 
 async function call(token: string | null, path: string, opts: { method?: string; body?: unknown } = {}): Promise<Response> {
   const headers: Record<string, string> = {};
@@ -71,16 +78,18 @@ async function call(token: string | null, path: string, opts: { method?: string;
 
 beforeAll(async () => {
   const dataDir = mkdtempSync(join(tmpdir(), "anda-clerk-"));
-  const { db, sqlite } = await createSqliteDb(":memory:");
+  const created = await createSqliteDb(":memory:");
+  const sqlite = created.sqlite;
+  db = created.db as unknown as Db;
   await migrateSqlite(sqlite, migrationsDir);
   const runtime: PlatformRuntime = {
     platform: "node",
     publicUrl: "http://localhost",
-    db,
+    db: created.db,
     kv: createSqliteKv(sqlite),
     storage: createFsStorage({ rootDir: join(dataDir, "storage"), hmacSecret: "test-secret", publicUrl: "http://localhost" }),
     queue: createInProcessQueue(),
-    analytics: createSqlAnalytics(db),
+    analytics: createSqlAnalytics(created.db),
     passwords: createArgon2Hasher(),
     email: createSmtpEmail({ from: "test@localhost" }),
     deferred: (p) => {
@@ -95,6 +104,8 @@ beforeAll(async () => {
       emailFrom: "test@localhost",
       maxUploadBytes: 1024 * 1024 * 100,
       clerk: { publishableKey: "pk_test_x", secretKey: "sk_test_x" },
+      // Sin distinguir mayúsculas y con espacios, como se escribe a mano
+      adminEmails: parseAdminEmails(" Bruno@Ejemplo.es , fede@ejemplo.es"),
     },
     clerkVerifier: verifier,
   });
@@ -127,7 +138,7 @@ describe("instancia alojada con Clerk", () => {
   });
 
   it("da de alta al usuario la primera vez, con su organización y su plan", async () => {
-    // La primera persona que entra administra la instancia: no paga
+    // Bruno está en ADMIN_EMAILS: administra la instancia y no paga
     const first = (await (await call("tok-bruno", "/api/v1/me")).json()) as {
       user: { email: string; roleGlobal: string };
       orgs: { id: string; ownerId: string }[];
@@ -422,5 +433,105 @@ describe("instancia alojada con Clerk", () => {
     const bruno = (await (await call("tok-bruno", "/api/v1/me")).json()) as { orgs: { id: string }[] };
     const { slug: slugBruno } = await publicar("tok-bruno", bruno.orgs[0]!.id, "Demo pública");
     expect(await (await call(null, `/t/${slugBruno}`)).text()).not.toContain("utm_source=insignia");
+  });
+});
+
+describe("administradores por lista blanca (ADMIN_EMAILS)", () => {
+  it("el alta dentro de la lista es administradora y fuera de ella no, y las dos quedan auditadas", async () => {
+    const bruno = (await db.select().from(users).where(eq(users.email, "bruno@ejemplo.es")))[0]!;
+    const ana = (await db.select().from(users).where(eq(users.email, "ana@ejemplo.es")))[0]!;
+    expect(bruno.roleGlobal).toBe("admin");
+    expect(ana.roleGlobal).toBe("user");
+    const provisions = await db.select().from(auditLog).where(eq(auditLog.action, "user.provision"));
+    const deBruno = provisions.find((row) => row.entityId === bruno.id);
+    const deAna = provisions.find((row) => row.entityId === ana.id);
+    expect(JSON.parse(deBruno!.detailJson!)).toEqual({ firstUser: true, via: "clerk", roleGlobal: "admin" });
+    expect(JSON.parse(deAna!.detailJson!)).toEqual({ firstUser: false, via: "clerk", roleGlobal: "user" });
+    expect(deAna!.userId).toBe(ana.id);
+  });
+
+  it("canjear un cupón nunca cambia el rol", async () => {
+    const { codes } = (await (await call("tok-bruno", "/api/v1/admin/coupons", { method: "POST", body: { count: 2, plan: "formacion" } })).json()) as { codes: string[] };
+    const antes = (await db.select().from(users).where(eq(users.email, "clara@ejemplo.es")))[0]!;
+    expect((await call("tok-clara", "/api/v1/billing/coupon", { method: "POST", body: { code: codes[0]! } })).status).toBe(200);
+    expect((await call("tok-bruno", "/api/v1/billing/coupon", { method: "POST", body: { code: codes[1]! } })).status).toBe(200);
+    const clara = (await db.select().from(users).where(eq(users.email, "clara@ejemplo.es")))[0]!;
+    const bruno = (await db.select().from(users).where(eq(users.email, "bruno@ejemplo.es")))[0]!;
+    expect(antes.roleGlobal).toBe("user");
+    expect(clara.roleGlobal).toBe("user");
+    expect(bruno.roleGlobal).toBe("admin");
+    const cambios = await db.select().from(auditLog).where(eq(auditLog.action, "admin.role_change"));
+    expect(cambios.filter((row) => row.entityId === clara.id)).toHaveLength(0);
+  });
+
+  it("quien está en la lista y aún no administra se promueve al entrar, con auditoría", async () => {
+    const now = Date.now();
+    await db.insert(users).values({
+      id: "fede-antiguo",
+      email: "fede@ejemplo.es",
+      name: "Fede",
+      clerkId: "user_tok-fede",
+      roleGlobal: "user",
+      emailVerified: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+    const me = (await (await call("tok-fede", "/api/v1/me")).json()) as { user: { roleGlobal: string } };
+    expect(me.user.roleGlobal).toBe("admin");
+    const cambio = (await db.select().from(auditLog).where(eq(auditLog.entityId, "fede-antiguo"))).find((row) => row.action === "admin.role_change");
+    expect(JSON.parse(cambio!.detailJson!)).toMatchObject({ from: "user", to: "admin", via: "clerk" });
+    // Una segunda petición no repite la promoción
+    await call("tok-fede", "/api/v1/me");
+    const cambios = (await db.select().from(auditLog).where(eq(auditLog.entityId, "fede-antiguo"))).filter((row) => row.action === "admin.role_change");
+    expect(cambios).toHaveLength(1);
+  });
+
+  it("el cambio de rol desde el panel deja admin.role_change con el valor anterior", async () => {
+    const clara = (await db.select().from(users).where(eq(users.email, "clara@ejemplo.es")))[0]!;
+    expect((await call("tok-bruno", `/api/v1/admin/users/${clara.id}`, { method: "PATCH", body: { roleGlobal: "admin" } })).status).toBe(200);
+    expect((await call("tok-bruno", `/api/v1/admin/users/${clara.id}`, { method: "PATCH", body: { roleGlobal: "user" } })).status).toBe(200);
+    // Sin cambio real, sin acción específica
+    expect((await call("tok-bruno", `/api/v1/admin/users/${clara.id}`, { method: "PATCH", body: { roleGlobal: "user" } })).status).toBe(200);
+    const cambios = (await db.select().from(auditLog).where(eq(auditLog.entityId, clara.id)))
+      .filter((row) => row.action === "admin.role_change")
+      .map((row) => JSON.parse(row.detailJson!) as { from: string; to: string });
+    expect(cambios).toEqual([
+      { from: "user", to: "admin", via: "panel" },
+      { from: "admin", to: "user", via: "panel" },
+    ]);
+  });
+});
+
+describe("cuota por dueño", () => {
+  it("abrir otra organización no multiplica la cuota del plan", async () => {
+    const me = (await (await call("tok-gabi", "/api/v1/me")).json()) as { orgs: { id: string }[] };
+    const propia = me.orgs[0]!.id;
+    expect((await call("tok-gabi", "/api/v1/projects", { method: "POST", body: { orgId: propia, title: "Único" } })).status).toBe(201);
+    const nueva = (await (await call("tok-gabi", "/api/v1/orgs", { method: "POST", body: { name: "Segunda de Gabi" } })).json()) as { id: string };
+    const res = await call("tok-gabi", "/api/v1/projects", { method: "POST", body: { orgId: nueva.id, title: "Otro más" } });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toMatchObject({ code: "quota_tours", plan: "andar", limit: 1 });
+    // El uso que se enseña es el de todo lo que responde el dueño
+    const usage = (await (await call("tok-gabi", `/api/v1/orgs/${nueva.id}/usage`)).json()) as { usedTours: number; quotaTours: number };
+    expect(usage).toMatchObject({ usedTours: 1, quotaTours: 1 });
+    // Y el almacenamiento también se suma entre organizaciones
+    await db.insert(media).values({
+      id: "medio-gordo",
+      orgId: propia,
+      kind: "image",
+      filename: "gordo.jpg",
+      mime: "image/jpeg",
+      bytes: 5 * 1024 * 1024 * 1024 - 10,
+      r2Key: "media/x/gordo.jpg",
+      status: "ready",
+      createdBy: "gabi",
+      createdAt: Date.now(),
+    });
+    const subida = await call("tok-gabi", "/api/v1/media", {
+      method: "POST",
+      body: { orgId: nueva.id, kind: "image", filename: "a.jpg", mime: "image/jpeg", bytes: 1000 },
+    });
+    expect(subida.status).toBe(403);
+    expect(await subida.json()).toMatchObject({ code: "quota_bytes" });
   });
 });

@@ -17,7 +17,9 @@ title: Seguridad y RGPD
 
 - **Analítica sin cookies**: identificador de sesión efímero (se descarta al cerrar la pestaña), IP nunca almacenada (hash con sal diaria solo para rate limiting anti-abuso), datos agregados.
 - Integraciones GA4/Matomo **desactivadas por defecto** y bajo responsabilidad del autor del tour.
-- Derecho de supresión: eliminar un usuario borra sus datos personales; los envíos de formularios pueden purgarse desde el panel del proyecto.
+- **Derecho de supresión**: eliminar un usuario borra sus datos personales; los envíos de formularios pueden purgarse desde el panel del proyecto. En la instancia alojada, cuando alguien borra su cuenta en Clerk, el webhook `user.deleted` borra las organizaciones en las que era el único miembro (proyectos, publicaciones, dominios, medios del almacenamiento, formularios y resultados), le retira de las compartidas (responde de ellas otro administrador) y deja sus comentarios sin autor. Queda en la auditoría como `user.deleted`. La configuración está en [Despliegue en Cloudflare](/docs/despliegue/cloudflare/#webhook-de-clerk).
+- **Portabilidad**: el administrador de una organización descarga todos sus datos en un ZIP (véase la [guía de administración](/docs/admin/guia/#exportación-completa-de-una-organización)).
+- **Administradores**: solo las direcciones de `ADMIN_EMAILS` administran la instancia, y todo cambio de rol queda auditado como `admin.role_change`.
 - Para el despliegue Cloudflare, la organización que opera la instancia debe formalizar el DPA estándar de Cloudflare (disponible en su dashboard) como encargado de tratamiento.
 
 ## Divulgación responsable

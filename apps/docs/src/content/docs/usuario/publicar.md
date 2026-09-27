@@ -45,6 +45,8 @@ En la instancia alojada, un tour **público** puede pedir además una página pr
 
 La ficha lleva el visor embebido, el botón de pantalla completa, la portada capturada al publicar como imagen social, datos estructurados de lugar (`TouristAttraction` o `Place`, con `geo`) y entra en el `sitemap-tours.xml` con su portada. Si cambias la visibilidad a algo que no sea público, la ficha se apaga sola; los textos se conservan por si la vuelves a encender. El índice, `andarama.com/explorar/`, se filtra por país.
 
+Cada ficha la revisa una persona antes de que aparezca: hasta que se aprueba, el diálogo de publicar dice «Ficha en revisión» y la página no se lista ni se indexa (el recorrido, en cambio, ya está publicado en su enlace). Si cambias los textos de la ficha, vuelve a revisión; republicar solo el contenido no la toca.
+
 ### API postMessage del visor embebido
 
 La referencia completa está en [Embeber un tour](/docs/usuario/embeber/#api-postmessage).

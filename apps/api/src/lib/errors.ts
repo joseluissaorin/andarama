@@ -50,5 +50,11 @@ export const quotaExceeded = (detail: string, extra: { code: "quota_tours" | "qu
 /** El plan vigente no incluye la capacidad: el cliente sabe cuál por `capability`. */
 export const capabilityMissing = (detail: string, extra: { capability: string; plan: string | null }): ApiError =>
   new ApiError(403, "No incluido en el plan", detail, "https://andarama.com/errors/capability", { code: "capability", ...extra });
+/**
+ * Sin plan vigente (la prueba caducó): el recorrido publicado sigue en línea
+ * y exportar sigue libre, pero editar, republicar y subir medios piden plan.
+ */
+export const planRequired = (detail: string, extra: { plan: string | null; trialEnded: boolean }): ApiError =>
+  new ApiError(403, "Hace falta un plan", detail, "https://andarama.com/errors/plan", { code: "plan_required", ...extra });
 export const serverError = (detail = "Error interno"): ApiError =>
   new ApiError(500, "Error interno", detail, "https://andarama.com/errors/internal");

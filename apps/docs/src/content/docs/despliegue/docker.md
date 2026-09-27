@@ -27,7 +27,11 @@ Abre `http://localhost:8788/studio/` y registra el primer usuario (será adminis
 | `OIDC_ISSUER/CLIENT_ID/CLIENT_SECRET/ALLOWED_DOMAINS` | SSO institucional (opcional) |
 | `S3_ENDPOINT/BUCKET/ACCESS_KEY_ID/SECRET_ACCESS_KEY` | Almacenamiento S3/MinIO en lugar del FS local (opcional) |
 | `TURNSTILE_SITE_KEY/SECRET` | Anti-spam en formularios (opcional) |
+| `ADMIN_EMAILS` | Administradores de la instancia, separados por comas (recomendada). Vacía: el primer usuario registrado administra |
 | `CLERK_PUBLISHABLE_KEY/SECRET_KEY` | Cuentas y planes con Clerk, como en andarama.com (opcional; el self-host no lo necesita) |
+| `CLERK_WEBHOOK_SECRET` | Secreto de firma del [webhook de Clerk](/docs/despliegue/cloudflare/#webhook-de-clerk) (solo con Clerk) |
+
+En `deploy/docker/.env.example` están todas, comentadas: cópialo como `.env` y rellena lo que uses. Una variable vacía cuenta como no definida.
 
 ## TLS automático
 

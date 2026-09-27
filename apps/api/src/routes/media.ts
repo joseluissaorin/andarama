@@ -5,10 +5,12 @@ import { hotspots, jobs, media, mediaDerivatives, orgs, scenes } from "@andarama
 import { verifyUploadUrl } from "@andarama/adapters";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound, payloadTooLarge, quotaExceeded } from "../lib/errors.js";
-import { orgQuota } from "../lib/quota.js";
+import { orgQuota, usedBytes } from "../lib/quota.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
+import { requireActivePlan } from "../lib/capabilities.js";
+import { templateOrgIds } from "../lib/templates.js";
 import { guessContentType } from "./projects.js";
 import { audit, getSettings, mimeAllowedForKind, sanitizeSvgServer, sniffMime } from "../lib/helpers.js";
 
@@ -79,6 +81,8 @@ export function mediaRoutes(): Hono<AppEnv> {
     const runtime = c.get("runtime");
     const body = createSchema.parse(await c.req.json());
     await requireOrgRole(db, body.orgId, auth.user, "collaborator");
+    // Al caducar la prueba no se sube nada más (lo subido se queda)
+    await requireActivePlan(db, c.get("config"), body.orgId);
 
     const settings = await getSettings(db);
     if (body.bytes > settings.maxUploadMb * 1024 * 1024) {
@@ -86,13 +90,10 @@ export function mediaRoutes(): Hono<AppEnv> {
     }
     const org = (await db.select().from(orgs).where(eq(orgs.id, body.orgId)).limit(1))[0];
     if (org == null) throw notFound();
-    const used = await db
-      .select({ total: sql<number>`coalesce(sum(${media.bytes}), 0)` })
-      .from(media)
-      .where(and(eq(media.orgId, body.orgId), isNull(media.deletedAt)));
+    // La cuota del plan es del dueño: se suma lo de todas sus organizaciones
     const quota = await orgQuota(db, c.get("config"), org);
-    if (Number(used[0]?.total ?? 0) + body.bytes > quota.quotaBytes) {
-      throw quotaExceeded("La organización ha agotado su cuota de almacenamiento", {
+    if ((await usedBytes(db, quota)) + body.bytes > quota.quotaBytes) {
+      throw quotaExceeded(quota.fromPlan ? "Tu plan ha agotado su cuota de almacenamiento, sumando todas tus organizaciones" : "La organización ha agotado su cuota de almacenamiento", {
         code: "quota_bytes",
         plan: quota.plan,
         limit: quota.quotaBytes,
@@ -481,6 +482,10 @@ async function ownedMedia(
   const db = c.get("db");
   const row = (await db.select().from(media).where(eq(media.id, mediaId)).limit(1))[0];
   if (row == null || row.deletedAt != null) throw notFound("Medio no encontrado");
+  // Los medios de la organización Plantillas se reutilizan sin copiar en el
+  // tour de ejemplo y en los proyectos hechos desde una plantilla: se leen
+  // desde cualquier cuenta, pero solo se tocan desde la suya
+  if (minRole === "reader" && (await templateOrgIds(db, c.get("config"))).has(row.orgId)) return row;
   await requireOrgRole(db, row.orgId, auth.user, minRole);
   return row;
 }

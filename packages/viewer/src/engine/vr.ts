@@ -1,6 +1,8 @@
 import type { Hotspot } from "@andarama/schema";
 import { XrRenderer } from "./xr/render.js";
-import { XrInput, type XrPointer } from "./xr/input.js";
+import { XrInput, isTrackedPointer, type XrPointer } from "./xr/input.js";
+import { GazeDwell } from "./xr/gaze.js";
+import { SceneTransition } from "./xr/transition.js";
 import { cameraQuaternion, rotateAroundWorldY, screenAngle, viewMatrixFromQuat, yawPitchFromQuat, type Quat } from "./xr/orientation.js";
 import { DeviceOrientationControlMethod } from "./gyro.js";
 import {
@@ -14,7 +16,6 @@ import {
   type PanelZone,
 } from "./xr/panel.js";
 import {
-  angleDiff,
   dirFromYawPitch,
   matForward,
   matPosition,
@@ -27,6 +28,7 @@ import {
   vecScale,
   vecSub,
   viewMatrix,
+  yawPitchFromDir,
   type Ray,
   type Vec3,
 } from "./xr/math.js";
@@ -39,7 +41,14 @@ import {
  *   dos manos articuladas y el rayo de apuntado de manos y mandos; cualquier
  *   hotspot se activa apuntando y pellizcando (o con el gatillo). El
  *   contenido se abre en un panel flotante dibujado con Canvas 2D.
+ *   Si la sesión no tiene mandos ni manos —Chrome en Android con un visor de
+ *   cartón, cuya entrada es la mirada—, se dibuja el retículo y se acciona
+ *   por permanencia, como en el modo cartón; el botón del visor sigue
+ *   valiendo como atajo.
  * - **Cardboard**: estéreo lado a lado con giroscopio para móviles sin WebXR.
+ *
+ * Convenio de ángulos: aquí el pitch es positivo hacia ARRIBA, al revés que
+ * en Marzipano. Quien llama convierte con `marzipanoToVr` (xr/math.ts).
  *
  * No hay dependencias externas ni peticiones al servidor: un tour exportado
  * conserva el modo inmersivo íntegro siempre que se sirva por HTTPS, que es
@@ -51,6 +60,7 @@ export interface VrHotspot {
   /** Factor de tamaño respecto al botón estándar de 44 px. */
   scale?: number;
   yaw: number;
+  /** Convenio VR: positivo hacia arriba (el de Marzipano, cambiado de signo). */
   pitch: number;
   label: string;
   type: string;
@@ -75,10 +85,11 @@ export interface VrCallbacks {
   onNavigate(target: string): Promise<void>;
   /** Hotspots que actúan sin panel: enlace, estado, polígono. */
   onDirectAction(hotspot: VrHotspot): void;
-  onQuizAnswer(hotspotId: string, correct: boolean, points: number): void;
+  onQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[]): void;
   /** Contenido que se continúa fuera de VR: se abre al terminar la sesión. */
   onExternalRequest(url: string): void;
   onExit(): void;
+  /** Vista del visor plano, ya en el convenio VR (pitch positivo hacia arriba). */
   getViewYawPitch(): { yaw: number; pitch: number };
   text(value: unknown): string;
   url(value: string): string;
@@ -94,11 +105,17 @@ const PANEL_HEIGHT_M = (PANEL_WIDTH_M * PANEL_HEIGHT) / PANEL_WIDTH;
 const TOUCH_DISTANCE = 0.045;
 /** Margen de cabeza (radianes) que no rompe la permanencia de la mirada. */
 const GAZE_TOLERANCE = 0.1;
-const DEFAULT_DWELL_MS = 2500;
+const DEFAULT_DWELL_MS = 1500;
 
 /** El tamaño del marcador se respeta, pero acotado: en gafas un cartel enorme molesta. */
 function clampScale(scale: number | undefined): number {
   return Math.max(0.6, Math.min(1.8, scale ?? 1));
+}
+
+/** Clave estable de un objetivo, para el temporizador de mirada. */
+function targetKey(target: PointerTarget): string | null {
+  if (target == null) return null;
+  return target.kind === "hotspot" ? target.hotspot.id : `zone:${target.zone.id}`;
 }
 
 type PointerTarget =
@@ -123,7 +140,15 @@ export class VRManager {
   private orientationGranted = true;
   private orientationGate: HTMLElement | null = null;
   private exitButton: HTMLButtonElement | null = null;
-  private navigating = false;
+  /** Cambio de escena con fundido, al ritmo del bucle de la sesión. */
+  private transition = new SceneTransition<VrEnvironment>({
+    navigate: (target) => this.callbacks.onNavigate(target),
+    load: () => this.callbacks.getEnvironment(),
+    apply: (env) => this.applyEnvironment(env),
+    onError: (error) => console.warn("[andarama] no se pudo cambiar de escena en VR", error),
+  });
+  /** Opacidad del velo negro del fundido en el fotograma actual. */
+  private fade = 0;
 
   // Panel abierto
   private openHotspot: VrHotspot | null = null;
@@ -139,8 +164,12 @@ export class VRManager {
   private hover = new Map<string, PointerTarget>();
   private images = new Map<string, HTMLImageElement>();
   private headPosition: Vec3 = [0, 0, 0];
-  private gazeProgress = 0;
+  private dwell = new GazeDwell(DEFAULT_DWELL_MS, GAZE_TOLERANCE);
   private xrForward: Vec3 | null = null;
+  /** Lo que hay bajo la mirada en XR, se use o no la selección por mirada. */
+  private xrGazeTarget: PointerTarget = null;
+  /** La sesión ha tenido mandos o manos: entonces no se acciona por mirada. */
+  private trackedPointerSeen = false;
   /** Orientación completa del móvil en cartón: conserva el balanceo. */
   private cardboardQuat: Quat | null = null;
   private rotateHint: HTMLElement | null = null;
@@ -148,7 +177,13 @@ export class VRManager {
   private tapHandler: ((e: Event) => void) | null = null;
   private reticleTex = new Map<string, WebGLTexture>();
   /** Permanencia configurable por tour (`vr.dwellSeconds`). */
-  dwellMs = DEFAULT_DWELL_MS;
+  get dwellMs(): number {
+    return this.dwell.dwellMs;
+  }
+
+  set dwellMs(ms: number) {
+    this.dwell.dwellMs = ms;
+  }
 
   onChange: ((active: boolean, mode: "xr" | "cardboard" | null) => void) | null = null;
 
@@ -221,6 +256,12 @@ export class VRManager {
     this.closePanel();
   }
 
+  private applyEnvironment(env: VrEnvironment): void {
+    this.env = env;
+    this.uploadEnv();
+    this.iconTex.clear();
+  }
+
   private uploadEnv(): void {
     if (this.renderer == null || this.env == null || this.envTex == null) return;
     this.renderer.upload(this.envTex, this.env.element as TexImageSource);
@@ -251,16 +292,24 @@ export class VRManager {
     session.addEventListener("select", (e: any) => this.onSelect(e));
     session.addEventListener("end", () => this.teardown());
 
-    const onFrame = (_time: number, frame: any): void => {
+    // Todo lo que pasa dentro de la sesión va al ritmo de este bucle: en Meta
+    // Quest el requestAnimationFrame de la ventana está parado mientras dura.
+    const onFrame = (time: number, frame: any): void => {
       if (this.xrSession == null) return;
       session.requestAnimationFrame(onFrame);
+      this.fade = this.transition.frame(time);
       const pose = frame.getViewerPose(this.refSpace);
       if (pose == null) return;
       this.headPosition = matPosition(pose.transform.matrix);
       this.xrForward = matForward(pose.transform.matrix);
 
-      const pointers = this.input.read(frame, this.refSpace, session);
+      // La mirada (Android con cartón) no es un puntero con rayo: dibujarla
+      // como tal era la «flecha» lila que no accionaba nada.
+      const all = this.input.read(frame, this.refSpace, session);
+      const pointers = all.filter((p) => isTrackedPointer(p));
+      if (pointers.length > 0) this.trackedPointerSeen = true;
       this.updateInteraction(pointers);
+      this.updateXrGaze(time);
       this.refreshPanelTexture();
 
       const glLayer = session.renderState.baseLayer;
@@ -281,8 +330,7 @@ export class VRManager {
 
   private onSelectStart(event: any): void {
     // Empezar a arrastrar el divisor del comparador
-    const key = this.keyForSource(event.inputSource);
-    const target = this.hover.get(key);
+    const target = this.targetForSource(event.inputSource);
     if (target?.kind === "panel" && target.zone.id === "compare") {
       this.panelState.compare = target.u;
       this.panelDirty = true;
@@ -290,8 +338,42 @@ export class VRManager {
   }
 
   private onSelect(event: any): void {
-    const key = this.keyForSource(event.inputSource);
-    this.activate(this.hover.get(key) ?? null);
+    const source = event.inputSource;
+    const target = this.targetForSource(source);
+    // Tocar la pantalla o el botón del visor acciona lo mirado al instante; el
+    // anillo se vacía para que la permanencia no lo repita a continuación.
+    if (!isTrackedPointer(source)) this.dwell.consume(targetKey(target));
+    this.activate(target);
+  }
+
+  /** Mandos y manos apuntan con su rayo; la mirada y los toques, con la cabeza. */
+  private targetForSource(source: any): PointerTarget {
+    if (!isTrackedPointer(source)) return this.xrGazeTarget;
+    return this.hover.get(this.keyForSource(source)) ?? null;
+  }
+
+  /**
+   * Selección por mirada en WebXR: solo cuando la sesión no ha tenido mandos
+   * ni manos. En Quest, bajar las manos un momento no debe convertir cada
+   * mirada sostenida en un clic.
+   */
+  private gazeSelectActive(): boolean {
+    return this.mode === "cardboard" || (this.mode === "xr" && !this.trackedPointerSeen);
+  }
+
+  private updateXrGaze(now: number): void {
+    const forward = this.xrForward;
+    if (forward == null) return;
+    const ray: Ray = { origin: this.headPosition, direction: forward };
+    const target = this.pickPanel(ray) ?? this.pickHotspot(ray);
+    this.xrGazeTarget = target;
+    if (!this.gazeSelectActive()) {
+      this.dwell.reset();
+      return;
+    }
+    if (target != null) this.hover.set("gaze", target);
+    const { yaw, pitch } = yawPitchFromDir(forward);
+    if (this.dwell.update(targetKey(target), yaw, pitch, now)) this.activate(target);
   }
 
   private keyForSource(source: any): string {
@@ -414,7 +496,7 @@ export class VRManager {
       const target = this.hover.get("gaze");
       if (target != null) {
         e.preventDefault();
-        this.gazeProgress = 0;
+        this.dwell.consume(targetKey(target));
         this.activate(target);
       }
     };
@@ -423,11 +505,7 @@ export class VRManager {
 
     // Selección por mirada: sin mando ni pantalla táctil accesible, el
     // visitante no puede pulsar nada, así que el retículo central acumula
-    // permanencia sobre lo que mira y lo acciona solo. Se reinicia si cambia
-    // de objetivo o si la cabeza se mueve más de un margen.
-    let gazeTarget: string | null = null;
-    let gazeStart = 0;
-    let gazeAnchor = { yaw: 0, pitch: 0 };
+    // permanencia sobre lo que mira y lo acciona solo (xr/gaze.ts).
     const loop = (): void => {
       if (this.mode !== "cardboard" || this.gl == null || this.canvas == null) return;
       this.raf = requestAnimationFrame(loop);
@@ -438,6 +516,8 @@ export class VRManager {
         this.canvas.width = w;
         this.canvas.height = h;
       }
+      const now = performance.now();
+      this.fade = this.transition.frame(now);
       if (this.env?.dynamic === true) this.uploadEnv();
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -448,20 +528,9 @@ export class VRManager {
       // de la cabeza no se alcanzaba, y sin poder mirar el aspa el panel no
       // había forma de cerrarlo en cardboard.
       const target = this.pickPanel(gaze) ?? this.pickHotspot(gaze);
-      const id =
-        target == null ? null : target.kind === "hotspot" ? target.hotspot.id : `zone:${target.zone.id}`;
-      const drift = Math.hypot(angleDiff(yaw, gazeAnchor.yaw), pitch - gazeAnchor.pitch);
-      if (id !== gazeTarget || drift > GAZE_TOLERANCE) {
-        gazeTarget = id;
-        gazeStart = performance.now();
-        gazeAnchor = { yaw, pitch };
-      } else if (id != null && performance.now() - gazeStart > this.dwellMs) {
-        gazeTarget = null;
-        this.activate(target);
-      }
-      this.gazeProgress = gazeTarget != null ? Math.min(1, (performance.now() - gazeStart) / this.dwellMs) : 0;
       this.hover.clear();
       if (target != null) this.hover.set("gaze", target);
+      if (this.dwell.update(targetKey(target), yaw, pitch, now)) this.activate(target);
       this.refreshPanelTexture();
       const proj = perspective(1.05, w / 2 / h, 0.05, 120);
       // Con el cuaternión se conserva la inclinación de la cabeza; sin él, al
@@ -506,6 +575,9 @@ export class VRManager {
   }
 
   private pickHotspot(ray: Ray): PointerTarget {
+    // Durante el fundido de un salto los hotspots ya son los de la escena
+    // nueva y la panorámica aún la vieja: no se apuntan ni se dibujan.
+    if (this.transition.hideHotspots) return null;
     let best: PointerTarget = null;
     for (const hs of this.callbacks.getHotspots()) {
       const center = this.hotspotCenter(hs);
@@ -565,7 +637,7 @@ export class VRManager {
 
   private activateHotspot(hs: VrHotspot): void {
     if (hs.type === "navigation" && hs.target != null) {
-      void this.navigate(hs.target);
+      this.navigate(hs.target);
       return;
     }
     if (hs.type === "link" || hs.type === "state" || hs.type === "polygon") {
@@ -640,7 +712,7 @@ export class VRManager {
     const correct = picked.size === correctIds.size && [...picked].every((id) => correctIds.has(id));
     this.panelState.answered = true;
     this.panelState.correct = correct;
-    this.callbacks.onQuizAnswer(hs.id, correct, quiz.points ?? 1);
+    this.callbacks.onQuizAnswer(hs.id, correct, quiz.points ?? 1, [...picked]);
   }
 
   // -----------------------------------------------------------------------
@@ -767,7 +839,8 @@ export class VRManager {
     for (const target of this.hover.values()) {
       if (target?.kind === "hotspot") hovered.add(target.hotspot.id);
     }
-    for (const hs of this.callbacks.getHotspots()) {
+    const hotspots = this.transition.hideHotspots ? [] : this.callbacks.getHotspots();
+    for (const hs of hotspots) {
       const center = this.hotspotCenter(hs);
       const active = hovered.has(hs.id);
       const size = HOTSPOT_SIZE * clampScale(hs.scale) * (active ? 1.18 : 1);
@@ -826,14 +899,35 @@ export class VRManager {
       }
     }
 
-    // Retículo del modo cardboard, con el anillo que se va dibujando
-    if (this.mode === "cardboard") {
-      const forward = dirFromYawPitch(this.cardboardYawPitch.yaw, this.cardboardYawPitch.pitch);
-      const reticle = vecAdd(this.headPosition, vecScale(forward, 2.2));
-      const tex = this.reticleTexture(this.gazeProgress);
-      if (tex != null) {
-        r.draw(r.quad, r.billboardMatrix(reticle, this.headPosition, 0.34), { texture: tex, color: [1, 1, 1, 1] });
+    // Retículo de la selección por mirada (cartón, y WebXR sin mandos), con
+    // el anillo que se va dibujando. Se pone a la distancia de lo mirado —y
+    // si no hay nada, a la de los hotspots— con el mismo tamaño aparente: en
+    // un visor con un ojo por pantalla, un retículo más cerca que el hotspot
+    // se ve doble.
+    if (this.gazeSelectActive()) {
+      const forward =
+        this.mode === "cardboard"
+          ? dirFromYawPitch(this.cardboardYawPitch.yaw, this.cardboardYawPitch.pitch)
+          : this.xrForward;
+      const tex = forward != null ? this.reticleTexture(this.dwell.progress) : null;
+      if (forward != null && tex != null) {
+        const aimed = this.hover.get("gaze");
+        const distance = aimed != null ? Math.max(0.3, aimed.distance * 0.97) : HOTSPOT_RADIUS;
+        const reticle = vecAdd(this.headPosition, vecScale(forward, distance));
+        r.draw(r.quad, r.billboardMatrix(reticle, this.headPosition, (0.34 * distance) / 2.2), {
+          texture: tex,
+          color: [1, 1, 1, 1],
+          depthTest: false,
+        });
       }
+    }
+
+    // Velo negro del fundido entre escenas
+    if (this.fade > 0) {
+      r.draw(r.jointSphere, matTranslateScale(this.headPosition, 0.5), {
+        color: [0, 0, 0, this.fade],
+        depthTest: false,
+      });
     }
   }
 
@@ -965,15 +1059,16 @@ export class VRManager {
     return tex;
   }
 
-  private async navigate(target: string): Promise<void> {
-    if (this.navigating) return;
-    this.navigating = true;
-    try {
-      await this.callbacks.onNavigate(target);
-      await this.refreshEnvironment();
-    } finally {
-      this.navigating = false;
-    }
+  /**
+   * Salto de escena. No espera a nada que dependa del bucle de la ventana: la
+   * textura nueva se sube en un fotograma del propio bucle inmersivo
+   * (xr/transition.ts).
+   */
+  private navigate(target: string): void {
+    if (this.transition.busy) return;
+    this.closePanel();
+    this.dwell.reset();
+    void this.transition.request(target);
   }
 
   // -----------------------------------------------------------------------
@@ -999,6 +1094,12 @@ export class VRManager {
     this.closePanel();
     this.input.reset();
     this.hover.clear();
+    this.transition.reset();
+    this.dwell.reset();
+    this.fade = 0;
+    this.xrGazeTarget = null;
+    this.trackedPointerSeen = false;
+    this.xrForward = null;
     this.images.clear();
     this.iconTex.clear();
     this.exitButton?.remove();

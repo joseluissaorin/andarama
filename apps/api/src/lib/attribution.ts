@@ -47,6 +47,8 @@ export interface AttributionRow {
   planOverride: string | null;
   createdAt: number;
   planUpdatedAt: number | null;
+  /** Fecha real del primer cobro (webhook de Clerk Billing), si se conoce. */
+  firstPaidAt?: number | null;
   attributedAt: number | null;
   attribution: Attribution | null;
 }
@@ -91,7 +93,8 @@ export function attributionCsv(rows: AttributionRow[]): string {
     const a = r.attribution ?? {};
     // El primer pago solo cuenta si hay plan de pago: sin plan, la fecha de
     // plan_updated_at es la del alta o la de una baja, no un cobro
-    const pago = r.plan != null || r.planOverride != null ? r.planUpdatedAt : null;
+    // Si el webhook de Clerk Billing fechó el cobro real (first_paid_at), esa manda.
+    const pago = r.firstPaidAt ?? (r.plan != null || r.planOverride != null ? r.planUpdatedAt : null);
     lineas.push(
       [
         r.userId,

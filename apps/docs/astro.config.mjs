@@ -48,6 +48,7 @@ export default defineConfig({
             { label: "Insertar en Moodle", translations: { en: "Add to Moodle" }, slug: "usuario/moodle" },
             { label: "La insignia «Hecho con Andarama»", translations: { en: "The Made with Andarama badge" }, slug: "usuario/insignia" },
             { label: "Realidad virtual (WebXR)", translations: { en: "Virtual reality (WebXR)" }, slug: "usuario/realidad-virtual" },
+            { label: "Comprobar la realidad virtual", translations: { en: "Testing virtual reality" }, slug: "usuario/comprobar-realidad-virtual" },
             { label: "Docencia: quiz, SCORM y LTI", translations: { en: "Teaching: quiz, SCORM and LTI" }, slug: "usuario/docencia" },
             { label: "Cómo hacer un escape room", translations: { en: "How to make an escape room" }, slug: "usuario/escape-room" },
             { label: "Visita guiada con Meet o Teams", translations: { en: "Live guided tour with Meet or Teams" }, slug: "usuario/en-vivo" },

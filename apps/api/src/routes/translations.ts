@@ -7,6 +7,7 @@ import { badRequest, forbidden } from "../lib/errors.js";
 import { newId, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
+import { requireActivePlan } from "../lib/capabilities.js";
 
 /**
  * Traducciones granulares (§3.4): la vista lado a lado del Studio lee y
@@ -36,6 +37,7 @@ export function translationRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     if (!access.canEdit) throw forbidden();
+    await requireActivePlan(db, c.get("config"), access.project.orgId);
     const lang = c.req.param("lang");
     const entries = z
       .array(
@@ -135,6 +137,7 @@ ${units}
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     if (!access.canEdit) throw forbidden();
+    await requireActivePlan(db, c.get("config"), access.project.orgId);
     const lang = c.req.param("lang");
     const xml = await c.req.text();
     const entries: { entity: string; entityId: string; field: string; value: string }[] = [];
@@ -185,6 +188,7 @@ ${units}
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     if (!access.canEdit) throw forbidden();
+    await requireActivePlan(db, c.get("config"), access.project.orgId);
     const lang = c.req.param("lang");
     const text = (await c.req.text()).replace(/^﻿/, "");
     const lines = parseCsv(text);

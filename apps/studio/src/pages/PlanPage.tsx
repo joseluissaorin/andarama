@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearch } from "@tanstack/react-router";
 import { PricingTable } from "@clerk/react";
+import { CheckoutButton, usePlans } from "@clerk/react/experimental";
 import { BadgeCheck, Home, Hourglass, Sparkles, Ticket } from "lucide-react";
 import { Badge, Button, Field, Input, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
@@ -8,6 +10,7 @@ import { getClerk, isClerkMode, studioPrefix } from "../clerk";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { Cabecera } from "../components/Cabecera";
+import { normalizePlanSlug, takePlanIntent } from "../intent";
 
 interface BillingMe {
   mode: "clerk" | "local";
@@ -58,6 +61,9 @@ function PlanPageClerk(): React.ReactNode {
   }, [refresh, queryClient]);
 
   const data = billing.data;
+  // El plan elegido en la web (`?plan=paseo`, o el que quedó apuntado antes del alta)
+  const search = useSearch({ strict: false }) as { plan?: string };
+  const [elegido] = useState<string | null>(() => normalizePlanSlug(search.plan) ?? takePlanIntent());
   const tamano = (bytes: number): string => {
     const gb = bytes / (1024 * 1024 * 1024);
     return gb >= 1 ? `${Math.round(gb)} GB` : `${Math.round(bytes / (1024 * 1024))} MB`;
@@ -122,6 +128,8 @@ function PlanPageClerk(): React.ReactNode {
         )}
       </section>
 
+      {elegido != null && data != null && data.plan !== elegido && !data.instanceAdmin && <ChosenPlanCard slug={elegido} />}
+
       <CouponBox />
 
       <section id="planes" className="anda-bloque p-5">
@@ -136,6 +144,50 @@ function PlanPageClerk(): React.ReactNode {
 
       <p className="text-[13px] leading-relaxed text-[var(--anda-text-dim)]">{t("plan_fair_use")}</p>
     </div>
+  );
+}
+
+/** Periodo con el que se abre cada plan: el que se anuncia en la web. */
+const PERIODO: Record<string, "month" | "annual"> = {
+  andar: "month",
+  aula: "annual",
+  paseo: "month",
+  excursion: "annual",
+  formacion: "month",
+};
+
+/**
+ * El plan que se eligió en la web, ya abierto: la tarjeta con su botón y,
+ * la primera vez, el cajón de pago de Clerk directamente. Si Clerk no
+ * conoce ese slug, no se enseña nada y queda la tabla de precios.
+ */
+function ChosenPlanCard({ slug }: { slug: string }): React.ReactNode {
+  const t = useT();
+  const { data: plans } = usePlans({ for: "user", pageSize: 20 });
+  const plan = plans?.find((p) => p.slug === slug);
+  const boton = useRef<HTMLSpanElement>(null);
+  const abierto = useRef(false);
+
+  useEffect(() => {
+    if (plan == null || abierto.current) return;
+    abierto.current = true;
+    // Se abre el cajón una sola vez; si se cierra, la tarjeta sigue ahí
+    boton.current?.querySelector("button")?.click();
+  }, [plan]);
+
+  if (plan == null) return null;
+  return (
+    <section className="anda-bloque border-[var(--anda-primary)] p-5" aria-labelledby="plan-elegido">
+      <h2 id="plan-elegido" className="mb-1 flex items-center gap-2 text-[15px] font-semibold">
+        <Sparkles className="h-4 w-4" /> {t("plan_chosen_title", { plan: plan.name })}
+      </h2>
+      <p className="mb-3 text-[13.5px] text-[var(--anda-text-dim)]">{t("plan_chosen_hint")}</p>
+      <span ref={boton}>
+        <CheckoutButton planId={plan.id} planPeriod={PERIODO[slug]} for="user" newSubscriptionRedirectUrl={`${studioPrefix()}/plan`}>
+          <Button>{t("plan_chosen_cta", { plan: plan.name })}</Button>
+        </CheckoutButton>
+      </span>
+    </section>
   );
 }
 
