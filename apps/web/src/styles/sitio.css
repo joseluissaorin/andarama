@@ -295,6 +295,7 @@
 .formulario__estado { margin: 0; font-weight: 700; min-height: 1.4em; }
 .formulario__aviso { margin: 0; font-size: 13.5px; color: var(--tinta-suave); }
 .formulario__aviso a { color: var(--naranja-tinta); }
+.caja--naranja .formulario__aviso, .caja--naranja .formulario__aviso a { color: var(--tinta); }
 .formulario .btn[disabled] { opacity: 0.6; cursor: progress; }
 .pasos-lista { margin: 0 0 18px; padding-inline-start: 22px; max-width: 680px; }
 .pasos-lista li { margin: 8px 0; }

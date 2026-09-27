@@ -29,7 +29,7 @@ const TituloPlan = enPagina ? "h3" : "h4";
 <section class:list={["precios", { "precios--pagina": enPagina }]} id="precios">
   {!enPagina && <h2>{t(lang, "precios.titulo")}</h2>}
   {!enPagina && <p set:html={t(lang, "precios.texto")} />}
-  <p class="precios__prueba"><strong>{t(lang, "precios.prueba")}</strong></p>
+  {!enPagina && <p class="precios__prueba"><strong>{t(lang, "precios.prueba")}</strong></p>}
   {bloques.map((bloque) => (
     <div class="precios__bloque" id={`precios-${bloque}`}>
       <Titulo class="precios__bloque-titulo">{t(lang, `precios.bloques.${bloque}.titulo`)}</Titulo>
