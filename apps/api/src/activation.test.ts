@@ -33,7 +33,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const migrationsDir = resolve(here, "../../../packages/db/migrations");
 
 const people: Record<string, { email: string; name: string; plan: string | null }> = {
-  // La primera cuenta administra la instancia y guarda la organización Plantillas
+  // La cuenta del operador (en ADMIN_EMAILS) administra la instancia y guarda la organización Plantillas
   "tok-op": { email: "operador@andarama.test", name: "Plantillas", plan: null },
   // Llega sin plan: catorce días de prueba
   "tok-lia": { email: "lia@ejemplo.es", name: "Lía", plan: null },
@@ -60,6 +60,7 @@ const config: AppConfig = {
   emailFrom: "test@localhost",
   maxUploadBytes: 1024 * 1024 * 100,
   clerk: { publishableKey: "pk_test_x", secretKey: "sk_test_x" },
+  adminEmails: ["operador@andarama.test"],
 };
 
 async function call(token: string | null, path: string, opts: { method?: string; body?: unknown } = {}): Promise<Response> {
