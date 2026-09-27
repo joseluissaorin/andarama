@@ -36,6 +36,10 @@ import { ExportDialog, LiveDialog, PublishDialog, ShareDialog } from "./dialogs"
 import type { GalleryInfo } from "./gallery";
 import { CommandPalette } from "./CommandPalette";
 import { CriaturaCameo } from "../components/Criatura";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
+import { OnboardingChecklist, ONBOARDING_KEY } from "../components/Onboarding";
 
 export interface ProjectInfo {
   id: string;
@@ -43,6 +47,10 @@ export interface ProjectInfo {
   title: string;
   slug: string;
   permissions: { canEdit: boolean; canPublish: boolean; canManage: boolean; role: string };
+  /** Prueba caducada o sin plan: el editor abre en solo lectura (exportar sigue libre). */
+  planLocked?: boolean;
+  /** Tour de ejemplo clonado al dar de alta. */
+  isSample?: boolean;
   publication: { slug: string; visibility: string; hasPassword: boolean; kiosk?: boolean; gallery?: GalleryInfo | null } | null;
 }
 
@@ -84,6 +92,13 @@ export function EditorPage(): React.ReactNode {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const connIdRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
+
+  // Añadir un punto o una escena cuenta en los primeros pasos: se vuelve a
+  // preguntar al guardar (la consulta se cachea, no se pide en cada tecla)
+  useEffect(() => {
+    if (editor.saving === "saved") void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEY });
+  }, [editor.saving, queryClient]);
 
   // Carga inicial (restaurando pestaña y escena desde la URL)
   useEffect(() => {
@@ -345,6 +360,17 @@ export function EditorPage(): React.ReactNode {
           </Button>
         )}
       </header>
+
+      {project.planLocked === true && (
+        <div role="status" className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] px-4 py-2 text-[13px] font-medium">
+          <Lock className="h-4 w-4 shrink-0 text-[var(--anda-primary)]" aria-hidden="true" />
+          <span className="flex-1">{t("editor_plan_locked")}</span>
+          <Link to="/plan" className="font-semibold text-[var(--anda-primary)] hover:underline">
+            {t("plan_trial_cta")}
+          </Link>
+        </div>
+      )}
+      {project.planLocked !== true && <OnboardingChecklist compact />}
 
       <nav className="anda-barra flex px-3 py-2" aria-label="Vistas del editor">
         {/* El raíl hundido y la pestaña elegida como tecla ámbar: el mismo

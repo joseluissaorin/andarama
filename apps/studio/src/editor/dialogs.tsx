@@ -10,6 +10,9 @@ import { useI18nStore, useT } from "../i18n";
 import { captureShareImage } from "./shareCapture";
 import { countryOptions, GALLERY_LIMITS, galleryPayload, initialGalleryForm, validateGallery, type GalleryError, type GalleryInfo } from "./gallery";
 import type { ProjectInfo } from "./EditorPage";
+import { useQueryClient } from "@tanstack/react-query";
+import { markOnboardingStep, ONBOARDING_KEY } from "../components/Onboarding";
+import { reportFirstPublish, trackEvent } from "../growth";
 
 // ---------------------------------------------------------------------------
 // Publicar (§3.6, §2.13)
@@ -35,7 +38,16 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [note, setNote] = useState("");
   const [kiosk, setKiosk] = useState(project.publication?.kiosk === true);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; galleryUrl: string | null; warnings: { message: string }[] } | null>(null);
+  const [result, setResult] = useState<{
+    url: string;
+    kioskUrl: string;
+    tourUrl: string;
+    kiosk: boolean;
+    galleryUrl: string | null;
+    galleryStatus: GalleryInfo["status"];
+    warnings: { message: string }[];
+  } | null>(null);
+  const queryClient = useQueryClient();
   // El dominio propio es de los planes altos en la instancia alojada
   const me = useAuth((s) => s.me);
   const dominioPermitido = canUse(me, "customDomain");
@@ -74,6 +86,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
         kiosk: boolean;
         gallery?: GalleryInfo;
         galleryUrl?: string | null;
+        firstForUser?: boolean;
         warnings: { message: string }[];
       }>(`/projects/${project.id}/publish`, {
         method: "POST",
@@ -92,13 +105,25 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           gallery: alojada ? galleryPayload({ ...gallery, enabled: galeriaActiva }) : undefined,
         },
       });
-      setResult({ url: res.url, kioskUrl: res.kioskUrl, tourUrl: res.tourUrl, kiosk: res.kiosk, galleryUrl: res.galleryUrl ?? null, warnings: res.warnings });
+      setResult({
+        url: res.url,
+        kioskUrl: res.kioskUrl,
+        tourUrl: res.tourUrl,
+        kiosk: res.kiosk,
+        galleryUrl: res.galleryUrl ?? null,
+        galleryStatus: res.gallery?.status,
+        warnings: res.warnings,
+      });
+      // La activación: la primera vez que esta persona publica algo suyo
+      reportFirstPublish(me, res.firstForUser, { storage: localStorage, track: trackEvent });
+      void queryClient.invalidateQueries({ queryKey: ONBOARDING_KEY });
       onPublished({ slug: res.slug, visibility, hasPassword: password !== "", kiosk: res.kiosk, gallery: res.gallery ?? null });
       toast.push(t("publish_ok"), "ok");
     } catch (err) {
       const issues = err instanceof ApiRequestError ? (err.extra?.issues as { message?: string }[] | undefined) : undefined;
       if (issues != null && issues.length > 0) setBlockers(issues.map((i) => String(i.message ?? "")));
-      toast.push(String(err instanceof Error ? err.message : err), "error");
+      if (err instanceof ApiRequestError && err.extra?.code === "plan_required") toast.push(t("plan_required_toast"), "error");
+      else toast.push(String(err instanceof Error ? err.message : err), "error");
     } finally {
       setBusy(false);
     }
@@ -207,6 +232,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
                 label={t("gallery_title")}
               />
               <p id="pb-gal-titulo" className="text-xs text-[var(--anda-text-dim)]">{galeriaPosible ? t("gallery_hint") : t("gallery_needs_public")}</p>
+              {galeriaActiva && <GalleryStatusNote status={project.publication?.gallery?.status} />}
               {galeriaActiva && (
                 <div className="space-y-3">
                   <Field
@@ -284,6 +310,9 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
         </div>
       ) : (
         <div className="space-y-3">
+          {result.galleryStatus != null && result.galleryStatus !== "off" && result.galleryStatus !== "approved" && (
+            <GalleryStatusNote status={result.galleryStatus} />
+          )}
           {result.galleryUrl != null && (
             <p className="text-sm">
               <span className="mr-1.5 font-semibold">{t("gallery_url")}:</span>
@@ -308,6 +337,7 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               variant="secondary"
               onClick={() => {
                 void navigator.clipboard.writeText(result.url).then(() => toast.push(t("copied"), "ok"));
+                void markOnboardingStep("share", queryClient);
               }}
             >
               <Copy className="h-4 w-4" /> {t("copy")}
@@ -356,6 +386,23 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   );
 }
 
+/** Estado de moderación de la ficha: pendiente, aprobada o rechazada. */
+function GalleryStatusNote({ status }: { status: GalleryInfo["status"] }): React.ReactNode {
+  const t = useT();
+  if (status == null || status === "off") return null;
+  const tono =
+    status === "approved"
+      ? "border-[var(--anda-ok)] text-[var(--anda-text)]"
+      : status === "rejected"
+        ? "border-[var(--anda-danger)] text-[var(--anda-danger)]"
+        : "border-[var(--anda-primary)] text-[var(--anda-text)]";
+  return (
+    <p role="status" className={`rounded-lg border px-3 py-2 text-[12.5px] ${tono}`}>
+      {t(`gallery_status_${status}`)}
+    </p>
+  );
+}
+
 /** El primer error de la ficha de la galería, en palabras. */
 function mensajeGaleria(t: (key: string, vars?: Record<string, string | number>) => string, error: GalleryError): string {
   switch (error) {
@@ -398,8 +445,11 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
     }
   }, [open, url]);
 
+  const queryClient = useQueryClient();
   const copy = (text: string): void => {
     void navigator.clipboard.writeText(text).then(() => toast.push(t("copied"), "ok"));
+    // Compartir o insertar es el último de los primeros pasos
+    void markOnboardingStep("share", queryClient);
   };
 
   return (

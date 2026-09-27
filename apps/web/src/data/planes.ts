@@ -35,9 +35,13 @@ const ORDEN: PlanSlug[] = ["andar", "aula", "paseo", "excursion", "formacion", "
 
 const GB = 1024 * 1024 * 1024;
 
-/** Enlace del Studio con el plan preseleccionado. */
+/**
+ * Enlace del Studio con el plan preseleccionado. Va al alta, no al acceso: el
+ * `?plan=` sobrevive al registro y la página de planes abre ese plan (quien
+ * ya tiene cuenta y sesión pasa de largo).
+ */
 export function planHref(slug: PlanSlug): string {
-  return `https://app.andarama.com/plan?plan=${slug}`;
+  return `https://app.andarama.com/register?plan=${slug}`;
 }
 
 function cifra(n: number): string {

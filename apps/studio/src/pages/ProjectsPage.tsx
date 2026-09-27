@@ -37,6 +37,8 @@ import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { Criatura } from "../components/Criatura";
 import { Cabecera } from "../components/Cabecera";
+import { OnboardingChecklist, useOnboarding } from "../components/Onboarding";
+import { TrialOverCard } from "../components/TrialBanner";
 
 interface ProjectSummary {
   id: string;
@@ -46,6 +48,8 @@ interface ProjectSummary {
   tags: string[];
   status: string;
   isTemplate: boolean;
+  /** Tour de ejemplo clonado al dar de alta: no cuenta en la cuota. */
+  isSample?: boolean;
   coverMediaId: string | null;
   updatedAt: number;
   publishedSlug: string | null;
@@ -58,7 +62,20 @@ interface Usage {
   usedTours: number;
   plan?: string | null;
   fromPlan?: boolean;
+  /** Prueba caducada o sin plan: editar, republicar y subir piden plan. */
+  planLocked?: boolean;
 }
+
+/** Plantilla por sector del operador (organización Plantillas). */
+interface SectorTemplate {
+  id: string;
+  key: string;
+  title: string;
+  coverMediaId: string | null;
+}
+
+/** Sectores con nombre traducido; cualquier otro se muestra con su título. */
+const SECTORES = new Set(["escape_room", "prl", "museo", "campus", "inmobiliaria"]);
 
 export function ProjectsPage(): React.ReactNode {
   const t = useT();
@@ -78,6 +95,7 @@ export function ProjectsPage(): React.ReactNode {
   const [newFolder, setNewFolder] = useState("");
   const [fromTemplate, setFromTemplate] = useState("");
   const [busy, setBusy] = useState(false);
+  const userId = useAuth((s) => s.me?.user?.id ?? null);
 
   const projects = useQuery({
     queryKey: ["projects", orgId, view === "trash"],
@@ -89,6 +107,26 @@ export function ProjectsPage(): React.ReactNode {
     queryFn: () => api<Usage>(`/orgs/${orgId}/usage`),
     enabled: orgId != null,
   });
+
+  // Plantillas por sector del operador: si la instancia no tiene, no se enseña nada
+  const sectorTemplates = useQuery({
+    queryKey: ["sector-templates"],
+    queryFn: () => api<SectorTemplate[]>("/projects/sector-templates"),
+    staleTime: 5 * 60_000,
+  });
+  const onboarding = useOnboarding();
+
+  // El primer minuto no es una pantalla vacía: la primera vez, el tour de
+  // ejemplo se abre solo (una vez por usuario y navegador)
+  useEffect(() => {
+    const sampleId = onboarding.data?.sampleProjectId;
+    if (sampleId == null || userId == null || projects.data == null) return;
+    if (projects.data.some((p) => p.isSample !== true && !p.isTemplate)) return;
+    const clave = `andarama:ejemplo-abierto:${userId}`;
+    if (localStorage.getItem(clave) != null) return;
+    localStorage.setItem(clave, "1");
+    void navigate({ to: "/p/$projectId", params: { projectId: sampleId } });
+  }, [onboarding.data?.sampleProjectId, userId, projects.data, navigate]);
 
   // Las carpetas guardadas viven en la organización para que una recién
   // creada, todavía vacía, no desaparezca al recargar
@@ -178,12 +216,19 @@ export function ProjectsPage(): React.ReactNode {
       });
       setCreateOpen(false);
       setNewTitle("");
+      setFromTemplate("");
       await navigate({ to: "/p/$projectId", params: { projectId: res.id } });
     } catch (err) {
       // Cuota del plan agotada en la instancia alojada: se lleva a la tabla de planes
       if (err instanceof ApiRequestError && err.extra?.code === "quota_tours" && isClerkMode()) {
         setCreateOpen(false);
         toast.push(`${t("quota_reached")} ${err.detail ?? ""}`.trim(), "error");
+        await navigate({ to: "/plan" });
+        return;
+      }
+      if (err instanceof ApiRequestError && err.extra?.code === "plan_required") {
+        setCreateOpen(false);
+        toast.push(t("plan_required_toast"), "error");
         await navigate({ to: "/plan" });
         return;
       }
@@ -201,6 +246,10 @@ export function ProjectsPage(): React.ReactNode {
         title={folder === "" ? t("projects") : folder}
         hint={folder === "" ? t("projects_intro") : contarEn(folder) === 1 ? t("folder_intro_one") : t("folder_intro", { n: String(contarEn(folder)) })}
       />
+
+      {/* Al caducar la prueba, lo primero: qué sigue funcionando y qué pide plan */}
+      <TrialOverCard />
+      {folder === "" && view === "active" && <OnboardingChecklist />}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         {folder !== "" && (
@@ -356,6 +405,41 @@ export function ProjectsPage(): React.ReactNode {
         }
       >
         <div className="space-y-4">
+          {(sectorTemplates.data ?? []).length > 0 && (
+            <fieldset>
+              <legend className="mb-1 text-[13px] font-semibold">{t("sector_templates")}</legend>
+              <p className="mb-2 text-[12.5px] text-[var(--anda-text-dim)]">{t("sector_templates_hint")}</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="radiogroup" aria-label={t("sector_templates")}>
+                {[{ id: "", key: "", title: t("sector_blank"), coverMediaId: null }, ...(sectorTemplates.data ?? [])].map((tpl) => {
+                  const elegida = fromTemplate === tpl.id;
+                  const nombre = tpl.id === "" ? tpl.title : SECTORES.has(tpl.key) ? t(`template_sector_${tpl.key}`) : tpl.title;
+                  return (
+                    <button
+                      key={tpl.id || "blank"}
+                      type="button"
+                      role="radio"
+                      aria-checked={elegida}
+                      onClick={() => {
+                        setFromTemplate(tpl.id);
+                        // El título de la plantilla sirve de punto de partida si aún no hay uno
+                        if (tpl.id !== "" && newTitle.trim() === "") setNewTitle(tpl.title);
+                      }}
+                      className={`rounded-[var(--anda-radius)] border px-3 py-2.5 text-left text-[13px] font-semibold transition-colors ${
+                        elegida
+                          ? "border-[var(--anda-primary)] bg-[var(--anda-primary-soft)] text-[var(--anda-text)]"
+                          : "border-[var(--anda-border)] hover:border-[var(--anda-primary)]"
+                      }`}
+                    >
+                      {nombre}
+                      {tpl.id !== "" && tpl.title !== nombre && (
+                        <span className="mt-0.5 block truncate text-[11.5px] font-normal text-[var(--anda-text-dim)]">{tpl.title}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          )}
           <Field label={t("title")} htmlFor="np-title">
             <Input id="np-title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} autoFocus />
           </Field>
@@ -369,7 +453,11 @@ export function ProjectsPage(): React.ReactNode {
           </Field>
           {templates.length > 0 && (
             <Field label={t("from_template")} htmlFor="np-template">
-              <Select id="np-template" value={fromTemplate} onChange={(e) => setFromTemplate(e.target.value)}>
+              <Select
+                id="np-template"
+                value={templates.some((tpl) => tpl.id === fromTemplate) ? fromTemplate : ""}
+                onChange={(e) => setFromTemplate(e.target.value)}
+              >
                 <option value="">-</option>
                 {templates.map((tpl) => (
                   <option key={tpl.id} value={tpl.id}>
@@ -641,6 +729,7 @@ function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
           <Badge>{t("draft")}</Badge>
         )}
         {project.isTemplate && <Badge tone="warn">{t("templates")}</Badge>}
+        {project.isSample === true && <Badge tone="warn">{t("sample_badge")}</Badge>}
         {project.tags.map((tag) => (
           <Badge key={tag}>
             <Tag className="mr-1 h-3 w-3" />
