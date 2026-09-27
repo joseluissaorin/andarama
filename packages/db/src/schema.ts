@@ -426,8 +426,13 @@ export const formSubmissions = sqliteTable(
     lang: text("lang"),
     createdAt: integer("created_at").notNull(),
     ipHash: text("ip_hash"),
+    /** Identificador anónimo del visitante (formularios de un solo envío). */
+    visitorId: text("visitor_id"),
   },
-  (t) => [index("form_submissions_project_idx").on(t.projectId)],
+  (t) => [
+    index("form_submissions_project_idx").on(t.projectId),
+    index("form_submissions_visitor_idx").on(t.projectId, t.hotspotId, t.visitorId),
+  ],
 );
 
 export const quizResults = sqliteTable(

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { formSubmissions, publications, quizResults, webhooks } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, forbidden, notFound } from "../lib/errors.js";
@@ -9,6 +9,7 @@ import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { clientIp, rateLimit, verifyTurnstile } from "../lib/helpers.js";
 import { hmacSign } from "@andarama/adapters";
+import { findHotspot, isOnceForm, loadPublishedTour, scoreQuiz } from "../lib/quiz.js";
 
 export function formRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
@@ -27,6 +28,8 @@ export function formRoutes(): Hono<AppEnv> {
         lang: z.string().max(10).optional(),
         data: z.record(z.unknown()),
         turnstileToken: z.string().nullable().optional(),
+        /** Identificador anónimo del visitante (lo guarda su navegador). */
+        visitorId: z.string().regex(/^[A-Za-z0-9-]{8,64}$/).optional(),
       })
       .parse(await c.req.json());
     const config = c.get("config");
@@ -35,6 +38,27 @@ export function formRoutes(): Hono<AppEnv> {
     // Limitar tamano de datos
     const json = JSON.stringify(body.data);
     if (json.length > 20000) throw badRequest("Datos demasiado grandes");
+    // Formulario de un solo envío: el segundo del mismo visitante se rechaza
+    // con 409 y el visor lo muestra como «ya enviado». Se identifica por el
+    // identificador anónimo del navegador y no por la IP, que en un aula es
+    // la misma para toda la clase.
+    if (body.visitorId != null) {
+      const tour = await loadPublishedTour(runtime, slug);
+      if (tour != null && isOnceForm(findHotspot(tour, body.hotspotId))) {
+        const previo = await db
+          .select({ id: formSubmissions.id })
+          .from(formSubmissions)
+          .where(
+            and(
+              eq(formSubmissions.projectId, pub.projectId),
+              eq(formSubmissions.hotspotId, body.hotspotId),
+              eq(formSubmissions.visitorId, body.visitorId),
+            ),
+          )
+          .limit(1);
+        if (previo.length > 0) return c.json({ ok: false, alreadySubmitted: true }, 409);
+      }
+    }
     const id = newId();
     await db.insert(formSubmissions).values({
       id,
@@ -44,6 +68,7 @@ export function formRoutes(): Hono<AppEnv> {
       lang: body.lang ?? null,
       createdAt: nowMs(),
       ipHash: await dailyIpHash(clientIp(c), config.secret),
+      visitorId: body.visitorId ?? null,
     });
     // Webhook form_submission
     const hooks = await db.select().from(webhooks).where(eq(webhooks.active, true));
@@ -75,38 +100,63 @@ export function formRoutes(): Hono<AppEnv> {
     if (pub == null) throw notFound();
     const body = z
       .object({
-        sessionId: z.string().max(60),
-        score: z.number().int().min(0),
-        maxScore: z.number().int().min(0),
-        passed: z.boolean().nullable(),
+        sessionId: z.string().min(1).max(60),
+        score: z.number().int().min(0).optional(),
+        maxScore: z.number().int().min(0).optional(),
+        passed: z.boolean().nullable().optional(),
         detail: z.array(z.record(z.unknown())).max(200),
         participantName: z.string().max(120).optional(),
-        ltiLaunchId: z.string().optional(),
+        ltiLaunchId: z.string().max(128).optional(),
       })
       .parse(await c.req.json());
-    const id = newId();
-    let ltiLaunchJson: string | null = null;
-    if (body.ltiLaunchId != null) {
-      ltiLaunchJson = await runtime.kv.get(`lti-launch:${body.ltiLaunchId}`);
+    // La nota la pone el servidor con el tour publicado: el navegador solo
+    // dice qué marcó. Sin tour (publicación rota) no hay con qué corregir y
+    // se guarda lo recibido, pero nunca por encima del máximo.
+    const tour = await loadPublishedTour(runtime, slug);
+    let score: number;
+    let maxScore: number;
+    let passed: boolean | null;
+    let detail: unknown[];
+    if (tour != null) {
+      const nota = scoreQuiz(tour, body.detail);
+      ({ score, maxScore, passed } = nota);
+      detail = nota.detail;
+    } else {
+      maxScore = body.maxScore ?? 0;
+      score = Math.min(body.score ?? 0, maxScore);
+      passed = body.passed ?? null;
+      detail = body.detail;
     }
+    // El lanzamiento LTI solo vale para el tour con el que se lanzó
+    let ltiLaunchJson: string | null = null;
+    let launchName: string | undefined;
+    if (body.ltiLaunchId != null) {
+      const raw = await runtime.kv.get(`lti-launch:${body.ltiLaunchId}`);
+      const launch = parseJson<{ slug?: string; name?: string } | null>(raw, null);
+      if (raw != null && launch != null && launch.slug === slug) {
+        ltiLaunchJson = raw;
+        launchName = launch.name;
+      }
+    }
+    const id = newId();
     await db.insert(quizResults).values({
       id,
       projectId: pub.projectId,
       sessionId: body.sessionId,
-      score: body.score,
-      maxScore: body.maxScore,
-      passed: body.passed,
-      detailJson: JSON.stringify(body.detail),
+      score,
+      maxScore,
+      passed,
+      detailJson: JSON.stringify(detail),
       ltiLaunchJson,
-      participantName: body.participantName ?? null,
+      participantName: body.participantName ?? launchName ?? null,
       createdAt: nowMs(),
     });
     // Devolucion de calificacion LTI AGS si el launch lo permite
     if (ltiLaunchJson != null) {
       const { sendAgsScore } = await import("./lti.js");
-      runtime.deferred(sendAgsScore(c as never, ltiLaunchJson, body.score, body.maxScore));
+      runtime.deferred(sendAgsScore(c as never, ltiLaunchJson, score, maxScore));
     }
-    return c.json({ ok: true }, 201);
+    return c.json({ ok: true, score, maxScore, passed }, 201);
   });
 
   /** Export CSV de envios de formularios (§2.14). */
