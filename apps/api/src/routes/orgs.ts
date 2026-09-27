@@ -9,6 +9,7 @@ import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
 import { orgQuota, usedBytes, usedTours } from "../lib/quota.js";
+import { buildOrgExport } from "../lib/org-export.js";
 import { INHERITED_KEYS, propagateOrgDefaults, type OrgDefaults } from "../lib/defaults.js";
 
 const roleSchema = z.enum(["admin", "editor", "collaborator", "reader"]);
@@ -149,6 +150,30 @@ export function orgRoutes(): Hono<AppEnv> {
       plan: quota.plan,
       fromPlan: quota.fromPlan,
       ownerId: quota.ownerId,
+    });
+  });
+
+  /**
+   * Exportación completa de la organización (portabilidad): proyectos,
+   * recorridos compilados, formularios, resultados e inventario de medios en
+   * un ZIP. Solo para quien la administra.
+   */
+  r.get("/:orgId/export", async (c) => {
+    const auth = requireAuth(c);
+    requireScope(auth, "projects:read");
+    const db = c.get("db");
+    const orgId = c.req.param("orgId");
+    await requireOrgRole(db, orgId, auth.user, "admin");
+    const org = (await db.select({ id: orgs.id }).from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
+    if (org == null) throw notFound();
+    const { zip, slug } = await buildOrgExport(db, orgId, c.get("config").publicUrl);
+    await audit(c, "org.export", "org", orgId, { bytes: zip.byteLength }, orgId);
+    return new Response(zip as unknown as BodyInit, {
+      headers: {
+        "content-type": "application/zip",
+        "content-disposition": `attachment; filename="andarama-${slug}-${new Date().toISOString().slice(0, 10)}.zip"`,
+        "cache-control": "no-store",
+      },
     });
   });
 

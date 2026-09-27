@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import type { Hono } from "hono";
 import { eq } from "drizzle-orm";
-import { auditLog, hotspots, media, users } from "@andarama/db";
+import { auditLog, formSubmissions, hotspots, media, quizResults, users } from "@andarama/db";
 import type { AppEnv, Db } from "./lib/context.js";
 import { compileProject } from "./compiler.js";
 import { createTestInstance } from "./test-support.js";
@@ -118,6 +118,31 @@ describe("autoinstalación con ADMIN_EMAILS", () => {
     expect(JSON.parse(cambios[0]!.detailJson!)).toMatchObject({ from: "admin", to: "user", via: "backup_import" });
     // Quien no figura en la lista (TARDE2 no es tarde) tampoco sube
     expect((await db.select().from(users).where(eq(users.id, "de-la-lista")))[0]!.roleGlobal).toBe("user");
+  });
+});
+
+describe("exportación de la organización", () => {
+  it("su administrador descarga un ZIP con proyectos, formularios y resultados; nadie más", async () => {
+    const { app, db } = await createTestInstance();
+    const eva = await register(app, "10.0.3.1", "eva@casa.test");
+    const fran = await register(app, "10.0.3.2", "fran@casa.test");
+    const proyecto = (await (await eva.call("/api/v1/projects", { method: "POST", body: { orgId: eva.orgId, title: "Visita al museo" } })).json()) as { id: string };
+    const now = Date.now();
+    await db.insert(formSubmissions).values({ id: "f1", projectId: proyecto.id, hotspotId: "h1", dataJson: JSON.stringify({ nombre: "Íñigo" }), createdAt: now });
+    await db.insert(quizResults).values({ id: "q1", projectId: proyecto.id, sessionId: "s1", score: 8, maxScore: 10, passed: true, createdAt: now });
+
+    expect((await fran.call(`/api/v1/orgs/${eva.orgId}/export`)).status).toBe(403);
+    const res = await eva.call(`/api/v1/orgs/${eva.orgId}/export`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/zip");
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    expect(String.fromCharCode(bytes[0]!, bytes[1]!)).toBe("PK");
+    const text = new TextDecoder("latin1").decode(bytes);
+    for (const name of ["LEEME.txt", "organizacion.json", "medios.json", "proyecto.json", "tour.json", "formularios.csv", "resultados-quiz.csv"]) {
+      expect(text).toContain(name);
+    }
+    const auditado = (await db.select().from(auditLog).where(eq(auditLog.action, "org.export")))[0];
+    expect(auditado?.orgId).toBe(eva.orgId);
   });
 });
 

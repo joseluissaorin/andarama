@@ -9,6 +9,7 @@ import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { clientIp, rateLimit, verifyTurnstile } from "../lib/helpers.js";
 import { hmacSign } from "@andarama/adapters";
+import { quizResultsCsv, submissionsCsv } from "../lib/csv-exports.js";
 
 export function formRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
@@ -120,28 +121,7 @@ export function formRoutes(): Hono<AppEnv> {
       .from(formSubmissions)
       .where(eq(formSubmissions.projectId, access.project.id))
       .orderBy(desc(formSubmissions.createdAt));
-    const fieldSet = new Set<string>();
-    const parsed = rows.map((row) => {
-      const data = parseJson<Record<string, unknown>>(row.dataJson, {});
-      for (const key of Object.keys(data)) fieldSet.add(key);
-      return { row, data };
-    });
-    const fields = [...fieldSet];
-    const head = ["fecha", "hotspot", "idioma", ...fields];
-    const lines = [head.map(csv).join(",")];
-    for (const { row, data } of parsed) {
-      lines.push(
-        [
-          new Date(row.createdAt).toISOString(),
-          row.hotspotId,
-          row.lang ?? "",
-          ...fields.map((f) => String(data[f] ?? "")),
-        ]
-          .map(csv)
-          .join(","),
-      );
-    }
-    return new Response("﻿" + lines.join("\r\n"), {
+    return new Response(submissionsCsv(rows), {
       headers: {
         "content-type": "text/csv; charset=utf-8",
         "content-disposition": `attachment; filename="${access.project.slug}-formularios.csv"`,
@@ -160,23 +140,7 @@ export function formRoutes(): Hono<AppEnv> {
       .from(quizResults)
       .where(eq(quizResults.projectId, access.project.id))
       .orderBy(desc(quizResults.createdAt));
-    const lines = [["fecha", "sesión", "participante", "puntuacion", "maximo", "aprobado", "lti"].map(csv).join(",")];
-    for (const row of rows) {
-      lines.push(
-        [
-          new Date(row.createdAt).toISOString(),
-          row.sessionId,
-          row.participantName ?? "",
-          String(row.score),
-          String(row.maxScore),
-          row.passed == null ? "" : row.passed ? "si" : "no",
-          row.ltiLaunchJson != null ? "si" : "no",
-        ]
-          .map(csv)
-          .join(","),
-      );
-    }
-    return new Response("﻿" + lines.join("\r\n"), {
+    return new Response(quizResultsCsv(rows), {
       headers: {
         "content-type": "text/csv; charset=utf-8",
         "content-disposition": `attachment; filename="${access.project.slug}-quiz.csv"`,
@@ -223,7 +187,3 @@ export function formRoutes(): Hono<AppEnv> {
   return r;
 }
 
-function csv(s: string): string {
-  if (/[",\r\n]/.test(s)) return `"${s.replaceAll('"', '""')}"`;
-  return s;
-}
