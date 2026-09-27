@@ -8,6 +8,7 @@ import {
   GripVertical,
   Image as ImageIcon,
   Lock,
+  Play,
   Plus,
   Search,
   Trash2,
@@ -798,7 +799,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
           ref={containerRef}
           className={`absolute inset-0 bg-[#0b1020] ${placement.kind !== "none" ? "cursor-crosshair" : ""}`}
         />
-        <SaltoDeHotspot contenedor={containerRef} sceneId={sceneId} />
+        <SaltoDeHotspot contenedor={containerRef} sceneId={sceneId} viewer={skinRef} />
         {placement.kind === "polygon" && (
           <PoligonoEnCurso contenedor={containerRef} puntos={placement.points} viewer={skinRef} />
         )}
@@ -920,9 +921,17 @@ function PoligonoEnCurso({ contenedor, puntos, viewer }: {
  * viaja pegado al marcador: cada fotograma lee dónde ha quedado, porque quien
  * mueve los marcadores es el motor del panorama, no React.
  */
-function SaltoDeHotspot({ contenedor, sceneId }: {
+/**
+ * Tipos cuyo contenido se abre en un panel: se pueden «probar» desde el
+ * editor para verlo como lo verá el visitante. Enlace, contador y polígono no
+ * abren nada propio; la navegación tiene su propio botón de salto.
+ */
+const PROBABLES = new Set(["text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf", "model3d", "quiz", "form", "web", "compare", "treasure", "tooltip"]);
+
+function SaltoDeHotspot({ contenedor, sceneId, viewer }: {
   contenedor: React.RefObject<HTMLDivElement>;
   sceneId: string;
+  viewer: React.MutableRefObject<MountedSkin | null>;
 }): React.ReactNode {
   const t = useT();
   const editor = useEditor();
@@ -935,9 +944,11 @@ function SaltoDeHotspot({ contenedor, sceneId }: {
     ? (readJson<{ target?: string }>(hotspot.contentJson, {}).target ?? null)
     : null;
   const destino = destinoId == null ? null : snapshot?.scenes.find((s) => s.id === destinoId) ?? null;
+  const probable = hotspot != null && PROBABLES.has(hotspot.type);
+  const conBoton = destino != null || probable;
 
   useEffect(() => {
-    if (hotspotId == null || destino == null || contenedor.current == null) {
+    if (hotspotId == null || !conBoton || contenedor.current == null) {
       setPos(null);
       return;
     }
@@ -969,9 +980,33 @@ function SaltoDeHotspot({ contenedor, sceneId }: {
       vivo = false;
       cancelAnimationFrame(frame);
     };
-  }, [hotspotId, destino, contenedor, sceneId]);
+  }, [hotspotId, conBoton, contenedor, sceneId]);
 
-  if (destino == null || pos == null) return null;
+  if (!conBoton || pos == null) return null;
+  const pillClass =
+    "anda-salto absolute z-20 flex max-w-56 -translate-x-1/2 items-center gap-1.5 truncate rounded-full border border-[var(--anda-border)] bg-[image:var(--anda-tecla)] px-3 py-1.5 text-[12.5px] font-semibold text-[#33260f] shadow-[var(--anda-relieve)] hover:brightness-105";
+  if (destino == null) {
+    // Probar el contenido: el editor cierra el panel al seleccionar, así que
+    // no había manera de ver el texto, el quiz o la galería como el visitante.
+    return (
+      <button
+        type="button"
+        title={t("hotspot_try_hint")}
+        onClick={() => {
+          const mounted = viewer.current;
+          const compilado = mounted?.viewer.tour.scenes.find((sc) => sc.id === sceneId)?.hotspots.find((h) => h.id === hotspotId);
+          if (mounted == null || compilado == null) return;
+          const marcador = contenedor.current?.querySelector<HTMLElement>(`.anda-hotspot[data-hotspot-id="${hotspotId}"]`) ?? null;
+          mounted.panelHost.open(compilado, marcador);
+        }}
+        style={{ left: pos.x, top: pos.y }}
+        className={pillClass}
+      >
+        <Play className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{t("hotspot_try")}</span>
+      </button>
+    );
+  }
   return (
     <button
       type="button"
@@ -984,7 +1019,7 @@ function SaltoDeHotspot({ contenedor, sceneId }: {
         editor.select(destino.id);
       }}
       style={{ left: pos.x, top: pos.y }}
-      className="anda-salto absolute z-20 flex max-w-56 -translate-x-1/2 items-center gap-1.5 truncate rounded-full border border-[var(--anda-border)] bg-[image:var(--anda-tecla)] px-3 py-1.5 text-[12.5px] font-semibold text-[#33260f] shadow-[var(--anda-relieve)] hover:brightness-105"
+      className={pillClass}
     >
       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
       <span className="truncate">{t("go_to_scene")} {destino.title}</span>
