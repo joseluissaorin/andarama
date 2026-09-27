@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { reportGrowth } from "./growth";
+import { reportFirstPublish, reportGrowth } from "./growth";
 import type { Me } from "./stores";
 
 function memoria(): Pick<Storage, "getItem" | "setItem"> {
@@ -74,5 +74,24 @@ describe("eventos de crecimiento", () => {
     const local: Me = { ...me(), billing: { mode: "local", plan: null, planName: null } };
     reportGrowth(local, { storage: memoria(), track: (n) => void eventos.push(n), now: () => ahora });
     expect(eventos).toEqual([]);
+  });
+});
+
+describe("primera publicación", () => {
+  it("manda primer_publicado una sola vez y solo si la API dice que es la primera", () => {
+    const storage = memoria();
+    const enviados: string[] = [];
+    const deps = { storage, track: (n: string) => void enviados.push(n) };
+    expect(reportFirstPublish(me(), false, deps)).toBe(false);
+    expect(reportFirstPublish(me(), true, deps)).toBe(true);
+    expect(reportFirstPublish(me(), true, deps)).toBe(false);
+    expect(enviados).toEqual(["primer_publicado"]);
+  });
+
+  it("no mide nada en el self-host", () => {
+    const enviados: string[] = [];
+    const local = { ...me(), billing: { mode: "local" as const, plan: null, planName: null } };
+    expect(reportFirstPublish(local, true, { storage: memoria(), track: (n) => void enviados.push(n) })).toBe(false);
+    expect(enviados).toEqual([]);
   });
 });

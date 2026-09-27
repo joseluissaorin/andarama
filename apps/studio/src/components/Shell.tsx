@@ -8,6 +8,8 @@ import { usePwa } from "../pwa";
 import { Criatura } from "./Criatura";
 import { LangPicker } from "./LangPicker";
 import { getClerk, isClerkMode } from "../clerk";
+import { peekPlanIntent } from "../intent";
+import { TrialBanner } from "./TrialBanner";
 import logoAndarama from "../brand/logo-andarama.svg";
 import andaCriatura from "../brand/anda-criatura.svg";
 
@@ -29,7 +31,10 @@ export function Shell(): React.ReactNode {
 
   useEffect(() => {
     if (loaded && me?.user == null && !clerkSinApi) {
-      void navigate({ to: "/login" });
+      // Quien llega de elegir un plan en la web aún no tiene cuenta: al alta
+      const plan = peekPlanIntent();
+      if (plan != null) void navigate({ to: "/register", search: { plan } });
+      else void navigate({ to: "/login" });
     }
   }, [loaded, me, navigate, clerkSinApi]);
 
@@ -178,6 +183,7 @@ export function Shell(): React.ReactNode {
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto">
+        <TrialBanner />
         <div className="anda-enter h-full">
           <Outlet />
         </div>
