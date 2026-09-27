@@ -15,6 +15,7 @@
  */
 import { getCollection, type CollectionEntry } from "astro:content";
 import { alternates, authorPath, blogPostPath, LANGS, pagePath, type Lang, type PageKey } from "../i18n";
+import { estaPublicado } from "./publicacion";
 
 export interface Alternativa {
   lang: Lang;
@@ -57,6 +58,14 @@ export const PAGE_KEYS: PageKey[] = [
   "aula",
   "wordpress",
   "privacidad",
+  "precios",
+  "inmobiliaria",
+  "seguridad",
+  "accesibilidad",
+  "codigoAbierto",
+  "contratacion",
+  "avisoLegal",
+  "condiciones",
   "herramientas",
   "visor",
   "planeta",
@@ -75,10 +84,13 @@ export function toParam(path: string): string | undefined {
 
 /**
  * Entradas del blog que se publican, de la más nueva a la más antigua. Los
- * borradores solo aparecen en el servidor de desarrollo.
+ * borradores y los artículos con fecha futura solo aparecen en el servidor
+ * de desarrollo (ver `publicacion.ts`): el sitio se reconstruye para que
+ * salgan el día que toca.
  */
 export async function publishedPosts(): Promise<CollectionEntry<"blog">[]> {
-  const posts = await getCollection("blog", (entry) => import.meta.env.DEV || !entry.data.borrador);
+  const ahora = new Date();
+  const posts = await getCollection("blog", (entry) => estaPublicado(entry.data, ahora, import.meta.env.DEV));
   return posts.sort((a, b) => b.data.fecha.getTime() - a.data.fecha.getTime());
 }
 

@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import { readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { remarkEnlacesPublicados } from "./scripts/blog-publicado.mjs";
 
 /**
  * El sitio público de andarama.com. Sale compilado a `dist/` y el script
@@ -31,6 +32,11 @@ export default defineConfig({
     routing: { prefixDefaultLocale: false, redirectToDefaultLocale: false },
   },
   image: { service: { entrypoint: "astro/assets/services/sharp" } },
+  // Los enlaces a artículos con fecha futura se quedan en texto hasta que se
+  // publiquen (en desarrollo se ve todo, así que no se tocan)
+  markdown: {
+    remarkPlugins: [remarkEnlacesPublicados({ dirBlog: join(here, "src/content/blog"), activo: process.argv.includes("build") })],
+  },
   vite: {
     build: { assetsInlineLimit: 0 },
   },
