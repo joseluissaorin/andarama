@@ -81,19 +81,21 @@ igual de bien.
 
 ## Exportar paquete estático
 
-**Exportar** genera en tu navegador un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python3 -m http.server`, en GitHub Pages o Cloudflare Pages sin configuración. No lleva backend, ni CDN, ni llamadas a la plataforma: una vez subido, el tour vive por su cuenta.
+**Exportar** genera en tu navegador, en segundo plano y sin congelar el editor, un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python3 -m http.server`, en GitHub Pages o Cloudflare Pages sin configuración. No lleva backend, ni CDN, ni llamadas a la plataforma: una vez subido, el tour vive por su cuenta.
 
 Eso sí, hay que **servirlo**, no abrirlo: el paquete estándar no funciona haciendo doble clic en `index.html` (`file://`), porque el navegador bloquea desde el sistema de ficheros tanto los módulos JavaScript como los panoramas. Para verlo en local, `python3 -m http.server` en la carpeta y abrir `http://localhost:8000`.
 
 Opciones:
 
 - **Idiomas incluidos** y **resolución máxima de tiles** (para reducir peso).
-- **Incluir/excluir descargas** de PDF e imágenes.
+- **Incluir descargas**: muestra u oculta el botón de descarga de los hotspots de imagen y PDF. Los archivos siguen dentro del paquete (el visitante los ve en el recorrido), así que no cambia el tamaño.
 - **Analítica**: endpoint propio configurable o desactivada.
 - **Service worker offline**: PWA instalable, ideal para museos y kioscos sin red.
-- **HTML único**: un solo `index.html` con el visor y los medios en base64, que sí se abre con doble clic. Solo admite escenas equirectangulares: los tiles multirresolución no se pueden incrustar porque el visor calcula sus URL nivel a nivel, así que con un tour teselado la opción aparece desactivada. Al abrirse por `file://` no hay WebXR (no es contexto seguro) y la VR queda en modo cardboard.
-- **SCORM 1.2 / 2004**: paquete para LMS con reporte de finalización y puntuación.
+- **HTML único**: un solo `index.html` con el visor y los medios en base64, que sí se abre con doble clic. «Tours pequeños» significa que el archivo pesa aproximadamente un tercio más que la suma de sus fotos y vídeos y el navegador lo carga entero en memoria: como orientación, por debajo de unos 100 MB (entre 10 y 15 panoramas sin vídeo). Se puede combinar con SCORM. Solo admite escenas equirectangulares: los tiles multirresolución no se pueden incrustar porque el visor calcula sus URL nivel a nivel, así que con un tour teselado la opción aparece desactivada. Al abrirse por `file://` no hay WebXR (no es contexto seguro) y la VR queda en modo cardboard.
+- **SCORM 1.2 / 2004**: paquete para LMS con reporte de finalización y puntuación, también con HTML único.
 - **Kiosko**: autopilot + reinicio por inactividad + bloqueo de salida.
+
+En Chrome y Edge se pide primero dónde guardar el ZIP y se escribe directamente en ese fichero mientras se genera; en los demás navegadores se descarga al terminar. Las fotos y teselas se descargan en paralelo y se guardan sin recomprimir (ya vienen comprimidas); solo se comprimen los ficheros de texto.
 
 El ZIP incluye además un `LEEME.md` con las instrucciones de subida y un
 `.htaccess` con los tipos MIME (`.webp`, `.avif`, `.glb`, `.webmanifest`) y las
