@@ -191,6 +191,14 @@ async function main(): Promise<void> {
         if (response.status === 404 && request.method === "GET" && !url.pathname.startsWith("/api/")) {
           const asset = await serveStatic(assetRoots, url.pathname);
           if (asset != null) return asset;
+          // El sitio público (apps/web) está en /landing dentro de los assets,
+          // pero sus enlaces internos son de raíz (/en/, /blog/, /_astro/…),
+          // igual que en el apex de Cloudflare.
+          const seccion = /^\/(studio|docs|viewer|landing)(\/|$)/.test(url.pathname);
+          if (!seccion) {
+            const web = await serveStatic(assetRoots, `/landing${url.pathname}`);
+            if (web != null) return web;
+          }
           if (url.pathname.startsWith("/studio")) {
             const spa = await serveStatic(assetRoots, "/studio/index.html");
             if (spa != null) return spa;

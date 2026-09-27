@@ -14,8 +14,10 @@ COPY deploy ./deploy
 # la CI ha probado, no las que salgan ese día.
 RUN pnpm install --frozen-lockfile
 RUN pnpm build:packages
-# La documentación va antes que el Studio: collect-assets la copia a /docs.
+# La documentación y el sitio público van antes que el Studio: collect-assets
+# los copia a /docs y /landing (la galería /explorar/ usa sus hojas de estilo).
 RUN pnpm --filter @andarama/docs build
+RUN pnpm --filter @andarama/web build
 RUN pnpm --filter @andarama/studio build
 RUN pnpm --filter @andarama/api build:node
 
