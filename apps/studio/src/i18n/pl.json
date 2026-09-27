@@ -1103,5 +1103,14 @@
   "help_export_sw": "Dodaje do pakietu elementy niezbędne do działania wirtualnego spaceru w trybie offline po pierwszym otwarciu oraz umożliwia zainstalowanie go jako aplikacji. Przydatne w muzeum, na targach lub w sali lekcyjnej bez Wi-Fi: wystarczy otworzyć go raz z dostępem do sieci, a będzie działać dalej nawet po utracie połączenia. Nie można łączyć z pojedynczym plikiem HTML.",
   "help_export_single": "Generuje pojedynczy plik index.html z przeglądarką i wszystkimi zdjęciami w środku, który można otworzyć dwuklikiem bez konieczności uruchamiania serwera. „Niewielki” oznacza brak sztywnego limitu scen, ale plik waży o około jedną trzecią więcej niż suma zawartych zdjęć i filmów, a przeglądarka wczytuje go w całości do pamięci: orientacyjnie działa płynnie poniżej około 100 MB, co zwykle odpowiada 10–15 standardowym panoramom bez wideo. Niedostępne, jeśli którakolwiek scena jest kafelkowana (bardzo duże zdjęcia). Można łączyć z formatem SCORM.",
   "help_export_scorm": "Generuje plik ZIP, który można przesłać do platformy Moodle (lub innego wirtualnego kampusu) jako aktywność SCORM. Platforma e-learningowa rejestruje, czy uczeń ukończył wirtualny spacer (zobaczył wszystkie sceny lub odpowiedział na wszystkie pytania) oraz jego wynik z quizów w porównaniu z progiem zaliczenia w Ustawieniach wirtualnego spaceru. Wybierz SCORM 1.2, jeśli Twoja platforma jest starszej generacji, a 2004 w pozostałych przypadkach. Działa również z pojedynczym plikiem HTML. Na stronie andarama.com opcja ta wchodzi w skład planu Formación.",
-  "help_export_kiosk": "Dla ekranów bez stałej obsługi (w muzeum, na targach, w recepcji): wirtualny spacer przemieszcza się samoczynnie w ramach automatycznego zwiedzania, a jeśli nikt go przez chwilę nie dotknie, uruchamia się od początku."
+  "help_export_kiosk": "Dla ekranów bez stałej obsługi (w muzeum, na targach, w recepcji): wirtualny spacer przemieszcza się samoczynnie w ramach automatycznego zwiedzania, a jeśli nikt go przez chwilę nie dotknie, uruchamia się od początku.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Zamknij menu",
+  "a11y_main_nav": "Główne",
+  "a11y_editing_now": "Osoby edytujące",
+  "a11y_editor_views": "Widoki edytora",
+  "a11y_target_lang": "Język docelowy",
+  "a11y_skip_to_content": "Przejdź do treści",
+  "a11y_require_alt": "Wymagaj tekstu alternatywnego do publikacji",
+  "a11y_require_alt_desc": "Jeśli scena lub hotspot nie ma tekstu alternatywnego, wirtualny spacer nie zostanie opublikowany, dopóki go nie będzie mieć. Zalecane dla instytucji publicznych, które odpowiadają za dostępność publikowanych treści."
 }

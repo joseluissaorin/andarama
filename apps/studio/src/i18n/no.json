@@ -1103,5 +1103,14 @@
   "help_export_sw": "Legger til det som trengs i pakken for at den virtuelle touren skal fungere frakoblet etter at den er åpnet for første gang, og for at den kan installeres som en app. Nyttig på museer, messer eller i klasserom uten trådløst nett: åpne den én gang med nettforbindelse, så fortsetter den å fungere selv om nettet forsvinner. Kan ikke kombineres med én enkel HTML-fil.",
   "help_export_single": "Genererer én enkelt index.html-fil med visningsprogrammet og alle bildene inni, som kan åpnes med et dobbeltklikk uten server. «Liten» betyr at det ikke er noen fast grense for antall scener, men filen veier omtrent en tredjedel mer enn summen av bildene og videoene til sammen, og nettleseren laster alt inn i minnet: som en veiledning fungerer det fint under ca. 100 MB, noe som vanligvis tilsvarer 10–15 vanlige panoramaer uten video. Ikke tilgjengelig hvis noen scener er flisdelte (svært store bilder). Kan kombineres med SCORM.",
   "help_export_scorm": "Genererer en ZIP-fil som lastes opp til Moodle (eller et annet virtuelt klasserom) som en SCORM-aktivitet. Det virtuelle klasserommet registrerer om eleven har fullført den virtuelle touren (alle scener sett eller alle spørsmål besvart) og elevens quizkarakter, sammenlignet med beståttkarakteren i Tour-innstillinger. Velg SCORM 1.2 hvis plattformen din er gammel, og 2004 i andre tilfeller. Fungerer også med én enkel HTML-fil. På andarama.com er dette inkludert i planen Formación.",
-  "help_export_kiosk": "For skjermer uten betjening (et museum, en messe, en resepsjon): den virtuelle touren går fremover av seg selv etter den automatiske omvisningen, og hvis ingen berører den på en stund, starter den på nytt."
+  "help_export_kiosk": "For skjermer uten betjening (et museum, en messe, en resepsjon): den virtuelle touren går fremover av seg selv etter den automatiske omvisningen, og hvis ingen berører den på en stund, starter den på nytt.",
+  "a11y_menu": "Meny",
+  "a11y_close_menu": "Lukk menyen",
+  "a11y_main_nav": "Hovednavigasjon",
+  "a11y_editing_now": "Personer som redigerer",
+  "a11y_editor_views": "Redigeringsvisninger",
+  "a11y_target_lang": "Målspråk",
+  "a11y_skip_to_content": "Hopp til innhold",
+  "a11y_require_alt": "Krev alternativ tekst for å publisere",
+  "a11y_require_alt_desc": "Hvis en scene eller en hotspot mangler alternativ tekst, publiseres ikke omvisningen før den har det. Anbefales for offentlige virksomheter, som har ansvar for tilgjengeligheten til det de publiserer."
 }

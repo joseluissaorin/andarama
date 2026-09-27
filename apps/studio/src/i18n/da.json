@@ -1103,5 +1103,14 @@
   "help_export_sw": "Føjer det nødvendige til pakken, så rundvisningen fungerer offline, når den er blevet åbnet første gang, og kan installeres som en app. Det er nyttigt på et museum, en messe eller i et klasseværelse uden wi-fi: Åbn den én gang med forbindelse, hvorefter den bliver ved med at fungere, selvom forbindelsen afbrydes. Kan ikke kombineres med enkelt HTML-fil.",
   "help_export_single": "Genererer en enkelt index.html-fil med fremviseren og alle fotos indbygget, som kan åbnes med et dobbeltklik uden server. »Lille« betyder, at der ikke er nogen fast scenegrænse, men filen fylder omtrent en tredjedel mere end summen af dens fotos og videoer, og browseren indlæser det hele i hukommelsen: Som rettesnor fungerer det godt under ca. 100 MB, hvilket typisk svarer til 10-15 almindelige panoramaer uden video. Ikke tilgængelig, hvis en scene er opdelt i fliser (meget store fotos). Kan kombineres med SCORM.",
   "help_export_scorm": "Genererer en ZIP-fil, der uploades til Moodle (eller et andet virtuelt klasserum) som en SCORM-aktivitet. Det virtuelle klasserum registrerer, om eleven har gennemført rundvisningen (alle scener set eller alle spørgsmål besvaret) samt karakteren i quizzerne sammenlignet med beståelseskravet i Rundvisningsindstillinger. Vælg SCORM 1.2, hvis din platform er ældre, og ellers 2004. Fungerer også med enkelt HTML-fil. På andarama.com er det inkluderet i Formación-abonnementet.",
-  "help_export_kiosk": "Til ubemandede skærme (et museum, en messe, en reception): Rundvisningen kører automatisk fremad via den automatiske rundvisning, og hvis ingen rører den i et stykke tid, starter den forfra."
+  "help_export_kiosk": "Til ubemandede skærme (et museum, en messe, en reception): Rundvisningen kører automatisk fremad via den automatiske rundvisning, og hvis ingen rører den i et stykke tid, starter den forfra.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Luk menuen",
+  "a11y_main_nav": "Hovednavigation",
+  "a11y_editing_now": "Personer, der redigerer",
+  "a11y_editor_views": "Editorvisninger",
+  "a11y_target_lang": "Målsprog",
+  "a11y_skip_to_content": "Spring til indhold",
+  "a11y_require_alt": "Kræv alternativ tekst for at publicere",
+  "a11y_require_alt_desc": "Hvis en scene eller et hotspot ikke har alternativ tekst, publiceres touren ikke, før den har det. Anbefales til offentlige institutioner, der er ansvarlige for tilgængeligheden af det, de publicerer."
 }

@@ -1103,5 +1103,14 @@
   "help_export_sw": "Lisää pakettiin tarvittavat tiedostot, jotta virtuaalikierros toimii ilman verkkoyhteyttä ensimmäisen avaamisen jälkeen ja voidaan asentaa sovelluksena. Tämä on hyödyllistä museossa, messuilla tai luokassa ilman Wi-Fiä: se avataan kerran verkkoyhteydellä ja toimii sen jälkeen, vaikka yhteys katkeaisi. Tätä ei voi yhdistää yhteen HTML-tiedostoon.",
   "help_export_single": "Luo yhden ainoan index.html-tiedoston, joka sisältää katselimen ja kaikki valokuvat ja avautuu kaksoisnapsautuksella ilman palvelinta. ”Pieni” tarkoittaa, että näkymille ei ole kiinteää rajoitusta, mutta tiedosto vie noin kolmanneksen enemmän tilaa kuin sen kuvat ja videot yhteensä, ja selain lataa sen kokonaan muistiin: ohjeena se toimii hyvin alle noin 100 MB:n koossa, mikä vastaa yleensä 10–15 tavallista panoraamaa ilman videota. Ei käytettävissä, jos jokin näkymä on tiilitetty (erittäin suuret kuvat). Voidaan yhdistää SCORM-pakettiin.",
   "help_export_scorm": "Luo ZIP-tiedoston, joka ladataan Moodleen (tai muuhun verkko-oppimisympäristöön) SCORM-aktiviteettina. Oppimisympäristö tallentaa, onko opiskelija suorittanut virtuaalikierroksen (kaikki näkymät katsottu tai kaikkiin kysymyksiin vastattu), sekä visojen arvosanat verrattuna Virtuaalikierroksen asetuksissa määritettyyn vähimmäispistemäärään. Valitse SCORM 1.2, jos alustasi on vanha, ja muussa tapauksessa 2004. Toimii myös yhden HTML-tiedoston kanssa. Sivustolla andarama.com tämä sisältyy Formación-tilaukseen.",
-  "help_export_kiosk": "Tarkoitettu valvomattomille näytöille (museo, messut, vastaanotto): virtuaalikierros etenee itsestään automaattisen esittelyn mukaisesti ja aloittaa alusta, jos näyttöön ei kosketa vähään aikaan."
+  "help_export_kiosk": "Tarkoitettu valvomattomille näytöille (museo, messut, vastaanotto): virtuaalikierros etenee itsestään automaattisen esittelyn mukaisesti ja aloittaa alusta, jos näyttöön ei kosketa vähään aikaan.",
+  "a11y_menu": "Valikko",
+  "a11y_close_menu": "Sulje valikko",
+  "a11y_main_nav": "Päävalikko",
+  "a11y_editing_now": "Muokkaajat",
+  "a11y_editor_views": "Editorin näkymät",
+  "a11y_target_lang": "Kohdekieli",
+  "a11y_skip_to_content": "Siirry sisältöön",
+  "a11y_require_alt": "Vaadi vaihtoehtoinen teksti julkaisemiseen",
+  "a11y_require_alt_desc": "Jos kohtauksella tai hotspotilla ei ole vaihtoehtoista tekstiä, kierrosta ei julkaista ennen kuin se on lisätty. Suositellaan julkisille organisaatioille, jotka vastaavat julkaisujensa saavutettavuudesta."
 }

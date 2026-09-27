@@ -1103,5 +1103,14 @@
   "help_export_sw": "Dodaje paketu sve potrebno kako bi virtualni obilazak radio bez internetske veze nakon prvog otvaranja i mogao se instalirati kao aplikacija. Korisno je za muzeje, sajmove ili učionice bez Wi-Fi mreže: otvori se jednom s mrežom, a zatim nastavlja raditi i ako se veza prekine. Ne može se kombinirati s pojedinačnom HTML datotekom.",
   "help_export_single": "Stvara jednu datoteku index.html s preglednikom i svim fotografijama u njoj, koja se otvara dvoklikom bez poslužitelja. „Malo” znači da nema fiksnog ograničenja broja scena, ali je datoteka oko trećinu teža od zbroja svojih fotografija i videozapisa, a preglednik je cijelu učitava u memoriju: okvirno, dobro radi ispod oko 100 MB, što je obično između 10 i 15 standardnih panorama bez videozapisa. Nije dostupno ako je ijedna scena popločana (vrlo velike fotografije). Može se kombinirati sa SCORM-om.",
   "help_export_scorm": "Stvara ZIP arhivu koja se prenosi u Moodle (ili drugu virtualnu učionicu) kao SCORM aktivnost. Virtualna učionica bilježi je li polaznik dovršio virtualni obilazak (sve pregledane scene ili sva odgovorena pitanja) i njegovu ocjenu na kvizovima u usporedbi s prolaznom ocjenom u Postavkama virtualnog obilaska. Odaberi SCORM 1.2 ako je tvoja platforma starija, a 2004 u ostalim slučajevima. Radi i s pojedinačnom HTML datotekom. Na andarama.com uključeno je u plan Formación.",
-  "help_export_kiosk": "Za zaslone bez stalnog korisnika (muzej, sajam, recepcija): virtualni obilazak samostalno napreduje prateći automatski obilazak, a ako ga nitko neko vrijeme ne dodirne, počinje ispočetka."
+  "help_export_kiosk": "Za zaslone bez stalnog korisnika (muzej, sajam, recepcija): virtualni obilazak samostalno napreduje prateći automatski obilazak, a ako ga nitko neko vrijeme ne dodirne, počinje ispočetka.",
+  "a11y_menu": "Izbornik",
+  "a11y_close_menu": "Zatvori izbornik",
+  "a11y_main_nav": "Glavno",
+  "a11y_editing_now": "Osobe koje uređuju",
+  "a11y_editor_views": "Prikazi uređivača",
+  "a11y_target_lang": "Ciljni jezik",
+  "a11y_skip_to_content": "Preskoči na sadržaj",
+  "a11y_require_alt": "Zahtijevaj alternativni tekst za objavu",
+  "a11y_require_alt_desc": "Ako scena ili hotspot nema alternativni tekst, tura se neće objaviti dok ga ne dobije. Preporučuje se javnim tijelima koja odgovaraju za pristupačnost onoga što objavljuju."
 }

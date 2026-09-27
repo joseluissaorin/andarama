@@ -1103,5 +1103,14 @@
   "help_export_sw": "Aggiunge al pacchetto il necessario affinché il tour funzioni offline una volta aperto per la prima volta e possa essere installato come applicazione. È utile in un museo, a una fiera o in un'aula senza Wi-Fi: si apre una volta con la connessione e continua a funzionare anche in caso di disconnessione. Non si può combinare con il file HTML singolo.",
   "help_export_single": "Genera un unico file index.html con il visualizzatore e tutte le foto all'interno, che si apre con un doppio clic senza bisogno di un server. «Piccolo» significa che non c'è un limite fisso di scene, ma il file pesa circa un terzo in più rispetto alla somma di foto e video, e il browser lo carica per intero in memoria: a titolo indicativo, funziona bene al di sotto dei 100 MB, che di solito corrispondono a 10-15 panorami normali senza video. Non è disponibile se qualche scena è a tasselli (foto molto grandi). Si può combinare con SCORM.",
   "help_export_scorm": "Genera uno ZIP da caricare su Moodle (o un'altra aula virtuale) come attività SCORM. L'aula virtuale registra se lo studente ha completato il tour (tutte le scene visualizzate o tutte le domande con risposta) e la sua valutazione nei quiz, confrontata con il punteggio minimo in Impostazioni del tour. Scegli SCORM 1.2 se la tua piattaforma è datata e 2004 negli altri casi. Funziona anche con il file HTML singolo. Su andarama.com è incluso nel piano Formación.",
-  "help_export_kiosk": "Per schermi non presidiati (un museo, una fiera, una reception): il tour avanza da solo seguendo la visita automatica e, se nessuno tocca lo schermo per un po', ricomincia dall'inizio."
+  "help_export_kiosk": "Per schermi non presidiati (un museo, una fiera, una reception): il tour avanza da solo seguendo la visita automatica e, se nessuno tocca lo schermo per un po', ricomincia dall'inizio.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Chiudi il menu",
+  "a11y_main_nav": "Principale",
+  "a11y_editing_now": "Persone che stanno modificando",
+  "a11y_editor_views": "Viste dell'editor",
+  "a11y_target_lang": "Lingua di destinazione",
+  "a11y_skip_to_content": "Salta al contenuto",
+  "a11y_require_alt": "Richiedi testo alternativo per pubblicare",
+  "a11y_require_alt_desc": "Se una scena o un hotspot non ha un testo alternativo, il tour non viene pubblicato finché non ne ha uno. Consigliato per gli enti pubblici, responsabili dell'accessibilità di ciò che pubblicano."
 }

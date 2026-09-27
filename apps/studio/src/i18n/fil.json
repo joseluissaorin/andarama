@@ -1103,5 +1103,14 @@
   "help_export_sw": "Idinaragdag sa package ang kailangan para gumana ang tour offline kapag nabuksan na ito sa unang pagkakataon, at para ma-install ito bilang app. Kapaki-pakinabang ito sa museo, perya, o silid-aralang walang Wi-Fi: buksan ito nang may koneksyon at patuloy itong gagana kahit maputol ang koneksyon. Hindi ito puwedeng pagsamahin sa iisang HTML file.",
   "help_export_single": "Gumagawa ng iisang index.html file na naglalaman ng viewer at lahat ng larawan, na nagbubukas sa pamamagitan ng pag-double click nang walang server. Ibig sabihin ng «Maliit» ay walang nakatakdang limitasyon sa eksena, ngunit mas mabigat ang file nang halos sangkatlo kaysa sa kabuuan ng mga larawan at video nito, at buo itong ikinakarga ng browser sa memorya: bilang gabay, maayos itong gumagana nang mas mababa sa mga 100 MB, na karaniwang 10 hanggang 15 regular na panorama na walang video. Hindi ito available kung may eksenang naka-tile (napakalalaking larawan). Puwede itong pagsamahin sa SCORM.",
   "help_export_scorm": "Gumagawa ng ZIP na ia-upload sa Moodle (o iba pang virtual classroom) bilang SCORM activity. Itinatala ng virtual classroom kung nakumpleto ng estudyante ang tour (natingnan ang lahat ng eksena o nasagot ang lahat ng tanong) at ang marka nito sa quiz, kumpara sa passing score sa Mga Setting ng Tour. Piliin ang SCORM 1.2 kung luma ang iyong platform at 2004 naman sa iba pang sitwasyon. Gumagana rin ito sa iisang HTML file. Sa andarama.com, kasama ito sa planong Formación.",
-  "help_export_kiosk": "Para sa mga screen na walang tao sa harap (museo, perya, o reception desk): kusang umuusad ang tour kasunod ng awtomatikong pagbisita, at kung walang humihipo rito nang ilang sandali, magsisimula itong muli."
+  "help_export_kiosk": "Para sa mga screen na walang tao sa harap (museo, perya, o reception desk): kusang umuusad ang tour kasunod ng awtomatikong pagbisita, at kung walang humihipo rito nang ilang sandali, magsisimula itong muli.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Isara ang menu",
+  "a11y_main_nav": "Pangunahin",
+  "a11y_editing_now": "Mga taong nag-e-edit",
+  "a11y_editor_views": "Mga view ng editor",
+  "a11y_target_lang": "Target na wika",
+  "a11y_skip_to_content": "Lumaktaw sa nilalaman",
+  "a11y_require_alt": "Kailanganin ang alternatibong teksto para mag-publish",
+  "a11y_require_alt_desc": "Kung ang isang eksena o hotspot ay walang alternatibong teksto, hindi mai-publish ang tour hanggang sa magkaroon ito. Inirerekomenda para sa mga pampublikong ahensya, na may pananagutan sa accessibility ng kanilang ipinapa-publish."
 }

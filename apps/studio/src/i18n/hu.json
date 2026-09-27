@@ -1103,5 +1103,14 @@
   "help_export_sw": "Hozzáadja a csomaghoz a szükséges elemeket, hogy a túra az első megnyitás után offline is működjön, és alkalmazásként telepíthető legyen. Hasznos múzeumban, vásáron vagy wifi nélküli tanteremben: egyszer internetkapcsolattal nyitod meg, utána pedig akkor is működik, ha megszakad a kapcsolat. Nem kombinálható az egyetlen HTML-fájlos változattal.",
   "help_export_single": "Egyetlen index.html fájlt hoz létre a megjelenítővel és az összes beágyazott fotóval, amely szerver nélkül, dupla kattintással megnyitható. A „Kicsi” azt jelenti, hogy nincs fix jelenetkorlát, de a fájl mérete nagyjából harmadával nagyobb, mint a fotók és videók összessége, és a böngésző az egészet a memóriába tölti: iránymutatásként 100 MB alatt működik jól, ami általában 10–15 normál, videó nélküli panorámát jelent. Nem érhető el, ha bármelyik jelenet csempézett (nagyon nagy fotók). SCORM-mal kombinálható.",
   "help_export_scorm": "Létrehoz egy ZIP-fájlt, amelyet SCORM-tevékenységként tölthetsz fel a Moodle-ba (vagy más virtuális oktatási felületre). A rendszer rögzíti, hogy a tanuló teljesítette-e a túrát (minden jelenetet megtekintett, vagy minden kérdésre válaszolt), valamint a kvízeredményét a Túra beállításainál megadott átmenő pontszámhoz viszonyítva. Válaszd a SCORM 1.2-t, ha a platformod régebbi, egyébként pedig a 2004-et. Az egyetlen HTML-fájlos változattal is működik. Az andarama.com oldalon a Formación csomag tartalmazza.",
-  "help_export_kiosk": "Felügyelet nélküli képernyőkhöz (múzeum, vásár, recepció): a túra önállóan halad előre az automatikus bejárást követve, és ha egy ideig senki sem nyúl hozzá, elölről kezdődik."
+  "help_export_kiosk": "Felügyelet nélküli képernyőkhöz (múzeum, vásár, recepció): a túra önállóan halad előre az automatikus bejárást követve, és ha egy ideig senki sem nyúl hozzá, elölről kezdődik.",
+  "a11y_menu": "Menü",
+  "a11y_close_menu": "Menü bezárása",
+  "a11y_main_nav": "Fő navigáció",
+  "a11y_editing_now": "Jelenleg szerkesztő felhasználók",
+  "a11y_editor_views": "Szerkesztői nézetek",
+  "a11y_target_lang": "Célnyelv",
+  "a11y_skip_to_content": "Ugrás a tartalomra",
+  "a11y_require_alt": "Helyettesítő szöveg megkövetelése a közzétételhez",
+  "a11y_require_alt_desc": "Ha egy jelenetnek vagy hotspotnak nincs helyettesítő szövege, a virtuális túra mindaddig nem tehető közzé, amíg nem rendelkezik vele. Ajánlott a közzétett tartalmaik akadálymentességéért felelős közintézmények számára."
 }

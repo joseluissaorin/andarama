@@ -1103,5 +1103,14 @@
   "help_export_sw": "Přidá do balíčku vše potřebné k tomu, aby virtuální prohlídka fungovala offline po prvním otevření a bylo možné ji nainstalovat jako aplikaci. Hodí se to v muzeu, na veletrhu nebo ve třídě bez Wi-Fi: otevře se jednou s připojením a funguje dál, i když spojení vypadne. Nelze kombinovat s jedním HTML souborem.",
   "help_export_single": "Vygeneruje jediný soubor index.html s prohlížečem a všemi fotkami uvnitř, který se otevírá dvojklikem bez serveru. „Malý“ znamená, že neexistuje pevný limit počtu scén, ale soubor je zhruba o třetinu větší než součet všech jeho fotek a videí a prohlížeč ho načítá celý do paměti: orientačně funguje dobře pod cca 100 MB, což obvykle odpovídá 10 až 15 běžným panoramatům bez videa. Není k dispozici, pokud je některá scéna dlaždicová (velmi velké fotky). Lze kombinovat se SCORM.",
   "help_export_scorm": "Vygeneruje ZIP, který nahraješ do Moodlu (nebo jiné virtuální učebny) jako činnost SCORM. Učebna zaznamenává, zda student virtuální prohlídku dokončil (zhlédl všechny scény nebo zodpověděl všechny otázky), a jeho známku z kvízů v porovnání s minimální známkou v Nastavení prohlídky. Pokud máš starší platformu, zvol SCORM 1.2, v ostatních případech SCORM 2004. Funguje také s jedním HTML souborem. Na andarama.com je součástí plánu Formación.",
-  "help_export_kiosk": "Pro obrazovky bez obsluhy (muzeum, veletrh, recepce): virtuální prohlídka se posouvá sama podle automatické prohlídky, a pokud se jí nikdo chvíli nedotkne, spustí se znovu od začátku."
+  "help_export_kiosk": "Pro obrazovky bez obsluhy (muzeum, veletrh, recepce): virtuální prohlídka se posouvá sama podle automatické prohlídky, a pokud se jí nikdo chvíli nedotkne, spustí se znovu od začátku.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Zavřít menu",
+  "a11y_main_nav": "Hlavní",
+  "a11y_editing_now": "Právě upravují",
+  "a11y_editor_views": "Zobrazení editoru",
+  "a11y_target_lang": "Cílový jazyk",
+  "a11y_skip_to_content": "Přeskočit na obsah",
+  "a11y_require_alt": "Vyžadovat alternativní text pro publikování",
+  "a11y_require_alt_desc": "Pokud scéna nebo hotspot nemá alternativní text, virtuální prohlídka se nepublikuje, dokud jej nebude mít. Doporučeno pro veřejné instituce, které odpovídají za přístupnost toho, co publikují."
 }

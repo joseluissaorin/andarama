@@ -1104,7 +1104,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "cs": {
     "app_name": "2084835f110d",
@@ -2211,7 +2220,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "da": {
     "app_name": "2084835f110d",
@@ -3318,7 +3336,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "de": {
     "app_name": "2084835f110d",
@@ -4425,7 +4452,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "el": {
     "app_name": "2084835f110d",
@@ -5532,7 +5568,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "fi": {
     "app_name": "2084835f110d",
@@ -6639,7 +6684,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "fil": {
     "app_name": "2084835f110d",
@@ -7746,7 +7800,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "fr": {
     "app_name": "2084835f110d",
@@ -8853,7 +8916,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "he": {
     "app_name": "2084835f110d",
@@ -9960,7 +10032,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "hr": {
     "app_name": "2084835f110d",
@@ -11067,7 +11148,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "hu": {
     "app_name": "2084835f110d",
@@ -12174,7 +12264,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "id": {
     "app_name": "2084835f110d",
@@ -13281,7 +13380,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "it": {
     "app_name": "2084835f110d",
@@ -14388,7 +14496,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "ja": {
     "app_name": "2084835f110d",
@@ -15495,7 +15612,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "ko": {
     "app_name": "2084835f110d",
@@ -16602,7 +16728,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "ms": {
     "app_name": "2084835f110d",
@@ -17709,7 +17844,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "nl": {
     "app_name": "2084835f110d",
@@ -18816,7 +18960,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "no": {
     "app_name": "2084835f110d",
@@ -19923,7 +20076,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "pl": {
     "app_name": "2084835f110d",
@@ -21030,7 +21192,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "pt": {
     "app_name": "2084835f110d",
@@ -22137,7 +22308,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt_desc": "63d9819a5b5c",
+    "a11y_require_alt": "89850b600718"
   },
   "ro": {
     "app_name": "2084835f110d",
@@ -23244,7 +23424,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "ru": {
     "app_name": "2084835f110d",
@@ -24351,7 +24540,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "sk": {
     "app_name": "2084835f110d",
@@ -25458,7 +25656,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "sv": {
     "app_name": "2084835f110d",
@@ -26565,7 +26772,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "th": {
     "app_name": "2084835f110d",
@@ -27672,7 +27888,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "tr": {
     "app_name": "2084835f110d",
@@ -28779,7 +29004,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "uk": {
     "app_name": "2084835f110d",
@@ -29886,7 +30120,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "vi": {
     "app_name": "2084835f110d",
@@ -30993,7 +31236,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "zh-Hans": {
     "app_name": "2084835f110d",
@@ -32100,7 +32352,16 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   },
   "zh-Hant": {
     "app_name": "2084835f110d",
@@ -33207,6 +33468,15 @@
     "help_export_sw": "d2534ea27c5a",
     "help_export_single": "f81db9f6d39f",
     "help_export_scorm": "3cf0eb47b78f",
-    "help_export_kiosk": "86b4772eeb98"
+    "help_export_kiosk": "86b4772eeb98",
+    "a11y_menu": "dae4c9243f73",
+    "a11y_close_menu": "55a46b97eda9",
+    "a11y_main_nav": "801522a74837",
+    "a11y_editing_now": "381f1a74561e",
+    "a11y_editor_views": "1547d9a0ca48",
+    "a11y_target_lang": "61b2f95c4ed9",
+    "a11y_skip_to_content": "c5e0ac992e10",
+    "a11y_require_alt": "89850b600718",
+    "a11y_require_alt_desc": "63d9819a5b5c"
   }
 }

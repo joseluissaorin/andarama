@@ -1103,5 +1103,14 @@
   "help_export_sw": "Turun ilk kez açıldıktan sonra çevrimdışı çalışabilmesi ve bir uygulama olarak yüklenebilmesi için gerekenleri pakete ekler. Müze, fuar veya kablosuz bağlantısı olmayan sınıflarda kullanışlıdır: internet varken bir kez açılır ve bağlantı kopsa bile çalışmaya devam eder. Tek HTML dosyasıyla birlikte kullanılamaz.",
   "help_export_single": "Görüntüleyiciyi ve tüm fotoğrafları içeren, sunucuya gerek kalmadan çift tıklamayla açılan tek bir index.html dosyası oluşturur. «Küçük», sabit bir sahne sınırı olmadığı anlamına gelir; ancak dosya boyutu, tüm fotoğraf ve videoların toplamından yaklaşık üçte bir oranında daha fazladır ve tarayıcı dosyanın tamamını belleğe yükler: Kılavuz olması açısından, yaklaşık 100 MB'ın altında sorunsuz çalışır; bu da genellikle videosuz 10 ila 15 normal panoramaya denk gelir. Herhangi bir sahne karolanmışsa (çok büyük fotoğraflar) kullanılamaz. SCORM ile birleştirilebilir.",
   "help_export_scorm": "Moodle'a (veya başka bir sanal sınıfa) SCORM etkinliği olarak yüklenebilecek bir ZIP dosyası oluşturur. Sanal sınıf, öğrencinin turu tamamlayıp tamamlamadığını (tüm sahnelerin görüntülenmesi veya tüm soruların yanıtlanması) ve Tur ayarları'ndaki geçme notuyla karşılaştırılan test puanını kaydeder. Platformun eskiyse SCORM 1.2'yi, diğer durumlarda ise 2004'ü seç. Tek HTML dosyasıyla da çalışır. andarama.com adresinde Formación planına dahildir.",
-  "help_export_kiosk": "Başında kimse olmayan ekranlar için (müze, fuar, resepsiyon): Tur, otomatik gezinmeyi izleyerek kendi kendine ilerler ve bir süre kimse dokunmazsa baştan başlar."
+  "help_export_kiosk": "Başında kimse olmayan ekranlar için (müze, fuar, resepsiyon): Tur, otomatik gezinmeyi izleyerek kendi kendine ilerler ve bir süre kimse dokunmazsa baştan başlar.",
+  "a11y_menu": "Menü",
+  "a11y_close_menu": "Menüyü kapat",
+  "a11y_main_nav": "Ana gezinme",
+  "a11y_editing_now": "Şu anda düzenleyenler",
+  "a11y_editor_views": "Düzenleyici görünümleri",
+  "a11y_target_lang": "Hedef dil",
+  "a11y_skip_to_content": "İçeriğe atla",
+  "a11y_require_alt": "Yayınlamak için alternatif metin zorunlu olsun",
+  "a11y_require_alt_desc": "Bir sahnede veya hotspot'ta alternatif metin yoksa, eklenene kadar tur yayınlanmaz. Yayınladıkları içeriklerin erişilebilirliğinden sorumlu olan kamu kurumları için önerilir."
 }

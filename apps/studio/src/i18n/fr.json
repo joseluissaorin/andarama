@@ -1103,5 +1103,14 @@
   "help_export_sw": "Ajoute au paquet le nécessaire pour que la visite virtuelle fonctionne hors ligne après avoir été ouverte une première fois et puisse être installée comme une application. C'est pratique dans un musée, un salon ou une salle de classe sans Wi-Fi : on l'ouvre une fois avec une connexion et elle continue de fonctionner même en cas de coupure. Non combinable avec le fichier HTML unique.",
   "help_export_single": "Génère un seul fichier index.html intégrant la visionneuse et toutes les photos, qui s'ouvre d'un double-clic sans serveur. « Petit » signifie qu'il n'y a pas de limite fixe de scènes, mais le fichier pèse environ un tiers de plus que la somme de ses photos et vidéos, et le navigateur le charge en entier en mémoire : à titre indicatif, cela fonctionne bien en dessous d'environ 100 MB, ce qui correspond généralement à 10 à 15 panoramas normaux sans vidéo. Non disponible si une scène est tuilée (très grandes photos). Peut être combiné avec SCORM.",
   "help_export_scorm": "Génère un fichier ZIP à déposer sur Moodle (ou un autre environnement numérique d'apprentissage) comme activité SCORM. La plateforme enregistre si l'élève a terminé la visite virtuelle (toutes les scènes vues ou toutes les questions répondues) et sa note aux quiz, comparée à la note minimale dans les Paramètres de la visite virtuelle. Choisis SCORM 1.2 si ta plateforme est ancienne et 2004 dans les autres cas. Fonctionne aussi avec le fichier HTML unique. Sur andarama.com, c'est inclus dans le forfait Formación.",
-  "help_export_kiosk": "Pour les écrans sans personne devant (un musée, un salon, un accueil) : la visite virtuelle avance d'elle-même en suivant le parcours automatique et, si personne n'y touche pendant un moment, elle recommence depuis le début."
+  "help_export_kiosk": "Pour les écrans sans personne devant (un musée, un salon, un accueil) : la visite virtuelle avance d'elle-même en suivant le parcours automatique et, si personne n'y touche pendant un moment, elle recommence depuis le début.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Fermer le menu",
+  "a11y_main_nav": "Principal",
+  "a11y_editing_now": "Personnes en train de modifier",
+  "a11y_editor_views": "Vues de l'éditeur",
+  "a11y_target_lang": "Langue cible",
+  "a11y_skip_to_content": "Passer au contenu",
+  "a11y_require_alt": "Exiger un texte alternatif pour publier",
+  "a11y_require_alt_desc": "Si une scène ou un hotspot n'a pas de texte alternatif, la visite virtuelle n'est pas publiée tant qu'il n'y en a pas. Recommandé pour les organismes publics, qui répondent de l'accessibilité de ce qu'ils publient."
 }

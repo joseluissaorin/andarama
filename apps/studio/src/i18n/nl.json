@@ -1103,5 +1103,14 @@
   "help_export_sw": "Voegt de benodigde bestanden toe aan het pakket zodat de tour offline werkt nadat deze voor het eerst is geopend en als app kan worden geïnstalleerd. Handig voor een museum, beurs of lokaal zonder wifi: eenmaal openen met internetverbinding en de tour blijft werken als de verbinding wegvalt. Kan niet worden gecombineerd met één enkel HTML-bestand.",
   "help_export_single": "Genereert één enkel index.html-bestand met de viewer en alle foto's erin, dat zonder server met een dubbelklik opent. 'Klein' betekent dat er geen vaste scènelimiet is, maar het bestand is ongeveer een derde groter dan alle foto's en video's bij elkaar en de browser laadt het volledig in het geheugen: als richtlijn werkt dit goed onder ongeveer 100 MB, meestal zo'n 10 tot 15 normale panorama's zonder video. Niet beschikbaar als een scène betegeld is (zeer grote foto's). Kan worden gecombineerd met SCORM.",
   "help_export_scorm": "Genereert een zipbestand om te uploaden naar Moodle (of een andere virtuele leeromgeving) als SCORM-activiteit. De leeromgeving registreert of de leerling de tour heeft voltooid (alle scènes bekeken of alle vragen beantwoord) en de quizscore, vergeleken met de slaagscore in Tourinstellingen. Kies SCORM 1.2 als je platform verouderd is en anders 2004. Werkt ook met één enkel HTML-bestand. Op andarama.com is dit inbegrepen in het Formación-plan.",
-  "help_export_kiosk": "Voor schermen zonder bediening (een museum, beurs of receptie): de tour loopt vanzelf door via de automatische rondgang en start opnieuw als niemand het scherm een tijdje aanraakt."
+  "help_export_kiosk": "Voor schermen zonder bediening (een museum, beurs of receptie): de tour loopt vanzelf door via de automatische rondgang en start opnieuw als niemand het scherm een tijdje aanraakt.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Menu sluiten",
+  "a11y_main_nav": "Hoofdnavigatie",
+  "a11y_editing_now": "Personen die bewerken",
+  "a11y_editor_views": "Editorweergaven",
+  "a11y_target_lang": "Doeltaal",
+  "a11y_skip_to_content": "Naar de inhoud springen",
+  "a11y_require_alt": "Alternatieve tekst vereisen om te publiceren",
+  "a11y_require_alt_desc": "Als een scène of een hotspot geen alternatieve tekst heeft, wordt de tour pas gepubliceerd zodra deze is toegevoegd. Aanbevolen voor overheidsinstanties, die verantwoordelijk zijn voor de toegankelijkheid van wat ze publiceren."
 }

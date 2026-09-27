@@ -1103,5 +1103,14 @@
   "help_export_sw": "Menambah perkara yang diperlukan pada pakej supaya lawatan maya berfungsi di luar talian selepas dibuka buat kali pertama dan boleh dipasang sebagai aplikasi. Berguna di muzium, pameran atau bilik darjah tanpa Wi-Fi: buka sekali dengan sambungan internet dan ia terus berfungsi walaupun terputus. Tidak boleh digabungkan dengan HTML tunggal.",
   "help_export_single": "Menjana satu fail index.html dengan pemapar dan semua foto di dalamnya, yang boleh dibuka dengan klik dua kali tanpa pelayan. «Kecil» bermaksud tiada had adegan yang tetap, tetapi saiz fail adalah kira-kira sepertiga lebih besar daripada jumlah foto dan videonya, dan pelayar memuatkannya sepenuhnya ke dalam ingatan: sebagai panduan, ia berfungsi dengan baik di bawah sekitar 100 MB, iaitu biasanya antara 10 hingga 15 panorama biasa tanpa video. Tidak tersedia jika ada adegan yang berjubin (foto sangat besar). Boleh digabungkan dengan SCORM.",
   "help_export_scorm": "Menjana fail ZIP untuk dimuat naik ke Moodle (atau bilik darjah maya lain) sebagai aktiviti SCORM. Bilik darjah maya merekodkan sama ada pelajar telah menyelesaikan lawatan maya (semua adegan dilihat atau semua soalan dijawab) dan markah kuiz mereka, berbanding dengan markah lulus dalam Tetapan lawatan maya. Pilih SCORM 1.2 jika platform anda versi lama dan 2004 untuk kes lain. Ia juga berfungsi dengan HTML tunggal. Di andarama.com, ini disertakan dalam pelan Formación.",
-  "help_export_kiosk": "Untuk skrin tanpa sesiapa di hadapannya (muzium, pameran, kaunter penerimaan tetamu): lawatan maya bergerak sendiri mengikut lawatan automatik dan, jika tiada sesiapa menyentuhnya seketika, ia akan bermula semula."
+  "help_export_kiosk": "Untuk skrin tanpa sesiapa di hadapannya (muzium, pameran, kaunter penerimaan tetamu): lawatan maya bergerak sendiri mengikut lawatan automatik dan, jika tiada sesiapa menyentuhnya seketika, ia akan bermula semula.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Tutup menu",
+  "a11y_main_nav": "Utama",
+  "a11y_editing_now": "Orang yang sedang menyunting",
+  "a11y_editor_views": "Paparan editor",
+  "a11y_target_lang": "Bahasa sasaran",
+  "a11y_skip_to_content": "Langkau ke kandungan",
+  "a11y_require_alt": "Wajibkan teks alternatif untuk menerbitkan",
+  "a11y_require_alt_desc": "Jika adegan atau hotspot tidak mempunyai teks alternatif, lawatan tidak akan diterbitkan sehingga ia memilikinya. Disyorkan untuk badan awam, yang bertanggungjawab terhadap kebolehcapaian kandungan yang mereka terbitkan."
 }

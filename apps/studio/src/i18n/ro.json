@@ -1103,5 +1103,14 @@
   "help_export_sw": "Adaugă în pachet elementele necesare pentru ca turul să funcționeze offline după prima deschidere și să poată fi instalat ca aplicație. Este util într-un muzeu, la un târg sau într-o sală de clasă fără Wi-Fi: se deschide o dată cu conexiune la internet, iar apoi continuă să funcționeze chiar dacă se întrerupe rețeaua. Nu se poate combina cu fișierul HTML unic.",
   "help_export_single": "Generează un singur fișier index.html cu vizualizatorul și toate fotografiile incluse, care se deschide cu dublu clic, fără server. «Mic» înseamnă că nu există o limită fixă de scene, dar fișierul ocupă cu aproximativ o treime mai mult decât suma fotografiilor și a videoclipurilor sale, iar browserul îl încarcă în întregime în memorie: orientativ, funcționează optim sub aproximativ 100 MB, ceea ce înseamnă de obicei între 10 și 15 panorame normale fără video. Nu este disponibil dacă vreo scenă este împărțită în dale (fotografii foarte mari). Se poate combina cu SCORM.",
   "help_export_scorm": "Generează un fișier ZIP care se încarcă în Moodle (sau în altă clasă virtuală) ca activitate SCORM. Clasa virtuală înregistrează dacă elevul a finalizat turul (toate scenele vizualizate sau toate întrebările completate) și nota obținută la chestionare, comparată cu nota minimă din Setările turului. Alege SCORM 1.2 dacă platforma ta este mai veche și 2004 în celelalte cazuri. Funcționează și cu fișierul HTML unic. Pe andarama.com este inclus în planul Formación.",
-  "help_export_kiosk": "Pentru ecrane fără supraveghere (un muzeu, un târg, o recepție): turul avansează singur urmând turul automat și, dacă nimeni nu îl atinge o perioadă, reîncepe de la capăt."
+  "help_export_kiosk": "Pentru ecrane fără supraveghere (un muzeu, un târg, o recepție): turul avansează singur urmând turul automat și, dacă nimeni nu îl atinge o perioadă, reîncepe de la capăt.",
+  "a11y_menu": "Meniu",
+  "a11y_close_menu": "Închide meniul",
+  "a11y_main_nav": "Principal",
+  "a11y_editing_now": "Persoane care editează",
+  "a11y_editor_views": "Vizualizări editor",
+  "a11y_target_lang": "Limba țintă",
+  "a11y_skip_to_content": "Sari la conținut",
+  "a11y_require_alt": "Solicită text alternativ pentru publicare",
+  "a11y_require_alt_desc": "Dacă o scenă sau un hotspot nu are text alternativ, turul nu va fi publicat până când nu are. Recomandat pentru instituțiile publice, care răspund de accesibilitatea conținutului publicat."
 }

@@ -1103,5 +1103,14 @@
   "help_export_sw": "Lägger till det som krävs för att rundturen ska fungera offline efter att den har öppnats första gången, och för att kunna installeras som app. Användbart på museum, mässor eller i klassrum utan wifi: öppna den en gång med internetuppkoppling, så fortsätter den att fungera även om anslutningen bryts. Kan inte kombineras med en enskild HTML-fil.",
   "help_export_single": "Skapar en enda index.html-fil med visaren och alla foton inuti, som kan öppnas med ett dubbelklick utan webbserver. ”Liten” innebär att det inte finns någon fast gräns för antal scener, men filen blir ungefär en tredjedel större än summan av alla foton och videor, och webbläsaren läser in allt i minnet: som riktmärke fungerar det bra under cirka 100 MB, vilket brukar motsvara 10–15 vanliga panoraman utan video. Inte tillgängligt om någon scen är tiled (mycket stora foton). Kan kombineras med SCORM.",
   "help_export_scorm": "Skapar en ZIP-fil som laddas upp till Moodle (eller en annan lärplattform) som en SCORM-aktivitet. Lärplattformen registrerar om eleven har slutfört rundturen (alla scener visade eller alla frågor besvarade) samt quizresultatet, jämfört med godkäntgränsen i Rundtursinställningar. Välj SCORM 1.2 om din plattform är äldre och 2004 i övriga fall. Fungerar även med en enskild HTML-fil. På andarama.com ingår detta i Formación-planen.",
-  "help_export_kiosk": "För skärmar utan någon framför (på ett museum, en mässa eller i en reception): rundturen rör sig framåt automatiskt enligt den automatiska visningen och startar om från början om ingen rör den på ett tag."
+  "help_export_kiosk": "För skärmar utan någon framför (på ett museum, en mässa eller i en reception): rundturen rör sig framåt automatiskt enligt den automatiska visningen och startar om från början om ingen rör den på ett tag.",
+  "a11y_menu": "Meny",
+  "a11y_close_menu": "Stäng menyn",
+  "a11y_main_nav": "Huvudnavigering",
+  "a11y_editing_now": "Personer som redigerar",
+  "a11y_editor_views": "Redigerarvyer",
+  "a11y_target_lang": "Målspråk",
+  "a11y_skip_to_content": "Hoppa till innehållet",
+  "a11y_require_alt": "Kräv alternativ text för att publicera",
+  "a11y_require_alt_desc": "Om en scen eller en hotspot saknar alternativ text publiceras inte rundturen förrän den har det. Rekommenderas för offentliga verksamheter, som ansvarar för tillgängligheten i det de publicerar."
 }

@@ -1103,5 +1103,14 @@
   "help_export_sw": "Pridá do balíka všetko potrebné na to, aby prehliadka po prvom otvorení fungovala aj offline a dala sa nainštalovať ako aplikácia. Hodí sa to v múzeu, na veľtrhu alebo v učebni bez Wi-Fi: raz ju otvoríš s pripojením a potom funguje aj pri výpadku siete. Nedá sa kombinovať so samostatným súborom HTML.",
   "help_export_single": "Vygeneruje jeden súbor index.html s prehliadačom a všetkými fotografiami vo vnútri, ktorý sa otvára dvojitým kliknutím bez servera. „Malá“ znamená, že nie je stanovený pevný limit scén, ale súbor je približne o tretinu väčší než súčet jeho fotografií a videí a prehliadač ho načíta celý do pamäte: orientačne funguje dobre do približne 100 MB, čo zvyčajne predstavuje 10 až 15 bežných panorám bez videa. Možnosť nie je dostupná, ak je niektorá scéna dlaždicová (veľmi veľké fotografie). Dá sa kombinovať so SCORM.",
   "help_export_scorm": "Vygeneruje súbor ZIP, ktorý sa nahrá do Moodlu (alebo inej virtuálnej učebne) ako aktivita SCORM. Virtuálna učebňa zaznamenáva, či študent dokončil prehliadku (zobrazené všetky scény alebo zodpovedané všetky otázky) a jeho výsledok v kvízoch v porovnaní s minimálnou známkou v Nastaveniach prehliadky. Zvoľ SCORM 1.2, ak je tvoja platforma staršia, a 2004 v ostatných prípadoch. Funguje aj so samostatným súborom HTML. Na andarama.com je súčasťou plánu Formación.",
-  "help_export_kiosk": "Pre obrazovky bez obsluhy (múzeum, veľtrh, recepcia): prehliadka postupuje sama podľa automatickej prehliadky a ak sa jej nikto chvíľu nedotkne, spustí sa odznova."
+  "help_export_kiosk": "Pre obrazovky bez obsluhy (múzeum, veľtrh, recepcia): prehliadka postupuje sama podľa automatickej prehliadky a ak sa jej nikto chvíľu nedotkne, spustí sa odznova.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Zavrieť menu",
+  "a11y_main_nav": "Hlavné",
+  "a11y_editing_now": "Práve upravujúci používatelia",
+  "a11y_editor_views": "Zobrazenia editora",
+  "a11y_target_lang": "Cieľový jazyk",
+  "a11y_skip_to_content": "Preskočiť na obsah",
+  "a11y_require_alt": "Vyžadovať alternatívny text na publikovanie",
+  "a11y_require_alt_desc": "Ak scéna alebo hotspot nemá alternatívny text, tour sa nepublikuje, kým ho nebude mať. Odporúča sa pre verejné inštitúcie, ktoré zodpovedajú za prístupnosť publikovaného obsahu."
 }

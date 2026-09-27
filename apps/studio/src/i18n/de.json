@@ -1103,5 +1103,14 @@
   "help_export_sw": "Fügt dem Paket alles Nötige hinzu, damit die Tour nach dem ersten Öffnen offline funktioniert und als App installiert werden kann. Praktisch im Museum, auf Messen oder im Klassenzimmer ohne WLAN: Einmal mit Internetverbindung öffnen und sie funktioniert weiter, selbst wenn die Verbindung abbricht. Lässt sich nicht mit der einzelnen HTML-Datei kombinieren.",
   "help_export_single": "Erzeugt eine einzige index.html-Datei, die den Viewer und alle Fotos enthält und sich per Doppelklick ohne Server öffnen lässt. „Klein“ bedeutet, dass es kein festes Szenenlimit gibt, die Datei jedoch etwa ein Drittel größer ist als alle enthaltenen Fotos und Videos zusammen und vom Browser komplett in den Arbeitsspeicher geladen wird: Als Richtwert funktioniert dies gut unter etwa 100 MB, was üblicherweise 10 bis 15 normalen Panoramen ohne Video entspricht. Nicht verfügbar, wenn eine Szene gekachelt ist (sehr große Fotos). Kann mit SCORM kombiniert werden.",
   "help_export_scorm": "Erzeugt eine ZIP-Datei zum Hochladen in Moodle (oder eine andere Lernplattform) als SCORM-Aktivität. Die Lernplattform erfasst, ob Lernende die Tour abgeschlossen haben (alle Szenen angesehen oder alle Fragen beantwortet) sowie ihre Quiz-Punktzahl im Vergleich zur Bestehensgrenze in den Tour-Einstellungen. Wähle SCORM 1.2, wenn deine Plattform älter ist, andernfalls 2004. Funktioniert auch mit der einzelnen HTML-Datei. Auf andarama.com im Plan Formación enthalten.",
-  "help_export_kiosk": "Für Bildschirme ohne Aufsicht (im Museum, auf Messen, am Empfang): Die Tour läuft selbstständig über die automatische Tour ab und startet wieder von vorn, wenn sie eine Zeit lang niemand berührt."
+  "help_export_kiosk": "Für Bildschirme ohne Aufsicht (im Museum, auf Messen, am Empfang): Die Tour läuft selbstständig über die automatische Tour ab und startet wieder von vorn, wenn sie eine Zeit lang niemand berührt.",
+  "a11y_menu": "Menü",
+  "a11y_close_menu": "Menü schließen",
+  "a11y_main_nav": "Hauptnavigation",
+  "a11y_editing_now": "Personen, die bearbeiten",
+  "a11y_editor_views": "Editor-Ansichten",
+  "a11y_target_lang": "Zielsprache",
+  "a11y_skip_to_content": "Zum Inhalt springen",
+  "a11y_require_alt": "Alternativtext zum Veröffentlichen voraussetzen",
+  "a11y_require_alt_desc": "Wenn eine Szene oder ein Hotspot keinen Alternativtext hat, wird die Tour erst veröffentlicht, wenn er vorhanden ist. Empfohlen für öffentliche Einrichtungen, die für die Barrierefreiheit ihrer Veröffentlichungen verantwortlich sind."
 }

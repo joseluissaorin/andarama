@@ -1103,5 +1103,14 @@
   "help_export_sw": "Thêm các thành phần cần thiết vào gói để tour ảo có thể hoạt động ngoại tuyến sau khi mở lần đầu và có thể cài đặt như một ứng dụng. Rất hữu ích cho bảo tàng, hội chợ hoặc lớp học không có Wi-Fi: mở một lần khi có mạng, sau đó vẫn chạy được kể cả khi mất kết nối. Không thể kết hợp với tệp HTML đơn lẻ.",
   "help_export_single": "Tạo một tệp index.html duy nhất chứa cả trình xem và toàn bộ hình ảnh, mở được bằng cách nhấp đúp mà không cần máy chủ. «Nhỏ» có nghĩa là không có giới hạn cảnh cố định, nhưng tệp sẽ nặng hơn khoảng một phần ba so với tổng dung lượng ảnh và video, đồng thời trình duyệt sẽ tải toàn bộ vào bộ nhớ: theo khuyến nghị, tính năng này hoạt động tốt ở mức dưới 100 MB, thường tương đương 10 đến 15 panorama thông thường không có video. Không khả dụng nếu có cảnh phân mảnh (ảnh rất lớn). Có thể kết hợp với SCORM.",
   "help_export_scorm": "Tạo tệp ZIP để tải lên Moodle (hoặc lớp học ảo khác) dưới dạng hoạt động SCORM. Lớp học ảo sẽ ghi nhận xem học viên đã hoàn thành tour ảo chưa (đã xem hết các cảnh hoặc đã trả lời hết các câu hỏi) và điểm bài kiểm tra, so với điểm đạt trong Cài đặt tour. Chọn SCORM 1.2 nếu nền tảng của bạn đã cũ, và SCORM 2004 cho các trường hợp khác. Tính năng này cũng hoạt động với tệp HTML đơn lẻ. Trên andarama.com, tính năng này có trong gói Formación.",
-  "help_export_kiosk": "Dành cho màn hình không người giám sát (bảo tàng, hội chợ, quầy lễ tân): tour ảo sẽ tự động di chuyển theo chuyến tham quan tự động và tự chạy lại từ đầu nếu không có ai tương tác trong một khoảng thời gian."
+  "help_export_kiosk": "Dành cho màn hình không người giám sát (bảo tàng, hội chợ, quầy lễ tân): tour ảo sẽ tự động di chuyển theo chuyến tham quan tự động và tự chạy lại từ đầu nếu không có ai tương tác trong một khoảng thời gian.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Đóng menu",
+  "a11y_main_nav": "Chính",
+  "a11y_editing_now": "Người đang chỉnh sửa",
+  "a11y_editor_views": "Chế độ xem trình chỉnh sửa",
+  "a11y_target_lang": "Ngôn ngữ đích",
+  "a11y_skip_to_content": "Chuyển đến nội dung",
+  "a11y_require_alt": "Bắt buộc có văn bản thay thế để xuất bản",
+  "a11y_require_alt_desc": "Nếu một cảnh hoặc một hotspot không có văn bản thay thế, tour sẽ không được xuất bản cho đến khi bổ sung đầy đủ. Khuyến nghị cho các tổ chức công lập chịu trách nhiệm về khả năng tiếp cận của nội dung xuất bản."
 }

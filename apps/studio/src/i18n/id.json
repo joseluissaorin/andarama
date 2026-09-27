@@ -1103,5 +1103,14 @@
   "help_export_sw": "Menambahkan komponen yang diperlukan agar tur virtual dapat berjalan secara luring setelah dibuka pertama kali dan dapat diinstal sebagai aplikasi. Berguna di museum, pameran, atau ruang kelas tanpa wifi: buka sekali dengan koneksi internet dan akan tetap berfungsi meskipun koneksi terputus. Tidak dapat digabungkan dengan file HTML tunggal.",
   "help_export_single": "Menghasilkan satu file index.html berisi penampil dan semua foto di dalamnya, yang dapat dibuka dengan klik ganda tanpa server. «Kecil» berarti tidak ada batas tetap jumlah adegan, tetapi ukuran file sekitar sepertiga lebih besar dari total foto dan videonya, serta browser memuat seluruhnya ke dalam memori: sebagai panduan, ini bekerja optimal di bawah sekitar 100 MB, biasanya sekitar 10 hingga 15 panorama standar tanpa video. Tidak tersedia jika ada adegan yang berubin (foto sangat besar). Dapat digabungkan dengan SCORM.",
   "help_export_scorm": "Menghasilkan file ZIP untuk diunggah ke Moodle (atau kelas virtual lainnya) sebagai aktivitas SCORM. Kelas virtual mencatat apakah siswa telah menyelesaikan tur virtual (semua adegan dilihat atau semua pertanyaan dijawab) dan nilai kuis mereka, dibandingkan dengan nilai kelulusan di Pengaturan tur virtual. Pilih SCORM 1.2 jika platformmu sudah usang, atau 2004 untuk kasus lainnya. Ini juga berfungsi dengan file HTML tunggal. Di andarama.com, fitur ini termasuk dalam paket Formación.",
-  "help_export_kiosk": "Untuk layar tanpa pengawas langsung (museum, pameran, meja resepsionis): tur virtual berjalan sendiri mengikuti tur otomatis dan, jika tidak disentuh selama beberapa waktu, akan dimulai kembali dari awal."
+  "help_export_kiosk": "Untuk layar tanpa pengawas langsung (museum, pameran, meja resepsionis): tur virtual berjalan sendiri mengikuti tur otomatis dan, jika tidak disentuh selama beberapa waktu, akan dimulai kembali dari awal.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Tutup menu",
+  "a11y_main_nav": "Utama",
+  "a11y_editing_now": "Orang yang sedang mengedit",
+  "a11y_editor_views": "Tampilan editor",
+  "a11y_target_lang": "Bahasa tujuan",
+  "a11y_skip_to_content": "Lompat ke konten",
+  "a11y_require_alt": "Wajibkan teks alternatif untuk memublikasikan",
+  "a11y_require_alt_desc": "Jika sebuah adegan atau hotspot tidak memiliki teks alternatif, tur tidak akan dipublikasikan sampai teks tersebut ada. Disarankan untuk instansi publik yang bertanggung jawab atas aksesibilitas konten yang mereka publikasikan."
 }
