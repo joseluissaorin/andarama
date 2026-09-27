@@ -21,6 +21,7 @@ import { purgeExpiredSessions } from "./lib/session.js";
 import { purgeTrashedProjects } from "./routes/projects.js";
 import { getSettings } from "./lib/helpers.js";
 import { parseAdminEmails } from "./lib/admins.js";
+import { sendTrialEmails } from "./lib/trial-emails.js";
 
 export { LiveTourRoomDO, ProjectPresenceDO } from "@andarama/realtime/durable-objects";
 
@@ -322,6 +323,15 @@ export default {
     const settings = await getSettings(db);
     const purged = await purgeTrashedProjects(db, settings.trashRetentionDays);
     if (purged > 0) console.log(`[cron] papelera: ${purged} proyectos eliminados definitivamente`);
+    // Correos del ciclo de la prueba de 14 días (bienvenida, día 7, día 12, final)
+    const templates = parseTemplatesConfig(env.SAMPLE_PROJECT_ID, env.TEMPLATE_PROJECTS);
+    const enviados = await sendTrialEmails(db, runtime.email, {
+      secret: env.APP_SECRET,
+      apiUrl: publicUrl,
+      studioUrl: `${publicUrl}/studio/`,
+      sampleTour: templates?.sampleProjectId != null,
+    });
+    if (enviados > 0) console.log(`[cron] prueba: ${enviados} correos enviados`);
   },
 
   /** Consumidor de Cloudflare Queues: en Workers los trabajos pesados se

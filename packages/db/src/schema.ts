@@ -125,6 +125,20 @@ export const coupons = sqliteTable(
  * la persona aceptó el aviso de anuncios) para subir la conversión
  * «Solicitud de demo» a Google Ads.
  */
+/** Correos del ciclo de la prueba ya enviados (y bajas): uno por usuario y paso. */
+export const trialEmails = sqliteTable(
+  "trial_emails",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** bienvenida | dia7 | dia12 | final | baja */
+    step: text("step").notNull(),
+    sentAt: integer("sent_at").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.step] })],
+);
+
 export const demoRequests = sqliteTable(
   "demo_requests",
   {
