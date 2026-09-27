@@ -41,7 +41,7 @@ Lo que se puede hacer sin ninguna gafa, con Andarama:
 - **Preguntar** con quiz con nota, mínimo para aprobar, informe final y certificado PDF.
 - **Jugar**: búsqueda del tesoro y escape room con variables de estado.
 - **Guiar en vivo** a toda la clase desde la pantalla del docente, con puntero y chat.
-- **Evaluar** con código de clase, sin cuentas para el alumnado ([plan Aula](/aula/)).
+- **Evaluar** sin cuentas para el alumnado: basta el enlace o el código QR ([plan Aula](/aula/)).
 
 Todo eso está documentado en [docencia](https://docs.andarama.com/usuario/docencia/). Y funciona en la versión accesible en texto para el alumnado que la necesita.
 
