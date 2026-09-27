@@ -853,7 +853,7 @@
   "plan_capabilities": "Qué incluye tu plan",
   "plan_cap_included": "incluido",
   "plan_cap_not_included": "no incluido",
-  "plan_cap_classroom": "Código de clase, quiz con nota y escape room",
+  "plan_cap_classroom": "Quiz con nota y certificado, escape room y búsqueda del tesoro",
   "plan_cap_scorm": "Exportación SCORM",
   "plan_cap_lti": "Lanzamiento desde el LMS (LTI 1.3)",
   "plan_cap_whiteLabel": "Sin la insignia «Hecho con Andarama»",

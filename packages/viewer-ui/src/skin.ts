@@ -1,4 +1,4 @@
-import { langDir, langNativeName, type Projection, type Tour } from "@andarama/schema";
+import { langDir, langNativeName, type Tour } from "@andarama/schema";
 import { createIconSvg, resolveUrl, TourViewer, type QuizStateEvent } from "@andarama/viewer";
 import { injectStyles } from "./styles.js";
 import { createTranslator, ensureUiLang, type Translator } from "./i18n.js";
