@@ -50,7 +50,7 @@ Three or four treasures per scene across five scenes is enough for a class perio
 
 ### 3. Put the explanation in the treasure itself
 
-The goal isn't just finding it; it's learning something when you do. Each treasure has a **reward** field, a short Markdown text that appears when it's found. Use it: "You found the astrolabe. Sailors used it to measure the height of the sun and work out their latitude." If you need more room, a **Text** or **Image** hotspot next to it works as an info card. (There's also a clue field on the treasure itself, but the viewer doesn't display it yet, so put your clues in separate hotspots as described next.)
+The goal isn't just finding it; it's learning something when you do. Each treasure has a **reward** field, a short Markdown text that appears when it's found. Use it: "You found the astrolabe. Sailors used it to measure the height of the sun and work out their latitude." If you need more room, a **Text** or **Image** hotspot next to it works as an info card. Each treasure also has a **hint** field: while a scene still has treasures to find, the counter at the top offers a Hint button that shows it without giving away where the object is.
 
 ### 4. Scatter the clues
 

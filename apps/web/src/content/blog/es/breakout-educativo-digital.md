@@ -12,7 +12,7 @@ faq:
   - q: "¿El alumnado necesita cuenta para jugar un breakout en Andarama?"
     a: "No. El recorrido se abre con un enlace o un código QR, sin registro ni correo. Solo pedimos un nombre, y es opcional, si el docente activa el certificado de finalización, para imprimirlo en el PDF."
   - q: "¿Puedo ver la nota de cada alumno desde el panel?"
-    a: "Hoy no. El informe final y el certificado se muestran en la pantalla de cada grupo, que puede enseñarlos o descargarlos. Si necesitas que la nota llegue a una plataforma, el paquete SCORM (plan Formación o instalación propia) la envía al LMS."
+    a: "Sí, como lista: al terminar, el resultado de cada grupo llega a la analítica del recorrido y se descarga en CSV, con su nombre si activas «Pedir el nombre al enviar el resultado». No hay código de clase ni vista por grupos. Si necesitas que la nota llegue al libro de calificaciones, el paquete SCORM (plan Formación o instalación propia) la envía al LMS."
   - q: "¿Cuánto cuesta?"
     a: "El plan Aula cuesta 42 $ al año por docente, con cinco recorridos y 10 GB, y se puede probar catorce días sin tarjeta. La pasarela cobra en dólares. En una instalación propia del centro, el programa es gratuito."
 ---
@@ -68,7 +68,7 @@ Andarama es nuestro, y lo proponemos para un caso concreto: cuando el breakout o
 
 No hay un breakout ya hecho que se clone con un botón: se monta con esas piezas, y con las fotos listas lleva entre veinte y treinta minutos. En [plantillas de escape room 360 para clase](/blog/plantillas-escape-room-360/) dejamos cuatro guiones completos para copiar, y la [guía de escape room de la documentación](https://docs.andarama.com/usuario/escape-room/) explica cada ajuste.
 
-Un límite que conviene conocer: hoy la nota no se guarda en nuestro servidor ni aparece en un panel del docente. El informe se ve en la pantalla de cada grupo, que puede enseñarlo o descargar el certificado. Si el centro necesita que la nota llegue a su plataforma, la vía que funciona es el paquete SCORM, disponible en el plan Formación y en la instalación propia.
+Al terminar, el informe se ve en la pantalla de cada grupo, que puede descargar el certificado, y el resultado llega a la analítica del recorrido, desde donde lo descargas en CSV (con el nombre del grupo si lo pides al enviar). No hay código de clase ni un panel de progreso por grupos. Si el centro necesita que la nota llegue al libro de calificaciones de su plataforma, la vía es el paquete SCORM, disponible en el plan Formación y en la instalación propia.
 
 ## Protección de datos: la primera pregunta del equipo directivo
 

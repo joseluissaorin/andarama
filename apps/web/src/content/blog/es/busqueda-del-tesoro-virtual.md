@@ -47,7 +47,7 @@ Con tres o cuatro tesoros por escena y cinco escenas ya hay una sesión.
 
 ### 3. Pon la explicación en el propio tesoro
 
-El objetivo no es solo encontrarlo: es aprender algo al hacerlo. Cada tesoro tiene un campo de **premio** (un texto corto en Markdown que se lee al encontrarlo) y otro de **pista**, que el visor todavía no muestra (por eso las pistas van en hotspots aparte, en el paso siguiente). Aprovecha el de premio: «Has encontrado el astrolabio. Los navegantes lo usaban para medir la altura del Sol y saber en qué latitud estaban». Si necesitas más, un hotspot de **Texto** o de **Imagen** al lado hace de ficha.
+El objetivo no es solo encontrarlo: es aprender algo al hacerlo. Cada tesoro tiene un campo de **premio** (un texto corto en Markdown que se lee al encontrarlo) y otro de **pista**: mientras quede algún tesoro en la escena, el contador de arriba ofrece un botón «Pista» que la muestra sin revelar dónde está el objeto. Aprovecha el de premio: «Has encontrado el astrolabio. Los navegantes lo usaban para medir la altura del Sol y saber en qué latitud estaban». Si necesitas más, un hotspot de **Texto** o de **Imagen** al lado hace de ficha.
 
 ### 4. Reparte pistas
 

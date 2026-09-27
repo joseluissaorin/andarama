@@ -12,7 +12,7 @@ faq:
   - q: "¿El alumnado ve cuántas llaves lleva?"
     a: "Las variables no se muestran en pantalla: el progreso se nota porque aparecen puertas y objetos nuevos. Lo que sí se ve es el contador de tesoros encontrados. Si recargan la página, las variables vuelven a su valor inicial."
   - q: "¿Puedo poner dos preguntas que bloqueen la misma sala?"
-    a: "Recomendamos una sola pregunta con compuerta por sala. Si quieres más retos en una escena, usa preguntas sin compuerta para la nota y deja la compuerta en la que da paso a la siguiente sala."
+    a: "Sí. Si una sala tiene varias preguntas con compuerta, hay que acertarlas todas para salir; fallar o agotar los intentos no abre la puerta. Para no alargar la sesión, dos por sala suelen bastar."
   - q: "¿Qué obtiene el alumnado al terminar?"
     a: "Un informe final con los aciertos y la puntuación, comparada con la nota mínima que hayas fijado, y, si lo activas, un certificado de finalización en PDF con su nombre."
 ---
@@ -99,17 +99,17 @@ Los sellos, fichas o versos son hotspots de **Tesoro**. El visor lleva la cuenta
 
 ### 6. El quiz que no deja salir
 
-Cada candado es un hotspot de **Quiz** con **Compuerta** activada: mientras no se acierte, los pasos a otras escenas se ven apagados y, al pulsarlos, se abre la pregunta. Deja los intentos en 0 (ilimitados), porque si se agotan la compuerta se abre igualmente, y pon una sola compuerta por sala. Usa la retroalimentación para dar una pista cuando se falla.
+Cada candado es un hotspot de **Quiz** con **Compuerta** activada: mientras no se acierte, los pasos a otras escenas se ven apagados y, al pulsarlos, se abre la pregunta. Solo se sale acertando: fallar o agotar los intentos no abre la compuerta, y si hay varias preguntas con compuerta en la sala, hay que acertarlas todas. Usa la retroalimentación para dar una pista cuando se falla.
 
 ### 7. Nota, informe y certificado
 
-En **Ajustes del tour** fija la **Puntuación mínima**, activa el **Informe final** y, si quieres, el **Certificado de finalización**. Al terminar, cada grupo ve sus aciertos y, si supera la nota, descarga un PDF con su nombre. Todo el detalle está en la [guía de escape room de la documentación](https://docs.andarama.com/usuario/escape-room/) y en la de [variables y condiciones](https://docs.andarama.com/usuario/variables/).
+En **Ajustes del tour** fija la **Puntuación mínima**, activa el **Informe final** y, si quieres, el **Certificado de finalización**. Al terminar, cada grupo ve sus aciertos y, si supera la nota, descarga un PDF con su nombre; el resultado llega además a la analítica del recorrido, desde donde lo descargas en CSV (con el nombre del grupo si activas «Pedir el nombre al enviar el resultado»). Todo el detalle está en la [guía de escape room de la documentación](https://docs.andarama.com/usuario/escape-room/) y en la de [variables y condiciones](https://docs.andarama.com/usuario/variables/).
 
 ## Lo que conviene saber antes de clase
 
 - **Las variables no se ven.** El alumnado no ve un marcador de «llaves: 1»; nota el progreso porque aparecen puertas y objetos nuevos. Cuéntalo en el relato («cuando tengáis la llave, buscad la puerta»).
 - **No se guardan entre visitas.** Si alguien recarga la página, las variables vuelven a su valor inicial. Pide que no cierren la pestaña hasta el final.
-- **Las pistas de los tesoros aún no se muestran.** El campo existe en el editor, pero el visor todavía no lo enseña. Mientras tanto, deja las pistas en hotspots de texto o etiquetas flotantes cerca de cada objeto.
+- **Aprovecha las pistas de los tesoros.** Si rellenas la pista de cada tesoro, el contador de arriba ofrece un botón «Pista» que la muestra sin revelar dónde está el objeto. Y con la compuerta del tesoro, nadie sale de la sala sin haberlo encontrado.
 - **Pruébalo entero** en la pestaña Previsualizar antes de clase, y pásaselo a alguien que no sepa las soluciones.
 
 El alumnado no necesita cuenta: basta el enlace o el código QR. Si te gusta la mecánica de buscar objetos sin candados, mira también la [búsqueda del tesoro virtual](/blog/busqueda-del-tesoro-virtual/), y para todo lo que incluye el plan docente, la página del [plan Aula](/aula/).
