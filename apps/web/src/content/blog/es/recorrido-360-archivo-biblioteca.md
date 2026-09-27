@@ -64,7 +64,7 @@ Los depósitos son estrechos y con luz fluorescente; algunas recomendaciones:
 
 - **Web** de la biblioteca: código de inserción (web component o iframe) en cualquier gestor de contenidos, con el [plugin de WordPress](/wordpress/) si aplica; tarjeta social con la vista de la escena inicial al compartir el enlace.
 - **Vestíbulo**: el mismo recorrido en **modo quiosco** en una pantalla, encadenando los recorridos, con el mando para quien toque y vuelta al inicio tras un minuto. Para pantallas sin red, el paquete **PWA** funciona sin conexión. Está en [publicar y compartir](https://docs.andarama.com/usuario/publicar/).
-- **Campus virtual**: si la biblioteca es universitaria, las escenas docentes entran en Moodle como paquete SCORM (plan Formación o instalación propia) y la nota del quiz llega al libro de calificaciones; el LTI 1.3 existe, pero está en pruebas y la nota aún no vuelve sola ([guía](/blog/recorrido-360-moodle/)).
+- **Campus virtual**: si la biblioteca es universitaria, las escenas docentes entran en Moodle como paquete SCORM (plan Formación o instalación propia) y la nota del quiz llega al libro de calificaciones, y también se pueden conectar por LTI 1.3, siempre actualizadas y con la nota directa al libro ([guía](/blog/recorrido-360-moodle/)).
 - **Enlaces profundos**: cada documento tiene su dirección (`#s=incunable-12`), de modo que la ficha del catálogo puede enlazar directamente a la escena.
 
 ## Accesibilidad y privacidad

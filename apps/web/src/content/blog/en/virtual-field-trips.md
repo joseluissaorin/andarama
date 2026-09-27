@@ -74,7 +74,7 @@ Voice doesn't go through the room: in class you just talk, and for remote or hyb
 
 With the [Classroom plan for teachers](/en/classroom/), students open the link or scan the QR code, **no accounts**, which keeps student data privacy simple (no roster stored, less to review under FERPA and COPPA). In the tour Settings you set the passing score, turn on the final report and, if you like, a PDF **certificate** with the participant's name that students can submit in Google Classroom or Canvas as evidence.
 
-If your school uses Moodle or another LMS, the tour can go inside a course as a SCORM package, which does report the score (Training plan or self-hosted). LTI 1.3 integration is still in testing and doesn't send the grade back on its own yet.
+If your school uses Moodle or another LMS, the tour can go inside a course as a SCORM package, which does report the score (Training plan or self-hosted). In Moodle it can also connect through LTI 1.3, which sends the grade to the gradebook automatically and never needs re-uploading.
 
 ## Examples by grade
 

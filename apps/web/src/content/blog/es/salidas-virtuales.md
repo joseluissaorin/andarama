@@ -69,7 +69,7 @@ La voz no va por la sala: se usa la del aula si están todos presentes, o una vi
 
 ## Evaluar
 
-Con el [plan Aula](/aula/) el alumnado entra con el enlace o el código QR, **sin cuentas**. En Ajustes del tour se fija la puntuación mínima, se activa el informe final y, si se quiere, el **certificado** en PDF con el nombre del participante. Si el centro usa Moodle u otro campus, el recorrido puede ir dentro como paquete SCORM, que sí informa de la nota (plan Formación o instalación propia); la integración LTI 1.3 está en pruebas y todavía no devuelve la nota sola ([LTI y SCORM](/blog/recorrido-360-moodle/)).
+Con el [plan Aula](/aula/) el alumnado entra con el enlace o el código QR, **sin cuentas**. En Ajustes del tour se fija la puntuación mínima, se activa el informe final y, si se quiere, el **certificado** en PDF con el nombre del participante. Si el centro usa Moodle u otro campus, el recorrido puede ir dentro como paquete SCORM, que sí informa de la nota (plan Formación o instalación propia); en Moodle también puede conectarse por LTI 1.3, que lleva la nota sola al libro de calificaciones sin volver a subir nada ([LTI y SCORM](/blog/recorrido-360-moodle/)).
 
 ## Ejemplos por etapa
 

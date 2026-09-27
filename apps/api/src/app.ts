@@ -47,6 +47,18 @@ export interface CreateAppOptions {
  * Aplicacion Hono identica en Cloudflare Workers y Node (§5.1: el dominio
  * nunca importa APIs de plataforma; todo llega via PlatformRuntime).
  */
+/**
+ * ¿Permite la CSP que otro origen enmarque la página? Con `frame-ancestors`
+ * distinto de `'self'` (o `'none'`), X-Frame-Options sobra y contradice.
+ */
+export function framingOpenedByCsp(csp: string | null): boolean {
+  if (csp == null) return false;
+  const m = /(?:^|;)\s*frame-ancestors\s+([^;]*)/i.exec(csp);
+  if (m == null) return false;
+  const sources = m[1]!.trim().split(/\s+/).filter((s) => s !== "'self'" && s !== "'none'");
+  return sources.length > 0;
+}
+
 export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
   const clerkVerifier =
@@ -90,6 +102,11 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
     c.res.headers.set("x-content-type-options", "nosniff");
     c.res.headers.set("referrer-policy", "strict-origin-when-cross-origin");
     c.res.headers.set("x-frame-options", c.res.headers.get("x-frame-options") ?? "SAMEORIGIN");
+    // Si la CSP abre el enmarcado (tour publicado, páginas LTI), X-Frame-Options
+    // no puede decir lo contrario: el tour incrustado en Moodle llevaba
+    // «SAMEORIGIN» junto a «frame-ancestors *» y dependía de que el navegador
+    // diera prioridad a la CSP.
+    if (framingOpenedByCsp(c.res.headers.get("content-security-policy"))) c.res.headers.delete("x-frame-options");
     if (new URL(opts.config.publicUrl).protocol === "https:") {
       c.res.headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
     }

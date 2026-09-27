@@ -80,7 +80,7 @@ The Preview tab plays the draft exactly as students will see it. Play it all the
 
 With the [Classroom plan](/en/classroom/) ($42 a year, five tours) students open the link or scan the QR code, **no account**, no email, no password. That also keeps things simple on the student data privacy side: there is no student roster to store, which makes conversations about FERPA and COPPA much shorter. At the end, each group sees its final report and downloads the PDF certificate, and the result lands in the tour's analytics, where you can download it as a CSV (with the group's name if you turn on the name prompt). On a self-hosted install (the software is open source) nothing is limited by a plan.
 
-If your school runs Moodle, the tour can go inside a course as a SCORM package, which does report the score (Training plan or self-hosted). LTI 1.3 integration exists but is still in testing: the score doesn't flow back to the gradebook on its own yet. We cover the options in [how to put a 360 tour in Moodle](/en/blog/360-tour-in-moodle/).
+If your school runs Moodle, the tour can go inside a course as a SCORM package, which does report the score (Training plan or self-hosted). It can also connect through LTI 1.3, which sends the score straight to the gradebook and picks up every change without re-uploading. We cover the options in [how to put a 360 tour in Moodle](/en/blog/360-tour-in-moodle/).
 
 ## Design: what makes it work
 

@@ -61,7 +61,7 @@ Para una única visita sencilla, gratis y que se sube por FTP, es una buena solu
 
 ## Andarama: Marzipano con editor (y lo que hay debajo)
 
-El motor 360 de Andarama está construido **sobre Marzipano**, con capas propias: teselado en el navegador, proyecciones (pequeño planeta, ojo de pez, Panini), WebXR con manos y mandos, diecisiete tipos de hotspot dibujados también dentro de las gafas, audio espacial, vídeo 360 y brújula. Encima, el editor con grafo, el plano, las traducciones, la publicación con enlace y QR, la analítica sin cookies, el quiz con nota, el escape room, el SCORM y el LTI 1.3 (todavía en pruebas: la nota aún no vuelve sola a Moodle).
+El motor 360 de Andarama está construido **sobre Marzipano**, con capas propias: teselado en el navegador, proyecciones (pequeño planeta, ojo de pez, Panini), WebXR con manos y mandos, diecisiete tipos de hotspot dibujados también dentro de las gafas, audio espacial, vídeo 360 y brújula. Encima, el editor con grafo, el plano, las traducciones, la publicación con enlace y QR, la analítica sin cookies, el quiz con nota, el escape room, el SCORM y el LTI 1.3, que lleva la nota directamente al libro de calificaciones de Moodle.
 
 Lo que se conserva del espíritu de Marzipano es lo importante: el **tour exportado es un fichero estático**. Un ZIP con el HTML, el visor y las teselas que se sube a cualquier hosting y funciona sin Andarama detrás, igual que un tour de la Marzipano Tool. El formato `tour.json` está [documentado](https://docs.andarama.com/referencia/tour-json/) y el programa entero es de código abierto (EUPL-1.2), así que quien quiera leer cómo se usa Marzipano por dentro puede hacerlo.
 

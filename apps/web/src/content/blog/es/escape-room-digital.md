@@ -77,7 +77,7 @@ La pestaña Previsualizar recorre el borrador como lo verá el alumnado. Juégal
 
 Con el [plan Aula](/aula/) (42 $ al año, cinco recorridos) el alumnado entra con el enlace o el código QR, **sin cuenta**, ni correo ni contraseña. Al terminar, cada grupo ve su informe final y descarga el certificado en PDF, y el resultado llega a la analítica del recorrido, desde donde lo descargas en CSV (con el nombre del grupo si lo pides al enviar). En una instalación propia del centro (el programa es de código abierto y hay un [ejecutable de escritorio](https://docs.andarama.com/despliegue/escritorio/)) no hay planes que limiten nada.
 
-Si el centro usa Moodle, el recorrido puede ir dentro como paquete SCORM, que sí informa de la nota (plan Formación o instalación propia); la integración LTI 1.3 está en pruebas y todavía no devuelve la nota sola al libro de calificaciones. Lo contamos en [cómo meter un recorrido 360 en Moodle](/blog/recorrido-360-moodle/).
+Si el centro usa Moodle, el recorrido puede ir dentro como paquete SCORM, que sí informa de la nota (plan Formación o instalación propia); también puede conectarse por LTI 1.3, que lleva la nota directamente al libro de calificaciones y recoge cada cambio sin volver a subir nada. Lo contamos en [cómo meter un recorrido 360 en Moodle](/blog/recorrido-360-moodle/).
 
 ## Diseño: lo que hace que funcione
 

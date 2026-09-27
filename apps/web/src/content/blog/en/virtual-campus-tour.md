@@ -13,7 +13,7 @@ faq:
   - q: "Can we host it on the university's own infrastructure?"
     a: "Yes. The software is open source and deploys with Docker or on the university's own Cloudflare account; on a self-hosted instance, faculty can sign in with their university account through SSO (OIDC)."
   - q: "How does it connect to Canvas or Moodle?"
-    a: "For graded activities, as a SCORM package (Formación plan or self-hosted). Without grades, embedded with an iframe or a web component. LTI 1.3 support is in testing: grades don't flow back to the gradebook on their own yet."
+    a: "For graded activities, as a SCORM package (Formación plan or self-hosted). Without grades, embedded with an iframe or a web component. In Moodle, also through LTI 1.3: the grade reaches the gradebook automatically and the tour stays up to date."
   - q: "How long does it take?"
     a: "A campus with five buildings and sixty viewpoints takes two or three days to shoot and about two weeks to assemble. After that, maintenance means swapping photos when something changes."
 ---
@@ -76,7 +76,7 @@ Either way, the tour exports as a static package and the format is documented: i
 
 ## Connecting to the LMS
 
-For quiz grades to reach Canvas, Moodle or Blackboard, the path today is a **SCORM** package (1.2 or 2004), uploaded like any other activity. To show a space without a grade, just embed it with an iframe or a web component. **LTI 1.3** support exists but is in testing: grades don't flow back to the gradebook on their own yet. We explain all of this step by step in [how to put a 360 tour in Moodle](/en/blog/360-tour-in-moodle/).
+For quiz grades to reach Canvas, Moodle or Blackboard, one path is a **SCORM** package (1.2 or 2004), uploaded like any other activity. To show a space without a grade, just embed it with an iframe or a web component. In Moodle there's also **LTI 1.3** (Formación plan or self-hosted): instructors pick the tour from the course, the grade lands in the gradebook on its own, and republishing the tour updates the course without re-uploading anything. We explain all of this step by step in [how to put a 360 tour in Moodle](/en/blog/360-tour-in-moodle/).
 
 ## Data and privacy
 

@@ -68,7 +68,7 @@ Los dos tienen modo RV. En Andarama es WebXR completo: se abre el enlace en el n
 
 ## Docencia y formación
 
-Panoee no está pensado para el aula y no tiene plan educativo. Andarama trae quiz con nota (mínimo para aprobar, intentos, informe, certificado PDF), compuerta que retiene en la escena hasta acertar, búsqueda del tesoro, escape room con variables, visitas guiadas en vivo, alumnado que juega sin crear cuenta y SCORM 1.2 y 2004. El LTI 1.3 existe, pero está en pruebas. Si das clase o formación, no hay comparación; si no, este apartado te da igual.
+Panoee no está pensado para el aula y no tiene plan educativo. Andarama trae quiz con nota (mínimo para aprobar, intentos, informe, certificado PDF), compuerta que retiene en la escena hasta acertar, búsqueda del tesoro, escape room con variables, visitas guiadas en vivo, alumnado que juega sin crear cuenta y SCORM 1.2 y 2004. Por LTI 1.3, la nota llega además directamente al libro de calificaciones de Moodle. Si das clase o formación, no hay comparación; si no, este apartado te da igual.
 
 ## Marca, dominio y datos
 

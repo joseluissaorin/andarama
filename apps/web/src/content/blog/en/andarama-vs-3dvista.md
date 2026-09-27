@@ -80,7 +80,7 @@ Both have a VR mode. In Andarama it's WebXR: open the tour in the browser on a M
 
 ## Teaching and training
 
-Both work for e-learning, and this is one of the few comparisons where we can say that: 3DVista has quizzes and exports SCORM, with an export designed for LMS use. Andarama has graded quizzes with a passing score, a final report and a PDF completion certificate; SCORM 1.2 and 2004; plus scavenger hunts, escape rooms built with variables and quiz gates, and live guided tours, with no student accounts needed to play. Andarama also has an LTI 1.3 integration, but it's in testing and grades don't flow back to Moodle or Canvas on their own yet. For a standalone SCORM course, either one will do.
+Both work for e-learning, and this is one of the few comparisons where we can say that: 3DVista has quizzes and exports SCORM, with an export designed for LMS use. Andarama has graded quizzes with a passing score, a final report and a PDF completion certificate; SCORM 1.2 and 2004; plus scavenger hunts, escape rooms built with variables and quiz gates, and live guided tours, with no student accounts needed to play. Andarama also connects to Moodle through LTI 1.3: the instructor picks the tour from the course, and the grade lands in the gradebook with nothing to re-upload. For a standalone SCORM course, either one will do.
 
 ## Street View and branding
 

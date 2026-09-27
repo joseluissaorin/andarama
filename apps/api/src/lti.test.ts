@@ -5,7 +5,8 @@ import { SignJWT, decodeJwt, exportJWK, generateKeyPair } from "jose";
 import { orgMembers, projects, publications, users } from "@andarama/db";
 import { eq } from "drizzle-orm";
 import type { Db } from "./lib/context.js";
-import { signDeepLinkForm } from "./routes/lti.js";
+import { idTokenErrorText, signDeepLinkForm, wantsHtml } from "./routes/lti.js";
+import { framingOpenedByCsp } from "./app.js";
 import { TEST_SECRET, bearerCaller, createTestInstance, fakeClerk, type TestInstance } from "./test-support.js";
 
 /**
@@ -60,7 +61,11 @@ function registration(orgId: string | undefined, clientId: string): Record<strin
 }
 
 /** Inicio de sesión OIDC + id_token firmado por la plataforma + launch. */
-async function launch(clientId: string, claims: Record<string, unknown>): Promise<Response> {
+async function launch(
+  clientId: string,
+  claims: Record<string, unknown>,
+  opts: { key?: CryptoKey; headers?: Record<string, string> } = {},
+): Promise<Response> {
   const login = await inst.app.request(
     `http://localhost/api/v1/lti/login?iss=${encodeURIComponent(ISSUER)}&login_hint=alumno-1&client_id=${clientId}`,
   );
@@ -80,10 +85,10 @@ async function launch(clientId: string, claims: Record<string, unknown>): Promis
     .setSubject("alumno-1")
     .setIssuedAt()
     .setExpirationTime("5m")
-    .sign(platformKey);
+    .sign(opts.key ?? platformKey);
   return inst.app.request("http://localhost/api/v1/lti/launch", {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
+    headers: { "content-type": "application/x-www-form-urlencoded", ...opts.headers },
     body: new URLSearchParams({ id_token: idToken, state }).toString(),
   });
 }
@@ -185,6 +190,8 @@ describe("Deep Linking", () => {
     expect(forms[0]).toMatchObject({ slug: "museo-profe", returnUrl: RETURN_URL, deploymentId: "dep-1", data: "opaco" });
     expect(forms[0]!.sig).toMatch(/^[0-9a-f]{64}$/);
     expect(res.headers.get("content-security-policy")).toContain(`frame-ancestors 'self' ${ISSUER}`);
+    // Dentro del iframe de Moodle: X-Frame-Options no puede contradecir a la CSP
+    expect(res.headers.get("x-frame-options")).toBeNull();
   });
 
   it("el formulario firmado devuelve el JWT a la plataforma", async () => {
@@ -198,6 +205,10 @@ describe("Deep Linking", () => {
     expect(claims["https://purl.imsglobal.org/spec/lti-dl/claim/data"]).toBe("opaco");
     const items = claims["https://purl.imsglobal.org/spec/lti-dl/claim/content_items"] as { custom: { tour: string } }[];
     expect(items[0]!.custom.tour).toBe("museo-profe");
+    // Moodle propone el título como nombre de la actividad: el del recorrido, no el slug
+    const item = items[0] as unknown as { title: string; lineItem: { label: string; scoreMaximum: number } };
+    expect(item.title).toBe("Museo de la profe");
+    expect(item.lineItem).toEqual({ scoreMaximum: 100, label: "Museo de la profe" });
     expect(res.headers.get("content-security-policy")).toContain(`form-action 'self' ${ISSUER}`);
   });
 
@@ -255,5 +266,63 @@ describe("validación del lanzamiento", () => {
     expect(res.status).toBe(403);
     expect(await res.json()).toMatchObject({ code: "capability", capability: "lti" });
     people["tok-profe"].plan = "u:formacion";
+  });
+});
+
+describe("errores dentro del LMS", () => {
+  const recurso = { [`${CLAIM}message_type`]: "LtiResourceLinkRequest", [`${CLAIM}custom`]: { tour: "museo-profe" } };
+
+  it("una plataforma sin registrar ve una página legible que se puede mostrar en el iframe", async () => {
+    const res = await inst.app.request(
+      `http://localhost/api/v1/lti/login?iss=${encodeURIComponent("https://otro-moodle.test")}&login_hint=x`,
+      { headers: { accept: "text/html,application/xhtml+xml" } },
+    );
+    expect(res.status).toBe(403);
+    expect(res.headers.get("content-type")).toContain("text/html");
+    expect(res.headers.get("x-frame-options")).toBeNull();
+    const csp = res.headers.get("content-security-policy")!;
+    expect(csp).toContain("frame-ancestors *");
+    expect(csp).toContain("script-src 'none'");
+    const html = await res.text();
+    expect(html).toContain("No se ha podido abrir el recorrido");
+    expect(html).toContain("Plataforma LTI no registrada");
+  });
+
+  it("sin Accept de navegador sigue respondiendo JSON de problema", async () => {
+    const res = await inst.app.request(`http://localhost/api/v1/lti/login?iss=${encodeURIComponent("https://otro-moodle.test")}&login_hint=x`);
+    expect(res.status).toBe(403);
+    expect(res.headers.get("content-type")).toContain("application/problem+json");
+  });
+
+  it("un id_token con firma ajena es un 403 explicado, no un error interno", async () => {
+    const ajena = (await generateKeyPair("RS256")).privateKey as CryptoKey;
+    const res = await launch("cliente-profe", recurso, { key: ajena });
+    expect(res.status).toBe(403);
+    expect(((await res.json()) as { detail: string }).detail).toContain("no se ha podido validar");
+
+    const html = await launch("cliente-profe", recurso, { key: ajena, headers: { accept: "text/html" } });
+    expect(html.status).toBe(403);
+    expect(await html.text()).toContain("la firma no corresponde");
+  });
+
+  it("idTokenErrorText y wantsHtml", () => {
+    expect(idTokenErrorText({ code: "ERR_JWT_EXPIRED" })).toContain("caducado");
+    expect(idTokenErrorText({ code: "ERR_JWT_CLAIM_VALIDATION_FAILED" })).toContain("emisor");
+    expect(idTokenErrorText(new TypeError("fetch failed"))).toContain("claves públicas");
+    expect(idTokenErrorText(new Error("x"))).toBe("firma no válida");
+    expect(wantsHtml("text/html,application/xhtml+xml;q=0.9")).toBe(true);
+    expect(wantsHtml("application/json")).toBe(false);
+    expect(wantsHtml(undefined)).toBe(false);
+  });
+});
+
+describe("framingOpenedByCsp", () => {
+  it("solo quita X-Frame-Options cuando la CSP abre el enmarcado a otros orígenes", () => {
+    expect(framingOpenedByCsp("default-src 'self'; frame-ancestors *")).toBe(true);
+    expect(framingOpenedByCsp("frame-ancestors 'self' https://moodle.test; base-uri 'none'")).toBe(true);
+    expect(framingOpenedByCsp("default-src 'self'; frame-ancestors 'self'")).toBe(false);
+    expect(framingOpenedByCsp("frame-ancestors 'none'")).toBe(false);
+    expect(framingOpenedByCsp("default-src 'self'")).toBe(false);
+    expect(framingOpenedByCsp(null)).toBe(false);
   });
 });

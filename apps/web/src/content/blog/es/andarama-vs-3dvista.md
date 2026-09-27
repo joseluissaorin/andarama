@@ -77,7 +77,7 @@ Los dos tienen modo RV. En Andarama es WebXR: se abre el tour en el navegador de
 
 ## Docencia y formación
 
-Los dos sirven para e-learning y es de las pocas comparativas donde podemos decirlo: 3DVista tiene quiz y exporta SCORM, y su exportación está pensada para LMS. Andarama tiene quiz con nota, mínimo para aprobar, informe y certificado PDF; SCORM 1.2 y 2004; y añade búsqueda del tesoro, escape room con variables y visitas guiadas en vivo, sin que el alumnado necesite cuenta para jugar. Tiene también una integración LTI 1.3, pero está en pruebas y la nota todavía no vuelve sola a Moodle. Para un curso SCORM, cualquiera de los dos.
+Los dos sirven para e-learning y es de las pocas comparativas donde podemos decirlo: 3DVista tiene quiz y exporta SCORM, y su exportación está pensada para LMS. Andarama tiene quiz con nota, mínimo para aprobar, informe y certificado PDF; SCORM 1.2 y 2004; y añade búsqueda del tesoro, escape room con variables y visitas guiadas en vivo, sin que el alumnado necesite cuenta para jugar. Además se conecta a Moodle por LTI 1.3: el docente elige el tour desde el curso y la nota llega sola al libro de calificaciones, sin volver a subir nada. Para un curso SCORM, cualquiera de los dos.
 
 ## Street View y marca
 
