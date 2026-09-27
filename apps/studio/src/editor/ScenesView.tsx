@@ -356,7 +356,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
           </Field>
         </div>
       </Dialog>
-      <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={setNewMedia} />
+      <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={setNewMedia} projectId={project.id} />
     </div>
   );
 }

@@ -947,5 +947,7 @@
   "rename_media_offer": "¿Renombrar también la foto? «{from}» pasaría a llamarse «{to}» en la biblioteca.",
   "rename_media_yes": "Renombrar la foto",
   "rename_media_no": "No, dejarla como está",
-  "rename_media_done": "Foto renombrada: {name}"
+  "rename_media_done": "Foto renombrada: {name}",
+  "library_all_hint": "Muestra los medios de todos tus recorridos para reutilizarlos sin volver a subirlos. Puedes acotarla a un recorrido concreto.",
+  "library_tour_hint": "Solo los medios subidos o asignados a este recorrido."
 }

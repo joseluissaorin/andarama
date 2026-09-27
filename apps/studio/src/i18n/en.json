@@ -947,5 +947,7 @@
   "rename_media_offer": "Rename the photo too? «{from}» would become «{to}» in the library.",
   "rename_media_yes": "Rename the photo",
   "rename_media_no": "No, keep it",
-  "rename_media_done": "Photo renamed: {name}"
+  "rename_media_done": "Photo renamed: {name}",
+  "library_all_hint": "Shows the media from all your tours so you can reuse them without uploading again. You can narrow it down to one tour.",
+  "library_tour_hint": "Only the media uploaded to or assigned to this tour."
 }

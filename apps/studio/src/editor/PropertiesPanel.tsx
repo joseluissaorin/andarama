@@ -415,6 +415,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
       <MediaPicker
         open={pickerFor != null}
         onClose={() => setPickerFor(null)}
+        projectId={scene.projectId}
         kind={pickerFor === "panorama" ? undefined : "audio"}
         onSelect={(item: MediaItem) => {
           if (pickerFor === "panorama") {
@@ -1420,6 +1421,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       <MediaPicker
         open={pickerField != null}
         onClose={() => setPickerField(null)}
+        projectId={scene.projectId}
         kind={pickerField?.split(":")[1] === "" ? undefined : pickerField?.split(":")[1]}
         onSelect={(item) => {
           const field = pickerField?.split(":")[0];
