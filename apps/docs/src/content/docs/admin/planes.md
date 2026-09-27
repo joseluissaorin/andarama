@@ -10,7 +10,7 @@ Andarama es de código abierto bajo EUPL-1.2. **El plan gratuito es montárselo 
 | Plan | Precio | Recorridos | Medios | Qué añade |
 |---|---|---|---|---|
 | **Andar** | 2 $ al mes | 1 | 5 GB | Lo básico para un recorrido |
-| **Aula** | 39 € al año (Clerk cobra 42 $) | hasta 5 | 10 GB | Código de clase, quiz con nota y escape room |
+| **Aula** | 42 $ al año por docente | hasta 5 | 10 GB | Código de clase, quiz con nota y escape room |
 | **Paseo** | 20 $ al mes o 200 $ al año | hasta 10 | 50 GB | Más recorridos y más espacio |
 | **Excursión** | 500 $ al año | hasta 500 | 100 GB | Sin insignia, dominio propio |
 | **Formación** | 99 $ al mes o 990 $ al año | hasta 100 | 200 GB | SCORM, LTI 1.3, sin insignia, dominio propio, equipo, factura con datos fiscales |

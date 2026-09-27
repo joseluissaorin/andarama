@@ -4,9 +4,8 @@
  * (`precios.*` en cada JSON).
  *
  * Siete tarjetas: «En tu casa» (gratis: instalártelo) y los seis planes
- * alojados. Aula se anuncia a 39 € al año por docente aunque Clerk lo cobre
- * en dólares (42 $); el resto se muestra en dólares tal cual lo cobra la
- * pasarela.
+ * alojados. Todos se muestran en dólares tal cual los cobra la pasarela
+ * (Aula, 42 $ al año por docente).
  */
 import { PLANS, TRIAL_DAYS as API_TRIAL_DAYS, type PlanInfo, type PlanSlug } from "../../../api/src/lib/plans";
 import { t, tv, type Lang } from "../i18n";
@@ -20,7 +19,7 @@ export type PlanCardKind = "casa" | PlanSlug;
 export interface PlanCard {
   kind: PlanCardKind;
   name: string;
-  /** La cifra grande («20 $», «39 €», «0 €»). */
+  /** La cifra grande («20 $», «42 $», «0 €»). */
   figure: string;
   /** Cuándo se paga («al mes», «al año por docente», «para siempre»). */
   when: string;
