@@ -32,7 +32,7 @@ The interface ships in Spanish and English; the documentation is in Spanish.
     <td>Scenes, hotspots and a tour graph, with a WYSIWYG preview running the real viewer. Drag a scene onto the panorama and the step towards it is created where you dropped it.</td>
   </tr>
   <tr>
-    <td width="22%"><b>Seventeen hotspot types</b></td>
+    <td width="22%"><b>Eighteen hotspot types</b></td>
     <td>Navigation, text, image, gallery, video, audio, PDF, embedded web, 3D model, quiz, form, polygon, state, treasure and more, all reachable inside VR too.</td>
   </tr>
   <tr>
