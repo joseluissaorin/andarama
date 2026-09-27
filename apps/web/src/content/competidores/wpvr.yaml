@@ -5,26 +5,48 @@ tipo: plugin
 gratis: true
 gratis_detalle: "Versión gratuita en el directorio de plugins de WordPress con funciones limitadas"
 planes:
-  - nombre: Pro (1 sitio)
-    precio: 49
+  - nombre: Starter (1 sitio)
+    precio: 69.99
     moneda: USD
     periodo: year
     precio_mes_anual: null
-    precio_anual: 49
-    verificado: false
-cuotas: null
+    precio_anual: 69.99
+    verificado: true
+  - nombre: Pro (10 sitios)
+    precio: 139.99
+    moneda: USD
+    periodo: year
+    precio_mes_anual: null
+    precio_anual: 139.99
+    verificado: true
+  - nombre: Agency (sitios ilimitados)
+    precio: 279.99
+    moneda: USD
+    periodo: year
+    precio_mes_anual: null
+    precio_anual: 279.99
+    verificado: true
+  - nombre: Starter de por vida (1 sitio)
+    precio: 174.99
+    moneda: USD
+    periodo: once
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+cuotas: "Panoramas y puntos de interés ilimitados en todos los planes de pago; lo que cambia es el número de sitios"
 rv: true
 scorm: false
 lti: false
 exportacion: parcial
-exportacion_detalle: "El tour vive en el propio WordPress del usuario; no hay exportación independiente del CMS"
+exportacion_detalle: "El tour vive en el propio WordPress del usuario; permite importar y exportar tours entre sitios WordPress, pero no hay exportación independiente del CMS"
 codigo_abierto: false
 marca_blanca: true
 dominio_propio: true
 analitica_sin_cookies: null
 street_view: false
-verificado: false
+verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
-  es: "Plugin de WordPress para incrustar tours 360 en el propio sitio, con versión gratuita y licencia Pro anual."
-  en: "WordPress plugin to embed 360 tours on your own site, with a free version and an annual Pro licence."
-notas: "El precio de la licencia Pro es de memoria; existen escalones para varios sitios. Solo tiene sentido si ya se usa WordPress."
+  es: "Plugin de WordPress para incrustar tours 360 en el propio sitio, con versión gratuita y licencias de pago anuales o de por vida."
+  en: "WordPress plugin to embed 360 tours on your own site, with a free version and annual or lifetime paid licences."
+notas: "Precios con un 30 % de descuento anunciado (precio normal: 99,99 $, 199,99 $ y 399,99 $ al año). Licencias de por vida: 174,99 $ (1 sitio), 314,99 $ (10 sitios) y 454,99 $ (ilimitados). Todos los planes de pago incluyen logotipo propio (marca blanca) y soporte para gafas de RV. Solo tiene sentido si ya se usa WordPress. Fuente: https://rextheme.com/wpvr/pricing/ (27-9-2026)."

@@ -3,21 +3,36 @@ web: https://www.uptale.io
 pais: "FR"
 tipo: saas
 gratis: false
-gratis_detalle: "Solo demostración o prueba bajo solicitud; no hay plan gratuito"
-planes: []
-cuotas: null
+gratis_detalle: "Solo demostración bajo solicitud; no hay plan gratuito"
+planes:
+  - nombre: Pro
+    precio: 14000
+    moneda: EUR
+    periodo: year
+    precio_mes_anual: null
+    precio_anual: 14000
+    verificado: true
+  - nombre: Team
+    precio: 28000
+    moneda: EUR
+    periodo: year
+    precio_mes_anual: null
+    precio_anual: 28000
+    verificado: true
+cuotas: "Pro: 1 usuario clave y 100 alumnos o 1000 visualizaciones, 1 idioma; Team: 5 usuarios clave y 500 alumnos o 5000 visualizaciones, 2 idiomas"
 rv: true
-scorm: true
-lti: true
+scorm: parcial
+lti: parcial
 exportacion: parcial
-exportacion_detalle: "Exportación como paquete SCORM para LMS; el visor sigue dependiendo de la plataforma"
+exportacion_detalle: "Exportación SCORM e integración con LMS como opciones aparte; el visor sigue dependiendo de la plataforma"
 codigo_abierto: false
 marca_blanca: parcial
 dominio_propio: parcial
 analitica_sin_cookies: null
 street_view: false
-verificado: false
+verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
-  es: "Plataforma francesa de formación inmersiva 360 para empresas, con SCORM y LTI; precio por presupuesto."
-  en: "French immersive 360 training platform for enterprises, with SCORM and LTI; quote-based pricing."
-notas: "Precio solo por presupuesto, orientado a grandes empresas y centros de formación profesional. Fuerte en escenarios pedagógicos con preguntas y seguimiento."
+  es: "Plataforma francesa de formación inmersiva 360 para empresas, con SCORM y LTI opcionales; planes desde 14 000 € al año."
+  en: "French immersive 360 training platform for enterprises, with optional SCORM and LTI; plans from €14,000 a year."
+notas: "Precios «desde» para Europa, con compromiso anual (en EE. UU., desde 17 000 $ y 34 000 $). Enterprise y el plan educativo, bajo presupuesto. La exportación SCORM y la integración con LMS figuran como opcionales; las preguntas frecuentes citan integraciones LTI y xAPI. Fuentes: https://www.uptale.io/en/pricing/pricing-euro/ y https://www.uptale.io/en/pricing/pricing/ (27-9-2026)."

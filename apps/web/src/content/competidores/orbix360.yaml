@@ -3,16 +3,16 @@ web: https://orbix360.com
 pais: "US"
 tipo: saas
 gratis: true
-gratis_detalle: "Plan gratuito con tours limitados y marca de Orbix360"
+gratis_detalle: "Plan gratuito con experiencias 360 ilimitadas, pero sin logotipo propio, sin inserción en webs propias ni control de privacidad; imágenes de hasta 15 MB"
 planes:
   - nombre: Pro
-    precio: 10
+    precio: 9.99
     moneda: USD
     periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: false
-cuotas: null
+    precio_mes_anual: 8.25
+    precio_anual: 99
+    verificado: true
+cuotas: "Pro: hasta 20 imágenes 360 por experiencia e imágenes de más de 15 MB"
 rv: true
 scorm: false
 lti: false
@@ -20,11 +20,12 @@ exportacion: false
 exportacion_detalle: null
 codigo_abierto: false
 marca_blanca: parcial
-dominio_propio: parcial
+dominio_propio: false
 analitica_sin_cookies: null
 street_view: false
-verificado: false
+verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
   es: "SaaS de tours 360 con plan gratuito, sencillo y menos conocido, con opción de vídeo 360."
   en: "360 tour SaaS with a free plan, simple and less well known, with a 360 video option."
-notas: "Precio del plan Pro de memoria; conviene comprobarlo. Sin plan educativo conocido."
+notas: "El plan Pro añade logotipo propio con enlace a la web, privacidad e inserción por iframe; la web no ofrece dominio propio ni exportación. Sin plan educativo. El precio mensual (9,99 $) figura en el selector mensual de la página. Fuente: https://orbix360.com/pricing (27-9-2026)."
