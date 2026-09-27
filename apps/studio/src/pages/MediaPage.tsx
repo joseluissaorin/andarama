@@ -510,7 +510,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
                 <button
                   type="button"
                   title={t("open_360")}
-                  aria-label={`${t("open_360")}: ${m.filename}`}
+                  aria-label={t("open_360")}
                   className="absolute right-1 top-[80px] rounded-md bg-black/60 p-1.5 text-white opacity-0 transition-opacity hover:bg-black/80 focus-visible:opacity-100 group-hover:opacity-100"
                   onClick={() => {
                     setDetail(null);
