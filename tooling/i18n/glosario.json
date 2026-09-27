@@ -1,0 +1,40 @@
+{
+  "_comentario": "Glosario fijo de la tubería de traducción (tooling/i18n/traducir.py). Se incrusta en la instrucción del modelo en todos los lotes.",
+  "no_traducir": [
+    "Andarama",
+    "Studio",
+    "¡anda!",
+    "Andar",
+    "Aula",
+    "Paseo",
+    "Excursión",
+    "Formación",
+    "De por vida",
+    "SCORM",
+    "PWA",
+    "QR",
+    "WebXR",
+    "Clerk",
+    "Cloudflare",
+    "Matterport",
+    "Little planet",
+    "Panini"
+  ],
+  "terminos": {
+    "tour / recorrido": "Son la misma cosa: un tour virtual 360 hecho de panoramas. Usa el término habitual en la lengua de destino para «tour virtual» y úsalo siempre igual.",
+    "escena": "Cada panorama del tour (en inglés, scene). Usa siempre la misma palabra.",
+    "hotspot": "Punto interactivo colocado sobre el panorama. Si en la lengua de destino «hotspot» es un préstamo habitual en software, mantenlo; si no, usa el término establecido y siempre el mismo.",
+    "panorama": "Imagen equirectangular 360 (panorama).",
+    "grafo": "El diagrama de escenas conectadas del editor (graph).",
+    "publicar": "Poner el tour en línea (publish).",
+    "borrador": "Versión no publicada de un tour (draft).",
+    "organización": "La cuenta de grupo a la que pertenecen los usuarios (organization).",
+    "plantilla": "Tour de partida reutilizable (template).",
+    "papelera": "Donde van los proyectos borrados (trash).",
+    "quiosco": "Modo de pantalla pública sin manos (kiosk).",
+    "visita guiada": "Sesión en directo en la que un guía lleva a los asistentes por el tour (live guided tour).",
+    "plano": "Plano de planta de un edificio (floor plan).",
+    "llegada": "Vista con la que se entra en una escena desde otra (arrival view).",
+    "Andar, Aula, Paseo, Excursión, Formación, De por vida": "Son nombres de planes de pago: se dejan en español tal cual."
+  }
+}

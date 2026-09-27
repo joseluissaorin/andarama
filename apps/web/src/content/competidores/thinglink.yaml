@@ -1,0 +1,44 @@
+nombre: ThingLink
+web: https://www.thinglink.com
+pais: "FI"
+tipo: saas
+gratis: false
+gratis_detalle: "Prueba gratuita; no hay plan gratuito permanente"
+planes:
+  - nombre: Starter
+    precio: 29
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+  - nombre: XR
+    precio: 99
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: true
+  - nombre: Teacher
+    precio: 35
+    moneda: USD
+    periodo: year
+    precio_mes_anual: null
+    precio_anual: 35
+    verificado: true
+cuotas: null
+rv: true
+scorm: parcial
+lti: true
+exportacion: parcial
+exportacion_detalle: "Exportación SCORM y HTML solo en los planes superiores"
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: false
+analitica_sin_cookies: null
+street_view: false
+verificado: true
+descripcion:
+  es: "Herramienta finlandesa de imágenes y vídeos interactivos con fuerte presencia en educación; el 360 es una función más."
+  en: "Finnish tool for interactive images and videos with a strong presence in education; 360 is just one feature."
+notas: "Plan docente de 35 $/año más 2 $ por alumno. Integración LTI con los LMS habituales y exportación SCORM en los planes altos."

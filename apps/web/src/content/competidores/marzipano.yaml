@@ -1,0 +1,23 @@
+nombre: Marzipano
+web: https://www.marzipano.net
+pais: "US"
+tipo: library
+gratis: true
+gratis_detalle: "Librería de código abierto (Apache 2.0), gratuita sin límites"
+planes: []
+cuotas: null
+rv: false
+scorm: false
+lti: false
+exportacion: true
+exportacion_detalle: "La herramienta web genera un tour estático descargable para alojarlo en cualquier servidor"
+codigo_abierto: true
+marca_blanca: true
+dominio_propio: true
+analitica_sin_cookies: null
+street_view: false
+verificado: false
+descripcion:
+  es: "Librería JavaScript de código abierto de Google para visores 360; gratuita, sin editor completo ni soporte."
+  en: "Google's open-source JavaScript library for 360 viewers; free, without a full editor or support."
+notas: "Sin planes ni empresa detrás del soporte. Incluye una herramienta web básica (Marzipano Tool) para montar tours sencillos; el resto exige programar."

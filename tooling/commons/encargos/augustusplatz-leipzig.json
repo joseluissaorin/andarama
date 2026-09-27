@@ -1,0 +1,108 @@
+{
+  "slug": "augustusplatz-leipzig",
+  "lang": "de",
+  "title": "Augustusplatz Leipzig in 360: virtueller Rundgang bei Tag und Nacht",
+  "description": "Fünf Kugelpanoramen vom Augustusplatz in Leipzig aus dem Oktober 2022 und 2024. Mit 40 000 m² ist der Platz am Innenstadtring einer der größten Stadtplätze Deutschlands; seit 1839 nach Friedrich August I. benannt, hieß er 1945 bis 1990 Karl-Marx-Platz und war 1989 Versammlungsort der Montagsdemonstrationen. Um ihn stehen das Opernhaus von 1960, das Gewandhaus von 1981, das 142,5 m hohe City-Hochhaus, das Paulinum und der Mendebrunnen von 1886. Der Rundgang beginnt am Opernbrunnen, führt zum Gewandhaus und Mendebrunnen und endet beim Lichtfest, das an den 9. Oktober 1989 erinnert.",
+  "placeName": "Augustusplatz",
+  "placeCountry": "DE",
+  "lat": 51.339167,
+  "lng": 12.380833,
+  "startScene": "opernbrunnen",
+  "scenes": [
+    {
+      "id": "opernbrunnen",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/39/Leipzig-AugustusPlatz-vom-Opernbrunnen-IMG_1862-9B-360Gx180G-PanoS-05-10-2022.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Leipzig-AugustusPlatz-vom-Opernbrunnen-IMG_1862-9B-360Gx180G-PanoS-05-10-2022.jpg",
+      "title": "Am Opernbrunnen",
+      "alt": "Kugelpanorama auf dem gepflasterten Augustusplatz neben dem runden Steinbecken des Opernbrunnens: rechts das helle Opernhaus, in der Mitte das City-Hochhaus, das Paulinum mit seinem spitzen Giebel und das Krochhochhaus mit Uhrturm, links das Gewandhaus und herbstlich gefärbte Bäume",
+      "desc": "Gesamtansicht des Platzes vom Opernbrunnen aus, Oktober 2022. Das Opernhaus wurde 1954 bis 1960 nach Plänen von Kunz Nierade und Kurt Hemmerling gebaut und am 8. Oktober 1960 eingeweiht.",
+      "author": "Joachim Köhler",
+      "license": "CC BY-SA 4.0",
+      "width": 16806,
+      "height": 8403,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "gewandhaus",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Leipzig-AugustusPlatz-Gewandhaus-IMG_3580-9x3B-360Gx180G-PanoS-12-10-2022.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Leipzig-AugustusPlatz-Gewandhaus-IMG_3580-9x3B-360Gx180G-PanoS-12-10-2022.jpg",
+      "title": "Vor dem Gewandhaus",
+      "alt": "Kugelpanorama vor dem Gewandhaus: die geschwungene Glasfassade des Konzerthauses mit dem auskragenden Obergeschoss, dahinter das City-Hochhaus, rechts der Mendebrunnen mit seinem Obelisken, Granitplatten und Bäume unter blauem Himmel",
+      "desc": "Das 1981 eingeweihte Gewandhaus ist die Heimstätte des Gewandhausorchesters, nach den Vorgängerbauten von 1781 und 1884 der dritte Konzertsaal dieses Namens.",
+      "author": "Joachim Köhler",
+      "license": "CC BY-SA 4.0",
+      "width": 16856,
+      "height": 8428,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "mendebrunnen",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Leipzig-AugustusPlatz-vMendebrunnen-IMG_2068-17x3B-360x180G-PanoS-05-10-2022.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Leipzig-AugustusPlatz-vMendebrunnen-IMG_2068-17x3B-360x180G-PanoS-05-10-2022.jpg",
+      "title": "Am Mendebrunnen",
+      "alt": "Kugelpanorama auf den Stufen des Mendebrunnens: links der Brunnen mit Obelisk und Bronzefiguren, dahinter das City-Hochhaus, das Paulinum und das Krochhochhaus, am anderen Ende des Platzes das Opernhaus, Glaspavillons und Bäume im Herbstlaub",
+      "desc": "Der Mendebrunnen, am 2. September 1886 eingeweiht, ist der älteste erhaltene Brunnen Leipzigs; für den Bau des Gewandhauses wurde er 1970 abgebaut und 1982 wieder aufgestellt.",
+      "author": "Joachim Köhler",
+      "license": "CC BY-SA 4.0",
+      "width": 20000,
+      "height": 10000,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "mendebrunnen-blaue-stunde",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Leipzig-Augustusplatz-vMendebrunnen-BlaueStunde-IMG_1674-8x5B-360x180G-PanoS-11-10-2024.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Leipzig-Augustusplatz-vMendebrunnen-BlaueStunde-IMG_1674-8x5B-360x180G-PanoS-11-10-2024.jpg",
+      "title": "Mendebrunnen zur blauen Stunde",
+      "alt": "Kugelpanorama zur blauen Stunde am Mendebrunnen: der beleuchtete Brunnen mit Obelisk vor dem Gewandhaus, auf dessen Glasfassade eine rote 89 leuchtet, das City-Hochhaus, das erleuchtete Opernhaus rechts und Bäume im Herbstlaub",
+      "desc": "Der Platz am 11. Oktober 2024 während des Lichtfests, das seit 2009 an die Montagsdemonstration vom 9. Oktober 1989 erinnert.",
+      "author": "Joachim Köhler",
+      "license": "CC BY-SA 4.0",
+      "width": 15900,
+      "height": 7950,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "lichtfest-opernbrunnen",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/4/46/Leipzig-Augustusplatz-Lichtfest-vOpernbrunnen-IMG_1599-8x5B-360x180G-PanoS-11-10-2024.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Leipzig-Augustusplatz-Lichtfest-vOpernbrunnen-IMG_1599-8x5B-360x180G-PanoS-11-10-2024.jpg",
+      "title": "Lichtfest am Opernbrunnen",
+      "alt": "Kugelpanorama zur blauen Stunde vom Opernbrunnen aus: das weite Pflaster des Augustusplatzes, eine bunte Lichtinstallation in der Mitte, das erleuchtete Opernhaus rechts, das City-Hochhaus, das Gewandhaus und das Paulinum am Horizont",
+      "desc": "Blick vom Opernbrunnen über den Platz mit einer Lichtinstallation des Lichtfests XXL, 11. Oktober 2024.",
+      "author": "Joachim Köhler",
+      "license": "CC BY-SA 4.0",
+      "width": 15900,
+      "height": 7950,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_fuentes": [
+    "https://de.wikipedia.org/wiki/Augustusplatz",
+    "https://de.wikipedia.org/wiki/Gewandhaus_(Leipzig)",
+    "https://de.wikipedia.org/wiki/Opernhaus_(Leipzig)",
+    "https://de.wikipedia.org/wiki/City-Hochhaus_Leipzig",
+    "https://de.wikipedia.org/wiki/Brunnen_in_Leipzig",
+    "https://de.wikipedia.org/wiki/Lichtfest_Leipzig",
+    "https://de.wikipedia.org/wiki/Paulinum_(Universit%C3%A4t_Leipzig)"
+  ],
+  "_notas": "Demanda por sondear. Descartada «vom-Mendebrunnen IMG 2190 (26 148 px)» por repetir el punto de la escena del Mendebrunnen. Tres ficheros superan los 16 384 px (16 806, 16 856 y 20 000): el montaje los reduce con sharp."
+}

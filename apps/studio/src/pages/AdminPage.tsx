@@ -1004,8 +1004,10 @@ function CouponsPanel(): React.ReactNode {
           <Field label={t("plan")} htmlFor="cp-plan">
             <Select id="cp-plan" value={plan} onChange={(e) => setPlan(e.target.value)} className="w-44">
               <option value="vitalicio">De por vida</option>
+              <option value="formacion">Formación</option>
               <option value="excursion">Excursión</option>
               <option value="paseo">Paseo</option>
+              <option value="aula">Aula</option>
               <option value="andar">Andar</option>
             </Select>
           </Field>

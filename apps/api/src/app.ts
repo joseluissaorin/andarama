@@ -1,7 +1,8 @@
 import { Hono } from "hono";
+import { ZodError } from "zod";
 import type { PlatformRuntime } from "@andarama/adapters";
 import type { AppConfig, AppEnv, Db } from "./lib/context.js";
-import { ApiError, problem, serverError } from "./lib/errors.js";
+import { ApiError, badRequest, problem, serverError } from "./lib/errors.js";
 import { checkCsrf, resolveAuth } from "./lib/session.js";
 import { newToken } from "./lib/util.js";
 import { authRoutes } from "./routes/auth.js";
@@ -21,8 +22,10 @@ import { tokenRoutes } from "./routes/tokens.js";
 import { liveRoutes } from "./routes/live.js";
 import { aiRoutes } from "./routes/ai.js";
 import { billingRoutes } from "./routes/billing.js";
+import { galleryApiRoutes, galleryPageRoutes } from "./routes/gallery.js";
 import { createClerkVerifier, type ClerkVerifier } from "./lib/clerk.js";
-import { PLANS, effectivePlan } from "./lib/plans.js";
+import { effectivePlan, planCapabilities, planName } from "./lib/plans.js";
+import { attributionSchema, hasAttribution } from "./lib/attribution.js";
 import { openApiSpec } from "./openapi.js";
 
 export interface CreateAppOptions {
@@ -59,15 +62,17 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
     // Cabeceras de seguridad completas (§4.2)
     const csp = c.res.headers.get("content-security-policy");
     if (csp == null && (c.res.headers.get("content-type") ?? "").includes("text/html")) {
+      // Solo la instancia alojada mide con Plausible; el self-host no habla con nadie
+      const plausible = opts.config.clerk != null ? " https://plausible.io" : "";
       c.res.headers.set(
         "content-security-policy",
         [
           "default-src 'self'",
-          `script-src 'self' 'nonce-${c.get("cspNonce")}' https://challenges.cloudflare.com`,
+          `script-src 'self' 'nonce-${c.get("cspNonce")}' https://challenges.cloudflare.com${plausible}`,
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https://tile.openstreetmap.org",
           "media-src 'self' blob: data:",
-          "connect-src 'self' https://tile.openstreetmap.org",
+          `connect-src 'self' https://tile.openstreetmap.org${plausible}`,
           // La vista previa del Studio incrusta lo mismo que el tour publicado:
           // vídeos, webs externas y los códigos de inserción servidos aquí.
           "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://challenges.cloudflare.com https:",
@@ -89,6 +94,10 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
 
   app.onError((err, c) => {
     if (err instanceof ApiError) return problem(c, err);
+    // Un cuerpo que no pasa la validación es culpa del cliente, no del servidor
+    if (err instanceof ZodError) {
+      return problem(c, badRequest("El cuerpo de la petición no es válido", { issues: err.issues }));
+    }
     console.error("[api] error no controlado:", err);
     const debug = (c.env as Record<string, unknown> | undefined)?.DEBUG_ERRORS === "1";
     return problem(c, serverError(debug && err instanceof Error ? `${err.name}: ${err.message}` : undefined));
@@ -119,6 +128,8 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/live", liveRoutes(opts.createLiveRoom ?? null));
   api.route("/ai", aiRoutes(opts.getAi ?? (() => null)));
   api.route("/billing", billingRoutes());
+  // Galería pública: listado y ficha, sin sesión
+  api.route("/gallery", galleryApiRoutes());
   api.route("/", analyticsRoutes());
   api.route("/", formRoutes());
   api.get("/openapi.json", (c) => c.json(openApiSpec(c.get("config").publicUrl)));
@@ -155,14 +166,48 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
         ssoLinked: auth.user.idpSubject != null,
         prefs: JSON.parse(auth.user.prefsJson ?? "{}") as Record<string, unknown>,
         clerkLinked: auth.user.clerkId != null,
+        createdAt: auth.user.createdAt,
       },
       orgs: memberships.map((m) => ({ id: m.org.id, name: m.org.name, slug: m.org.slug, role: m.role, ownerId: m.org.ownerId })),
       billing: (() => {
-        if (c.get("config").clerk == null) return { mode: "local" as const, plan: null, planName: null };
+        if (c.get("config").clerk == null) {
+          return { mode: "local" as const, plan: null, planName: null, capabilities: null, trialEndsAt: null, attributionPending: false };
+        }
         const plan = effectivePlan(auth.user);
-        return { mode: "clerk" as const, plan, planName: plan != null ? PLANS[plan].name : null };
+        return {
+          mode: "clerk" as const,
+          plan,
+          planName: planName(plan),
+          planFromClerk: auth.user.plan,
+          capabilities: planCapabilities(plan),
+          trialEndsAt: auth.user.trialEndsAt ?? null,
+          // El Studio manda la atribución una sola vez, cuando aún no consta
+          attributionPending: auth.user.attributionJson == null,
+        };
       })(),
     });
+  });
+
+  /**
+   * Atribución publicitaria del alta (instancia alojada): gclid, msclkid y
+   * utm_* del primer toque, tal como los guardó el Studio. Se escribe una
+   * sola vez; después se ignora sin error. Nunca lleva datos personales.
+   */
+  api.post("/me/attribution", async (c) => {
+    const auth = c.get("auth");
+    if (auth == null) return c.json({ error: "Sin sesión" }, 401);
+    if (c.get("config").clerk == null) return c.json({ ok: false, reason: "local" });
+    const body = attributionSchema.parse(await c.req.json());
+    if (auth.user.attributionJson != null) return c.json({ ok: false, reason: "already" });
+    if (!hasAttribution(body)) return c.json({ ok: false, reason: "empty" });
+    const db = c.get("db");
+    const { users } = await import("@andarama/db");
+    const { and, eq, isNull } = await import("drizzle-orm");
+    await db
+      .update(users)
+      .set({ attributionJson: JSON.stringify(body), attributedAt: Date.now(), updatedAt: Date.now() })
+      .where(and(eq(users.id, auth.user.id), isNull(users.attributionJson)));
+    return c.json({ ok: true });
   });
 
   /** Preferencias personales: idioma del editor y valores por defecto propios. */
@@ -173,7 +218,15 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
     const { users } = await import("@andarama/db");
     const { eq } = await import("drizzle-orm");
     const body = (await c.req.json()) as Record<string, unknown>;
+    // Se mezcla con lo que ya había: cambiar el idioma no borra el resto.
+    let previas: Record<string, unknown> = {};
+    try {
+      previas = JSON.parse(auth.user.prefsJson ?? "{}") as Record<string, unknown>;
+    } catch {
+      previas = {};
+    }
     const prefs = {
+      ...previas,
       ...(typeof body.editorLang === "string" ? { editorLang: body.editorLang } : {}),
       ...(typeof body.defaultLang === "string" ? { defaultLang: body.defaultLang } : {}),
       ...(typeof body.entryMode === "string" ? { entryMode: body.entryMode } : {}),
@@ -186,6 +239,8 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
 
   // Visor publicado, ingest de analitica y sitemap (sin sesion)
   app.route("/", tourRoutes());
+  // Galería pública en HTML (/explorar/), servida por el worker en el apex
+  app.route("/", galleryPageRoutes());
 
   return app;
 }

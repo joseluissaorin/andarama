@@ -56,6 +56,7 @@
   "after": "Después",
   "open_external": "Se abre en una pestaña nueva",
   "accessible_mode": "Versión accesible",
+  "made_with_andarama": "Hecho con Andarama",
   "accessible_intro": "Versión lineal accesible del tour con todas las escenas y contenidos.",
   "back_to_360": "Volver a la vista 360",
   "scene_of": "Escena {index} de {total}",

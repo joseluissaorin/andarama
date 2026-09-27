@@ -1,0 +1,30 @@
+nombre: Klapty
+web: https://www.klapty.com
+pais: "CH"
+tipo: saas
+gratis: true
+gratis_detalle: "Plan gratuito con marca de Klapty y funciones limitadas"
+planes:
+  - nombre: Pro
+    precio: 19
+    moneda: EUR
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+cuotas: null
+rv: true
+scorm: false
+lti: false
+exportacion: false
+exportacion_detalle: null
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: parcial
+analitica_sin_cookies: null
+street_view: false
+verificado: false
+descripcion:
+  es: "SaaS suizo-francés con plan gratuito, orientado a inmobiliarias y turismo, con app móvil de captura."
+  en: "Swiss-French SaaS with a free plan, aimed at real estate and tourism, with a mobile capture app."
+notas: "Sede en Suiza con equipo francés. El precio del plan Pro es de memoria y debe comprobarse."

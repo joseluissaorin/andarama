@@ -1,0 +1,30 @@
+nombre: Theasys
+web: https://www.theasys.io
+pais: "GR"
+tipo: saas
+gratis: true
+gratis_detalle: "Plan gratuito con marca de Theasys y límite de tours"
+planes:
+  - nombre: Pro
+    precio: 15
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+cuotas: null
+rv: true
+scorm: false
+lti: false
+exportacion: false
+exportacion_detalle: null
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: parcial
+analitica_sin_cookies: null
+street_view: false
+verificado: false
+descripcion:
+  es: "SaaS sencillo con plan gratuito, pensado para fotógrafos y pequeñas empresas."
+  en: "Simple SaaS with a free plan, aimed at photographers and small businesses."
+notas: "El precio del plan Pro es de memoria y debe comprobarse. Sin plan educativo conocido."

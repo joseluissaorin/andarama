@@ -2,7 +2,7 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 import { orgMembers, orgs, projects, users } from "@andarama/db";
 import type { AppConfig, Db } from "./context.js";
 import { notFound, quotaExceeded } from "./errors.js";
-import { effectivePlan, quotaForPlan, type PlanSlug } from "./plans.js";
+import { effectivePlan, quotaForPlan, type EffectivePlan } from "./plans.js";
 
 /**
  * Cuota efectiva de una organización.
@@ -17,8 +17,8 @@ import { effectivePlan, quotaForPlan, type PlanSlug } from "./plans.js";
 export interface OrgQuota {
   quotaTours: number;
   quotaBytes: number;
-  /** Plan del que sale la cuota (solo en modo alojado). */
-  plan: PlanSlug | null;
+  /** Plan del que sale la cuota (solo en modo alojado); "prueba" durante la prueba gratuita. */
+  plan: EffectivePlan | null;
   /** La cuota viene de un plan de pago (true) o la fijó el administrador (false). */
   fromPlan: boolean;
   ownerId: string | null;

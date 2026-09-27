@@ -18,7 +18,7 @@ title: Seguridad y RGPD
 - **Analítica sin cookies**: identificador de sesión efímero (se descarta al cerrar la pestaña), IP nunca almacenada (hash con sal diaria solo para rate limiting anti-abuso), datos agregados.
 - Integraciones GA4/Matomo **desactivadas por defecto** y bajo responsabilidad del autor del tour.
 - Derecho de supresión: eliminar un usuario borra sus datos personales; los envíos de formularios pueden purgarse desde el panel del proyecto.
-- Para el despliegue Cloudflare, la ULL debe formalizar el DPA estándar de Cloudflare (disponible en su dashboard) como encargado de tratamiento.
+- Para el despliegue Cloudflare, la organización que opera la instancia debe formalizar el DPA estándar de Cloudflare (disponible en su dashboard) como encargado de tratamiento.
 
 ## Divulgación responsable
 

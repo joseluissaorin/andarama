@@ -39,6 +39,30 @@ API, para que no puedas ver un tour de hace dos horas creyendo que es el de
 ahora. Cuando hay una versión nueva avisa en la barra lateral y se aplica al
 pulsar, no por sorpresa mientras editas.
 
+## Idiomas
+
+El Studio habla 32 idiomas, los mismos que las apps móviles: alemán, árabe,
+checo, chino simplificado y tradicional, coreano, croata, danés, eslovaco,
+español, filipino, finés, francés, griego, hebreo, húngaro, indonesio, inglés,
+italiano, japonés, malayo, neerlandés, noruego, polaco, portugués, rumano,
+ruso, sueco, tailandés, turco, ucraniano y vietnamita.
+
+Al entrar toma el idioma del navegador; si no está entre esos 32, inglés. Se
+cambia desde el selector de la barra lateral o en **Cuenta › Preferencias**,
+donde cada idioma aparece con su nombre en su propia lengua. La elección se
+guarda en la cuenta, así que viaja contigo a cualquier dispositivo. En árabe y
+hebreo la interfaz se dispone de derecha a izquierda.
+
+El visor habla los mismos idiomas: sus botones, avisos y ayudas salen en el
+idioma del tour (el idioma por defecto del tour o el que el visitante elija en
+su selector). Si el tour está en un idioma para el que no hay traducción de la
+interfaz, se usa el del navegador del visitante. Los diccionarios se descargan
+solo cuando hacen falta, así que ningún idioma pesa en la carga inicial.
+
+Los textos del propio tour (títulos, descripciones, hotspots) son otra cosa:
+se traducen desde el editor, en la vista **Traducciones**, a los idiomas que
+tú decidas para cada tour.
+
 ## Atajos de teclado del Studio
 
 - `Ctrl/Cmd + K`: paleta de comandos

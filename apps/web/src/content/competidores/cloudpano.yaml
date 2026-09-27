@@ -1,0 +1,37 @@
+nombre: CloudPano
+web: https://www.cloudpano.com
+pais: "US"
+tipo: saas
+gratis: false
+gratis_detalle: "Solo prueba gratuita; no hay plan gratuito permanente"
+planes:
+  - nombre: Pro
+    precio: 22.5
+    moneda: USD
+    periodo: month
+    precio_mes_anual: 22.5
+    precio_anual: null
+    verificado: true
+  - nombre: Pro Plus
+    precio: 33
+    moneda: USD
+    periodo: month
+    precio_mes_anual: 33
+    precio_anual: null
+    verificado: true
+cuotas: null
+rv: true
+scorm: false
+lti: false
+exportacion: false
+exportacion_detalle: null
+codigo_abierto: false
+marca_blanca: parcial
+dominio_propio: parcial
+analitica_sin_cookies: null
+street_view: true
+verificado: true
+descripcion:
+  es: "SaaS orientado al sector inmobiliario y a agencias, con videollamada dentro del tour y facturación anual."
+  en: "SaaS aimed at real estate and agencies, with in-tour video calls and annual billing."
+notas: "Ambos planes se facturan anualmente (22,50 $ y 33 $ al mes). Marca blanca y dominio propio reservados a Pro Plus. Sin plan educativo."

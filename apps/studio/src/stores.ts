@@ -1,8 +1,24 @@
 import { create } from "zustand";
+import { normalizeUiLang } from "@andarama/schema";
 import { api } from "./api";
 import { getClerk } from "./clerk";
+import { useI18nStore } from "./i18n";
+import { onMeLoaded } from "./growth";
 
 /** Sesion y organizacion activa. */
+
+/** Preferencias personales guardadas en la cuenta (PUT /me/prefs). */
+export interface UserPrefs {
+  /** Idioma de la interfaz del Studio. */
+  editorLang?: string;
+  /** Idioma por defecto de los tours que crea. */
+  defaultLang?: string;
+  /** Modo de entrada preferido al crear pasos de navegación. */
+  entryMode?: string;
+}
+
+/** Capacidades que un plan enciende en la instancia alojada (misma lista que la API). */
+export type PlanCapability = "classroom" | "scorm" | "lti" | "whiteLabel" | "customDomain" | "team" | "invoice";
 
 export interface Me {
   user: {
@@ -14,10 +30,30 @@ export interface Me {
     totpEnabled: boolean;
     ssoLinked: boolean;
     clerkLinked?: boolean;
+    prefs?: UserPrefs;
+    createdAt?: number;
   } | null;
   orgs: { id: string; name: string; slug: string; role: string; ownerId?: string | null }[];
   /** Plan en la instancia alojada; en el self-host, mode "local". */
-  billing?: { mode: "clerk" | "local"; plan: string | null; planName: string | null };
+  billing?: {
+    mode: "clerk" | "local";
+    plan: string | null;
+    planName: string | null;
+    planFromClerk?: string | null;
+    /** null en el self-host: allí todo está permitido. */
+    capabilities?: PlanCapability[] | null;
+    trialEndsAt?: number | null;
+    attributionPending?: boolean;
+  };
+}
+
+/** ¿Puede este usuario usar la capacidad? En el self-host, siempre. */
+export function canUse(me: Me | null, capability: PlanCapability): boolean {
+  const caps = me?.billing?.capabilities;
+  if (me?.billing?.mode !== "clerk" || caps == null) return true;
+  // Quien administra la instancia no tiene límites de plan
+  if (me.user?.roleGlobal === "admin") return true;
+  return caps.includes(capability);
 }
 
 interface AuthState {
@@ -49,6 +85,12 @@ export const useAuth = create<AuthState>((set, get) => ({
       const current = get().currentOrgId;
       const validOrg = me.orgs.find((o) => o.id === current) ?? me.orgs[0] ?? null;
       set({ me, loaded: true, currentOrgId: validOrg?.id ?? null });
+      // El idioma guardado en la cuenta manda sobre el de este navegador:
+      // así la elección viaja de un dispositivo a otro.
+      const remoto = normalizeUiLang(me.user?.prefs?.editorLang);
+      if (remoto != null && remoto !== useI18nStore.getState().lang) void useI18nStore.getState().setLang(remoto);
+      // Instancia alojada: eventos de alta y pago, y la atribución del primer toque
+      onMeLoaded(me);
     } catch {
       set({ me: { user: null, orgs: [] }, loaded: true });
     }
@@ -70,6 +112,23 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ me: { user: null, orgs: [] }, currentOrgId: null });
   },
 }));
+
+/** Guarda preferencias personales en la cuenta, conservando las que ya había. */
+export async function savePrefs(patch: Partial<UserPrefs>): Promise<void> {
+  const { me } = useAuth.getState();
+  if (me?.user == null) return;
+  const prefs: UserPrefs = { ...me.user.prefs, ...patch };
+  await api("/me/prefs", { method: "PUT", body: prefs });
+  useAuth.setState({ me: { ...me, user: { ...me.user, prefs } } });
+}
+
+/** Cambia el idioma de la interfaz y, si hay sesión, lo deja guardado en la cuenta. */
+export async function chooseUiLang(lang: string): Promise<void> {
+  await useI18nStore.getState().setLang(lang);
+  await savePrefs({ editorLang: useI18nStore.getState().lang }).catch(() => {
+    // Sin red o sin sesión: la elección queda al menos en este navegador.
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Estado del editor con deshacer/rehacer (§3.5)

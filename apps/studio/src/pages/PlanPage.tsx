@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PricingTable } from "@clerk/react";
-import { BadgeCheck, Home, Sparkles, Ticket } from "lucide-react";
+import { BadgeCheck, Home, Hourglass, Sparkles, Ticket } from "lucide-react";
 import { Badge, Button, Field, Input, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { getClerk, isClerkMode, studioPrefix } from "../clerk";
@@ -16,8 +16,14 @@ interface BillingMe {
   planFromClerk: string | null;
   planOverride: string | null;
   quota: { quotaTours: number; quotaBytes: number } | null;
+  capabilities: string[] | null;
+  trialEndsAt: number | null;
+  trialDaysLeft: number;
   instanceAdmin: boolean;
 }
+
+/** Las capacidades que se explican en la página, en el orden en que se cuentan. */
+const CAPABILITIES = ["classroom", "scorm", "lti", "whiteLabel", "customDomain", "team", "invoice"] as const;
 
 const DOCS_SELF_HOST = "https://docs.andarama.com/despliegue/docker/";
 
@@ -52,11 +58,32 @@ function PlanPageClerk(): React.ReactNode {
   }, [refresh, queryClient]);
 
   const data = billing.data;
-  const gb = (bytes: number): string => String(Math.round(bytes / (1024 * 1024 * 1024)));
+  const tamano = (bytes: number): string => {
+    const gb = bytes / (1024 * 1024 * 1024);
+    return gb >= 1 ? `${Math.round(gb)} GB` : `${Math.round(bytes / (1024 * 1024))} MB`;
+  };
+  const enPrueba = data?.plan === "prueba";
+  const pruebaCaducada = data != null && data.plan == null && data.trialEndsAt != null && !data.instanceAdmin;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
       <Cabecera title={t("plan_title")} hint={t("plan_intro")} />
+
+      {/* La prueba gratuita: cuánto queda y la llamada a elegir plan */}
+      {data != null && (enPrueba || pruebaCaducada) && (
+        <section className="anda-bloque border-[var(--anda-primary)] p-5" role="status">
+          <h2 className="mb-1 flex items-center gap-2 text-[15px] font-semibold">
+            <Hourglass className="h-4 w-4" /> {enPrueba ? t("plan_trial_title", { days: data.trialDaysLeft }) : t("plan_trial_over_title")}
+          </h2>
+          <p className="mb-3 text-[13.5px] text-[var(--anda-text-dim)]">{enPrueba ? t("plan_trial_hint") : t("plan_trial_over_hint")}</p>
+          <a
+            href="#planes"
+            className="inline-block rounded-[var(--anda-radius)] bg-[var(--anda-primary)] px-4 py-2 text-sm font-semibold text-white"
+          >
+            {t("plan_trial_cta")}
+          </a>
+        </section>
+      )}
 
       <section className="anda-bloque p-5">
         <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold">
@@ -67,16 +94,29 @@ function PlanPageClerk(): React.ReactNode {
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-[22px] font-bold tracking-tight">{data.planName ?? t("plan_none")}</span>
               {data.plan != null && data.quota != null && (
-                <Badge tone="ok">{t("plan_quota", { tours: data.quota.quotaTours, gb: gb(data.quota.quotaBytes) })}</Badge>
+                <Badge tone="ok">{t("plan_quota", { tours: data.quota.quotaTours, size: tamano(data.quota.quotaBytes) })}</Badge>
               )}
             </div>
             {data.instanceAdmin && <p className="text-[13px] text-[var(--anda-text-dim)]">{t("plan_admin_note")}</p>}
             {data.planOverride != null && <p className="text-[13px] text-[var(--anda-text-dim)]">{t("plan_override_note")}</p>}
-            {data.plan == null && !data.instanceAdmin && <p className="text-[13.5px]">{t("plan_none_hint")}</p>}
+            {data.plan == null && !data.instanceAdmin && !pruebaCaducada && <p className="text-[13.5px]">{t("plan_none_hint")}</p>}
             {data.planFromClerk != null && (
               <Button variant="outline" size="sm" onClick={() => getClerk()?.openUserProfile()}>
                 {t("plan_manage")}
               </Button>
+            )}
+            {data.capabilities != null && !data.instanceAdmin && (
+              <ul className="mt-3 grid gap-1 text-[13px] sm:grid-cols-2" aria-label={t("plan_capabilities")}>
+                {CAPABILITIES.map((cap) => {
+                  const incluida = data.capabilities!.includes(cap);
+                  return (
+                    <li key={cap} className={incluida ? "" : "text-[var(--anda-text-dim)]"}>
+                      <span aria-hidden="true">{incluida ? "✓" : "–"}</span> {t(`plan_cap_${cap}`)}
+                      <span className="sr-only">{incluida ? t("plan_cap_included") : t("plan_cap_not_included")}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         )}
@@ -84,7 +124,7 @@ function PlanPageClerk(): React.ReactNode {
 
       <CouponBox />
 
-      <section className="anda-bloque p-5">
+      <section id="planes" className="anda-bloque p-5">
         <h2 className="mb-4 flex items-center gap-2 text-[15px] font-semibold">
           <Sparkles className="h-4 w-4" /> andarama.com
         </h2>

@@ -80,6 +80,8 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/projects/{id}/export": { post: p("Parámetros de export: tour compilado + lista de assets (el ZIP se arma en el navegador)", "publish") },
       "/projects/{id}/export.andarama": { get: p("Exportar proyecto portable .andarama", "publish") },
       "/projects/import.andarama": { post: p("Importar proyecto .andarama", "publish") },
+      "/gallery": { get: p("Galería pública de recorridos: listado paginado (?lang=&country=&page=), sin sesión", "public") },
+      "/gallery/{slug}": { get: p("Ficha de un recorrido de la galería pública", "public") },
       "/projects/{id}/analytics": { get: p("Analítica agregada (embudo, hotspots, heatmap de orientaciones)", "analytics") },
       "/projects/{id}/submissions.csv": { get: p("Export CSV de formularios", "forms") },
       "/projects/{id}/quiz-results.csv": { get: p("Export CSV de resultados de quiz", "forms") },

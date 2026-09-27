@@ -1,0 +1,52 @@
+/* Andarama 360: estilos del tour embebido (front y editor). */
+.andarama-360 {
+	max-width: 100%;
+	margin: 0 0 1.5em;
+}
+
+.andarama-360__frame {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	border: 0;
+	border-radius: 12px;
+	background: #0b1020;
+}
+
+.andarama-360__caption {
+	margin: 0.5em 0 0;
+	text-align: right;
+	font-size: 0.8125em;
+	line-height: 1.4;
+}
+
+.andarama-360__badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	color: inherit;
+	opacity: 0.7;
+	text-decoration: none;
+}
+
+.andarama-360__badge:hover,
+.andarama-360__badge:focus {
+	opacity: 1;
+	text-decoration: underline;
+}
+
+.andarama-360__icon {
+	width: 1.1em;
+	height: 1.1em;
+	border-radius: 3px;
+	flex: none;
+}
+
+/* Aviso que solo ven los editores cuando la URL no es válida. */
+.andarama-360__notice {
+	padding: 0.75em 1em;
+	border-left: 4px solid #ff8a00;
+	background: #fff8e0;
+	color: #33260f;
+	font-size: 0.9em;
+}

@@ -28,6 +28,8 @@ import { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
 import { resolveStartView } from "./engine/startView.js";
 import { anglesToViewCoords, viewCoordsToAngles } from "./engine/flatCoords.js";
 import { VRManager, type VrEnvironment, type VrHotspot } from "./engine/vr.js";
+import { marzipanoToVr } from "./engine/xr/math.js";
+import { switchMarzipanoScene } from "./engine/xr/transition.js";
 import { SceneMarkers } from "./hotspots/markers.js";
 import { AnalyticsClient } from "./analytics.js";
 
@@ -156,7 +158,11 @@ export class TourViewer {
       getEnvironment: () => this.buildVrEnvironment(),
       getHotspots: () => this.vrHotspots(),
       onNavigate: async (target) => {
-        await this.goTo(target, { force: true });
+        // Dentro de las gafas no se espera a la transición de Marzipano: va
+        // con el requestAnimationFrame de la ventana, que Meta Quest suspende
+        // durante la sesión inmersiva, y la promesa no se resolvía nunca. El
+        // fundido lo pone el propio modo VR.
+        await this.goTo(target, { force: true, transition: { kind: "cut" }, awaitRender: false });
       },
       onDirectAction: (hs) => {
         // Enlace, estado y polígono se resuelven con la lógica normal del
@@ -180,16 +186,14 @@ export class TourViewer {
         this.pendingExternalUrl = null;
         if (url != null) window.open(url, "_blank", "noopener");
       },
-      getViewYawPitch: () => {
-        const v = this.view();
-        return { yaw: v.yaw, pitch: v.pitch };
-      },
+      // Marzipano mide el pitch hacia abajo y el modo VR hacia arriba
+      getViewYawPitch: () => marzipanoToVr(this.view()),
       text: (value) => this.text(value as never),
       url: (value) => resolveUrl(this.baseUrl, value),
       t: (key, params) => this.options.translate?.(key, params) ?? key,
     });
     // Permanencia de la mirada configurable por tour
-    this.vr.dwellMs = Math.max(800, Math.round((this.tour.vr?.dwellSeconds ?? 2.5) * 1000));
+    this.vr.dwellMs = Math.max(800, Math.round((this.tour.vr?.dwellSeconds ?? 1.5) * 1000));
     this.vr.onChange = (active, mode) => {
       this.emit("vrChange", { active, mode });
       if (active) this.analytics.track({ event: "vr", sceneId: this.currentId ?? undefined });
@@ -521,6 +525,11 @@ export class TourViewer {
       force?: boolean;
       skipHistory?: boolean;
       fromHotspot?: NavigationHotspot;
+      /**
+       * false: confirmar el cambio sin esperar a que Marzipano lo pinte. Lo
+       * usa el modo VR, que dibuja por su cuenta en el bucle de la sesión.
+       */
+      awaitRender?: boolean;
     } = {},
   ): Promise<void> {
     if (this.destroyed) return;
@@ -542,8 +551,10 @@ export class TourViewer {
       throw err;
     }
     // La escena anterior sigue visible hasta que el nivel base este listo:
-    // el fundido nunca ocurre sobre tiles a medio cargar.
-    await this.preloadBase(entry);
+    // el fundido nunca ocurre sobre tiles a medio cargar. (En VR no hace
+    // falta: allí no se ve Marzipano.)
+    const awaitRender = opts.awaitRender !== false;
+    if (awaitRender) await this.preloadBase(entry);
 
     // Registrar tiempo en la escena anterior
     if (previousId != null && previousId !== sceneId) {
@@ -589,9 +600,7 @@ export class TourViewer {
     if (this.destroyed) return;
     this.currentId = sceneId;
     this.sceneEnterTime = Date.now();
-    await new Promise<void>((resolve) => {
-      this.viewer.switchScene(entry.marzScene, switchOpts, () => resolve());
-    });
+    await switchMarzipanoScene(this.viewer, entry.marzScene, switchOpts, awaitRender);
     if (this.destroyed) return;
 
     if (!opts.skipHistory && previousId != null && previousId !== sceneId) {
@@ -1304,10 +1313,13 @@ export class TourViewer {
           h.type === "polygon" && h.points.length > 0
             ? { yaw: h.points[0]!.yaw, pitch: h.points[0]!.pitch }
             : { yaw: h.yaw, pitch: h.pitch };
+        // Mismo punto de la panorámica que en el visor plano: el pitch cambia
+        // de signo al pasar al convenio VR (antes salían reflejados).
+        const vr = marzipanoToVr(anchor);
         return {
           id: h.id,
-          yaw: anchor.yaw,
-          pitch: anchor.pitch,
+          yaw: vr.yaw,
+          pitch: vr.pitch,
           // El tamaño elegido en el editor también vale dentro de las gafas
           scale: (h.style?.icon?.size ?? this.tour.ui?.hotspotSize ?? 44) / 44,
           label: this.text(h.label) || this.text(h.altText),

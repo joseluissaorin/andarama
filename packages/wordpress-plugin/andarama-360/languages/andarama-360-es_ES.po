@@ -1,0 +1,257 @@
+# Traducción al español (España) de Andarama 360 Virtual Tours.
+# Copyright (C) 2026 Andarama
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Andarama 360 Virtual Tours 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/joseluissaorin/andarama/issues\n"
+"POT-Creation-Date: 2026-09-13T08:27:12+00:00\n"
+"PO-Revision-Date: 2026-09-13 10:30+0100\n"
+"Last-Translator: Andarama <hola@andarama.com>\n"
+"Language-Team: Andarama <hola@andarama.com>\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: andarama-360\n"
+
+#. Plugin Name of the plugin
+#: andarama-360.php
+msgid "Andarama 360 Virtual Tours"
+msgstr "Andarama 360 Recorridos Virtuales"
+
+#. Plugin URI of the plugin
+#: andarama-360.php
+msgid "https://andarama.com/wordpress"
+msgstr "https://andarama.com/wordpress"
+
+#. Description of the plugin
+#: andarama-360.php
+msgid "Embed 360 virtual tours from Andarama (andarama.com or your own open-source instance) with a block, a shortcode or just by pasting the tour URL."
+msgstr "Inserta recorridos virtuales 360 de Andarama (andarama.com o tu propia instancia de código abierto) con un bloque, un shortcode o simplemente pegando la URL del recorrido."
+
+#. Author of the plugin
+#: andarama-360.php
+msgid "Andarama"
+msgstr "Andarama"
+
+#. Author URI of the plugin
+#: andarama-360.php
+msgid "https://andarama.com"
+msgstr "https://andarama.com"
+
+#: includes/class-andarama-360-embed.php
+#: block/block.js
+msgid "360 virtual tour"
+msgstr "Recorrido virtual 360"
+
+#: includes/class-andarama-360-embed.php
+msgid "Andarama 360: no tour URL was given."
+msgstr "Andarama 360: no se ha indicado la URL del recorrido."
+
+#. translators: 1: rejected URL, 2: comma-separated list of allowed hosts
+#: includes/class-andarama-360-embed.php
+msgid "Andarama 360: “%1$s” is not a tour from an allowed instance (%2$s). Editors can add instances under Settings → Andarama."
+msgstr "Andarama 360: «%1$s» no es un recorrido de una instancia permitida (%2$s). Los administradores pueden añadir instancias en Ajustes → Andarama."
+
+#: includes/class-andarama-360-embed.php
+#: block/block.js
+msgid "Create yours with Andarama"
+msgstr "Crea el tuyo en Andarama"
+
+#: includes/class-andarama-360-settings.php
+msgid "16:9 (widescreen)"
+msgstr "16:9 (panorámico)"
+
+#: includes/class-andarama-360-settings.php
+msgid "4:3 (classic)"
+msgstr "4:3 (clásico)"
+
+#: includes/class-andarama-360-settings.php
+msgid "21:9 (cinematic)"
+msgstr "21:9 (cinematográfico)"
+
+#: includes/class-andarama-360-settings.php
+msgid "1:1 (square)"
+msgstr "1:1 (cuadrado)"
+
+#: includes/class-andarama-360-settings.php
+msgid "Fixed height (no aspect ratio)"
+msgstr "Alto fijo (sin relación de aspecto)"
+
+#: includes/class-andarama-360-settings.php
+msgid "The list of allowed instances was empty or invalid, so andarama.com has been restored."
+msgstr "La lista de instancias permitidas estaba vacía o no era válida, así que se ha restablecido andarama.com."
+
+#: includes/class-andarama-360-settings.php
+msgid "Embedding"
+msgstr "Inserción"
+
+#: includes/class-andarama-360-settings.php
+msgid "Allowed instances"
+msgstr "Instancias permitidas"
+
+#: includes/class-andarama-360-settings.php
+msgid "Default aspect ratio"
+msgstr "Relación de aspecto por defecto"
+
+#: includes/class-andarama-360-settings.php
+msgid "Default height"
+msgstr "Alto por defecto"
+
+#: includes/class-andarama-360-settings.php
+msgid "Andarama link"
+msgstr "Enlace a Andarama"
+
+#: includes/class-andarama-360-settings.php
+msgid "Andarama 360 settings"
+msgstr "Ajustes de Andarama 360"
+
+#: includes/class-andarama-360-settings.php
+msgid "Settings"
+msgstr "Ajustes"
+
+#: includes/class-andarama-360-settings.php
+msgid "These defaults apply to the block, the shortcode and pasted tour URLs. Each tour can override the height and aspect ratio."
+msgstr "Estos valores por defecto se aplican al bloque, al shortcode y a las URL pegadas. Cada recorrido puede cambiar el alto y la relación de aspecto."
+
+#: includes/class-andarama-360-settings.php
+msgid "One host per line. Only tours hosted on these instances will be embedded. andarama.com is included by default; add the host of your own Andarama instance, for example tours.example.org."
+msgstr "Un host por línea. Solo se insertarán recorridos alojados en estas instancias. andarama.com viene incluido por defecto; añade el host de tu propia instancia de Andarama, por ejemplo tours.ejemplo.org."
+
+#: includes/class-andarama-360-settings.php
+msgid "The tour fills the available width and keeps this proportion."
+msgstr "El recorrido ocupa todo el ancho disponible y mantiene esta proporción."
+
+#: includes/class-andarama-360-settings.php
+#: block/block.js
+msgid "Used when the aspect ratio is set to fixed height."
+msgstr "Se usa cuando la relación de aspecto es «alto fijo»."
+
+#: includes/class-andarama-360-settings.php
+msgid "Show a small “Create yours with Andarama” link under each tour"
+msgstr "Mostrar un pequeño enlace «Crea el tuyo en Andarama» bajo cada recorrido"
+
+#: includes/class-andarama-360-settings.php
+msgid "It helps other people discover the free, open-source software behind the tour. Thank you!"
+msgstr "Ayuda a que otras personas descubran el software libre y de código abierto que hay detrás del recorrido. ¡Gracias!"
+
+#: includes/class-andarama-360-settings.php
+msgid "How to embed a tour"
+msgstr "Cómo insertar un recorrido"
+
+#: includes/class-andarama-360-settings.php
+msgid "In the block editor, add the “Andarama 360 Tour” block, or simply paste the tour URL in an empty paragraph."
+msgstr "En el editor de bloques, añade el bloque «Recorrido de Andarama 360» o simplemente pega la URL del recorrido en un párrafo vacío."
+
+#: includes/class-andarama-360-settings.php
+msgid "Anywhere else (Classic Editor, widgets, Elementor, Divi…), use the shortcode:"
+msgstr "En cualquier otro sitio (editor clásico, widgets, Elementor, Divi…), usa el shortcode:"
+
+#. translators: %s: link to andarama.com
+#: includes/class-andarama-360-settings.php
+msgid "Do not have a tour yet? Create one at %s or install your own instance: Andarama is open source."
+msgstr "¿Aún no tienes un recorrido? Crea uno en %s o instala tu propia instancia: Andarama es de código abierto."
+
+#. translators: %s: the aspect ratio chosen in the plugin settings
+#: block/block.js
+msgid "Site default (%s)"
+msgstr "Valor del sitio (%s)"
+
+#: block/block.js
+msgid "Tour settings"
+msgstr "Ajustes del recorrido"
+
+#: block/block.js
+msgid "Tour URL"
+msgstr "URL del recorrido"
+
+#: block/block.js
+msgid "Public address of a published tour, for example https://andarama.com/t/my-tour"
+msgstr "Dirección pública de un recorrido publicado, por ejemplo https://andarama.com/t/mi-tour"
+
+#: block/block.js
+msgid "Aspect ratio"
+msgstr "Relación de aspecto"
+
+#: block/block.js
+msgid "Height (px)"
+msgstr "Alto (px)"
+
+#: block/block.js
+msgid "Accessible title"
+msgstr "Título accesible"
+
+#: block/block.js
+msgid "Read by screen readers. Defaults to “360 virtual tour”."
+msgstr "Lo leen los lectores de pantalla. Por defecto, «Recorrido virtual 360»."
+
+#: block/block.js
+msgid "Andarama 360 Tour"
+msgstr "Recorrido de Andarama 360"
+
+#: block/block.js
+msgid "Paste the public URL of a published tour."
+msgstr "Pega la URL pública de un recorrido publicado."
+
+#: block/block.js
+msgid "Embed"
+msgstr "Insertar"
+
+#: block/block.js
+msgid "No tour yet? Create one at andarama.com"
+msgstr "¿Aún no tienes un recorrido? Crea uno en andarama.com"
+
+#. translators: %s: comma-separated list of allowed hosts
+#: block/block.js
+msgid "This URL is not a tour from an allowed Andarama instance (%s). An administrator can add instances under Settings → Andarama."
+msgstr "Esta URL no es un recorrido de una instancia de Andarama permitida (%s). Un administrador puede añadir instancias en Ajustes → Andarama."
+
+#: block/block.js
+msgid "Embed a 360 virtual tour from Andarama."
+msgstr "Inserta un recorrido virtual 360 de Andarama."
+
+#: block/block.js
+msgid "virtual tour"
+msgstr "recorrido virtual"
+
+#: block/block.js
+msgid "panorama"
+msgstr "panorama"
+
+#: block/block.json
+msgctxt "block title"
+msgid "Andarama 360 Tour"
+msgstr "Recorrido de Andarama 360"
+
+#: block/block.json
+msgctxt "block description"
+msgid "Embed a 360 virtual tour from Andarama or from your own Andarama instance."
+msgstr "Inserta un recorrido virtual 360 de Andarama o de tu propia instancia de Andarama."
+
+#: block/block.json
+msgctxt "block keyword"
+msgid "virtual tour"
+msgstr "recorrido virtual"
+
+#: block/block.json
+msgctxt "block keyword"
+msgid "360"
+msgstr "360"
+
+#: block/block.json
+msgctxt "block keyword"
+msgid "panorama"
+msgstr "panorama"
+
+#: block/block.json
+msgctxt "block keyword"
+msgid "vr"
+msgstr "realidad virtual"
+
+#: block/block.json
+msgctxt "block keyword"
+msgid "andarama"
+msgstr "andarama"

@@ -1,0 +1,37 @@
+nombre: krpano
+web: https://krpano.com
+pais: "AT"
+tipo: library
+gratis: false
+gratis_detalle: "Versión de evaluación con marca de agua"
+planes:
+  - nombre: krpano License
+    precio: 129
+    moneda: EUR
+    periodo: once
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+  - nombre: Branding Free License
+    precio: 159
+    moneda: EUR
+    periodo: once
+    precio_mes_anual: null
+    precio_anual: null
+    verificado: false
+cuotas: "Licencia perpetua; sin límite de tours"
+rv: true
+scorm: false
+lti: false
+exportacion: true
+exportacion_detalle: "Es un visor que se aloja donde se quiera; no depende de ningún servicio en la nube"
+codigo_abierto: false
+marca_blanca: true
+dominio_propio: true
+analitica_sin_cookies: null
+street_view: false
+verificado: false
+descripcion:
+  es: "Visor y motor de panoramas austríaco de pago único, muy potente pero sin editor visual: requiere XML y JavaScript."
+  en: "Austrian one-time-fee panorama viewer and engine, very powerful but without a visual editor: requires XML and JavaScript."
+notas: "Precios de memoria; la licencia Branding Free elimina el logotipo de krpano. Requiere conocimientos técnicos o software de terceros (como Pano2VR) que lo use como motor."

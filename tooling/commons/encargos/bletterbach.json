@@ -1,0 +1,103 @@
+{
+  "slug": "bletterbach",
+  "lang": "de",
+  "title": "Bletterbach in 360: virtueller Rundflug durch die Schlucht",
+  "description": "Fünf Luftpanoramen (CC0) der Bletterbachschlucht in Südtirol, aufgenommen im Oktober 2018 für das Projekt 3D Südtirol der Stiftung Südtiroler Sparkasse. Der Bletterbach ist ein Bach in der Gemeinde Aldein; am Fuß des 2317 m hohen Weißhorns bildet er die rund 8 km lange und 400 m tiefe Schlucht, den „Grand Canyon Südtirols“. Sie entstand vor etwa 15 000 Jahren, ist berühmt für ihre Fossilien und Gesteinsschichten und gehört zum UNESCO-Welterbe Dolomiten. Der Rundflug beginnt über dem Gipfel des Weißhorns, folgt der Schlucht talwärts und endet dort, wo sich das Tal öffnet.",
+  "placeName": "Bletterbachschlucht",
+  "placeCountry": "IT",
+  "lat": 46.345396,
+  "lng": 11.3536,
+  "startScene": "weisshorn",
+  "scenes": [
+    {
+      "id": "weisshorn",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/4/42/AirBletterbach_%283D_S%C3%BCdtirol%29_01.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:AirBletterbach_(3D_S%C3%BCdtirol)_01.jpg",
+      "title": "Über dem Gipfel des Weißhorns",
+      "alt": "Luftpanorama über dem Gipfel des Weißhorns: der helle Felsgipfel mit Schutthängen, dahinter der Talkessel der Bletterbachschlucht mit rötlichen Gesteinsschichten, Nadelwälder und die Bergketten am Horizont",
+      "desc": "Das 2317 m hohe Weißhorn, an dessen Fuß der Bletterbach die Schlucht gegraben hat.",
+      "author": "Stiftung Südtiroler Sparkasse and Spherea3D",
+      "license": "CC0",
+      "width": 10892,
+      "height": 5446,
+      "view": {
+        "yaw": 0,
+        "pitch": -0.15,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "talkessel",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/e/e0/AirBletterbach_%283D_S%C3%BCdtirol%29_02.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:AirBletterbach_(3D_S%C3%BCdtirol)_02.jpg",
+      "title": "Der Talkessel unter dem Weißhorn",
+      "alt": "Luftpanorama über dem Talkessel der Bletterbachschlucht: rötliche und weiße Gesteinsschichten an den steilen Hängen, das helle Bachbett im Grund, Lärchen und Fichten und bewaldete Rücken bis zum Horizont",
+      "desc": "Der obere Talkessel der Schlucht mit den freigelegten Gesteinsschichten, für die der Bletterbach bekannt ist.",
+      "author": "Stiftung Südtiroler Sparkasse and Spherea3D",
+      "license": "CC0",
+      "width": 11042,
+      "height": 5521,
+      "view": {
+        "yaw": 0,
+        "pitch": -0.15,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "mittlere-schlucht",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/e/ec/AirBletterbach_%283D_S%C3%BCdtirol%29_08.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:AirBletterbach_(3D_S%C3%BCdtirol)_08.jpg",
+      "title": "Die Schlucht mit ihren roten und grauen Schichten",
+      "alt": "Luftpanorama über der Bletterbachschlucht: steile Wände aus roten und grauen Gesteinsschichten, Nadelwald auf den Kämmen und das gewundene Kiesbett des Bletterbachs in der Tiefe",
+      "desc": "Die etwa 400 m tiefe Schlucht mit ihren Schichten aus Dolomit- und Sandsteinen.",
+      "author": "Stiftung Südtiroler Sparkasse and Spherea3D",
+      "license": "CC0",
+      "width": 10964,
+      "height": 5482,
+      "view": {
+        "yaw": 0,
+        "pitch": -0.15,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "enge",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/f/fb/AirBletterbach_%283D_S%C3%BCdtirol%29_20.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:AirBletterbach_(3D_S%C3%BCdtirol)_20.jpg",
+      "title": "Der enge Abschnitt der Schlucht",
+      "alt": "Luftpanorama über dem engen Abschnitt der Bletterbachschlucht: dicht bewaldete Hänge, die zum hellen Bachbett abfallen, felsige Abbrüche und im Hintergrund die sich öffnende Talebene",
+      "desc": "Ein enger, bewaldeter Abschnitt der rund 8 km langen Schlucht.",
+      "author": "Stiftung Südtiroler Sparkasse and Spherea3D",
+      "license": "CC0",
+      "width": 10860,
+      "height": 5430,
+      "view": {
+        "yaw": 0,
+        "pitch": -0.15,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "unteres-ende",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/39/AirBletterbach_%283D_S%C3%BCdtirol%29_35.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:AirBletterbach_(3D_S%C3%BCdtirol)_35.jpg",
+      "title": "Wo sich das Tal öffnet",
+      "alt": "Luftpanorama am unteren Ende der Bletterbachschlucht: das Kiesbett tritt aus dem Wald, eine helle Felswand zur Rechten, ein Hügel im Gegenlicht und Felder und Häuser in der Talebene in der Ferne",
+      "desc": "Der untere Teil der Schlucht, wo sich das Tal öffnet; am Ausgang mündet der Bletterbach bei Holen in den Schwarzenbach.",
+      "author": "Stiftung Südtiroler Sparkasse and Spherea3D",
+      "license": "CC0",
+      "width": 11244,
+      "height": 5622,
+      "view": {
+        "yaw": 0,
+        "pitch": -0.15,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_fuentes": [
+    "https://de.wikipedia.org/wiki/Bletterbach",
+    "https://en.wikipedia.org/wiki/Bletterbach"
+  ],
+  "_notas": "Demanda por sondear. Idioma de: Tirol del Sur es de mayoría germanófona y el artículo detallado es el alemán; placeCountry IT. Serie de 42 panorámicas aéreas del mismo día; se eligen cinco que siguen la garganta de arriba abajo. Sin GPS en Commons: coordenadas del artículo de Wikipedia (de)."
+}

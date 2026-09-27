@@ -256,7 +256,9 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
   };
 
   const renderGeo = (): void => {
-    const mapDiv = el("div", { className: "anda-geomap" });
+    // Leaflet coloca las teselas contando de izquierda a derecha: en árabe y
+    // hebreo el mapa se queda en ltr aunque el resto del cromo vaya en rtl.
+    const mapDiv = el("div", { className: "anda-geomap", dir: "ltr" });
     holder.replaceChildren(mapDiv);
     void (async () => {
       // CSS de Leaflet: servido junto al bundle (autocontenido, sin CDN).

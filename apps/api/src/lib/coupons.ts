@@ -3,7 +3,7 @@ import { coupons, users } from "@andarama/db";
 import type { Db } from "./context.js";
 import { badRequest, conflict, notFound } from "./errors.js";
 import { nowMs } from "./util.js";
-import { PLANS, effectivePlan, isPlanSlug, planRank, type PlanSlug } from "./plans.js";
+import { PLANS, isPlanSlug, paidPlan, planRank, type PlanSlug } from "./plans.js";
 
 /**
  * Cupones canjeables.
@@ -111,7 +111,8 @@ export async function redeemCoupon(db: Db, rawCode: string, userId: string): Pro
 
   const user = (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0];
   if (user == null) throw notFound("Usuario no encontrado");
-  const previo = effectivePlan(user);
+  // La prueba gratuita no cuenta como plan: un cupón siempre la mejora
+  const previo = paidPlan(user);
   const mejora = planRank(fila.plan) > planRank(previo);
   if (mejora) {
     await db.update(users).set({ planOverride: fila.plan, planUpdatedAt: at, updatedAt: at }).where(eq(users.id, userId));

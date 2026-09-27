@@ -1,0 +1,29 @@
+---
+import HerramientaBase from "../components/HerramientaBase.astro";
+import { t, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+---
+
+<HerramientaBase lang={lang} key="visor">
+  <div class="zona">
+    <label class="btn" for="visor-fichero">{t(lang, "herramientas.comunes.abrir")}</label>
+    <input id="visor-fichero" type="file" accept="image/jpeg,image/png,image/webp" />
+    <p>{t(lang, "herramientas.comunes.arrastrar")}</p>
+  </div>
+  <p class="herramienta__aviso" role="status" aria-live="polite"></p>
+  <div class="visor360"><div></div></div>
+  <div class="herramienta__barra oculto">
+    <span class="susurro" data-rv-no>{t(lang, "herramientas.visor.rv_no")}</span>
+    <button type="button" class="btn btn--fantasma empuje" data-otra>{t(lang, "herramientas.comunes.otra")}</button>
+  </div>
+</HerramientaBase>
+
+<script>
+  import { montarVisor } from "../tools/visor";
+  const root = document.querySelector<HTMLElement>("[data-herramienta=visor]");
+  if (root != null) montarVisor(root);
+</script>

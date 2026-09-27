@@ -23,8 +23,21 @@ try {
 } catch {
   console.warn("apps/docs sin construir; se omite /docs");
 }
-// La landing de andarama.com (estatica, sin build)
-await cp(resolve(root, "../landing"), join(out, "landing"), { recursive: true });
+// La portada de andarama.com: el sitio Astro de apps/web (portada en siete
+// idiomas, blog y herramientas). Si no está construido se avisa y se cae a la
+// landing a mano de apps/landing, que sigue en disco como copia de seguridad.
+try {
+  await cp(resolve(root, "../web/dist"), join(out, "landing"), { recursive: true });
+} catch {
+  console.warn("apps/web sin construir; se usa la landing estática de apps/landing");
+  await cp(resolve(root, "../landing"), join(out, "landing"), { recursive: true });
+}
+// Las hojas de estilo del sitio, con su nombre y sin hash: la galería
+// (/explorar/, montada por el worker) las enlaza como /landing/estilo.css y
+// /landing/sitio.css para vestir igual que la portada.
+for (const hoja of ["estilo.css", "sitio.css"]) {
+  await cp(resolve(root, "../web/src/styles", hoja), join(out, "landing", hoja)).catch(() => console.warn(`apps/web/src/styles/${hoja} no encontrada`));
+}
 // Service worker: aquí es donde se saben los nombres con hash de esta
 // compilación, así que es aquí donde se escribe la lista de precarga y la
 // versión. Solo entra el armazón —el JavaScript principal, los estilos, el
@@ -93,10 +106,18 @@ await writeFile(
   Cache-Control: public, max-age=604800
 /docs/_astro/*
   Cache-Control: public, max-age=31536000, immutable
+/landing/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+/landing/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
 /landing/index.html
   Cache-Control: no-cache
+/landing/sitemap-web.xml
+  Cache-Control: public, max-age=3600
 /landing/estilo.css
-  Cache-Control: no-cache
+  Cache-Control: public, max-age=3600
+/landing/sitio.css
+  Cache-Control: public, max-age=3600
 `,
 );
 console.log(`Assets listos en ${out}`);

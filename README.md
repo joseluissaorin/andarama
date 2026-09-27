@@ -55,7 +55,7 @@ Andarama es una plataforma de código abierto para **crear, publicar y compartir
   </tr>
   <tr>
     <td width="22%"><b>Accesibilidad y idiomas</b></td>
-    <td>Recorrido en texto plano alternativo, foco visible, objetivos de 44 px, <code>prefers-reduced-motion</code> respetado y traducciones por escena y por hotspot.</td>
+    <td>Recorrido en texto plano alternativo, foco visible, objetivos de 44 px, <code>prefers-reduced-motion</code> respetado y traducciones por escena y por hotspot. Studio y visor en 32 idiomas (árabe y hebreo de derecha a izquierda), cargados solo cuando hacen falta.</td>
   </tr>
 </table>
 

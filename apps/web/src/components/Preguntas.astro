@@ -1,0 +1,19 @@
+---
+/** Preguntas desplegables; el JSON-LD FAQPage lo monta la página con `faqJsonLd`. */
+interface Props {
+  titulo: string;
+  lista: { q: string; a: string }[];
+  id?: string;
+}
+const { titulo, lista, id } = Astro.props;
+---
+
+<section class="preguntas" id={id}>
+  <h2>{titulo}</h2>
+  {lista.map((f) => (
+    <details>
+      <summary>{f.q}</summary>
+      <p set:html={f.a} />
+    </details>
+  ))}
+</section>

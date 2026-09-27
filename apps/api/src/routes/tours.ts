@@ -18,6 +18,9 @@ import { embedResponse } from "../lib/embed.js";
  * publico, no listado, contrasena, organizacion, dominios de embebido.
  */
 
+/** Adónde lleva la insignia «Hecho con Andarama» de los planes sin marca blanca. */
+const BADGE_URL = "https://andarama.com/?utm_source=insignia&utm_medium=tour&utm_campaign=hecho-con";
+
 /** Web component embebible: <script src=".../embed.js"></script> + <anda-tour slug="..."> */
 const EMBED_JS = `(() => {
   const scriptOrigin = (() => { try { return new URL(document.currentScript.src).origin; } catch { return ""; } })();
@@ -241,6 +244,8 @@ export function tourRoutes(): Hono<AppEnv> {
       formEndpoint: `/api/v1/public/forms/${slug}`,
       turnstileSiteKey: c.get("config").turnstileSiteKey ?? null,
       accessibleHtml: renderAccessibleHtml(tour, lang, `/t/${slug}`),
+      // La insignia la decidió la publicación (plan sin marca blanca)
+      badge: pointer.badge === true ? { url: BADGE_URL } : undefined,
       nonce,
     });
     const res = await c.html(html);
@@ -367,23 +372,50 @@ export function tourRoutes(): Hono<AppEnv> {
   });
 
   // ------- Sitemap y robots (SEO §2.12) -------
-  r.get("/sitemap.xml", async (c) => {
+  // /sitemap.xml es un índice con dos sitemaps: el del sitio público
+  // (apps/web, servido como asset estático en /sitemap-web.xml, con todas las
+  // páginas e idiomas) y el de los tours publicados, que se genera aquí.
+  r.get("/sitemap.xml", (c) => {
+    const base = c.get("config").publicUrl;
+    const hoy = new Date().toISOString().slice(0, 10);
+    const entradas = [`${base}/sitemap-web.xml`, `${base}/sitemap-tours.xml`]
+      .map((loc) => `  <sitemap><loc>${loc}</loc><lastmod>${hoy}</lastmod></sitemap>`)
+      .join("\n");
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entradas}\n</sitemapindex>`, {
+      headers: { "content-type": "application/xml", "cache-control": "public, max-age=3600" },
+    });
+  });
+
+  // Los tours públicos (/t/{slug}) y, para los que están en la galería, su
+  // ficha (/explorar/{slug}/) con la portada como imagen del sitemap.
+  r.get("/sitemap-tours.xml", async (c) => {
     const db = c.get("db");
     const pubs = await db
       .select()
       .from(publications)
       .where(and(eq(publications.visibility, "public"), isNull(publications.expireAt)));
     const base = c.get("config").publicUrl;
-    const urls = pubs
-      .map((p) => `  <url><loc>${base}/t/${p.slug}</loc><lastmod>${new Date(p.publishedAt).toISOString().slice(0, 10)}</lastmod></url>`)
-      .join("\n");
-    return new Response(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`, {
-      headers: { "content-type": "application/xml", "cache-control": "public, max-age=3600" },
-    });
+    const xml = (s: string): string => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+    const fecha = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
+    const enGaleria = pubs.filter((p) => p.inGallery);
+    const ultima = enGaleria.reduce((max, p) => Math.max(max, p.publishedAt), 0);
+    const urls = [
+      ...(enGaleria.length > 0 ? [`  <url><loc>${base}/explorar/</loc><lastmod>${fecha(ultima)}</lastmod></url>`] : []),
+      ...pubs.map((p) => `  <url><loc>${base}/t/${p.slug}</loc><lastmod>${fecha(p.publishedAt)}</lastmod></url>`),
+      ...enGaleria.map(
+        (p) =>
+          `  <url><loc>${base}/explorar/${p.slug}/</loc><lastmod>${fecha(p.publishedAt)}</lastmod>` +
+          `<image:image><image:loc>${base}/t/${p.slug}/share.jpg</image:loc><image:title>${xml(p.galleryTitle ?? p.slug)}</image:title></image:image></url>`,
+      ),
+    ].join("\n");
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls}\n</urlset>`,
+      { headers: { "content-type": "application/xml", "cache-control": "public, max-age=3600" } },
+    );
   });
 
   r.get("/robots.txt", (c) => {
-    return c.text(`User-agent: *\nAllow: /t/\nDisallow: /api/\nDisallow: /studio/\nSitemap: ${c.get("config").publicUrl}/sitemap.xml\n`);
+    return c.text(`User-agent: *\nAllow: /t/\nAllow: /explorar/\nDisallow: /api/\nDisallow: /studio/\nSitemap: ${c.get("config").publicUrl}/sitemap.xml\n`);
   });
 
   return r;

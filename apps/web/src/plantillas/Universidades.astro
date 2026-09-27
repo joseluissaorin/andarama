@@ -1,0 +1,71 @@
+---
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "paginas.universidades";
+const path = pagePath(lang, "universidades");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "nav.universidades"), path },
+];
+const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
+const c = `${k}.contacto`;
+---
+
+<Base lang={lang} title={t(lang, `${k}.title`)} description={t(lang, `${k}.description`)} path={path} pageKey="universidades" jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.universidades")}</p>
+      <h1>{t(lang, `${k}.h1`)}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+    </div>
+    <div class="malla">
+      {bloques.map((b) => (
+        <article>
+          <h2>{b.titulo}</h2>
+          <p set:html={b.texto} />
+        </article>
+      ))}
+    </div>
+    <section class="caja caja--naranja">
+      <h2>{t(lang, "paginas.museos.enlace_desde.titulo")}</h2>
+      <p>{t(lang, "paginas.museos.enlace_desde.texto")}</p>
+      <div class="acciones">
+        <a class="btn" href={pagePath(lang, "museos")}>{t(lang, "paginas.museos.enlace_desde.boton")}</a>
+      </div>
+    </section>
+    <section class="caja" id="contacto">
+      <h2>{t(lang, `${c}.titulo`)}</h2>
+      <p>{t(lang, `${c}.texto`)}</p>
+      <form class="formulario" data-contacto data-asunto={t(lang, `${c}.asunto`)}>
+        <label>{t(lang, `${c}.institucion`)}<input type="text" name="institucion" required autocomplete="organization" /></label>
+        <label>{t(lang, `${c}.nombre`)}<input type="text" name="nombre" required autocomplete="name" /></label>
+        <label>{t(lang, `${c}.email`)}<input type="email" name="email" required autocomplete="email" /></label>
+        <label>{t(lang, `${c}.mensaje`)}<textarea name="mensaje" required></textarea></label>
+        <button class="btn" type="submit">{t(lang, `${c}.enviar`)}</button>
+      </form>
+    </section>
+  </section>
+  <script>
+    // De momento el formulario abre el programa de correo con todo puesto:
+    // asunto con la institución y cuerpo con los campos.
+    const form = document.querySelector<HTMLFormElement>("form[data-contacto]");
+    form?.addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const data = new FormData(form);
+      const institucion = String(data.get("institucion") ?? "");
+      const asunto = (form.dataset.asunto ?? "Andarama: {institucion}").replace("{institucion}", institucion);
+      const cuerpo = `${data.get("nombre")} <${data.get("email")}>\n${institucion}\n\n${data.get("mensaje")}`;
+      const w = window as unknown as { plausible?: (n: string, o?: object) => void };
+      w.plausible?.("contacto_universidades");
+      location.href = `mailto:jl@joseluissaorin.com?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    });
+  </script>
+</Base>
