@@ -24,6 +24,17 @@
   src: url("/studio/fonts/SpaceMono-Bold.woff2") format("woff2");
 }
 
+/* Baloo 2 se sirve en un subconjunto latino (Latin-1): para los alfabetos
+   que no cubre (Latin Extended-A, griego, cirílico, árabe, hebreo, tailandés,
+   chino, japonés, coreano, vietnamita) la interfaz usa la fuente del sistema
+   entera, en vez de mezclar dos voces glifo a glifo. Misma lista que
+   SYSTEM_FONT_LANGS en src/i18n.ts. */
+html:lang(ar), html:lang(cs), html:lang(el), html:lang(he), html:lang(hr), html:lang(hu),
+html:lang(ja), html:lang(ko), html:lang(pl), html:lang(ro), html:lang(ru), html:lang(sk),
+html:lang(th), html:lang(tr), html:lang(uk), html:lang(vi), html:lang(zh) {
+  --anda-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
 html, body, #root {
   height: 100%;
 }

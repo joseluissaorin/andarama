@@ -57,7 +57,7 @@ The interface ships in Spanish and English; the documentation is in Spanish.
   </tr>
   <tr>
     <td width="22%"><b>Accessibility and languages</b></td>
-    <td>Plain-text alternative walkthrough, visible focus, 44 px targets, <code>prefers-reduced-motion</code> honoured, and translations per scene and per hotspot.</td>
+    <td>Plain-text alternative walkthrough, visible focus, 44 px targets, <code>prefers-reduced-motion</code> honoured, and translations per scene and per hotspot. Studio and viewer in 32 languages (Arabic and Hebrew right-to-left), each loaded only when needed.</td>
   </tr>
 </table>
 

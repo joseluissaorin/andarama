@@ -968,5 +968,8 @@
   "coupon_code": "Código del cupón",
   "coupon_redeem": "Canjear",
   "coupon_ok": "Cupón canjeado: ya tienes el plan {plan}.",
-  "coupon_kept_previous": "Cupón canjeado, pero tu plan actual ya era mejor: se te queda el que tenías."
+  "coupon_kept_previous": "Cupón canjeado, pero tu plan actual ya era mejor: se te queda el que tenías.",
+  "preferences": "Preferencias",
+  "ui_language": "Idioma de la interfaz",
+  "ui_language_hint": "Se guarda en tu cuenta y se aplica en todos tus dispositivos."
 }

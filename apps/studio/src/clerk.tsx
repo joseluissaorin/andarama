@@ -1,6 +1,47 @@
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { ClerkLoaded, ClerkLoading, ClerkProvider, useAuth as useClerkAuth, useClerk } from "@clerk/react";
 import { esES } from "@clerk/localizations";
+import type { UiLang } from "@andarama/schema";
+
+type ClerkLocalization = typeof esES;
+
+/**
+ * Los formularios de Clerk en el idioma del Studio. Español va en el bundle;
+ * el resto se pide a @clerk/localizations por idioma y solo al elegirlo.
+ * Inglés y filipino (que Clerk no trae) usan el inglés de serie.
+ */
+const CLERK_LOCALES: Partial<Record<UiLang, () => Promise<ClerkLocalization>>> = {
+  es: () => Promise.resolve(esES),
+  ar: () => import("@clerk/localizations/ar-SA").then((m) => m.arSA),
+  cs: () => import("@clerk/localizations/cs-CZ").then((m) => m.csCZ),
+  da: () => import("@clerk/localizations/da-DK").then((m) => m.daDK),
+  de: () => import("@clerk/localizations/de-DE").then((m) => m.deDE),
+  el: () => import("@clerk/localizations/el-GR").then((m) => m.elGR),
+  fi: () => import("@clerk/localizations/fi-FI").then((m) => m.fiFI),
+  fr: () => import("@clerk/localizations/fr-FR").then((m) => m.frFR),
+  he: () => import("@clerk/localizations/he-IL").then((m) => m.heIL),
+  hr: () => import("@clerk/localizations/hr-HR").then((m) => m.hrHR),
+  hu: () => import("@clerk/localizations/hu-HU").then((m) => m.huHU),
+  id: () => import("@clerk/localizations/id-ID").then((m) => m.idID),
+  it: () => import("@clerk/localizations/it-IT").then((m) => m.itIT),
+  ja: () => import("@clerk/localizations/ja-JP").then((m) => m.jaJP),
+  ko: () => import("@clerk/localizations/ko-KR").then((m) => m.koKR),
+  ms: () => import("@clerk/localizations/ms-MY").then((m) => m.msMY),
+  nl: () => import("@clerk/localizations/nl-NL").then((m) => m.nlNL),
+  no: () => import("@clerk/localizations/nb-NO").then((m) => m.nbNO),
+  pl: () => import("@clerk/localizations/pl-PL").then((m) => m.plPL),
+  pt: () => import("@clerk/localizations/pt-PT").then((m) => m.ptPT),
+  ro: () => import("@clerk/localizations/ro-RO").then((m) => m.roRO),
+  ru: () => import("@clerk/localizations/ru-RU").then((m) => m.ruRU),
+  sk: () => import("@clerk/localizations/sk-SK").then((m) => m.skSK),
+  sv: () => import("@clerk/localizations/sv-SE").then((m) => m.svSE),
+  th: () => import("@clerk/localizations/th-TH").then((m) => m.thTH),
+  tr: () => import("@clerk/localizations/tr-TR").then((m) => m.trTR),
+  uk: () => import("@clerk/localizations/uk-UA").then((m) => m.ukUA),
+  vi: () => import("@clerk/localizations/vi-VN").then((m) => m.viVN),
+  "zh-Hans": () => import("@clerk/localizations/zh-CN").then((m) => m.zhCN),
+  "zh-Hant": () => import("@clerk/localizations/zh-TW").then((m) => m.zhTW),
+};
 import { setAuthTokenProvider } from "./api";
 import { useI18nStore, useT } from "./i18n";
 import { Criatura } from "./components/Criatura";
@@ -97,10 +138,29 @@ function Cargando(): React.ReactNode {
 /** El proveedor de Clerk con la ropa de Andarama y en el idioma del Studio. */
 export function AndaClerkProvider({ children }: { children: React.ReactNode }): React.ReactNode {
   const lang = useI18nStore((s) => s.lang);
+  const [localization, setLocalization] = useState<ClerkLocalization | undefined>(lang === "es" ? esES : undefined);
+  useEffect(() => {
+    let vigente = true;
+    const cargar = CLERK_LOCALES[lang];
+    if (cargar == null) {
+      setLocalization(undefined);
+      return;
+    }
+    void cargar()
+      .then((l) => {
+        if (vigente) setLocalization(l);
+      })
+      .catch(() => {
+        if (vigente) setLocalization(undefined);
+      });
+    return () => {
+      vigente = false;
+    };
+  }, [lang]);
   return (
     <ClerkProvider
       publishableKey={instanceConfig.clerkPublishableKey ?? ""}
-      localization={lang === "es" ? esES : undefined}
+      localization={localization}
       afterSignOutUrl={`${studioPrefix()}/login`}
       signInUrl={`${studioPrefix()}/login`}
       signUpUrl={`${studioPrefix()}/register`}

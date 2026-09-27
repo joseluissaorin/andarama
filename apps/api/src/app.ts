@@ -218,7 +218,15 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
     const { users } = await import("@andarama/db");
     const { eq } = await import("drizzle-orm");
     const body = (await c.req.json()) as Record<string, unknown>;
+    // Se mezcla con lo que ya había: cambiar el idioma no borra el resto.
+    let previas: Record<string, unknown> = {};
+    try {
+      previas = JSON.parse(auth.user.prefsJson ?? "{}") as Record<string, unknown>;
+    } catch {
+      previas = {};
+    }
     const prefs = {
+      ...previas,
       ...(typeof body.editorLang === "string" ? { editorLang: body.editorLang } : {}),
       ...(typeof body.defaultLang === "string" ? { defaultLang: body.defaultLang } : {}),
       ...(typeof body.entryMode === "string" ? { entryMode: body.entryMode } : {}),

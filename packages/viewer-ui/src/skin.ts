@@ -1,7 +1,7 @@
-import type { Projection, Tour } from "@andarama/schema";
+import { langDir, langNativeName, type Projection, type Tour } from "@andarama/schema";
 import { createIconSvg, resolveUrl, TourViewer } from "@andarama/viewer";
 import { injectStyles } from "./styles.js";
-import { createTranslator, type Translator } from "./i18n.js";
+import { createTranslator, ensureUiLang, type Translator } from "./i18n.js";
 import { registerUiIcons } from "./icons.js";
 import { el, iconButton, toast } from "./dom.js";
 import { PanelHost } from "./panels.js";
@@ -89,6 +89,18 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
   const t0 = createTranslator(viewer.currentLang());
   let t: Translator = t0;
+  // Idioma y dirección de escritura del cromo: lectores de pantalla, la
+  // tipografía por alfabeto y el árabe y el hebreo de derecha a izquierda.
+  const aplicarIdioma = (lang: string): void => {
+    container.lang = lang;
+    container.dir = langDir(lang);
+  };
+  aplicarIdioma(viewer.currentLang());
+  // Si quien monta no pasó antes por ensureUiLang, el diccionario del idioma
+  // del tour se pide ahora; los textos lo usan en su siguiente pintado.
+  void ensureUiLang(viewer.currentLang()).then(() => {
+    t = createTranslator(viewer.currentLang());
+  });
   const baseUrl = options.baseUrl ?? "";
   const edit = options.editMode === true;
   // Modo edicion: el editor solo necesita el lienzo, la brujula y el zoom.
@@ -402,7 +414,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
       pop.style.bottom = "auto";
       pop.style.top = `${langBtn.getBoundingClientRect().top - container.getBoundingClientRect().top}px`;
       for (const lang of tour.meta.langs) {
-        const b = el("button", { type: "button", role: "menuitem", text: lang.toUpperCase(), "aria-pressed": String(lang === viewer.currentLang()) });
+        // Cada idioma con su nombre en su propia lengua («Deutsch», «日本語»)
+        const b = el("button", { type: "button", role: "menuitem", lang, text: langNativeName(lang), "aria-pressed": String(lang === viewer.currentLang()) });
         b.addEventListener("click", () => {
           viewer.setLang(lang);
           pop.remove();
@@ -613,11 +626,14 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
   // ------- Cambio de idioma: remontar textos de la skin -------
   viewer.on("langChange", (e) => {
-    t = createTranslator(e.lang);
-    // Los componentes leen textos en su proximo render; para textos fijos
-    // basta actualizar el titulo.
-    const title = topbar.querySelector(".anda-title");
-    if (title != null) title.textContent = viewer.text(tour.meta.title);
+    aplicarIdioma(e.lang);
+    void ensureUiLang(e.lang).then(() => {
+      t = createTranslator(e.lang);
+      // Los componentes leen textos en su proximo render; para textos fijos
+      // basta actualizar el titulo.
+      const title = topbar.querySelector(".anda-title");
+      if (title != null) title.textContent = viewer.text(tour.meta.title);
+    });
   });
 
   // ------- Pantalla de bienvenida -------

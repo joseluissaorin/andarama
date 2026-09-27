@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { CreditCard, Download, FolderKanban, Image, Languages, LogOut, Menu, RefreshCw, ShieldCheck, Share, UserCircle, Building2, X } from "lucide-react";
 import { Button, Dialog, Select, Tooltip } from "@andarama/ui";
 import { useAuth } from "../stores";
-import { useI18nStore, useT } from "../i18n";
+import { useT } from "../i18n";
 import { usePwa } from "../pwa";
 import { Criatura } from "./Criatura";
+import { LangPicker } from "./LangPicker";
 import { getClerk, isClerkMode } from "../clerk";
 import logoAndarama from "../brand/logo-andarama.svg";
 import andaCriatura from "../brand/anda-criatura.svg";
@@ -15,7 +16,6 @@ export function Shell(): React.ReactNode {
   const t = useT();
   const navigate = useNavigate();
   const { me, loaded, bootstrap, currentOrgId, setOrg, logout } = useAuth();
-  const { lang, setLang } = useI18nStore();
   const pwa = usePwa();
   const [iosHelp, setIosHelp] = useState(false);
   // En pantallas estrechas la barra lateral es un cajón que se desliza
@@ -72,13 +72,14 @@ export function Shell(): React.ReactNode {
           onClick={() => setMenuAbierto(false)}
         />
       )}
+      {/* En árabe y hebreo (dir="rtl") el cajón vive a la derecha y se esconde hacia allí */}
       <aside
         onClick={(e) => {
           // Navegar desde el cajón lo cierra; los botones sueltos no
           if ((e.target as HTMLElement).closest("a") != null) setMenuAbierto(false);
         }}
-        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-[var(--anda-border)] bg-[var(--anda-surface)] transition-transform duration-200 md:static md:z-auto md:translate-x-0 ${
-          menuAbierto ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-[var(--anda-border)] bg-[var(--anda-surface)] transition-transform duration-200 rtl:left-auto rtl:right-0 rtl:border-l rtl:border-r-0 md:static md:z-auto md:translate-x-0 ${
+          menuAbierto ? "translate-x-0" : "-translate-x-full rtl:translate-x-full md:translate-x-0"
         }`}
       >
         <div className="flex items-center gap-3 px-4 pb-4 pt-5">
@@ -155,10 +156,11 @@ export function Shell(): React.ReactNode {
           </button>
         )}
         <div className="mx-3 mb-3 flex items-center gap-1 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)] p-1.5 shadow-[inset_0_1px_2px_rgba(72,52,8,0.06)]">
-          <Tooltip content={lang === "es" ? "English" : "Español"}>
-            <Button variant="ghost" size="icon" aria-label="Idioma de la interfaz" onClick={() => setLang(lang === "es" ? "en" : "es")}>
-              <Languages className="h-4 w-4" />
-            </Button>
+          <Tooltip content={t("ui_language")}>
+            <span className="flex shrink-0 items-center gap-1">
+              <Languages className="h-4 w-4 text-[var(--anda-text-dim)]" aria-hidden="true" />
+              <LangPicker className="h-8 max-w-[6.5rem] !px-2 !py-0 text-xs" />
+            </span>
           </Tooltip>
           <span className="flex-1 truncate px-1 text-xs font-medium text-[var(--anda-text-dim)]">{me.user.email}</span>
           <Tooltip content={t("logout")}>

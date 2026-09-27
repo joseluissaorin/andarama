@@ -33,6 +33,11 @@ export const VIEWER_CSS = `
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
+/* Alfabetos que Inter no cubre: la fuente del sistema, que sí los trae, sin
+   mezclar dos voces. El tema del tour (estilo en línea) sigue mandando. */
+.anda-viewer:lang(ar), .anda-viewer:lang(he), .anda-viewer:lang(th), .anda-viewer:lang(ja), .anda-viewer:lang(ko), .anda-viewer:lang(zh) {
+  --u3-font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
 .anda-viewer[data-theme="light"] {
   --u3-glass: rgba(252, 253, 255, 0.78);
   --u3-glass-strong: rgba(252, 253, 255, 0.92);
