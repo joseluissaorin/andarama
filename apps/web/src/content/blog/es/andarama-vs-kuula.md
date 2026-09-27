@@ -30,10 +30,10 @@ Los de Andarama:
 
 - **En tu casa**: 0 €. El programa entero, en tu ordenador o en tu servidor, sin límite de recorridos.
 - **Andar**: 2 $ al mes por 1 recorrido y 5 GB.
-- **Aula**: 42 $ al año por docente, con 5 recorridos, alumnado ilimitado por código de clase, quiz con nota y escape room.
+- **Aula**: 42 $ al año por docente, con 5 recorridos, sin cuentas para el alumnado, quiz con nota y escape room.
 - **Paseo**: 20 $ al mes o 200 $ al año por 10 recorridos y 50 GB.
 - **Excursión**: 500 $ al año por 500 recorridos y 100 GB, sin insignia y con dominio propio.
-- **Formación**: 99 $ al mes o 990 $ al año, con SCORM, LTI, marca blanca, equipo y factura.
+- **Formación**: 99 $ al mes o 990 $ al año, con SCORM, LTI 1.3 (en pruebas y disponible bajo petición), marca blanca, equipo y factura en euros bajo pedido para instituciones.
 - **De por vida**: 1000 $ una sola vez, 1000 recorridos y 200 GB.
 
 La lectura honesta: si publicas muchos tours y solo necesitas un visor bonito con la marca quitada, Kuula Pro a 20 $ al mes anual y Andarama Paseo a 200 $ al año cuestan prácticamente lo mismo. La diferencia aparece en los extremos: un solo tour cuesta 2 $ al mes en Andarama y 20 $ en Kuula, y un uso institucional con cientos de recorridos cuesta 500 $ al año en Andarama frente a 432 $ al año en Kuula Business… solo que Kuula no ofrece quiz con nota ni SCORM a ningún precio. Y en tu propio servidor Andarama cuesta cero.
@@ -48,7 +48,7 @@ En Andarama, la exportación es parte del producto en todos los planes: un ZIP e
 
 Kuula gana en sencillez. Su editor es lineal y cómodo, y para un fotógrafo que quiere subir veinte panoramas y enlazarlos, es difícil de superar.
 
-El editor de Andarama es más grande porque hace más cosas: el grafo dibuja el plano del recorrido y cada flecha es un hotspot; la orientación de llegada a cada sala depende del camino por el que se entra; hay historial de versiones, comentarios anclados, presencia cuando editáis varios y traducciones lado a lado. Diecisiete tipos de hotspot (texto, imagen, galería, vídeo proyectado sobre una pared, audio espacial, PDF, modelo 3D, formulario, comparador, quiz, polígono, tesoro…) frente a los tipos básicos de Kuula. Cuesta un poco más de aprender; a cambio se llega bastante más lejos.
+El editor de Andarama es más grande porque hace más cosas: el grafo dibuja el plano del recorrido y cada flecha es un hotspot; la orientación de llegada a cada sala depende del camino por el que se entra; hay historial de versiones, comentarios anclados, presencia cuando editáis varios y traducciones lado a lado. Dieciocho tipos de hotspot (texto, imagen, galería, vídeo proyectado sobre una pared, audio espacial, PDF, modelo 3D, formulario, comparador, quiz, polígono, tesoro…) frente a los tipos básicos de Kuula. Cuesta un poco más de aprender; a cambio se llega bastante más lejos.
 
 En el visor los dos son buenos. Andarama añade proyecciones (little planet, ojo de pez, Panini), brújula con norte real, planos de planta con radar, vídeo 360 con hotspots por instante y audio espacial que gira con la cabeza. Y pesa 116 KB comprimidos con el motor de realidad virtual dentro.
 
@@ -58,7 +58,7 @@ Los dos tienen modo RV. Kuula ofrece un modo para gafas y para cartón. Andarama
 
 ## Docencia y formación
 
-Aquí no hay comparación posible, y lo decimos sin presumir: Kuula no está pensado para el aula. Andarama trae de serie quiz con nota, mínimo para aprobar, intentos, informe final y certificado PDF; búsqueda del tesoro y escape room con variables de estado; visitas guiadas en vivo con una sala y un código; LTI 1.3 para insertar el tour desde Moodle, Canvas o Blackboard con la nota de vuelta al libro de calificaciones; y SCORM 1.2 y 2004 para cualquier otro campus. El plan Aula cuesta 42 $ al año por docente, con alumnado ilimitado.
+Aquí no hay comparación posible, y lo decimos sin presumir: Kuula no está pensado para el aula. Andarama trae de serie quiz con nota, mínimo para aprobar, intentos, informe final y certificado PDF; búsqueda del tesoro y escape room con variables de estado; visitas guiadas en vivo con una sala y un código; SCORM 1.2 y 2004, que informa de la finalización y la puntuación a Moodle o a cualquier LMS; y LTI 1.3, en pruebas y disponible bajo petición. El plan Aula cuesta 42 $ al año por docente, sin cuentas para el alumnado.
 
 ## Street View y comunidad
 
@@ -71,6 +71,6 @@ Andarama no usa cookies para la analítica de los visitantes ni guarda direccion
 ## Entonces, ¿cuál?
 
 - **Kuula**, si eres fotógrafo, quieres publicar rápido, te importa Street View y la comunidad, y no te preocupa que los tours vivan en su nube.
-- **Andarama**, si quieres tener el programa (y los tours) en tu mano, pagas por un solo recorrido, das clase o formación, necesitas SCORM o LTI, o simplemente prefieres que el software que usas sea de código abierto y se pueda auditar.
+- **Andarama**, si quieres tener el programa (y los tours) en tu mano, pagas por un solo recorrido, das clase o formación, necesitas SCORM, o simplemente prefieres que el software que usas sea de código abierto y se pueda auditar.
 
 Y si tienes dudas, las dos se prueban gratis: Kuula con su plan Basic y Andarama con catorce días sin tarjeta, o instalándotela, que no caduca nunca.

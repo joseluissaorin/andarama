@@ -64,7 +64,7 @@ Los depósitos son estrechos y con luz fluorescente; algunas recomendaciones:
 
 - **Web** de la biblioteca: código de inserción (web component o iframe) en cualquier gestor de contenidos, con el [plugin de WordPress](/wordpress/) si aplica; tarjeta social con la vista de la escena inicial al compartir el enlace.
 - **Vestíbulo**: el mismo recorrido en **modo quiosco** en una pantalla, encadenando los recorridos, con el mando para quien toque y vuelta al inicio tras un minuto. Para pantallas sin red, el paquete **PWA** funciona sin conexión. Está en [publicar y compartir](https://docs.andarama.com/usuario/publicar/).
-- **Campus virtual**: si la biblioteca es universitaria, las escenas docentes se lanzan desde Moodle por LTI y la nota del quiz vuelve al libro de calificaciones ([guía](/blog/recorrido-360-moodle/)).
+- **Campus virtual**: si la biblioteca es universitaria, las escenas docentes se suben a Moodle como paquete SCORM, que informa de la finalización y la nota del quiz ([guía](/blog/recorrido-360-moodle/)).
 - **Enlaces profundos**: cada documento tiene su dirección (`#s=incunable-12`), de modo que la ficha del catálogo puede enlazar directamente a la escena.
 
 ## Accesibilidad y privacidad
@@ -73,7 +73,7 @@ Las webs de las administraciones públicas tienen obligaciones de accesibilidad,
 
 ## Costes
 
-El software es la partida menor: Andarama es de código abierto y se instala gratis en un servidor de la institución (Docker o una cuenta de Cloudflare) o se contrata alojado desde 2 $ al mes por un recorrido hasta el plan Excursión (500 $ al año, sin insignia y con dominio propio) o Formación (con LTI y factura). El grueso del coste es el tiempo de las personas: una jornada de fotos, dos o tres de montaje y textos, y lo que lleve la digitalización de los documentos, que a menudo ya está hecha. La [página de instituciones](/universidades/) resume las opciones de factura, SSO e instancia propia.
+El software es la partida menor: Andarama es de código abierto y se instala gratis en un servidor de la institución (Docker o una cuenta de Cloudflare) o se contrata alojado desde 2 $ al mes por un recorrido hasta el plan Excursión (500 $ al año, sin insignia y con dominio propio) o Formación (con SCORM y factura en euros bajo pedido para instituciones). El grueso del coste es el tiempo de las personas: una jornada de fotos, dos o tres de montaje y textos, y lo que lleve la digitalización de los documentos, que a menudo ya está hecha. La [página de instituciones](/universidades/) resume las opciones de factura en euros bajo pedido, instancia propia y SSO (solo en la instalación propia).
 
 ## Un primer recorrido en una tarde
 

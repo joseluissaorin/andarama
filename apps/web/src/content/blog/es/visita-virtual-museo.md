@@ -31,7 +31,7 @@ Antes de hablar de dinero, conviene saber qué se está comprando. Una visita qu
 - **Dos salidas**: la web del museo (embebida) y, si hay presupuesto, una pantalla en la entrada en modo quiosco.
 - **Datos**: cuánta gente entra, qué salas ven y cuánto se quedan, sin cookies ni avisos.
 
-Andarama cubre todos estos puntos de serie: escenas de panorama, vídeo 360 y gigapíxel 2D; diecisiete tipos de hotspot; traducciones por escena y por hotspot; versión accesible en texto; modo quiosco; analítica sin cookies. Están descritos en la [documentación de escenas](https://docs.andarama.com/usuario/escenas/) y de [publicación](https://docs.andarama.com/usuario/publicar/).
+Andarama cubre todos estos puntos de serie: escenas de panorama, vídeo 360 y gigapíxel 2D; dieciocho tipos de hotspot; traducciones por escena y por hotspot; versión accesible en texto; modo quiosco; analítica sin cookies. Están descritos en la [documentación de escenas](https://docs.andarama.com/usuario/escenas/) y de [publicación](https://docs.andarama.com/usuario/publicar/).
 
 ## Cómo se hace, paso a paso
 
@@ -69,13 +69,13 @@ Para comparar, Matterport, que muchos museos consideran primero, cobra sus plane
 - **¿Se puede embeber en la web del museo?** Con un web component o un iframe, y con el [plugin de WordPress](/wordpress/) si la web es WordPress.
 - **¿Funciona en una pantalla de la entrada?** Modo quiosco y PWA sin conexión.
 - **¿Y en gafas?** El mismo enlace abre el modo RV en Meta Quest, Pico o Vision Pro, sin instalar nada; útil para un rincón de realidad virtual o para llevar el museo a un centro escolar.
-- **¿Quién lo mantiene?** La instalación en Cloudflare cabe en la capa gratuita y la de Docker es un fichero; para quien prefiera no mantener nada, el plan alojado. La [página de universidades e instituciones](/universidades/) resume las opciones de factura, SSO e instancia propia con soporte.
+- **¿Quién lo mantiene?** La instalación en Cloudflare cabe en la capa gratuita y la de Docker es un fichero; para quien prefiera no mantener nada, el plan alojado. La [página de universidades e instituciones](/universidades/) resume las opciones de factura en euros bajo pedido, SSO (solo en la instalación propia) e instancia propia con soporte.
 
 ## Dos errores frecuentes
 
 **Hacer las fotos con público y con luz de un día cualquiera.** Una visita virtual se ve durante años; merece una mañana de cierre, luces encendidas y vitrinas limpias.
 
-**Volcar la web entera en la visita.** El visitante virtual lee menos que el real. Cartelas de tres líneas, un audio de treinta segundos, un enlace a la ficha completa para quien quiera más. Andarama permite hasta diecisiete tipos de contenido; no hay que usarlos todos en cada sala.
+**Volcar la web entera en la visita.** El visitante virtual lee menos que el real. Cartelas de tres líneas, un audio de treinta segundos, un enlace a la ficha completa para quien quiera más. Andarama permite hasta dieciocho tipos de contenido; no hay que usarlos todos en cada sala.
 
 ## Por dónde empezar
 

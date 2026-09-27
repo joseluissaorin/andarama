@@ -12,7 +12,7 @@ faq:
   - q: "¿Se puede alojar en la infraestructura de la universidad?"
     a: "Sí. El programa es de código abierto y se despliega con Docker o en una cuenta de Cloudflare de la universidad; con SSO por OIDC el profesorado entra con su cuenta institucional."
   - q: "¿Cómo se integra con el campus virtual?"
-    a: "Por LTI 1.3: el profesorado elige un recorrido desde Moodle, Canvas o Blackboard y la nota de los quiz vuelve al libro de calificaciones. También se exporta como SCORM."
+    a: "Con el paquete SCORM 1.2 o 2004, que informa de la finalización y la puntuación del quiz a Moodle o a cualquier LMS. La integración por LTI 1.3 está en pruebas y disponible bajo petición."
   - q: "¿Cuánto se tarda?"
     a: "Un campus de cinco edificios y sesenta puntos de vista se fotografía en dos o tres jornadas y se monta en dos semanas. El mantenimiento después es cambiar fotos cuando cambia algo."
 ---
@@ -62,20 +62,20 @@ Un campus mediano (cinco edificios, sesenta puntos de vista) se fotografía en d
 
 ## Quién lo hace: organización y roles
 
-Lo que funciona es que **comunicación coordina, cada facultad edita lo suyo e informática decide el alojamiento**. Andarama lo permite con organizaciones y roles (administrador, editor, colaborador, lector), presencia y bloqueo por escena para que dos personas editen el mismo tour sin pisarse, comentarios anclados a las escenas y versiones con restauración. El profesorado entra con su cuenta institucional por SSO (OIDC) y las altas se hacen solas por dominio de correo. Todo esto está en [primeros pasos](https://docs.andarama.com/usuario/primeros-pasos/) y en la página de [universidades](/universidades/).
+Lo que funciona es que **comunicación coordina, cada facultad edita lo suyo e informática decide el alojamiento**. Andarama lo permite con organizaciones y roles (administrador, editor, colaborador, lector), presencia y bloqueo por escena para que dos personas editen el mismo tour sin pisarse, comentarios anclados a las escenas y versiones con restauración. En una instalación propia, el profesorado entra con su cuenta institucional por SSO (OIDC) y las altas se hacen solas por dominio de correo. Todo esto está en [primeros pasos](https://docs.andarama.com/usuario/primeros-pasos/) y en la página de [universidades](/universidades/).
 
 ## Dónde se aloja
 
 Dos caminos, y los dos son la misma aplicación:
 
 - **Instancia propia**. El servicio de informática despliega Andarama con Docker o en una cuenta de Cloudflare de la universidad (cabe en la capa gratuita para usos medios). Sin planes ni cuotas; los datos, en la infraestructura de la institución. Es la opción natural para una universidad pública con RGPD y un DPD que preguntará dónde están los datos. Se puede contratar soporte, actualizaciones y acompañamiento.
-- **Alojado en andarama.com**. Sin nada que mantener; el plan Formación (99 $ al mes o 990 $ al año) incluye 100 recorridos, SCORM y LTI, marca blanca, dominio propio (`tour.universidad.es`), equipo y pago por factura con los datos fiscales de la institución.
+- **Alojado en andarama.com**. Sin nada que mantener; el plan Formación (99 $ al mes o 990 $ al año) incluye 100 recorridos, SCORM, marca blanca, dominio propio (`tour.universidad.es`), equipo y factura en euros bajo pedido para instituciones. El SSO por OIDC es solo de la instancia propia.
 
 En ambos casos el tour se exporta como paquete estático y el formato está documentado: si dentro de diez años cambia todo, el recorrido sigue abriéndose.
 
 ## Integración con el campus virtual
 
-Los espacios docentes del tour se lanzan desde Moodle, Canvas o Blackboard por **LTI 1.3 Advantage**: el profesorado elige el recorrido con el selector de contenido y la nota de los quiz vuelve al libro de calificaciones. Para campus sin LTI, el paquete **SCORM**. Lo explicamos paso a paso en [cómo meter un recorrido 360 en Moodle](/blog/recorrido-360-moodle/).
+Los espacios docentes del tour se suben a Moodle, Canvas o Blackboard como paquete **SCORM** 1.2 o 2004, que informa al campus de la finalización y la puntuación de los quiz. La integración por **LTI 1.3** está en pruebas y disponible bajo petición. Lo explicamos paso a paso en [cómo meter un recorrido 360 en Moodle](/blog/recorrido-360-moodle/).
 
 ## Datos y privacidad
 
@@ -88,6 +88,6 @@ La analítica de Andarama cuenta visitas, escenas y hotspots agregados, sin cook
 | 1 | Un edificio piloto (la facultad más motivada): fotos, plano, navegación, textos, un idioma | Un mes |
 | 2 | El campus completo para acogida: todos los edificios, plantas y mapa; enlaces profundos desde la web de cada servicio | Antes de septiembre |
 | 3 | Itinerario de captación con Autopilot, vídeo y los idiomas de reclutamiento; embebido en la web de admisiones | Antes de la campaña |
-| 4 | Espacios docentes con quiz, lanzados por LTI desde el campus virtual | Con el profesorado interesado, uno a uno |
+| 4 | Espacios docentes con quiz, subidos como SCORM al campus virtual | Con el profesorado interesado, uno a uno |
 
 El piloto se prueba con la cuenta de catorce días o con el [ejecutable de escritorio](https://docs.andarama.com/despliegue/escritorio/) en un portátil; el despliegue institucional viene después, con lo aprendido. Si queréis que os acompañemos, el formulario de la [página de universidades](/universidades/) prepara el correo.

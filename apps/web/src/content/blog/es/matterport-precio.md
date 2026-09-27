@@ -63,7 +63,7 @@ Si tu caso es uno de estos, Matterport es la referencia y lo demás son sucedán
 
 La mayoría de quienes buscan «Matterport precio» no necesitan un modelo 3D: necesitan un **recorrido 360** bien hecho, con fotos de una cámara 360 corriente, publicado en su web, con textos o preguntas si son docentes, y sin cuota que crezca cada año. Para eso:
 
-- **Andarama** (la nuestra): código abierto, gratis instalado en tu ordenador o servidor, o alojado desde 2 $ al mes por un recorrido, 20 $ al mes o 200 $ al año por diez, 500 $ al año por 500 con dominio propio y sin insignia. Exportación a ZIP, HTML único, PWA y SCORM en todos los planes; realidad virtual WebXR; quiz, escape room, LTI. No hace modelos 3D ni medidas.
+- **Andarama** (la nuestra): código abierto, gratis instalado en tu ordenador o servidor, o alojado desde 2 $ al mes por un recorrido, 20 $ al mes o 200 $ al año por diez, 500 $ al año por 500 con dominio propio y sin insignia. Exportación a ZIP, HTML único, PWA y SCORM en todos los planes; realidad virtual WebXR; quiz, escape room y SCORM. No hace modelos 3D ni medidas.
 - **Kuula**: gratis para empezar, 24 $ al mes en Pro (20 $ anual); muy usado por fotógrafos; la descarga de tours, solo en Business. [Comparativa detallada](/blog/andarama-vs-kuula/).
 - **3DVista**: 499 $ de pago único, software de escritorio muy completo, exporta HTML. [Comparativa](/blog/andarama-vs-3dvista/).
 - **Panoee**: plan gratuito generoso y Pro a 22 $ al mes o 200 $ al año. [Comparativa](/blog/andarama-vs-panoee/).

@@ -114,7 +114,7 @@ Cada idea indica **el guion** (la historia que se cuenta a la clase), **los cand
 | Contador/estado y condiciones | Puertas que aparecen, luces que se encienden | Hotspot Contador/estado y pestaña Condiciones de cualquier hotspot |
 | Texto, imagen, audio, vídeo, PDF | Pistas | Hotspots de contenido |
 | Certificado PDF | El «habéis escapado» | Ajustes del tour |
-| Código de clase | Entrar sin cuentas | Plan Aula |
+| Enlace o código QR | Entrar sin cuentas | Publicar el tour |
 
 Todo está descrito en la [documentación de docencia](https://docs.andarama.com/usuario/docencia/) y en la [referencia de hotspots](https://docs.andarama.com/referencia/widgets/). El [plan Aula](/aula/) cuesta 42 $ al año por docente con alumnado ilimitado; si el centro prefiere tenerlo en su propio servidor, el programa es de código abierto y no hay planes.
 

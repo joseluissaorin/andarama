@@ -46,7 +46,7 @@ Lo que sigue no es una crítica: Marzipano es una librería, y las librerías no
 | Idiomas | No | Idem |
 | Publicación, enlaces, QR, tarjeta social | No | Tu propio servidor y tu propio código |
 | Analítica | No | Añadir la tuya |
-| Docencia (quiz con nota, SCORM, LTI) | No | Un producto de docencia |
+| Docencia (quiz con nota, SCORM) | No | Un producto de docencia |
 | Soporte | Comunidad; sin empresa detrás | Contratar a alguien que conozca la librería |
 
 Y hay un detalle práctico: las versiones de Marzipano salen con cuentagotas. Funciona, y funcionará, porque es código estático que no depende de servicios; pero no esperes novedades.
@@ -61,7 +61,7 @@ Para una única visita sencilla, gratis y que se sube por FTP, es una buena solu
 
 ## Andarama: Marzipano con editor (y lo que hay debajo)
 
-El motor 360 de Andarama está construido **sobre Marzipano**, con capas propias: teselado en el navegador, proyecciones (pequeño planeta, ojo de pez, Panini), WebXR con manos y mandos, diecisiete tipos de hotspot dibujados también dentro de las gafas, audio espacial, vídeo 360 y brújula. Encima, el editor con grafo, el plano, las traducciones, la publicación con enlace y QR, la analítica sin cookies, el quiz con nota, el escape room, el SCORM y el LTI.
+El motor 360 de Andarama está construido **sobre Marzipano**, con capas propias: teselado en el navegador, proyecciones (pequeño planeta, ojo de pez, Panini), WebXR con manos y mandos, dieciocho tipos de hotspot dibujados también dentro de las gafas, audio espacial, vídeo 360 y brújula. Encima, el editor con grafo, el plano, las traducciones, la publicación con enlace y QR, la analítica sin cookies, el quiz con nota, el escape room y el SCORM.
 
 Lo que se conserva del espíritu de Marzipano es lo importante: el **tour exportado es un fichero estático**. Un ZIP con el HTML, el visor y las teselas que se sube a cualquier hosting y funciona sin Andarama detrás, igual que un tour de la Marzipano Tool. El formato `tour.json` está [documentado](https://docs.andarama.com/referencia/tour-json/) y el programa entero es de código abierto (EUPL-1.2), así que quien quiera leer cómo se usa Marzipano por dentro puede hacerlo.
 
@@ -80,7 +80,7 @@ Sé honesto contigo mismo sobre lo que necesitas:
 - **No quieres programar** y necesitas editar el tour más de una vez.
 - **Contenido rico**: textos, imágenes con zoom, vídeo sobre las paredes, audio, PDF, comparador, idiomas.
 - **Realidad virtual** de verdad, en gafas, sin instalar nada.
-- **Docencia y formación**: quiz con nota, escape room, LTI con Moodle, SCORM.
+- **Docencia y formación**: quiz con nota, escape room, SCORM para Moodle o cualquier LMS.
 - **Publicación y datos**: enlace, QR, inserción, dominio propio, analítica sin cookies.
 - **Que siga siendo tuyo**: exportación estática y código abierto, como con Marzipano, pero con editor.
 

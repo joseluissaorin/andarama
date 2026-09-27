@@ -14,7 +14,7 @@ faq:
   - q: "¿Cuál es más barato para un solo tour?"
     a: "Panoee gratis, si cabe en 3 GB y no te importa la marca. Si quieres el tour sin marca, Andarama Andar cuesta 2 $ al mes; y Andarama instalado en tu ordenador cuesta cero, sin límite de tours."
   - q: "¿Cuál sirve para dar clase?"
-    a: "Andarama: quiz con nota, escape room, búsqueda del tesoro, código de clase, LTI y SCORM. Panoee no tiene funciones de docencia ni plan educativo conocido."
+    a: "Andarama: quiz con nota, escape room, búsqueda del tesoro, alumnado sin cuentas y SCORM. Panoee no tiene funciones de docencia ni plan educativo conocido."
   - q: "¿Se pueden exportar los tours?"
     a: "En Panoee, solo con el plan Pro. En Andarama, en todos los planes y en la instalación propia: ZIP estático, HTML único, PWA y SCORM."
 ---
@@ -40,10 +40,10 @@ Los de Andarama:
 
 - **En tu casa**: 0 €, sin límite de recorridos.
 - **Andar**: 2 $ al mes, 1 recorrido, 5 GB.
-- **Aula**: 42 $ al año por docente, 5 recorridos, alumnado ilimitado con código de clase, quiz y escape room.
+- **Aula**: 42 $ al año por docente, 5 recorridos, sin cuentas para el alumnado, quiz y escape room.
 - **Paseo**: 20 $ al mes o 200 $ al año, 10 recorridos, 50 GB.
 - **Excursión**: 500 $ al año, 500 recorridos, 100 GB, sin insignia y con dominio propio.
-- **Formación**: 99 $ al mes o 990 $ al año, SCORM, LTI, marca blanca, equipo y factura.
+- **Formación**: 99 $ al mes o 990 $ al año, SCORM, LTI 1.3 (en pruebas y disponible bajo petición), marca blanca, equipo y factura en euros bajo pedido para instituciones.
 - **De por vida**: 1000 $ una vez, 1000 recorridos, 200 GB.
 
 La lectura: **Panoee gana en el tramo gratuito** si te vale su marca y 3 GB (que son unas veinte o treinta fotos de 8K con sus teselas). En el tramo de pago, Panoee Pro y Andarama Paseo cuestan lo mismo al año (200 $), con la diferencia de que Andarama exporta en todos los planes y Panoee solo en Pro. Y para un solo tour sin marca ajena, Andarama Andar (2 $ al mes) no tiene equivalente en Panoee.
@@ -56,7 +56,7 @@ En Andarama, la exportación forma parte del producto en todos los planes y en l
 
 ## Editor y visor
 
-Los dos editores son buenos. El de Panoee es más lineal y probablemente más rápido de aprender para un primer tour. El de Andarama tiene un grafo donde cada flecha es un hotspot de navegación, orientación de llegada por camino (entrar en una sala desde el pasillo y desde la cocina son dos vistas distintas), plano por planta con radar, modo mapa sobre OpenStreetMap, historial de versiones, comentarios y presencia cuando editáis varios. Diecisiete tipos de hotspot: texto en Markdown, imagen con zoom, galería, vídeo proyectado sobre una pared, audio espacial, PDF, modelo 3D, web incrustada, formulario, comparador, quiz, polígono, tesoro, estado. Cuesta un poco más aprenderlo; llega bastante más lejos.
+Los dos editores son buenos. El de Panoee es más lineal y probablemente más rápido de aprender para un primer tour. El de Andarama tiene un grafo donde cada flecha es un hotspot de navegación, orientación de llegada por camino (entrar en una sala desde el pasillo y desde la cocina son dos vistas distintas), plano por planta con radar, modo mapa sobre OpenStreetMap, historial de versiones, comentarios y presencia cuando editáis varios. Dieciocho tipos de hotspot: texto en Markdown, imagen con zoom, galería, vídeo proyectado sobre una pared, audio espacial, PDF, modelo 3D, web incrustada, formulario, comparador, quiz, polígono, tesoro, estado. Cuesta un poco más aprenderlo; llega bastante más lejos.
 
 En el visor, Panoee rinde bien y tiene buena presencia. Andarama añade proyecciones (pequeño planeta, ojo de pez, Panini), brújula, plano con radar, vídeo 360 con hotspots por instante, audio que gira con la cabeza, versión accesible en texto y 116 KB comprimidos con el motor de RV dentro.
 
@@ -66,7 +66,7 @@ Los dos tienen modo RV. En Andarama es WebXR completo: se abre el enlace en el n
 
 ## Docencia y formación
 
-Panoee no está pensado para el aula y no tiene plan educativo. Andarama trae quiz con nota (mínimo para aprobar, intentos, informe, certificado PDF), compuerta que retiene en la escena hasta acertar, búsqueda del tesoro, escape room con variables, visitas guiadas en vivo, código de clase sin cuentas para el alumnado, LTI 1.3 con Moodle, Canvas y Blackboard, y SCORM 1.2 y 2004. Si das clase o formación, no hay comparación; si no, este apartado te da igual.
+Panoee no está pensado para el aula y no tiene plan educativo. Andarama trae quiz con nota (mínimo para aprobar, intentos, informe, certificado PDF), compuerta que retiene en la escena hasta acertar, búsqueda del tesoro, escape room con variables, visitas guiadas en vivo, acceso sin cuentas para el alumnado, SCORM 1.2 y 2004 para Moodle o cualquier LMS, y LTI 1.3, en pruebas y disponible bajo petición. Si das clase o formación, no hay comparación; si no, este apartado te da igual.
 
 ## Marca, dominio y datos
 
@@ -75,6 +75,6 @@ Panoee quita la marca parcialmente en Pro y permite dominio propio. Andarama qui
 ## Entonces, ¿cuál?
 
 - **Panoee**, si quieres empezar gratis con varios tours, la marca no te molesta, no vas a dar clase y no te preocupa dónde vive el tour.
-- **Andarama**, si quieres tener el programa y los tours en tu mano, pagas por un solo recorrido, das clase o formación, necesitas SCORM o LTI, o prefieres código abierto que se puede auditar e instalar.
+- **Andarama**, si quieres tener el programa y los tours en tu mano, pagas por un solo recorrido, das clase o formación, necesitas SCORM, o prefieres código abierto que se puede auditar e instalar.
 
 Las dos se prueban gratis: Panoee con su plan gratuito, Andarama con catorce días sin tarjeta o [instalándotela](https://docs.andarama.com/despliegue/escritorio/), que no caduca. Si Matterport también está en tu lista, tenemos [siete alternativas comparadas](/blog/alternativas-a-matterport/).

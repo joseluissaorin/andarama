@@ -37,11 +37,11 @@ Un recorrido 360 en la pizarra ya cambia la clase: el docente gira la vista, hac
 
 Lo que se puede hacer sin ninguna gafa, con Andarama:
 
-- **Explorar** escenas con diecisiete tipos de contenido anclado: texto, imagen con zoom, galería, audio, vídeo proyectado sobre la pared, PDF, modelo 3D, comparador.
+- **Explorar** escenas con dieciocho tipos de contenido anclado: texto, imagen con zoom, galería, audio, vídeo proyectado sobre la pared, PDF, modelo 3D, comparador.
 - **Preguntar** con quiz con nota, mínimo para aprobar, informe final y certificado PDF.
 - **Jugar**: búsqueda del tesoro y escape room con variables de estado.
 - **Guiar en vivo** a toda la clase desde la pantalla del docente, con puntero y chat.
-- **Evaluar** con código de clase, sin cuentas para el alumnado ([plan Aula](/aula/)).
+- **Evaluar** sin cuentas para el alumnado, que entra con el enlace o un código QR y descarga su certificado ([plan Aula](/aula/)).
 
 Todo eso está documentado en [docencia](https://docs.andarama.com/usuario/docencia/). Y funciona en la versión accesible en texto para el alumnado que la necesita.
 

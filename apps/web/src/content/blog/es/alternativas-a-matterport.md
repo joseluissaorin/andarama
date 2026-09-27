@@ -16,7 +16,7 @@ Esta lista está pensada para ese caso. Los precios están comprobados el 13 de 
 
 ## 0. Andarama (la nuestra, de código abierto)
 
-Andarama es un programa de código abierto (EUPL-1.2) para crear recorridos 360 a partir de fotos equirectangulares. Se puede instalar gratis (ejecutable de escritorio, Docker o tu cuenta de Cloudflare) o usar alojado en andarama.com desde 2 $ al mes. Editor con grafo, diecisiete tipos de hotspot, visor con realidad virtual WebXR, quiz con nota, escape room, LTI y SCORM, y exportación a ZIP, HTML único, PWA y SCORM en todos los planes. No hace modelos 3D ni mediciones: si lo que necesitas es un gemelo digital, sigue leyendo.
+Andarama es un programa de código abierto (EUPL-1.2) para crear recorridos 360 a partir de fotos equirectangulares. Se puede instalar gratis (ejecutable de escritorio, Docker o tu cuenta de Cloudflare) o usar alojado en andarama.com desde 2 $ al mes. Editor con grafo, dieciocho tipos de hotspot, visor con realidad virtual WebXR, quiz con nota, escape room y SCORM, y exportación a ZIP, HTML único, PWA y SCORM en todos los planes. No hace modelos 3D ni mediciones: si lo que necesitas es un gemelo digital, sigue leyendo.
 
 **Para quién**: docentes, universidades, formación en empresa, y cualquiera que quiera tener los tours en su propio servidor.
 
@@ -70,6 +70,6 @@ Entonces Matterport sigue siendo la referencia, y las alternativas serían otras
 
 - **Quieres tenerlo en tu servidor y no pagar cuotas**: Andarama (instalado), 3DVista o Pano2VR.
 - **Quieres empezar gratis en la nube**: Panoee, Kuula Basic o Andarama con la prueba de catorce días.
-- **Das clase o formación**: Andarama (quiz, escape room, LTI, SCORM) o 3DVista (quiz y SCORM).
+- **Das clase o formación**: Andarama (quiz, escape room, SCORM) o 3DVista (quiz y SCORM).
 - **Vendes tours a negocios**: CloudPano o Kuula.
 - **Eres desarrollador**: Marzipano, o Andarama por su API y su formato abierto.

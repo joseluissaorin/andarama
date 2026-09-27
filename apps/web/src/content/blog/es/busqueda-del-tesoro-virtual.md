@@ -14,7 +14,7 @@ faq:
   - q: "¿Los alumnos pueden hacer trampas viendo la lista de hotspots?"
     a: "El visor no enseña una lista de tesoros; solo el contador. La versión accesible en texto sí lista el contenido de cada escena, así que para el juego conviene no destacarla."
   - q: "¿Se puede jugar en casa?"
-    a: "Sí. Es un enlace, y con el código de clase del plan Aula cada alumno entra desde su casa sin crear cuenta; el docente ve el progreso."
+    a: "Sí. Es un enlace o un código QR: cada alumno entra desde su casa sin crear cuenta."
 ---
 
 Una **búsqueda del tesoro virtual** es un recorrido por fotos 360 en el que hay objetos escondidos por las escenas y el alumnado tiene que encontrarlos todos, ayudado por pistas que aparecen aquí y allá. Es la actividad inmersiva más fácil de montar (una hora con las fotos hechas), funciona desde tercero de Primaria y no necesita gafas: se juega en la pizarra, en tabletas o en el móvil. Aquí está cómo se monta con Andarama y ocho variantes según la edad y la asignatura.
@@ -63,7 +63,7 @@ Tres maneras, y se pueden combinar:
 
 ### 6. Prueba, publica y comparte
 
-Previsualiza el recorrido entero, publica y comparte el enlace o el código QR. Con el [plan Aula](/aula/), el alumnado entra con un **código de clase** sin crear cuentas, y el docente ve el progreso de cada grupo.
+Previsualiza el recorrido entero, publica y comparte el enlace o el código QR. Con el [plan Aula](/aula/), el alumnado entra **sin crear cuentas**, con el enlace o el código QR.
 
 ## Ocho variantes
 
