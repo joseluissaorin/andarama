@@ -930,5 +930,7 @@
   "initial_view_saved": "Initial view saved: the tour will start looking here",
   "mark_start_scene": "Set as start scene",
   "is_start_scene": "This is the tour's start scene",
-  "start_scene_first": "The first one in the list"
+  "start_scene_first": "The first one in the list",
+  "editor_mute": "Mute sound while editing",
+  "editor_unmute": "Turn sound on"
 }

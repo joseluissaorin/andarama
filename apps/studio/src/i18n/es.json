@@ -930,5 +930,7 @@
   "initial_view_saved": "Vista inicial guardada: el recorrido empezará mirando aquí",
   "mark_start_scene": "Marcar como escena inicial",
   "is_start_scene": "Es la escena inicial del recorrido",
-  "start_scene_first": "La primera de la lista"
+  "start_scene_first": "La primera de la lista",
+  "editor_mute": "Silenciar el sonido mientras editas",
+  "editor_unmute": "Activar el sonido"
 }

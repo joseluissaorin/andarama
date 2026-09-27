@@ -50,12 +50,18 @@ export class AudioEngine {
     return this.mutedFlag;
   }
 
-  setMuted(muted: boolean): void {
+  /**
+   * `persist: false` silencia solo esta instancia: el editor guarda su propia
+   * preferencia y no debe cambiar la del visitante, que comparte origen.
+   */
+  setMuted(muted: boolean, persist = true): void {
     this.mutedFlag = muted;
-    try {
-      localStorage.setItem("andarama:muted", muted ? "1" : "0");
-    } catch {
-      // almacenamiento no disponible (modo privado)
+    if (persist) {
+      try {
+        localStorage.setItem("andarama:muted", muted ? "1" : "0");
+      } catch {
+        // almacenamiento no disponible (modo privado)
+      }
     }
     if (this.master != null) {
       this.master.gain.setTargetAtTime(muted ? 0 : 1, this.ctx!.currentTime, 0.05);

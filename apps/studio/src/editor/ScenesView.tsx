@@ -11,6 +11,8 @@ import {
   Plus,
   Search,
   Trash2,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import { Badge, Button, Dialog, EmptyState, Field, Input, Tooltip, useToast } from "@andarama/ui";
@@ -420,6 +422,22 @@ export function usePlacementMode(): PlacementMode {
   return mode;
 }
 
+const EDITOR_MUTED_KEY = "andarama:editor-muted";
+function readEditorMuted(): boolean {
+  try {
+    return localStorage.getItem(EDITOR_MUTED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function writeEditorMuted(value: boolean): void {
+  try {
+    localStorage.setItem(EDITOR_MUTED_KEY, value ? "1" : "0");
+  } catch {
+    // modo privado: la preferencia dura lo que la pestaña
+  }
+}
+
 /** Vista actual del visor embebido (para "usar vista actual"). */
 let lastView: { yaw: number; pitch: number; fov: number } = { yaw: 0, pitch: 0, fov: 1.2 };
 export function getCurrentEditorView(): { yaw: number; pitch: number; fov: number } {
@@ -463,6 +481,12 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   const [compiling, setCompiling] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const firstMount = useRef(true);
+  // El ambiente de la escena suena también mientras se edita: se puede
+  // silenciar desde la barra del lienzo y la preferencia se recuerda aparte de
+  // la del visitante (comparten origen y no deben pisarse).
+  const [muted, setMuted] = useState(() => readEditorMuted());
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
 
   // Arrastrar una escena de la lista sobre el panorama crea el paso hacia ella
   // justo donde se suelta: es la acción más repetida al construir un tour.
@@ -653,6 +677,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
       });
       skinRef.current = mounted;
       mountedViewer = mounted;
+      mounted.viewer.audioEngine().setMuted(mutedRef.current, false);
       mounted.viewer.on("viewChange", (v) => {
         lastView = v;
       });
@@ -730,6 +755,22 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
             <Plus className="h-4 w-4" /> {t("add_hotspot_button")}
           </Button>
         )}
+        <Tooltip content={muted ? t("editor_unmute") : t("editor_mute")}>
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label={muted ? t("editor_unmute") : t("editor_mute")}
+            aria-pressed={muted}
+            onClick={() => {
+              const next = !muted;
+              setMuted(next);
+              writeEditorMuted(next);
+              skinRef.current?.viewer.audioEngine().setMuted(next, false);
+            }}
+          >
+            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </Button>
+        </Tooltip>
         {canEdit && (
           <Tooltip content={t("use_current_view_hint")}>
             <Button
