@@ -69,7 +69,7 @@ Para comparar, Matterport, que muchos museos consideran primero, cobra sus plane
 - **¿Se puede embeber en la web del museo?** Con un web component o un iframe, y con el [plugin de WordPress](/wordpress/) si la web es WordPress.
 - **¿Funciona en una pantalla de la entrada?** Modo quiosco y PWA sin conexión.
 - **¿Y en gafas?** El mismo enlace abre el modo RV en Meta Quest, Pico o Vision Pro, sin instalar nada; útil para un rincón de realidad virtual o para llevar el museo a un centro escolar.
-- **¿Quién lo mantiene?** La instalación en Cloudflare cabe en la capa gratuita y la de Docker es un fichero; para quien prefiera no mantener nada, el plan alojado. La [página de universidades e instituciones](/universidades/) resume las opciones de factura, SSO e instancia propia con soporte.
+- **¿Quién lo mantiene?** La instalación en Cloudflare cabe en la capa gratuita y la de Docker es un fichero; para quien prefiera no mantener nada, el plan alojado. La [página de universidades e instituciones](/universidades/) resume las opciones de instancia propia con soporte.
 
 ## Dos errores frecuentes
 
