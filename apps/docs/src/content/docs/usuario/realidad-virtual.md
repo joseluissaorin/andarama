@@ -31,7 +31,7 @@ dedos con metacarpo, falanges y yema). No hay que configurar nada: si el visor
 publica las manos, se ven; si no, se ven los mandos.
 
 - **Apuntar**: de cada mano sale un rayo fino. Al cruzarse con un hotspot el rayo
-  se acorta hasta él, se tiñe de violeta ULL y el hotspot crece un poco.
+  se acorta hasta él, se tiñe del violeta de Andarama y el hotspot crece un poco.
 - **Pinza**: juntar el pulgar y el índice acciona lo que esté apuntado. El umbral
   tiene histéresis (cierra por debajo de 22 mm y no vuelve a abrirse hasta los
   32 mm), así que no hay parpadeos ni activaciones dobles.
