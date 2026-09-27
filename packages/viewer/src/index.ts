@@ -11,3 +11,4 @@ export { ProjectionPass, littlePlanetIntroParams } from "./engine/projections.js
 export { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
 export { createIconSvg, sanitizeSvg, registerIcons, hasIcon, DEFAULT_ICON_BY_TYPE, type IconNode } from "./hotspots/icons.js";
 export { SceneMarkers } from "./hotspots/markers.js";
+export { pendingGates, type GateReason, type GateState, type PendingGate } from "./engine/gate.js";

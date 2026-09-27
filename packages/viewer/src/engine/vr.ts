@@ -75,7 +75,7 @@ export interface VrCallbacks {
   onNavigate(target: string): Promise<void>;
   /** Hotspots que actúan sin panel: enlace, estado, polígono. */
   onDirectAction(hotspot: VrHotspot): void;
-  onQuizAnswer(hotspotId: string, correct: boolean, points: number): void;
+  onQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[]): void;
   /** Contenido que se continúa fuera de VR: se abre al terminar la sesión. */
   onExternalRequest(url: string): void;
   onExit(): void;
@@ -640,7 +640,7 @@ export class VRManager {
     const correct = picked.size === correctIds.size && [...picked].every((id) => correctIds.has(id));
     this.panelState.answered = true;
     this.panelState.correct = correct;
-    this.callbacks.onQuizAnswer(hs.id, correct, quiz.points ?? 1);
+    this.callbacks.onQuizAnswer(hs.id, correct, quiz.points ?? 1, [...picked]);
   }
 
   // -----------------------------------------------------------------------

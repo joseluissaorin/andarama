@@ -27,6 +27,7 @@ import { littlePlanetIntroParams, ProjectionPass, projectToScreen, type Projecti
 import { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
 import { VRManager, type VrEnvironment, type VrHotspot } from "./engine/vr.js";
 import { SceneMarkers } from "./hotspots/markers.js";
+import { pendingGates, type GateReason } from "./engine/gate.js";
 import { AnalyticsClient } from "./analytics.js";
 
 interface LoadedScene {
@@ -60,14 +61,22 @@ export class TourViewer {
   private analytics: AnalyticsClient;
   private reducedMotion: boolean;
   private navBlocked = false;
-  /** Pregunta con compuerta pendiente en la escena actual: nadie sale sin acertarla. */
+  /**
+   * Primera compuerta pendiente de la escena actual (pregunta sin acertar,
+   * formulario sin enviar o tesoro sin encontrar): nadie sale sin cumplirla.
+   */
   private gateId: string | null = null;
+  private gateReason: GateReason | null = null;
+  /** Formularios ya enviados (en esta visita o, si son de un solo envío, antes). */
+  private formsSent = new Set<string>();
+  /** Preguntas acertadas alguna vez: son las que abren la compuerta. */
+  private quizCleared = new Set<string>();
   /** Estado del último fotograma del pase de proyección. */
   private projectionState: ProjectionFrameState = { mode: "rectilinear", mix: 0, settled: true };
   private videoRaf = 0;
   private sceneEnterTime = 0;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private quizAnswers = new Map<string, { correct: boolean; points: number; sceneId: string }>();
+  private quizAnswers = new Map<string, { correct: boolean; points: number; sceneId: string; selected?: string[] }>();
   private treasureFound = new Set<string>();
   private fpsWindow: number[] = [];
   private lastFrame = 0;
@@ -168,7 +177,7 @@ export class TourViewer {
         }
         this.activateHotspot(hs.hotspot, null);
       },
-      onQuizAnswer: (hotspotId, correct, points) => this.reportQuizAnswer(hotspotId, correct, points),
+      onQuizAnswer: (hotspotId, correct, points, selected) => this.reportQuizAnswer(hotspotId, correct, points, selected),
       onExternalRequest: (url) => {
         this.pendingExternalUrl = url;
       },
@@ -493,7 +502,10 @@ export class TourViewer {
       // Se avisa de por qué no se sale: una narración que aún suena o una
       // pregunta con compuerta sin acertar. Callarse dejaba al visitante
       // pulsando un paso que no hacía nada.
-      this.emit("navBlocked", this.gateId != null ? { reason: "quiz", hotspotId: this.gateId } : { reason: "narration" });
+      this.emit(
+        "navBlocked",
+        this.gateId != null ? { reason: this.gateReason ?? "quiz", hotspotId: this.gateId } : { reason: "narration" },
+      );
       return;
     }
     const previousId = this.currentId;
@@ -764,6 +776,8 @@ export class TourViewer {
     this.autopilotCtl.pauseForInteraction();
     this.analytics.track({ event: "hotspot", sceneId: scene.id, hotspotId: hotspot.id });
     this.markTreasure(scene.id, hotspot.id);
+    // Encontrar el tesoro con compuerta abre la salida de su escena
+    if (hotspot.type === "treasure") this.updateGate(scene);
 
     switch (hotspot.type) {
       case "navigation":
@@ -852,12 +866,40 @@ export class TourViewer {
   // Quiz y busqueda del tesoro
   // -----------------------------------------------------------------------
 
-  reportQuizAnswer(hotspotId: string, correct: boolean, points: number): void {
+  /**
+   * Registra la respuesta a una pregunta. `selected` son las opciones
+   * marcadas: viajan con el resultado para que el servidor recalcule la nota
+   * con el tour publicado en vez de fiarse de la que manda el navegador.
+   */
+  reportQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[]): void {
     const sceneId = this.currentId ?? "";
-    this.quizAnswers.set(hotspotId, { correct, points: correct ? points : 0, sceneId });
-    if (correct) this.vars.set(`quiz_${hotspotId}`, true);
+    // La nota es la de la primera respuesta terminada: volver a abrir la
+    // pregunta sirve para abrir la compuerta, no para mejorar la puntuación.
+    if (!this.quizAnswers.has(hotspotId)) {
+      this.quizAnswers.set(hotspotId, { correct, points: correct ? points : 0, sceneId, selected });
+    }
+    if (correct) {
+      this.quizCleared.add(hotspotId);
+      this.vars.set(`quiz_${hotspotId}`, true);
+    }
     this.emit("quizChange", this.quizState());
     this.analytics.track({ event: "quiz", sceneId, hotspotId, meta: { correct } });
+    // La compuerta se recalcula entera: con varias preguntas con compuerta en
+    // la escena, solo se abre cuando todas están acertadas.
+    const scene = this.currentScene();
+    if (scene != null) this.updateGate(scene);
+  }
+
+  /** Un formulario se ha enviado (ahora o en una visita anterior, si es de un solo envío). */
+  markFormSubmitted(hotspotId: string): void {
+    if (this.formsSent.has(hotspotId)) return;
+    this.formsSent.add(hotspotId);
+    const scene = this.currentScene();
+    if (scene != null) this.updateGate(scene);
+  }
+
+  formSubmitted(hotspotId: string): boolean {
+    return this.formsSent.has(hotspotId);
   }
 
   quizState(): QuizStateEvent {
@@ -871,7 +913,13 @@ export class TourViewer {
           maxScore += hs.points ?? 1;
           const answer = this.quizAnswers.get(hs.id);
           if (answer != null) {
-            detail.push({ hotspotId: hs.id, sceneId: scene.id, correct: answer.correct, points: answer.points });
+            detail.push({
+              hotspotId: hs.id,
+              sceneId: scene.id,
+              correct: answer.correct,
+              points: answer.points,
+              ...(answer.selected != null ? { selected: answer.selected } : {}),
+            });
           }
         }
       }
@@ -884,40 +932,49 @@ export class TourViewer {
     return { score, maxScore, answered, total, passed, detail };
   }
 
-  /** Compuerta de quiz: bloquear/desbloquear la navegacion. */
+  /**
+   * Bloqueo manual de la navegación (integraciones).
+   *
+   * @deprecated Las compuertas de pregunta, formulario y tesoro las lleva el
+   * propio visor. Antes el quiz llamaba aquí y el visitante leía el aviso de
+   * la narración; ya no emite `narrationBlock` ni toca las compuertas.
+   */
   setNavigationBlocked(blocked: boolean): void {
     this.navBlocked = blocked;
-    if (!blocked) this.setGate(null);
-    this.emit("narrationBlock", { blocked });
   }
 
-  /** Pregunta con compuerta que retiene al visitante en esta escena, si la hay. */
+  /** Hotspot con compuerta que retiene al visitante en esta escena, si lo hay. */
   gateHotspotId(): string | null {
     return this.gateId;
   }
 
   /**
-   * Al entrar en una escena, una pregunta marcada como compuerta que aún no
-   * se ha acertado cierra la salida. Antes la compuerta solo actuaba después
-   * de fallar: quien no abría la pregunta se iba sin más, y eso no es una
-   * compuerta.
+   * Al entrar en una escena, y cada vez que se responde, se envía o se
+   * encuentra algo, se recalcula qué la retiene: preguntas con compuerta sin
+   * acertar, formularios con compuerta sin enviar y tesoros con compuerta sin
+   * encontrar. La salida se abre solo cuando no queda ninguno. Agotar los
+   * intentos de una pregunta no la abre: el panel ofrece volver a intentarlo
+   * (la nota ya quedó fijada con la primera respuesta).
    */
   private updateGate(scene: Scene): void {
     if (this.options.editMode === true) {
-      this.setGate(null);
+      this.setGate(null, null);
       return;
     }
-    const pendiente = scene.hotspots.find(
-      (h) => h.type === "quiz" && h.gate === true && this.quizAnswers.get(h.id)?.correct !== true,
-    );
-    this.setGate(pendiente?.id ?? null);
+    const pendiente = pendingGates(scene.hotspots, {
+      quizCorrect: (id) => this.quizCleared.has(id),
+      formSent: (id) => this.formsSent.has(id),
+      treasureFound: (id) => this.treasureFound.has(id),
+    })[0];
+    this.setGate(pendiente?.hotspotId ?? null, pendiente?.reason ?? null);
   }
 
-  private setGate(hotspotId: string | null): void {
+  private setGate(hotspotId: string | null, reason: GateReason | null): void {
     if (hotspotId === this.gateId) return;
     this.gateId = hotspotId;
+    this.gateReason = reason;
     this.container.classList.toggle("anda-nav-gated", hotspotId != null);
-    this.emit("gateChange", { hotspotId });
+    this.emit("gateChange", { hotspotId, reason });
   }
 
   /**
