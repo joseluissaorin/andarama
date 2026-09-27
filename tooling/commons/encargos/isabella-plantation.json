@@ -1,0 +1,69 @@
+{
+  "slug": "isabella-plantation",
+  "lang": "en",
+  "title": "Isabella Plantation virtual tour in 360: Richmond Park in bloom",
+  "description": "Three spherical panoramas of the Isabella Plantation, the woodland garden of Richmond Park in south-west London, photographed by Diliff on 7 May 2015 with the azaleas in full flower. Fenced in the early 19th century by Lord Sidmouth to keep the park's deer out, it was turned into a woodland garden after the Second World War, opened to the public in 1953 and is now run organically by The Royal Parks. The tour follows the central stream between banks of pink, red and white azaleas and ends at Still Pond, one of the garden's three ponds, whose surface reflects the flowering shrubs.",
+  "placeName": "Isabella Plantation",
+  "placeCountry": "GB",
+  "lat": 51.433,
+  "lng": -0.277,
+  "startScene": "central-stream-1",
+  "scenes": [
+    {
+      "id": "central-stream-1",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Isabella_Plantation_1_360x180%2C_London%2C_UK_-_Diliff.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Isabella_Plantation_1_360x180,_London,_UK_-_Diliff.jpg",
+      "title": "The central stream among the azaleas",
+      "alt": "Spherical panorama of the central stream of the Isabella Plantation: a narrow brook between banks of bright pink, magenta and red azaleas, ferns, tall oaks in fresh leaf and a bare earth path",
+      "desc": "The central stream of the Isabella Plantation in Richmond Park, London, in early May, when the evergreen azaleas are in flower.",
+      "author": "Diliff",
+      "license": "CC BY-SA 3.0",
+      "width": 13644,
+      "height": 6822,
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "central-stream-2",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/8/81/Isabella_Plantation_2_360x180%2C_London%2C_UK_-_Diliff.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Isabella_Plantation_2_360x180,_London,_UK_-_Diliff.jpg",
+      "title": "Further along the stream",
+      "alt": "Spherical panorama further along the central stream: the earth path forks around masses of pink, white and purple azaleas, with the brook running between them under a canopy of young leaves",
+      "desc": "A second viewpoint on the central stream, a few steps downstream, with the path forking around the flowering shrubs.",
+      "author": "Diliff",
+      "license": "CC BY-SA 3.0",
+      "width": 13684,
+      "height": 6842,
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "still-pond",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/a/ad/Isabella_Plantation_3_360x180%2C_London%2C_UK_-_Diliff.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:Isabella_Plantation_3_360x180,_London,_UK_-_Diliff.jpg",
+      "title": "Still Pond",
+      "alt": "Spherical panorama of Still Pond in the Isabella Plantation: a small pond ringed by red and pink azaleas reflected in the still water, tall trees, a wooden bench and gravel paths",
+      "desc": "Still Pond, one of the three ponds of the Isabella Plantation with Peg's Pond and Thomson's Pond, all de-silted in the 2014 restoration works.",
+      "author": "Diliff",
+      "license": "CC BY-SA 3.0",
+      "width": 13740,
+      "height": 6870,
+      "view": {
+        "yaw": 0,
+        "pitch": 0,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_fuentes": [
+    "https://en.wikipedia.org/wiki/Isabella_Plantation",
+    "https://en.wikipedia.org/wiki/Richmond_Park"
+  ],
+  "_notas": "Demanda por sondear (no estaba en la sonda de monumentos). Tres imágenes destacadas de Diliff, 13 600 px; las tres son del mismo día y del mismo jardín pero de puntos distintos."
+}

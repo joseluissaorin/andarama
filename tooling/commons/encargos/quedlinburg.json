@@ -1,0 +1,106 @@
+{
+  "slug": "quedlinburg",
+  "lang": "de",
+  "title": "Quedlinburg in 360: virtueller Rundgang durch die Welterbestadt",
+  "description": "Fünf Kugelpanoramen aus Quedlinburg, der Welterbestadt am Nordrand des Harzes in Sachsen-Anhalt. Die 922 erstmals erwähnte Stadt war vom 10. bis zum 12. Jahrhundert Sitz einer Königspfalz und fast 900 Jahre lang eines Damenstifts; ihr Erbe mit über 2100 Fachwerkhäusern aus acht Jahrhunderten steht seit 1994 auf der UNESCO-Welterbeliste. Der Rundgang beginnt in den Fachwerkgassen am Stieg und auf dem Münzenberg, führt zum Gänsehirtenturm der Stadtbefestigung und zur Nikolaikirche mit ihren 72 Meter hohen Doppeltürmen und endet im Inneren der romanischen Kirche St. Wiperti.",
+  "placeName": "Quedlinburg",
+  "placeCountry": "DE",
+  "lat": 51.792778,
+  "lng": 11.150833,
+  "startScene": "stieg",
+  "scenes": [
+    {
+      "id": "stieg",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/b/b5/De_Quedlinburg_Stieg_360x180_Panorama_2.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:De_Quedlinburg_Stieg_360x180_Panorama_2.jpg",
+      "title": "Am Stieg, Ecke Hölle",
+      "alt": "Kugelpanorama an der Kreuzung Stieg und Hölle in Quedlinburg: Fachwerkhäuser mit geschnitzten Balken und einem großen Holztor, ein Café mit Tischen vor der Tür, Kopfsteinpflaster und enge Gassen",
+      "desc": "Die Kreuzung Stieg und Hölle in der Altstadt, umgeben von Fachwerkhäusern. In der historischen Altstadt stehen über 2100 Fachwerkhäuser aus acht Jahrhunderten.",
+      "author": "Thomas Wozniak",
+      "license": "CC BY-SA 4.0",
+      "width": 26588,
+      "height": 13294,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "muenzenberg",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/6/67/De_Quedlinburg_Muenzenberg_360x180_Panorama.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:De_Quedlinburg_Muenzenberg_360x180_Panorama.jpg",
+      "title": "Auf dem Münzenberg",
+      "alt": "Kugelpanorama auf dem Münzenberg in Quedlinburg: kleine Fachwerk- und Steinhäuser, ein rundes Haus mit Bruchsteinmauer und Fensterläden, Kopfsteinpflaster und ein bewölkter Himmel",
+      "desc": "Der Münzenberg ist ein Stadtteil von Quedlinburg; mit der romanischen Klosterkirche St. Marien gehört er zum Weltkulturerbe.",
+      "author": "Thomas Wozniak",
+      "license": "CC BY-SA 3.0",
+      "width": 19748,
+      "height": 9874,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "gaensehirtenturm",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/7/7f/De_Quedlinburg_Gaensehirtenturm_360_180_2017.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:De_Quedlinburg_Gaensehirtenturm_360_180_2017.jpg",
+      "title": "Der Gänsehirtenturm",
+      "alt": "Kugelpanorama in der Straße Hinter der Mauer: der Gänsehirtenturm aus Bruchstein und Backstein im Abendlicht, Fachwerkhäuser zu beiden Seiten der Gasse, Kopfsteinpflaster und ein Kirchturm im Hintergrund",
+      "desc": "Der um 1170 errichtete und um 1340 umgebaute Wehrturm gehört zur Stadtbefestigung der Neustadt und dient heute Wohnzwecken.",
+      "author": "Thomas Wozniak",
+      "license": "CC BY-SA 3.0",
+      "width": 10000,
+      "height": 5000,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "nikolaikirche",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/3/37/De_Quedlinburg_Nikolaikirche_360x180_Pano_Aussen.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:De_Quedlinburg_Nikolaikirche_360x180_Pano_Aussen.jpg",
+      "title": "Die Nikolaikirche in der Neustadt",
+      "alt": "Kugelpanorama vor der Nikolaikirche in Quedlinburg: die gotische Hallenkirche mit ihren beiden hohen Türmen hinter einer eingezäunten Wiese mit kahlen Bäumen, umgeben von Fachwerkhäusern",
+      "desc": "Die 1222 erstmals erwähnte Pfarrkirche der Neustadt, ursprünglich eine romanische Basilika, ist die älteste Kirche des Bezirks; ihre Doppeltürme sind 72 Meter hoch.",
+      "author": "Thomas Wozniak",
+      "license": "CC BY-SA 3.0",
+      "width": 10000,
+      "height": 5000,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.1,
+        "fov": 1.2
+      }
+    },
+    {
+      "id": "st-wiperti",
+      "file": "https://upload.wikimedia.org/wikipedia/commons/9/94/DE_Quedlinburg_Wiperti_Innen_Hauptaltar_360x180_Panorama.jpg",
+      "commonsPage": "https://commons.wikimedia.org/wiki/File:DE_Quedlinburg_Wiperti_Innen_Hauptaltar_360x180_Panorama.jpg",
+      "title": "St. Wiperti, vor dem Hauptaltar",
+      "alt": "Kugelpanorama im Inneren von St. Wiperti in Quedlinburg: weiße Wände, ein offenes hölzernes Dachwerk, Wandbilder mit Heiligenfiguren, das Chorgitter vor dem Abgang zur Krypta, ein Kreuz und Holzbänke",
+      "desc": "St. Wiperti südwestlich des Burgbergs: Krypta und Kirche gelten als Meisterwerke der Romanik und zeugen vom Königshof der sächsisch-ottonischen Herrscher. Heute ist die Kirche eine Station an der Straße der Romanik.",
+      "author": "Thomas Wozniak",
+      "license": "CC BY-SA 3.0",
+      "width": 15000,
+      "height": 7500,
+      "view": {
+        "yaw": 0,
+        "pitch": 0.05,
+        "fov": 1.2
+      }
+    }
+  ],
+  "_fuentes": [
+    "https://de.wikipedia.org/wiki/Quedlinburg",
+    "https://de.wikipedia.org/wiki/G%C3%A4nsehirtenturm",
+    "https://de.wikipedia.org/wiki/St._Nikolai_(Quedlinburg)",
+    "https://de.wikipedia.org/wiki/St._Wiperti_(Quedlinburg)",
+    "https://de.wikipedia.org/wiki/M%C3%BCnzenberg_(Quedlinburg)"
+  ],
+  "_notas": "Demanda por sondear. Descartadas las panorámicas del cementerio de St. Wiperti (Kapellenberg, Außen NO-Ecke), las tres del Zentralfriedhof y la de la Mathildenkirche (capilla poco reconocible). Dos ficheros superan 16 384 px (Stieg 26 588, Münzenberg 19 748): el montaje los reduce con sharp."
+}
