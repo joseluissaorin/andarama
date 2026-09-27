@@ -98,7 +98,11 @@
     "PUBLIC_URL": "https://andarama.com",
     // Administradores de la instancia, separados por comas (sin distinguir
     // mayúsculas). Solo estas direcciones se hacen administradoras al entrar.
-    "ADMIN_EMAILS": "jlsf2005@gmail.com,admin@ull360.dev"
+    "ADMIN_EMAILS": "jlsf2005@gmail.com,admin@ull360.dev",
+    // Remitente del correo transaccional (dominio verificado en Resend) y a
+    // quién avisar de cada solicitud de demo
+    "EMAIL_FROM": "Andarama <hola@andarama.com>",
+    "DEMO_NOTIFY_TO": "jl@joseluissaorin.com"
   },
 
   "observability": {

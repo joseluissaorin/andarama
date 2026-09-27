@@ -130,6 +130,18 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
       ),
   });
 
+  // Un recorrido recién creado aún no tiene medios: si el selector arranca
+  // filtrado por él y sale vacío, se abre una vez en toda la biblioteca para
+  // que la foto que se acaba de subir esté a la vista.
+  const autoTodos = useRef(false);
+  useEffect(() => {
+    if (autoTodos.current || tourId == null || project !== tourId || searchQ !== "" || folder !== "") return;
+    if (list.data != null && list.data.length === 0) {
+      autoTodos.current = true;
+      setProject("");
+    }
+  }, [list.data, tourId, project, searchQ, folder]);
+
   const folders = useQuery({
     queryKey: ["media-folders", orgId],
     queryFn: () => api<{ folder: string; total: number; panoramas: number }[]>(`/media/folders?org=${orgId}`),
