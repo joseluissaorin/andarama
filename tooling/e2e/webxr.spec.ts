@@ -227,8 +227,10 @@ test("VR: la pinza sobre un hotspot abre su panel inmersivo", async ({ page }) =
   await page.locator('button[aria-label="Modo VR"]').click();
   await expect.poll(async () => page.evaluate(() => window.__xr.frames), { timeout: 15_000 }).toBeGreaterThan(5);
 
+  // El tour.json usa el pitch de Marzipano (positivo hacia abajo); el mundo
+  // XR, y con él el rayo de la mano simulada, lo mide hacia arriba.
   await page.evaluate(({ yaw, pitch }) => {
-    window.__xr.aim = { yaw, pitch };
+    window.__xr.aim = { yaw, pitch: -pitch };
   }, hs);
   // Unos fotogramas apuntando y después se cierra la pinza.
   await expect.poll(async () => page.evaluate(() => window.__xr.frames), { timeout: 10_000 }).toBeGreaterThan(15);

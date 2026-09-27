@@ -155,7 +155,7 @@ test("crear tour, escena, hotspot y publicar", async ({ page }) => {
   await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
   await page.locator("header").getByRole("button", { name: "Publicar" }).click();
   const publishDialog = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
-  await publishDialog.getByRole("button", { name: "Publicar", exact: true }).click();
+  await publishDialog.getByRole("button", { name: /^(Publicar|Republicar)$/ }).click();
   // El primero es el enlace publicado; debajo va el del otro modo de apertura
   const link = publishDialog.locator('a[href*="/t/"]').first();
   await expect(link).toBeVisible({ timeout: 30_000 });
@@ -278,7 +278,7 @@ test("un área es la categoría del menú de escenas", async ({ page }) => {
   // Y llega al tour publicado como categoría del menú de escenas
   await page.locator("header").getByRole("button", { name: "Republicar" }).click();
   const dialog = page.locator('[role="dialog"]', { hasText: "Publicar tour" });
-  await dialog.getByRole("button", { name: "Publicar", exact: true }).click();
+  await dialog.getByRole("button", { name: /^(Publicar|Republicar)$/ }).click();
   await expect(dialog.locator('a[href*="/t/"]').first()).toBeVisible({ timeout: 30_000 });
   const tour = (await (await page.request.get("/t/tour-e2e/tour.json")).json()) as { scenes: { category?: string }[] };
   expect(tour.scenes[0]!.category).toBe("Planta baja");
@@ -592,7 +592,9 @@ test("la dirección de YouTube se convierte sola en el ID del vídeo", async ({ 
   await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
   await page.locator('[role="dialog"] input').first().fill("youtube");
   await page.getByRole("button", { name: /^YouTube/ }).first().click();
-  await page.locator(".anda-viewer").first().click({ position: { x: 300, y: 500 } });
+  // Con la franja de «Primeros pasos» y la biblioteca abajo el visor mide
+  // unos 450 px de alto a 1440×900: el clic tiene que caer dentro.
+  await page.locator(".anda-viewer").first().click({ position: { x: 300, y: 380 } });
   await page.fill("#hs-videoId", "https://youtu.be/5PAIFUrQYOs?si=BmxpoV3sN_m3gGvi&t=90");
   await expect(page.locator("#hs-videoId")).toHaveValue("5PAIFUrQYOs");
   // El segundo de inicio de la dirección también se recoge
@@ -693,7 +695,10 @@ test("la compuerta de una pregunta retiene en la escena hasta acertar", async ({
   await expect(page.locator(".anda-nav-gated").first()).toBeVisible({ timeout: 30_000 });
   await centrarPaso();
   await page.locator(".anda-hotspot--navigation").first().click();
-  await expect(page.locator(".anda-toast")).toContainText("Responde a la pregunta", { timeout: 10_000 });
+  // El contador del tesoro también es un .anda-toast (fijo, --hud): el aviso es el otro
+  await expect(page.locator(".anda-toast:not(.anda-toast--hud)")).toContainText("Responde correctamente para poder avanzar", {
+    timeout: 10_000,
+  });
   expect(await escenaActual()).toBe(inicial);
   // Al chocar con la compuerta se abre la pregunta; acertar abre la salida
   const panel = page.locator(".anda-panel");
