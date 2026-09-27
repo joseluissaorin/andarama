@@ -62,7 +62,7 @@ Muy orientado a inmobiliaria y negocios locales: Pro a 22,50 $ al mes y Pro Plus
 
 ## 6. Pano2VR
 
-Software de escritorio de Garden Gnome (Austria), de pago único. Es la herramienta de los perfeccionistas: control total del skin, patch de nadir, plantas, vídeo, exportación a HTML5 que funciona en cualquier sitio. Los precios exactos de las licencias no los hemos verificado hoy (en la tabla van con asterisco). No tiene nube: el alojamiento lo pones tú.
+Software de escritorio de Garden Gnome (Austria), de pago único. Es la herramienta de los perfeccionistas: control total del skin, patch de nadir, plantas, vídeo, exportación a HTML5 que funciona en cualquier sitio. La licencia perpetua de Pano2VR 8 cuesta 499 €, o 360 € al año en suscripción (comprobado el 27 de septiembre de 2026 en [su web](https://ggnome.com/pano2vr/)). No tiene nube: el alojamiento lo pones tú.
 
 **Para quién**: fotógrafos y estudios que quieren un control absoluto y exportar siempre.
 

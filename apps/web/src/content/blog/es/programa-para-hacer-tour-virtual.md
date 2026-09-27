@@ -49,19 +49,19 @@ Salvo Matterport, que trabaja con modelos 3D y cámaras compatibles, todos estos
 
 ## Tabla comparativa
 
-Precios comprobados el 27 de septiembre de 2026 en la web de cada producto, salvo donde se indica «verificar»: esas cifras no las hemos podido confirmar y preferimos no darlas. Los importes «a 12 meses» y «a 36 meses» usan el pago anual cuando existe.
+Precios comprobados en la web de cada producto (Matterport, Kuula, Panoee y Pano2VR, el 27 de septiembre de 2026). Los importes «a 12 meses» y «a 36 meses» usan el pago anual cuando existe.
 
 | Programa | Plan de referencia | 12 meses | 36 meses | Exportación | Código abierto |
 |---|---|---|---|---|---|
 | **Andarama** (alojado) | Paseo: 20 $/mes o 200 $/año, 10 recorridos | 200 $ | 600 $ | ZIP, HTML único y PWA en todos los planes | Sí (EUPL-1.2) |
 | **Andarama** (instalación propia) | Gratis, sin límite de recorridos | 0 $ | 0 $ | Sí | Sí |
-| [Kuula](https://kuula.co) | Pro: 24 $/mes o 20 $/mes pagando el año | 240 $ | 720 $ | Solo en Business (48 $/mes o 36 $/mes al año) | No |
-| [Panoee](https://panoee.com) | Pro: 22 $/mes o 200 $/año | 200 $ | 600 $ | Solo en Pro | No |
+| [Kuula](https://kuula.co) | Pro: 24 $/mes o 20 $/mes pagando el año | 240 $ | 720 $ | No ofrece descargar el tour | No |
+| [Panoee](https://panoee.com) | Pro: 22 $/mes o 200 $/año | 200 $ | 600 $ | 19 $ por proyecto exportado | No |
 | [Lapentor](https://lapentor.com) | Pro: 25 $/mes o 250 $/año | 250 $ | 750 $ | 10 $ por proyecto exportado | No |
 | [CloudPano](https://www.cloudpano.com) | Pro: 22,50 $/mes, facturado al año | 270 $ | 810 $ | No | No |
 | [3DVista](https://www.3dvista.com) | Virtual Tour Pro: 499 $, pago único | 499 $ (+99 € de alojamiento opcional) | 499 $ (+297 € de alojamiento opcional) | HTML5 completo | No |
-| [Matterport](https://matterport.com) | Planes anuales | verificar | verificar | Solo datos, por espacio | No |
-| [Pano2VR](https://ggnome.com/pano2vr/) | Licencia única | verificar | verificar | HTML5 completo | No |
+| [Matterport](https://matterport.com/plans) | Starter con 10 espacios: 28 $/mes o 288 $/año | 288 $ | 864 $ | Solo datos, por espacio | No |
+| [Pano2VR](https://ggnome.com/pano2vr/) | Licencia perpetua: 499 €, o suscripción de 360 € al año | 499 € | 499 € | HTML5 completo | No |
 
 Cuándo gana cada uno, dicho con honestidad:
 
