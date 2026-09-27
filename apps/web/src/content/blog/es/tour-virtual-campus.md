@@ -4,7 +4,7 @@ description: "Cómo hacer un tour virtual del campus para captación, acogida y 
 lang: es
 slug: tour-virtual-campus
 cluster: verticales
-fecha: 2026-10-08
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Quién debe hacer el tour virtual del campus: comunicación, informática o cada facultad?"

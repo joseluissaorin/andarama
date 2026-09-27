@@ -4,7 +4,7 @@ description: "Cómo poner un tour 360 en Moodle: incrustado en una página, sin 
 lang: es
 slug: recorrido-360-moodle
 cluster: docencia
-fecha: 2026-10-04
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Cuál es la diferencia entre SCORM y LTI para un recorrido 360?"

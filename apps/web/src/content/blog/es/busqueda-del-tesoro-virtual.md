@@ -4,7 +4,7 @@ description: "Una búsqueda del tesoro virtual en fotos 360: objetos escondidos 
 lang: es
 slug: busqueda-del-tesoro-virtual
 cluster: docencia
-fecha: 2026-10-02
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Qué diferencia hay entre una búsqueda del tesoro y un escape room?"

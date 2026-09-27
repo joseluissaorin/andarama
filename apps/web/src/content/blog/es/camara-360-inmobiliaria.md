@@ -4,7 +4,7 @@ description: "Qué cámara 360 comprar para tours inmobiliarios en 2026: gamas, 
 lang: es
 slug: camara-360-inmobiliaria
 cluster: camaras
-fecha: 2026-10-22
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Qué cámara 360 es la mejor para inmobiliaria?"

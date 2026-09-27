@@ -4,7 +4,7 @@ description: "Cómo preparar una salida virtual en 360: de dónde sacar las foto
 lang: es
 slug: salidas-virtuales
 cluster: docencia
-fecha: 2026-09-28
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Una salida virtual sustituye a la excursión real?"

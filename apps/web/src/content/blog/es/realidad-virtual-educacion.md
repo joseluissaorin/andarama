@@ -4,7 +4,7 @@ description: "La realidad virtual educativa no empieza por las gafas. Qué funci
 lang: es
 slug: realidad-virtual-educacion
 cluster: docencia
-fecha: 2026-09-30
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Hace falta comprar gafas para usar realidad virtual en clase?"

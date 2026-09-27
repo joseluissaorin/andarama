@@ -4,7 +4,7 @@ description: "Visita virtual de una biblioteca o un archivo: depósitos cerrados
 lang: es
 slug: recorrido-360-archivo-biblioteca
 cluster: verticales
-fecha: 2026-10-10
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Para qué sirve una visita virtual de una biblioteca si la gente puede venir?"

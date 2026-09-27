@@ -4,7 +4,7 @@ description: "Marzipano es la librería de código abierto de Google para visore
 lang: es
 slug: marzipano
 cluster: competidores
-fecha: 2026-10-14
+fecha: 2026-09-27
 autor: jose-luis-saorin
 plantilla: vs
 competidor: marzipano

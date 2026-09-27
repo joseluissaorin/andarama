@@ -4,7 +4,7 @@ description: "Cómo hacer un tour virtual inmobiliario que venda: qué fotografi
 lang: es
 slug: tour-virtual-inmobiliario
 cluster: verticales
-fecha: 2026-10-20
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Cuánto cuesta hacer un tour virtual de un piso?"

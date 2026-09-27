@@ -4,7 +4,7 @@ description: "Qué necesita una visita virtual de museo en 360: fotos, cartelas 
 lang: es
 slug: visita-virtual-museo
 cluster: verticales
-fecha: 2026-10-06
+fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Cuánto cuesta una visita virtual de un museo?"
