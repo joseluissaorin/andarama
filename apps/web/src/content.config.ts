@@ -70,6 +70,8 @@ const competidores = defineCollection({
     analitica_sin_cookies: siNoParcial,
     street_view: z.boolean(),
     verificado: z.boolean(),
+    /** Día en que se comprobaron las cifras en la web oficial. */
+    fecha_verificacion: z.coerce.date().nullable().optional(),
     descripcion: z.record(z.string()),
     notas: z.string().nullable(),
   }),

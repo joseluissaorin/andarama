@@ -36,6 +36,12 @@ function campo(fm, nombre) {
   return m ? m[1].trim().replace(/^"(.*)"$/, "$1") : null;
 }
 
+/**
+ * Páginas de destino que está construyendo otro frente (precios, verticales).
+ * Mientras no existan en `dist`, un enlace a ellas es un aviso y no un error.
+ */
+const PENDIENTES = new Set(["/precios/", "/en/pricing/", "/inmobiliaria/", "/en/real-estate/"]);
+
 function existeRuta(path) {
   const limpio = path.replace(/[#?].*$/, "");
   const candidatos = [join(dist, limpio, "index.html"), join(dist, limpio)];
@@ -89,7 +95,10 @@ for (const f of ficheros) {
   const enlaces = [...src.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]);
   for (const e of enlaces) {
     if (e.startsWith("/")) {
-      if (!existeRuta(e)) error(f, `enlace interno sin destino en dist: ${e}`);
+      if (!existeRuta(e)) {
+        if (PENDIENTES.has(e.replace(/[#?].*$/, ""))) console.log(`  · aviso: ${f} enlaza a ${e}, página pendiente de otro frente`);
+        else error(f, `enlace interno sin destino en dist: ${e}`);
+      }
       if (!e.replace(/[#?].*$/, "").endsWith("/")) error(f, `enlace interno sin barra final: ${e}`);
     } else if (e.startsWith("https://docs.andarama.com")) {
       if (!existeDoc(e)) error(f, `enlace a documentación inexistente: ${e}`);
