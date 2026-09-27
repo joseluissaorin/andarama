@@ -102,7 +102,12 @@
     // Remitente del correo transaccional (dominio verificado en Resend) y a
     // quién avisar de cada solicitud de demo
     "EMAIL_FROM": "Andarama <hola@andarama.com>",
-    "DEMO_NOTIFY_TO": "jl@joseluissaorin.com"
+    "DEMO_NOTIFY_TO": "jl@joseluissaorin.com",
+    // Tour de ejemplo que se clona a cada cuenta nueva (el escape room de la
+    // organización Plantillas) y plantillas por sector de «Nuevo proyecto».
+    // Se montan con tooling/commons/montar-plantilla.mjs
+    "SAMPLE_PROJECT_ID": "JmWrojmkNIUeGg6yFkaPS",
+    "TEMPLATE_PROJECTS": "escape_room:JmWrojmkNIUeGg6yFkaPS,prl:QZwjBybkA5Z2W08o8oYJ9,museo:vugKlB7H0QjQU5cirtv4H,campus:LPFmvklgb2ZYr4FJQTCHF"
   },
 
   "observability": {
