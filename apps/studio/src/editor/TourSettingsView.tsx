@@ -63,7 +63,22 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
   const UI_TOGGLES = [
     "titleBar", "sceneMenu", "thumbnails", "compass", "loadingIndicator", "zoomControls",
     "gyroToggle", "vr", "fullscreen", "share", "mute", "help", "langSelector", "accessibleMode", "autopilotButton",
+    "backButton",
   ] as const;
+  // Proyecciones que el visitante puede elegir además de la normal. Sin
+  // ajuste, todas; con el interruptor apagado, ninguna (ui.projections=false).
+  const EXTRA_PROJECTIONS = ["littlePlanet", "fisheye", "pannini", "architectural"] as const;
+  const projectionsOn = ui.projections !== false;
+  const allowedExtra: string[] = Array.isArray(ui.projections)
+    ? (ui.projections as string[]).filter((p) => p !== "rectilinear")
+    : [...EXTRA_PROJECTIONS];
+  const setAllowedExtra = (next: string[]): void => {
+    const ordered = EXTRA_PROJECTIONS.filter((p) => next.includes(p));
+    patchUi({
+      projections:
+        ordered.length === EXTRA_PROJECTIONS.length ? undefined : ordered.length === 0 ? false : ["rectilinear", ...ordered],
+    });
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
@@ -124,6 +139,32 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
               <p className="ml-11 mt-0.5 text-xs leading-snug text-[var(--anda-text-dim)]">{t(`ui_${key}_desc` as never)}</p>
             </div>
           ))}
+        </div>
+        <div className="mt-4">
+          <Switch
+            id="ui-projections"
+            checked={projectionsOn}
+            disabled={!canEdit}
+            onCheckedChange={(v) => patchUi({ projections: v ? undefined : false })}
+            label={t("ui_projections")}
+          />
+          <p className="ml-11 mt-0.5 text-xs leading-snug text-[var(--anda-text-dim)]">{t("ui_projections_desc")}</p>
+          {projectionsOn && (
+            <fieldset className="ml-11 mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+              <legend className="mb-1 text-xs font-medium">{t("projections_allowed")}</legend>
+              {EXTRA_PROJECTIONS.map((p) => (
+                <label key={p} className="flex items-center gap-1.5 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={allowedExtra.includes(p)}
+                    disabled={!canEdit}
+                    onChange={(e) => setAllowedExtra(e.target.checked ? [...allowedExtra, p] : allowedExtra.filter((x) => x !== p))}
+                  />
+                  {t(`projection_name_${p}` as never)}
+                </label>
+              ))}
+            </fieldset>
+          )}
         </div>
         <div className="mt-4">
           <Field label={t("hotspot_size_default")} htmlFor="ui-hssize" hint={t("hotspot_size_default_hint")}>
@@ -480,6 +521,11 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             onCheckedChange={(v) => patch((s) => { s.quiz = { ...(s.quiz as object), certificate: { ...(quiz.certificate ?? {}), enabled: v } }; })} label={t("certificate")} />
           <Switch id="qz-rand" checked={quiz.randomize === true} disabled={!canEdit}
             onCheckedChange={(v) => patch((s) => { s.quiz = { ...(s.quiz as object), randomize: v }; })} label="Aleatorizar" />
+        </div>
+        <div className="mt-4">
+          <Switch id="qz-askname" checked={quiz.askName === true} disabled={!canEdit}
+            onCheckedChange={(v) => patch((s) => { s.quiz = { ...(s.quiz as object), askName: v ? true : undefined }; })} label={t("quiz_ask_name")} />
+          <p className="ml-11 mt-0.5 text-xs leading-snug text-[var(--anda-text-dim)]">{t("quiz_ask_name_hint")}</p>
         </div>
       </section>
 
