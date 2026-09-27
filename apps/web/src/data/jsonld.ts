@@ -4,8 +4,8 @@
  * `<script type="application/ld+json">`.
  */
 import { PLANS, type PlanSlug } from "../../../api/src/lib/plans";
-import { absolute, SITE, t, type Lang } from "../i18n";
-import { planHref } from "./planes";
+import { absolute, pagePath, SITE, t, type Lang } from "../i18n";
+import { BLOQUES, CASA_URL } from "./planes";
 
 const CONTEXT = "https://schema.org";
 
@@ -78,17 +78,33 @@ function ofertas(lang: Lang): object[] {
     name: t(lang, "precios.planes.casa.nombre"),
     price: 0,
     priceCurrency: "EUR",
-    url: "https://docs.andarama.com/despliegue/escritorio/",
+    url: CASA_URL,
     availability: "https://schema.org/InStock",
   };
+  // Lo mismo que enseñan las tarjetas: precio en dólares, periodo de cobro
+  // explícito y el bloque (para crear o para enseñar) como categoría
+  const precios = absolute(pagePath(lang, "precios"));
   const alojados = (Object.keys(PLANS) as PlanSlug[]).map((slug) => {
     const plan = PLANS[slug];
+    const precio = plan.amountCents / 100;
+    const bloque = (BLOQUES.ensenar as readonly PlanSlug[]).includes(slug) ? "ensenar" : "crear";
     return {
       "@type": "Offer",
       name: plan.name,
-      price: plan.amountCents / 100,
+      category: t(lang, `precios.bloques.${bloque}.titulo`),
+      price: precio,
       priceCurrency: "USD",
-      url: planHref(slug),
+      ...(plan.period === "once"
+        ? {}
+        : {
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: precio,
+              priceCurrency: "USD",
+              referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: plan.period === "month" ? "MON" : "ANN" },
+            },
+          }),
+      url: `${precios}#precios-${bloque}`,
       availability: "https://schema.org/InStock",
       description: `${t(lang, "precios.recorridos." + (plan.quotaTours === 1 ? "uno" : "varios"), { n: plan.quotaTours })} · ${t(lang, `precios.periodo.${plan.period}`)}`,
     };

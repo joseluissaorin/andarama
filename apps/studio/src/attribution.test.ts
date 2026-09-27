@@ -30,6 +30,20 @@ describe("atribución publicitaria", () => {
     expect(attributionFromUrl("no es una url")).toEqual({});
   });
 
+  it("recoge lo que manda la web: gbraid, wbraid, utm_content, landing_web y consentimiento", () => {
+    expect(
+      attributionFromUrl("https://app.andarama.com/plan?plan=paseo&wbraid=w1&utm_source=google&utm_content=456&landing_web=%2Fen%2Fpricing%2F&consent=1"),
+    ).toEqual({ wbraid: "w1", utm_source: "google", utm_content: "456", landing_web: "/en/pricing/", consent: true });
+    // Con «No» en la web, cualquier identificador de clic se descarta
+    expect(attributionFromUrl("https://app.andarama.com/?gclid=abc&gbraid=g&utm_source=google&consent=0&landing_web=/precios/")).toEqual({
+      utm_source: "google",
+      landing_web: "/precios/",
+      consent: false,
+    });
+    // Sin nada que atribuir, ni la ruta ni el consentimiento cuentan
+    expect(attributionFromUrl("https://app.andarama.com/?consent=0&landing_web=/")).toEqual({});
+  });
+
   it("guarda el primer toque y no lo pisa con uno posterior", () => {
     const storage = memoria();
     let ahora = 1_700_000_000_000;

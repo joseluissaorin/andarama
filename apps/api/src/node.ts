@@ -120,6 +120,8 @@ async function main(): Promise<void> {
     emailFrom: env("EMAIL_FROM") ?? "andarama@localhost",
     turnstileSiteKey: env("TURNSTILE_SITE_KEY"),
     turnstileSecret: env("TURNSTILE_SECRET"),
+    conversionsToken: env("CONVERSIONS_TOKEN"),
+    demoNotifyTo: env("DEMO_NOTIFY_TO"),
     maxUploadBytes: 512 * 1024 * 1024,
     oidc:
       oidcIssuer != null && oidcClientId != null && oidcClientSecret != null

@@ -79,7 +79,7 @@ En Moodle, Administración del sitio, Plugins, Herramientas externas, «configur
 - URL de la herramienta e **Initiate login URL**: `https://tu-instancia/api/v1/lti/login`
 - **Redirection URI**: `https://tu-instancia/api/v1/lti/launch`
 - **JWKS URL**: `https://tu-instancia/api/v1/lti/jwks`
-- Servicios: activar IMS LTI Assignment and Grade Services y Deep Linking.
+- Servicios: activar Deep Linking.
 
 En Andarama, la administración de la instancia registra la plataforma (panel Administración, pestaña LTI) con el Issuer de Moodle, el Client ID, la Auth URL (`/mod/lti/auth.php`), la Token URL (`/mod/lti/token.php`) y el JWKS (`/mod/lti/certs.php`). En una instalación propia lo hace la persona que administra Andarama; en andarama.com, si queréis participar en las pruebas, escribidnos desde la [página de universidades](/universidades/) con los datos del campus.
 

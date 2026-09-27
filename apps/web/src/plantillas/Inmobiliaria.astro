@@ -1,0 +1,80 @@
+---
+/**
+ * Tour virtual para inmobiliarias (/inmobiliaria/, /en/real-estate/…):
+ * página de destino del grupo de anuncios de inmobiliaria. Precio por
+ * inmueble a la vista, la prueba como botón principal (plan Paseo) y
+ * Excursión para agencias con más de diez inmuebles. Dice también lo que no
+ * hace (LiDAR, planos medidos), porque es la verdad y ahorra clics inútiles.
+ */
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import Preguntas from "../components/Preguntas.astro";
+import { breadcrumbJsonLd, faqJsonLd, organizationJsonLd } from "../data/jsonld";
+import { planHref } from "../data/planes";
+import { pagePath, t, tv, type Lang } from "../i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const k = "paginas.inmobiliaria";
+const path = pagePath(lang, "inmobiliaria");
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, "nav.inmobiliaria"), path },
+];
+const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
+const faq = tv<{ q: string; a: string }[]>(lang, `${k}.faq.lista`);
+---
+
+<Base
+  lang={lang}
+  title={t(lang, `${k}.title`)}
+  description={t(lang, `${k}.description`)}
+  path={path}
+  pageKey="inmobiliaria"
+  jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas), faqJsonLd(faq)]}
+>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      <p class="susurro">{t(lang, "nav.inmobiliaria")}</p>
+      <h1>{t(lang, `${k}.h1`)}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+      <div class="acciones" style="margin-top: 24px">
+        <a class="btn" href={planHref("paseo")} data-cta="registro">{t(lang, `${k}.cta.prueba`)}</a>
+        <a class="btn btn--fantasma" href={`${pagePath(lang, "precios")}#precios-crear`}>{t(lang, `${k}.cta.excursion`)}</a>
+      </div>
+      <p class="precio-visible">{t(lang, `${k}.precio`)}</p>
+      <p class="susurro">{t(lang, "precios.prueba")}</p>
+    </div>
+    <section class="demo">
+      <div class="demo__marco">
+        <iframe
+          src="/t/recorrido-real"
+          title={t(lang, "home.demo.iframe")}
+          loading="lazy"
+          allow="fullscreen; xr-spatial-tracking; gyroscope; accelerometer"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </section>
+    <div class="malla">
+      {bloques.map((b) => (
+        <article>
+          <h2>{b.titulo}</h2>
+          <p set:html={b.texto} />
+        </article>
+      ))}
+    </div>
+    <Preguntas titulo={t(lang, `${k}.faq.titulo`)} lista={faq} id="preguntas" />
+    <section class="caja caja--naranja">
+      <h2>{t(lang, `${k}.h1`)}</h2>
+      <p>{t(lang, `${k}.precio`)}</p>
+      <div class="acciones">
+        <a class="btn" href={planHref("paseo")} data-cta="registro">{t(lang, `${k}.cta.prueba`)}</a>
+        <a class="btn btn--fantasma" href={pagePath(lang, "precios")}>{t(lang, "precios.ver_todo")}</a>
+      </div>
+    </section>
+  </section>
+</Base>

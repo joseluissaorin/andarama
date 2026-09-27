@@ -9,12 +9,16 @@
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { esEnlaceSinPublicar, slugsSinPublicar } from "./blog-publicado.mjs";
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const lang = process.argv[2] ?? "es";
 const dirBlog = join(raiz, "src/content/blog", lang);
 const dist = join(raiz, "dist");
 const docs = resolve(raiz, "../docs/src/content/docs");
+// Los artículos con fecha futura no se construyen, y los enlaces hacia ellos se
+// quedan en texto (plugin de remark): ni se buscan en dist ni cuentan como error
+const sinPublicar = slugsSinPublicar(join(raiz, "src/content/blog"));
 
 const RAYA = "\u2014";
 const SEMIRRAYA = "\u2013";
@@ -72,7 +76,7 @@ for (const f of ficheros) {
   const slug = campo(fm, "slug");
   const desc = campo(fm, "description") ?? "";
   const fecha = campo(fm, "fecha");
-  console.log(`${f}: ${palabras} palabras · ${faqs} FAQ · ${fecha} · desc ${desc.length}`);
+  console.log(`${f}: ${palabras} palabras · ${faqs} FAQ · ${fecha} · desc ${desc.length}${sinPublicar.has(slug) ? " · sin publicar" : ""}`);
 
   if (slug !== f.replace(/\.md$/, "")) error(f, `slug «${slug}» no coincide con el fichero`);
   if (desc.length > 155) error(f, `description de ${desc.length} caracteres (máx. 155)`);
@@ -95,7 +99,7 @@ for (const f of ficheros) {
   const enlaces = [...src.matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]);
   for (const e of enlaces) {
     if (e.startsWith("/")) {
-      if (!existeRuta(e)) {
+      if (!existeRuta(e) && !esEnlaceSinPublicar(e, sinPublicar)) {
         if (PENDIENTES.has(e.replace(/[#?].*$/, ""))) console.log(`  · aviso: ${f} enlaza a ${e}, página pendiente de otro frente`);
         else error(f, `enlace interno sin destino en dist: ${e}`);
       }

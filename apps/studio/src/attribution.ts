@@ -7,12 +7,35 @@
  * posterior con otros parámetros no lo pisa. Al crearse la cuenta, el Studio
  * los manda una vez a `POST /api/v1/me/attribution` y los borra. Nunca se
  * guardan datos personales; solo en la instancia alojada tiene sentido.
+ *
+ * La web pública (andarama.com) añade a sus enlaces hacia el Studio lo que
+ * guardó en su sesión: `gclid`, `gbraid`, `wbraid` y las utm solo si la
+ * persona aceptó su aviso de anuncios (`consent=1`), o solo las utm si no
+ * (`consent=0`), más la ruta por la que entró en la web (`landing_web`). Con
+ * `consent=0` el Studio descarta cualquier identificador de clic que llegue.
  */
 
-export const ATTRIBUTION_KEYS = ["gclid", "msclkid", "utm_source", "utm_medium", "utm_campaign", "utm_term"] as const;
+export const CLICK_KEYS = ["gclid", "gbraid", "wbraid", "msclkid"] as const;
+export const ATTRIBUTION_KEYS = [
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "msclkid",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+] as const;
 export type AttributionKey = (typeof ATTRIBUTION_KEYS)[number];
 
-export interface Attribution extends Partial<Record<AttributionKey, string>> {
+/** Lo que se saca de una URL: los parámetros, la ruta de la web y el consentimiento. */
+export interface UrlAttribution extends Partial<Record<AttributionKey, string>> {
+  landing_web?: string;
+  consent?: boolean;
+}
+
+export interface Attribution extends UrlAttribution {
   /** Ruta (sin query) por la que entró. */
   landing?: string;
   /** Solo el host del referente. */
@@ -33,18 +56,25 @@ export interface AttributionEnv {
 }
 
 /** Saca los parámetros de atribución de una URL; vacío si no trae ninguno. */
-export function attributionFromUrl(url: string): Partial<Record<AttributionKey, string>> {
-  const out: Partial<Record<AttributionKey, string>> = {};
+export function attributionFromUrl(url: string): UrlAttribution {
+  const out: UrlAttribution = {};
   let params: URLSearchParams;
   try {
     params = new URL(url).searchParams;
   } catch {
     return out;
   }
+  const consent = params.get("consent");
+  if (consent === "1" || consent === "0") out.consent = consent === "1";
   for (const key of ATTRIBUTION_KEYS) {
+    // Quien dijo que no en la web no deja identificador de clic, venga como venga
+    if (out.consent === false && (CLICK_KEYS as readonly string[]).includes(key)) continue;
     const value = params.get(key)?.trim();
     if (value != null && value !== "") out[key] = value.slice(0, 200);
   }
+  if (!ATTRIBUTION_KEYS.some((k) => out[k] != null)) return {};
+  const landingWeb = params.get("landing_web")?.trim();
+  if (landingWeb != null && landingWeb.startsWith("/")) out.landing_web = landingWeb.slice(0, 500);
   return out;
 }
 

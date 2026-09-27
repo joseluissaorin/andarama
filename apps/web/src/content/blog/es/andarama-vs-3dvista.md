@@ -60,13 +60,13 @@ Los dos son editores completos y aquí el empate es real, con matices:
 
 | | 3DVista | Andarama |
 |---|---|---|
-| Hotspots | Muy variados, con mucho control de estilo | 17 tipos, incluidos quiz, tesoro, estado, polígono, comparador y modelo 3D |
+| Hotspots | Muy variados, con mucho control de estilo | 18 tipos, incluidos quiz, tesoro, estado, polígono, comparador y modelo 3D |
 | Skins y aspecto | Editor de skins muy potente | Un visor cuidado, con opciones por tour; menos personalizable a bajo nivel |
 | Grafo del recorrido | No como tal | Sí: cada flecha es un hotspot; orientación de llegada por camino |
 | Plantas y mapa | Plantas | Áreas con plano y nivel, radar, y mapa geográfico sobre OpenStreetMap |
 | Idiomas | Sí | Sí, por escena y por hotspot, con CSV |
 | Vídeo 360 | Sí | Sí, con hotspots por instante |
-| Accesibilidad | Depende del skin | Versión en texto, foco visible, movimiento reducido, texto alternativo obligatorio |
+| Accesibilidad | Depende del skin | Versión en texto, foco visible, movimiento reducido, texto alternativo por escena (el editor avisa si falta) |
 | Colaboración | Ficheros | Presencia, bloqueo por escena, comentarios, versiones |
 
 Si lo que buscas es control absoluto del aspecto, 3DVista gana. Si lo que buscas es un flujo rápido de muchas escenas bien conectadas y varias personas editando, Andarama.

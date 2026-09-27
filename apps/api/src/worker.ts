@@ -48,6 +48,8 @@ interface Env {
   EMAIL_WEBHOOK_KEY?: string;
   TURNSTILE_SITE_KEY?: string;
   TURNSTILE_SECRET?: string;
+  CONVERSIONS_TOKEN?: string;
+  DEMO_NOTIFY_TO?: string;
   OIDC_ISSUER?: string;
   OIDC_CLIENT_ID?: string;
   OIDC_CLIENT_SECRET?: string;
@@ -125,6 +127,8 @@ function buildConfig(env: Env, publicUrl: string): AppConfig {
     emailFrom: env.EMAIL_FROM ?? "andarama@localhost",
     turnstileSiteKey: env.TURNSTILE_SITE_KEY,
     turnstileSecret: env.TURNSTILE_SECRET,
+    conversionsToken: env.CONVERSIONS_TOKEN,
+    demoNotifyTo: env.DEMO_NOTIFY_TO,
     maxUploadBytes: 512 * 1024 * 1024,
     oidc:
       env.OIDC_ISSUER != null && env.OIDC_CLIENT_ID != null && env.OIDC_CLIENT_SECRET != null

@@ -30,7 +30,7 @@ Andarama es una plataforma de código abierto para **crear, publicar y compartir
     <td>Escenas, hotspots y grafo del recorrido con vista previa WYSIWYG del visor real. Arrastrar una escena sobre el panorama crea el paso hacia ella.</td>
   </tr>
   <tr>
-    <td width="22%"><b>Diecisiete tipos de hotspot</b></td>
+    <td width="22%"><b>Dieciocho tipos de hotspot</b></td>
     <td>Navegación, texto, imagen, galería, vídeo, audio, PDF, web incrustada, modelo 3D, cuestionario, formulario, polígono, estado, tesoro y más, todos accionables también dentro de las gafas.</td>
   </tr>
   <tr>

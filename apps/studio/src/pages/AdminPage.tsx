@@ -27,6 +27,7 @@ export function AdminPage(): React.ReactNode {
           <TabTrigger value="hooks">{t("webhooks")}</TabTrigger>
           <TabTrigger value="lti">LTI</TabTrigger>
           <TabTrigger value="coupons">{t("coupons")}</TabTrigger>
+          <TabTrigger value="demos">Demos</TabTrigger>
           <TabTrigger value="backup">{t("backup")}</TabTrigger>
         </TabList>
         <div className="mt-5">
@@ -62,6 +63,9 @@ export function AdminPage(): React.ReactNode {
           </Tabs.Content>
           <Tabs.Content value="coupons">
             <CouponsPanel />
+          </Tabs.Content>
+          <Tabs.Content value="demos">
+            <DemosPanel />
           </Tabs.Content>
           <Tabs.Content value="backup">
             <BackupPanel />
@@ -911,6 +915,65 @@ function WebhooksPanel(): React.ReactNode {
 // ---------------------------------------------------------------------------
 // Copia de seguridad
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Solicitudes de demo de la web pública (formación, universidades, museos)
+// ---------------------------------------------------------------------------
+
+interface DemoRequestRow {
+  id: string;
+  name: string;
+  institution: string;
+  email: string;
+  message: string;
+  lang: string | null;
+  source: string | null;
+  page: string | null;
+  adConsent: boolean;
+  clickId: boolean;
+  utmSource: string | null;
+  utmCampaign: string | null;
+  notifiedAt: number | null;
+  createdAt: number;
+}
+
+/**
+ * Lista de solicitudes de demo. Si la instancia no tiene correo saliente,
+ * es aquí donde se ven (el aviso por correo queda sin enviar). Las etiquetas
+ * son técnicas (gclid, utm) para no añadir claves a los 32 diccionarios.
+ */
+function DemosPanel(): React.ReactNode {
+  const t = useT();
+  const q = useQuery({ queryKey: ["admin-demos"], queryFn: () => api<DemoRequestRow[]>("/admin/demo-requests") });
+  if (q.isLoading) return <Spinner />;
+  const rows = q.data ?? [];
+  if (rows.length === 0) return <p className="text-sm text-[var(--anda-text-dim)]">{t("no_results")}</p>;
+  return (
+    <div className="space-y-3">
+      {rows.map((d) => (
+        <article key={d.id} className="rounded-lg border border-[var(--anda-border)] p-3 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <strong>{d.institution}</strong>
+            <span>{d.name}</span>
+            <a className="underline" href={`mailto:${d.email}`}>
+              {d.email}
+            </a>
+            <span className="ml-auto text-xs text-[var(--anda-text-dim)]">{new Date(d.createdAt).toLocaleString()}</span>
+          </div>
+          <div className="mt-1 flex flex-wrap gap-1.5 text-xs">
+            {d.source != null && <Badge>{d.source}</Badge>}
+            {d.lang != null && <Badge>{d.lang}</Badge>}
+            {d.clickId && <Badge>gclid ✓</Badge>}
+            {d.utmSource != null && <Badge>utm: {d.utmSource}{d.utmCampaign != null ? ` · ${d.utmCampaign}` : ""}</Badge>}
+            <Badge>{d.notifiedAt != null ? `${t("email")} ✓` : `${t("email")} ✗`}</Badge>
+            {d.page != null && <span className="font-mono text-[var(--anda-text-dim)]">{d.page}</span>}
+          </div>
+          <p className="mt-2 whitespace-pre-wrap text-[var(--anda-text-dim)]">{d.message}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
 
 function BackupPanel(): React.ReactNode {
   const t = useT();

@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import Migas from "../components/Migas.astro";
+import FormularioDemo from "../components/FormularioDemo.astro";
 import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
 import { pagePath, t, tv, type Lang } from "../i18n";
 
@@ -34,6 +35,14 @@ const c = `${k}.contacto`;
         </article>
       ))}
     </div>
+    <section class="caja">
+      <h2>{t(lang, "pie.confianza")}</h2>
+      <ul class="tics">
+        {(["seguridad", "accesibilidad", "codigoAbierto", "contratacion"] as const).map((clave) => (
+          <li><a href={pagePath(lang, clave)}>{t(lang, `paginas.${clave}.h1`)}</a></li>
+        ))}
+      </ul>
+    </section>
     <section class="caja caja--naranja">
       <h2>{t(lang, "paginas.museos.enlace_desde.titulo")}</h2>
       <p>{t(lang, "paginas.museos.enlace_desde.texto")}</p>
@@ -41,31 +50,6 @@ const c = `${k}.contacto`;
         <a class="btn" href={pagePath(lang, "museos")}>{t(lang, "paginas.museos.enlace_desde.boton")}</a>
       </div>
     </section>
-    <section class="caja" id="contacto">
-      <h2>{t(lang, `${c}.titulo`)}</h2>
-      <p>{t(lang, `${c}.texto`)}</p>
-      <form class="formulario" data-contacto data-asunto={t(lang, `${c}.asunto`)}>
-        <label>{t(lang, `${c}.institucion`)}<input type="text" name="institucion" required autocomplete="organization" /></label>
-        <label>{t(lang, `${c}.nombre`)}<input type="text" name="nombre" required autocomplete="name" /></label>
-        <label>{t(lang, `${c}.email`)}<input type="email" name="email" required autocomplete="email" /></label>
-        <label>{t(lang, `${c}.mensaje`)}<textarea name="mensaje" required></textarea></label>
-        <button class="btn" type="submit">{t(lang, `${c}.enviar`)}</button>
-      </form>
-    </section>
+    <FormularioDemo lang={lang} clave={c} origen="universidades" />
   </section>
-  <script>
-    // De momento el formulario abre el programa de correo con todo puesto:
-    // asunto con la institución y cuerpo con los campos.
-    const form = document.querySelector<HTMLFormElement>("form[data-contacto]");
-    form?.addEventListener("submit", (ev) => {
-      ev.preventDefault();
-      const data = new FormData(form);
-      const institucion = String(data.get("institucion") ?? "");
-      const asunto = (form.dataset.asunto ?? "Andarama: {institucion}").replace("{institucion}", institucion);
-      const cuerpo = `${data.get("nombre")} <${data.get("email")}>\n${institucion}\n\n${data.get("mensaje")}`;
-      const w = window as unknown as { plausible?: (n: string, o?: object) => void };
-      w.plausible?.("contacto_universidades");
-      location.href = `mailto:jl@joseluissaorin.com?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-    });
-  </script>
 </Base>

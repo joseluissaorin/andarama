@@ -1,0 +1,90 @@
+---
+/**
+ * Páginas de texto corrido: las legales (aviso legal, condiciones) y las de
+ * confianza para instituciones (seguridad, accesibilidad, código abierto,
+ * contratación). Todas tienen la misma forma en el JSON de cada idioma:
+ * `paginas.<clave>` con `title`, `description`, `h1`, `lead`, `secciones`
+ * (título y HTML) y, si procede, una caja final `cta` que lleva al
+ * formulario de demo de universidades.
+ *
+ * Los textos admiten marcadores (`{titular}`, `{nif}`, `{domicilio}`,
+ * `{correo}`, `{precios}`, `{privacidad}`…) que resuelve `conMarcadores`:
+ * los datos del titular viven en un solo sitio, `data/titular.ts`.
+ */
+import Base from "../layouts/Base.astro";
+import Migas from "../components/Migas.astro";
+import { breadcrumbJsonLd, organizationJsonLd } from "../data/jsonld";
+import { conMarcadores } from "../data/titular";
+import { pagePath, t, tv, type Lang, type PageKey } from "../i18n";
+
+type ClaveProsa = Extract<PageKey, "avisoLegal" | "condiciones" | "seguridad" | "accesibilidad" | "codigoAbierto" | "contratacion">;
+
+interface Props {
+  lang: Lang;
+  pageKey: ClaveProsa;
+}
+const { lang, pageKey } = Astro.props;
+
+/** Clave de la etiqueta corta en `nav.*` (las compuestas van con guion bajo). */
+const NAV: Record<ClaveProsa, string> = {
+  avisoLegal: "aviso_legal",
+  condiciones: "condiciones",
+  seguridad: "seguridad",
+  accesibilidad: "accesibilidad",
+  codigoAbierto: "codigo_abierto",
+  contratacion: "contratacion",
+};
+
+const k = `paginas.${pageKey}`;
+const path = pagePath(lang, pageKey);
+const migas = [
+  { name: t(lang, "comunes.migas_inicio"), path: pagePath(lang, "home") },
+  { name: t(lang, `nav.${NAV[pageKey]}`), path },
+];
+const secciones = tv<{ titulo: string; html: string }[]>(lang, `${k}.secciones`).map((s) => ({
+  titulo: s.titulo,
+  html: conMarcadores(lang, s.html),
+}));
+const cta = tv<{ titulo: string; texto: string; boton: string } | undefined>(lang, `${k}.cta`);
+const enlacesConfianza: ClaveProsa[] = ["seguridad", "accesibilidad", "codigoAbierto", "contratacion"];
+const esConfianza = enlacesConfianza.includes(pageKey);
+---
+
+<Base lang={lang} title={t(lang, `${k}.title`)} description={t(lang, `${k}.description`)} path={path} pageKey={pageKey} jsonld={[organizationJsonLd(), breadcrumbJsonLd(migas)]}>
+  <Migas items={migas} />
+  <section class="pagina">
+    <div class="pagina__cabeza">
+      {esConfianza && <p class="susurro">{t(lang, "pie.confianza")}</p>}
+      <h1>{t(lang, `${k}.h1`)}</h1>
+      <p class="lead">{t(lang, `${k}.lead`)}</p>
+    </div>
+    <div class="prosa">
+      {secciones.map((s) => (
+        <>
+          <h2>{s.titulo}</h2>
+          <Fragment set:html={s.html} />
+        </>
+      ))}
+    </div>
+    {cta != null && (
+      <section class="caja caja--naranja">
+        <h2>{cta.titulo}</h2>
+        <p>{cta.texto}</p>
+        <div class="acciones">
+          <a class="btn" href={`${pagePath(lang, "universidades")}#contacto`}>{cta.boton}</a>
+        </div>
+      </section>
+    )}
+    {esConfianza && (
+      <nav class="caja" aria-label={t(lang, "pie.confianza")}>
+        <h2>{t(lang, "pie.confianza")}</h2>
+        <ul class="tics">
+          {enlacesConfianza.filter((c) => c !== pageKey).map((c) => (
+            <li><a href={pagePath(lang, c)}>{t(lang, `paginas.${c}.h1`)}</a></li>
+          ))}
+          <li><a href={pagePath(lang, "universidades")}>{t(lang, "paginas.universidades.h1")}</a></li>
+        </ul>
+      </nav>
+    )}
+  </section>
+</Base>

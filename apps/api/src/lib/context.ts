@@ -17,6 +17,14 @@ export interface AppConfig {
   emailFrom: string;
   turnstileSiteKey?: string;
   turnstileSecret?: string;
+  /**
+   * Secreto para descargar /api/v1/admin/conversions.csv sin sesión (Google
+   * Ads Data Manager lo lee como fuente HTTPS): `?token=` o cabecera
+   * `x-conversions-token`. Sin él, solo con sesión o token de API de admin.
+   */
+  conversionsToken?: string;
+  /** A quién se avisa por correo de cada solicitud de demo de la web. */
+  demoNotifyTo?: string;
   /** OIDC SSO institucional. */
   oidc?: {
     issuer: string;

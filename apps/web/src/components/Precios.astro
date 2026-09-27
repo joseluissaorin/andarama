@@ -1,34 +1,60 @@
 ---
 /**
- * La sección de precios, a partir de `plans.ts` de la API. Siete tarjetas:
- * la gratuita (instalártelo) y los seis planes alojados.
+ * Los planes, a partir de `plans.ts` de la API, en dos bloques (D11):
+ * «Para crear» (Andar, Paseo, Excursión, De por vida) y «Para enseñar»
+ * (Aula, Formación). La prueba y el precio de después van juntos y a la
+ * vista, como pide Google para anunciar pruebas gratuitas. La instalación
+ * propia gratuita queda en una línea bajo los bloques.
+ *
+ * En la portada es una sección con su H2 y un enlace a la página de
+ * precios; en la página de precios (`enPagina`) se omiten los dos, porque la
+ * página ya tiene su H1.
  */
-import { planCards, TRIAL_DAYS } from "../data/planes";
-import { t, type Lang } from "../i18n";
+import { CASA_URL, planCards, type BloquePlanes } from "../data/planes";
+import { pagePath, t, type Lang } from "../i18n";
 
 interface Props {
   lang: Lang;
+  enPagina?: boolean;
 }
-const { lang } = Astro.props;
-const cards = planCards(lang);
+const { lang, enPagina = false } = Astro.props;
+const bloques: BloquePlanes[] = ["crear", "ensenar"];
+const enlacesEnsenar = t(lang, "precios.bloques.ensenar.enlaces")
+  .replace("{aula}", pagePath(lang, "aula"))
+  .replace("{formacion}", pagePath(lang, "formacion"));
+const Titulo = enPagina ? "h2" : "h3";
+const TituloPlan = enPagina ? "h3" : "h4";
 ---
 
-<section class="precios" id="precios">
-  <h2>{t(lang, "precios.titulo")}</h2>
-  <p set:html={t(lang, "precios.texto")} />
-  <p><strong>{t(lang, "precios.prueba", { n: TRIAL_DAYS })}</strong></p>
-  <div class="precios__malla">
-    {cards.map((c) => (
-      <article class:list={["precio", { "precio--casa": c.kind === "casa", "precio--vida": c.kind === "vida" }]}>
-        <h3>{c.name}</h3>
-        <p class="precio__cifra">{c.figure}</p>
-        <p class="precio__cuando">{c.when}{c.yearly != null && <><br />{c.yearly}</>}</p>
-        <ul>
-          {c.items.map((i) => <li set:html={i} />)}
-        </ul>
-        <a class:list={["btn", { "btn--fantasma": c.kind === "casa" }]} href={c.href} data-cta={c.kind === "casa" ? undefined : "registro"}>{c.cta}<span class="vh"> · {c.name}</span></a>
-      </article>
-    ))}
-  </div>
+<section class:list={["precios", { "precios--pagina": enPagina }]} id="precios">
+  {!enPagina && <h2>{t(lang, "precios.titulo")}</h2>}
+  {!enPagina && <p set:html={t(lang, "precios.texto")} />}
+  {!enPagina && <p class="precios__prueba"><strong>{t(lang, "precios.prueba")}</strong></p>}
+  {bloques.map((bloque) => (
+    <div class="precios__bloque" id={`precios-${bloque}`}>
+      <Titulo class="precios__bloque-titulo">{t(lang, `precios.bloques.${bloque}.titulo`)}</Titulo>
+      <p class="precios__bloque-texto">
+        {t(lang, `precios.bloques.${bloque}.texto`)}
+        {bloque === "ensenar" && <> <span set:html={enlacesEnsenar} /></>}
+      </p>
+      <div class="precios__malla">
+        {planCards(lang, bloque).map((c) => (
+          <article class:list={["precio", { "precio--vida": c.kind === "vitalicio" }]}>
+            <TituloPlan class="precio__nombre">{c.name}</TituloPlan>
+            <p class="precio__cifra">{c.figure}</p>
+            <p class="precio__cuando">{c.when}{c.yearly != null && <><br />{c.yearly}</>}</p>
+            <ul>
+              {c.items.map((i) => <li set:html={i} />)}
+            </ul>
+            <a class="btn" href={c.href} data-cta="registro">{c.cta}<span class="vh"> · {c.name}</span></a>
+          </article>
+        ))}
+      </div>
+    </div>
+  ))}
+  <p class="precios__casa" set:html={t(lang, "precios.casa_linea").replace("{url}", CASA_URL)} />
   <p class="susurro">{t(lang, "precios.susurro")}</p>
+  {!enPagina && (
+    <p><a class="btn btn--fantasma" href={pagePath(lang, "precios")}>{t(lang, "precios.ver_todo")}</a></p>
+  )}
 </section>

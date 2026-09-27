@@ -23,6 +23,7 @@ import { liveRoutes } from "./routes/live.js";
 import { aiRoutes } from "./routes/ai.js";
 import { billingRoutes } from "./routes/billing.js";
 import { clerkWebhookRoutes } from "./routes/clerk-webhooks.js";
+import { conversionsRoutes, demoPublicRoutes } from "./routes/demo.js";
 import { galleryApiRoutes, galleryPageRoutes } from "./routes/gallery.js";
 import { onboardingRoutes } from "./routes/onboarding.js";
 import { createClerkVerifier, type ClerkVerifier } from "./lib/clerk.js";
@@ -125,6 +126,8 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/projects", publishRoutes());
   api.route("/media", mediaRoutes());
   api.route("/lti", ltiRoutes());
+  // Antes que /admin: admite el secreto CONVERSIONS_TOKEN sin sesión
+  api.route("/", conversionsRoutes());
   api.route("/admin", adminRoutes());
   api.route("/tokens", tokenRoutes());
   api.route("/live", liveRoutes(opts.createLiveRoom ?? null));
@@ -136,6 +139,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/gallery", galleryApiRoutes());
   api.route("/", analyticsRoutes());
   api.route("/", formRoutes());
+  api.route("/", demoPublicRoutes());
   api.get("/openapi.json", (c) => c.json(openApiSpec(c.get("config").publicUrl)));
   api.get("/health", (c) => c.json({ ok: true, platform: opts.runtime.platform }));
   /** Lo que el Studio necesita saber antes de tener sesión: qué puerta usa la instancia. */

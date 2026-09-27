@@ -46,7 +46,7 @@ Lo que sigue no es una crítica: Marzipano es una librería, y las librerías no
 | Idiomas | No | Idem |
 | Publicación, enlaces, QR, tarjeta social | No | Tu propio servidor y tu propio código |
 | Analítica | No | Añadir la tuya |
-| Docencia (quiz con nota, SCORM, LTI) | No | Un producto de docencia |
+| Docencia (quiz con nota, SCORM) | No | Un producto de docencia |
 | Soporte | Comunidad; sin empresa detrás | Contratar a alguien que conozca la librería |
 
 Y hay un detalle práctico: las versiones de Marzipano salen con cuentagotas. Funciona, y funcionará, porque es código estático que no depende de servicios; pero no esperes novedades.

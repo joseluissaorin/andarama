@@ -316,7 +316,7 @@ main h2 {
   padding: 22px 20px 20px;
 }
 .precio:hover { border-color: var(--ambar); }
-.precio h3 { margin: 0; font-size: 19px; }
+.precio h3, .precio h4, .precio__nombre { margin: 0; font-size: 19px; }
 .precio__cifra {
   margin: 10px 0 0;
   font-size: 40px;
@@ -333,6 +333,13 @@ main h2 {
 .precio--casa ul, .precio--casa .precio__cuando { color: var(--tinta); }
 .precio--vida { border-style: dashed; }
 .precios .susurro { margin-top: 18px; max-width: 760px; }
+/* Dos bloques: para crear y para enseñar */
+.precios__bloque { margin-top: 36px; }
+.precios__bloque-titulo { margin: 0; font-size: clamp(22px, 3vw, 28px); }
+.precios__bloque-texto { margin: 4px 0 0; max-width: 680px; color: var(--tinta-suave); }
+.precios__bloque-texto a, .precios__casa a { color: var(--naranja-tinta); }
+.precios__casa { margin-top: 28px; max-width: 680px; color: var(--tinta-suave); }
+.precios--pagina { margin-top: 40px; padding: 0; }
 
 /* ---------- pasos ---------- */
 .pasos {
