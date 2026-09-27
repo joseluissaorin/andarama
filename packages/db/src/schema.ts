@@ -38,6 +38,8 @@ export const users = sqliteTable(
     /** JSON con gclid, msclkid y utm_* del primer toque; nunca datos personales. */
     attributionJson: text("attribution_json"),
     attributedAt: integer("attributed_at"),
+    /** Fecha real del primer pago (webhook de Clerk Billing); null si nunca ha pagado. */
+    firstPaidAt: integer("first_paid_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
@@ -535,6 +537,11 @@ export const ltiRegistrations = sqliteTable(
   "lti_registrations",
   {
     id: text("id").primaryKey(),
+    /**
+     * Organización dueña del registro: el selector de Deep Linking solo
+     * ofrece sus recorridos. Null en los registros anteriores a la columna.
+     */
+    orgId: text("org_id"),
     issuer: text("issuer").notNull(),
     clientId: text("client_id").notNull(),
     deploymentId: text("deployment_id"),
@@ -545,7 +552,7 @@ export const ltiRegistrations = sqliteTable(
     toolKeyJson: text("tool_key_json").notNull(),
     createdAt: integer("created_at").notNull(),
   },
-  (t) => [uniqueIndex("lti_issuer_client_idx").on(t.issuer, t.clientId)],
+  (t) => [uniqueIndex("lti_issuer_client_idx").on(t.issuer, t.clientId), index("lti_org_idx").on(t.orgId)],
 );
 
 /** Analitica en self-host (en Cloudflare se usa Workers Analytics Engine). */

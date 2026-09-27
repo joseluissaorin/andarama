@@ -5,7 +5,7 @@ import { hotspots, jobs, media, mediaDerivatives, orgs, scenes } from "@andarama
 import { verifyUploadUrl } from "@andarama/adapters";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound, payloadTooLarge, quotaExceeded } from "../lib/errors.js";
-import { orgQuota } from "../lib/quota.js";
+import { orgQuota, usedBytes } from "../lib/quota.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
@@ -86,13 +86,10 @@ export function mediaRoutes(): Hono<AppEnv> {
     }
     const org = (await db.select().from(orgs).where(eq(orgs.id, body.orgId)).limit(1))[0];
     if (org == null) throw notFound();
-    const used = await db
-      .select({ total: sql<number>`coalesce(sum(${media.bytes}), 0)` })
-      .from(media)
-      .where(and(eq(media.orgId, body.orgId), isNull(media.deletedAt)));
+    // La cuota del plan es del dueño: se suma lo de todas sus organizaciones
     const quota = await orgQuota(db, c.get("config"), org);
-    if (Number(used[0]?.total ?? 0) + body.bytes > quota.quotaBytes) {
-      throw quotaExceeded("La organización ha agotado su cuota de almacenamiento", {
+    if ((await usedBytes(db, quota)) + body.bytes > quota.quotaBytes) {
+      throw quotaExceeded(quota.fromPlan ? "Tu plan ha agotado su cuota de almacenamiento, sumando todas tus organizaciones" : "La organización ha agotado su cuota de almacenamiento", {
         code: "quota_bytes",
         plan: quota.plan,
         limit: quota.quotaBytes,

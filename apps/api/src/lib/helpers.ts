@@ -67,12 +67,14 @@ export async function audit(
   entityId: string | null,
   detail?: Record<string, unknown>,
   orgId?: string,
+  /** Autor de la acción cuando aún no hay sesión (alta, webhooks). */
+  actorId?: string | null,
 ): Promise<void> {
   const db = c.get("db");
   await db.insert(auditLog).values({
     id: newId(),
     orgId: orgId ?? null,
-    userId: c.get("auth")?.user.id ?? null,
+    userId: actorId !== undefined ? actorId : (c.get("auth")?.user.id ?? null),
     action,
     entity,
     entityId,

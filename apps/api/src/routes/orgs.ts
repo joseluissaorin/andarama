@@ -8,7 +8,7 @@ import { newId, newToken, nowMs, parseJson, sha256Hex, slugify } from "../lib/ut
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
-import { orgQuota } from "../lib/quota.js";
+import { orgQuota, usedBytes, usedTours } from "../lib/quota.js";
 import { INHERITED_KEYS, propagateOrgDefaults, type OrgDefaults } from "../lib/defaults.js";
 
 const roleSchema = z.enum(["admin", "editor", "collaborator", "reader"]);
@@ -139,20 +139,13 @@ export function orgRoutes(): Hono<AppEnv> {
     await requireOrgRole(db, orgId, auth.user, "reader");
     const org = (await db.select().from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
     if (org == null) throw notFound();
-    const bytesRow = await db
-      .select({ total: sql<number>`coalesce(sum(${media.bytes}), 0)` })
-      .from(media)
-      .where(and(eq(media.orgId, orgId), isNull(media.deletedAt)));
-    const projectsRow = await db
-      .select({ total: sql<number>`count(*)` })
-      .from(projects)
-      .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt)));
+    // Con plan, el uso es el de todas las organizaciones del dueño
     const quota = await orgQuota(db, c.get("config"), org);
     return c.json({
       quotaBytes: quota.quotaBytes,
-      usedBytes: Number(bytesRow[0]?.total ?? 0),
+      usedBytes: await usedBytes(db, quota),
       quotaTours: quota.quotaTours,
-      usedTours: Number(projectsRow[0]?.total ?? 0),
+      usedTours: await usedTours(db, quota),
       plan: quota.plan,
       fromPlan: quota.fromPlan,
       ownerId: quota.ownerId,

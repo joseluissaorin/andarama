@@ -18,6 +18,7 @@ import { createRealtimeServer } from "@andarama/realtime/node";
 import { createApp } from "./app.js";
 import type { AppConfig, Db } from "./lib/context.js";
 import { processJob } from "./jobs.js";
+import { parseAdminEmails } from "./lib/admins.js";
 import { guessContentType } from "./routes/projects.js";
 
 /**
@@ -114,6 +115,8 @@ async function main(): Promise<void> {
             authorizedParties: process.env.CLERK_AUTHORIZED_PARTIES?.split(",").map((s) => s.trim()).filter((s) => s !== ""),
           }
         : undefined,
+    adminEmails: parseAdminEmails(process.env.ADMIN_EMAILS),
+    clerkWebhookSecret: process.env.CLERK_WEBHOOK_SECRET,
   };
 
   const realtime = await createRealtimeServer({
