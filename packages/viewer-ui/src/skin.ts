@@ -287,7 +287,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     const startGazeReticle = (): void => {
       stopGaze();
       gaze = startGaze(container, {
-        seconds: tour.vr?.dwellSeconds ?? 2.5,
+        seconds: tour.vr?.dwellSeconds ?? 1.5,
         getView: () => {
           const v = viewer.view();
           return { yaw: v.yaw, pitch: v.pitch };
@@ -311,6 +311,12 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     });
     controls.appendChild(gyroBtn);
     cleanups.push(stopGaze);
+    // El modo VR dibuja su propio retículo: el plano, si seguía puesto por el
+    // giroscopio, quedaba flotando entre los dos ojos.
+    viewer.on("vrChange", (e) => {
+      if (e.active) stopGaze();
+      else if (viewer.gyroActive()) startGazeReticle();
+    });
   }
 
   if (ui.vr !== false) {

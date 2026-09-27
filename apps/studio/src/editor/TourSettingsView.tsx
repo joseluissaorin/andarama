@@ -368,7 +368,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
               step="0.5"
               min="0.8"
               max="8"
-              value={String(vr.dwellSeconds ?? 2.5)}
+              value={String(vr.dwellSeconds ?? 1.5)}
               disabled={!canEdit}
               onChange={(e) => patchVr({ dwellSeconds: Number(e.target.value) })}
             />
