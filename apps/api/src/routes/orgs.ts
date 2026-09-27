@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, isNull, sql } from "drizzle-orm";
-import { media, orgInvites, orgMembers, orgs, projects, users } from "@andarama/db";
+import { and, eq, isNull } from "drizzle-orm";
+import { orgInvites, orgMembers, orgs, projects, users } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, newToken, nowMs, parseJson, sha256Hex, slugify } from "../lib/util.js";
