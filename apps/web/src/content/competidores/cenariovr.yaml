@@ -8,9 +8,9 @@ planes: []
 cuotas: null
 rv: true
 scorm: true
-lti: true
-exportacion: parcial
-exportacion_detalle: "Exportación como paquete SCORM, xAPI o cmi5 para LMS; el visor depende de la plataforma"
+lti: null
+exportacion: true
+exportacion_detalle: "Publica y descarga paquetes SCORM, xAPI, cmi5 y HTML para el LMS, la web, móviles o gafas de RV"
 codigo_abierto: false
 marca_blanca: parcial
 dominio_propio: parcial
@@ -18,6 +18,6 @@ analitica_sin_cookies: null
 street_view: false
 verificado: false
 descripcion:
-  es: "Herramienta de formación inmersiva de ELB Learning (EE. UU.) con SCORM, xAPI y LTI; precio por presupuesto."
-  en: "Immersive training tool by ELB Learning (US) with SCORM, xAPI and LTI; quote-based pricing."
-notas: "Forma parte de la suite de ELB Learning (Lectora). Precio por presupuesto; antes anunciaba tarifas por autor, hoy no se publican."
+  es: "Herramienta de formación inmersiva de ELB Learning (EE. UU.) con exportación SCORM, xAPI y cmi5; precio por presupuesto."
+  en: "Immersive training tool by ELB Learning (US) with SCORM, xAPI and cmi5 export; quote-based pricing."
+notas: "Forma parte de la suite de ELB Learning (Lectora). Verificar: la web oficial no publica precios a 27-9-2026; la página de precios solo ofrece prueba gratuita y formulario de contacto (https://products.elblearning.com/create-learning/cenariovr-pricing). La página de producto no menciona LTI, por eso queda sin dato."

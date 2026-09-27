@@ -3,35 +3,36 @@ web: https://kuula.co
 pais: "US"
 tipo: saas
 gratis: true
-gratis_detalle: "Plan Basic gratuito con marca de Kuula, límite de 100 publicaciones y sin descarga de tours"
+gratis_detalle: "Plan Basic gratuito con marca de Kuula, hasta 300 publicaciones y 100 subidas al mes, sin editor de tours"
 planes:
   - nombre: Pro
     precio: 24
     moneda: USD
     periodo: month
     precio_mes_anual: 20
-    precio_anual: null
+    precio_anual: 240
     verificado: true
   - nombre: Business
     precio: 48
     moneda: USD
     periodo: month
     precio_mes_anual: 36
-    precio_anual: null
+    precio_anual: 432
     verificado: true
-cuotas: "Basic: 100 publicaciones; Pro y Business: ilimitadas"
+cuotas: "Basic: 300 publicaciones; Pro: 100 000; Business: ilimitadas"
 rv: true
 scorm: false
 lti: false
-exportacion: parcial
-exportacion_detalle: "Descarga de tours para uso sin conexión solo en el plan Business"
+exportacion: false
+exportacion_detalle: "La página de precios no ofrece descargar el tour para alojarlo fuera; su «Export Editor» solo ajusta el enlace y el código de inserción"
 codigo_abierto: false
 marca_blanca: parcial
 dominio_propio: parcial
 analitica_sin_cookies: null
 street_view: true
 verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
   es: "Plataforma en la nube muy usada por fotógrafos, con plan gratuito y editor sencillo."
   en: "Cloud platform popular with photographers, with a free plan and a simple editor."
-notas: "Sin plan educativo específico. El plan Pro elimina la marca de Kuula; el dominio propio y la marca blanca completa quedan para Business."
+notas: "Precios comprobados el 27-9-2026 en https://kuula.co/page/pricing (USD, se cancela cuando se quiera). Sin plan educativo específico. El plan Pro pone tu logotipo en lugar del de Kuula; el editor de tours empieza en Pro; el dominio propio, las contraseñas y varios logotipos quedan para Business."

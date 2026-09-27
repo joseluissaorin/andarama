@@ -14,7 +14,7 @@ faq:
   - q: "¿Puedo guiar la visita en directo con toda la clase?"
     a: "Sí. Andarama tiene visitas guiadas en vivo: el docente crea una sala, comparte un enlace y lo que hace en su pantalla (cambiar de escena, girar, señalar con el puntero) se replica en la de cada alumno, que puede soltarse y volver."
   - q: "¿Cómo se evalúa una salida virtual?"
-    a: "Con preguntas repartidas por el recorrido: quiz con nota, mínimo para aprobar e informe final. Con el plan Aula el alumnado entra con código de clase y el docente exporta las notas en CSV."
+    a: "Con preguntas repartidas por el recorrido: quiz con nota, mínimo para aprobar e informe final. El alumnado no necesita cuenta para hacer el recorrido y, al terminar, puede descargar un certificado en PDF con su nombre."
 ---
 
 Una **salida virtual** (lo que en inglés llaman *virtual field trip*) es un recorrido por fotos 360 de un lugar real, con explicaciones ancladas en el sitio exacto donde tocan, que la clase explora desde la pizarra, las tabletas o unas gafas. No sustituye a la excursión: la prepara, la prolonga y llega a donde el autobús no llega. Esta guía cubre de dónde sacar las fotos, cómo estructurar el recorrido, cómo guiar al grupo en directo y cómo evaluar, con ejemplos por etapa.
@@ -69,7 +69,7 @@ La voz no va por la sala: se usa la del aula si están todos presentes, o una vi
 
 ## Evaluar
 
-Con el [plan Aula](/aula/) el alumnado entra con un **código de clase**, sin cuentas; el docente ve el progreso de cada grupo y exporta las notas en CSV. En Ajustes del tour se fija la puntuación mínima, se activa el informe final y, si se quiere, el **certificado** en PDF con el nombre del participante. Si el centro usa Moodle u otro campus, el recorrido se lanza desde allí y la nota vuelve al libro de calificaciones ([LTI y SCORM](/blog/recorrido-360-moodle/)).
+Con el [plan Aula](/aula/) el alumnado entra con el enlace o el código QR, **sin cuentas**. En Ajustes del tour se fija la puntuación mínima, se activa el informe final y, si se quiere, el **certificado** en PDF con el nombre del participante. Si el centro usa Moodle u otro campus, el recorrido puede ir dentro como paquete SCORM, que sí informa de la nota (plan Formación o instalación propia); la integración LTI 1.3 está en pruebas y todavía no devuelve la nota sola ([LTI y SCORM](/blog/recorrido-360-moodle/)).
 
 ## Ejemplos por etapa
 

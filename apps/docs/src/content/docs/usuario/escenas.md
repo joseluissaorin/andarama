@@ -40,7 +40,7 @@ Tipos de escena: **Panorama 360** (imagen), **Vídeo 360** y **Gigapixel 2D** (o
 
 A la derecha. Cuando hay una escena seleccionada muestra sus datos y la lista de
 sus hotspots; al pulsar uno, cambia al marcador con una cabecera fija —de qué
-escena viene, qué tipo es, borrar— y tres pestañas: **Contenido**, **Aspecto** y
+escena viene, qué tipo es, borrar— y tres pestañas: **Contenido**, **Estilo** y
 **Condiciones**. Lo que se busca casi siempre está en la primera, sin
 desplazarse. El panel se puede **ensanchar** arrastrando su borde izquierdo.
 
@@ -85,16 +85,16 @@ Todos comparten posición, etiqueta, texto alternativo, icono (biblioteca SVG o 
 11. **Formulario**: campos varios, envío a la API/webhook/email, anti-spam Turnstile.
 12. **Comparador**: dos imágenes con deslizador, o dos escenas del tour lado a lado y sincronizadas (un antes y después de la misma sala).
 13. **Quiz**: una pregunta por marcador (única/múltiple/verdadero-falso), feedback, puntos y compuerta que retiene en la escena hasta acertar.
-14. **Polígono (zona)**: región dibujada vértice a vértice sobre la esfera; se ve mientras se dibuja. Al pulsarla lleva a otra escena, abre una web o abre otro hotspot de la escena.
+14. **Polígono (zona)**: región dibujada vértice a vértice sobre la esfera; se ve mientras se dibuja. Al pulsarla lleva a otra escena, abre una web o abre otro hotspot de la escena. Véase [Variables, contador y polígono](/docs/usuario/variables/#el-hotspot-polígono).
 15. **Etiqueta flotante**: un texto que se ve al pasar el cursor y, al pulsar, en una burbuja fija sobre el marcador.
 16. **Enlace externo**: URL, tel: o mailto:.
-17. **Contador/estado**: modifica variables del tour (puertas, día/noche, progreso).
+17. **Contador/estado**: modifica variables del tour (puertas, día/noche, progreso). Véase [Variables, contador y polígono](/docs/usuario/variables/) y [Cómo hacer un escape room](/docs/usuario/escape-room/).
 
 Para colocar un hotspot: pulsa su tipo en el panel derecho y haz clic sobre el panorama. Los polígonos se dibujan clic a clic y se cierran con doble clic.
 
 ## Colaboración
 
 - **Guardado automático** con indicador y deshacer/rehacer ilimitado por sesión.
-- **Presencia**: ves quién más está editando y qué escena; el primer editor en una escena obtiene un bloqueo blando (los demás pueden editar otras escenas del mismo tour).
-- **Comentarios** anclados a escenas con hilos y estado resuelto/abierto.
+- **Presencia**: ves quién más está editando y qué escena; el primer editor en una escena obtiene un bloqueo blando (los demás pueden editar otras escenas del mismo tour). Véase [Trabajar en equipo](/docs/usuario/equipo/).
+- **Comentarios** anclados a escenas con hilos y estado resuelto/abierto. Véase [Comentarios del equipo](/docs/usuario/comentarios/).
 - **Versiones**: instantáneas automáticas al publicar y manuales con nombre; diferencias a nivel de escena/hotspot y restauración.

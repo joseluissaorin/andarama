@@ -3,28 +3,29 @@ web: https://www.theasys.io
 pais: "GR"
 tipo: saas
 gratis: true
-gratis_detalle: "Plan gratuito con marca de Theasys y límite de tours"
+gratis_detalle: "Plan gratuito con anuncios en el visor y hasta 5 panoramas por cuenta; cada descarga de tour cuesta 10 $"
 planes:
-  - nombre: Pro
-    precio: 15
+  - nombre: Essentials
+    precio: 23.99
     moneda: USD
     periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: false
-cuotas: null
+    precio_mes_anual: 19.99
+    precio_anual: 239.88
+    verificado: true
+cuotas: "Free: 5 panoramas por cuenta; Essentials: panoramas ilimitados, visor sin anuncios y descargas de tours gratis con pago anual (5 $ cada una con pago mensual)"
 rv: true
 scorm: false
 lti: false
-exportacion: false
-exportacion_detalle: null
+exportacion: true
+exportacion_detalle: "Descarga del tour en un .zip para alojarlo en un servidor propio o usarlo sin conexión (de pago por descarga salvo en Essentials anual)"
 codigo_abierto: false
-marca_blanca: parcial
-dominio_propio: parcial
+marca_blanca: true
+dominio_propio: true
 analitica_sin_cookies: null
 street_view: false
-verificado: false
+verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
   es: "SaaS sencillo con plan gratuito, pensado para fotógrafos y pequeñas empresas."
   en: "Simple SaaS with a free plan, aimed at photographers and small businesses."
-notas: "El precio del plan Pro es de memoria y debe comprobarse. Sin plan educativo conocido."
+notas: "El logotipo de Theasys se puede quitar incluso en el plan gratuito, aunque el visor gratuito muestra anuncios. El dominio propio se consigue descargando el tour y alojándolo uno mismo. Sin plan educativo. Fuentes: https://www.theasys.io/pricing/ y https://www.theasys.io/faq/ (27-9-2026)."

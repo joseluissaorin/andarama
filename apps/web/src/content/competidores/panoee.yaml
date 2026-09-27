@@ -12,19 +12,27 @@ planes:
     precio_mes_anual: null
     precio_anual: 200
     verificado: true
-cuotas: "Gratis: proyectos ilimitados con 3 GB; Pro: más almacenamiento y funciones avanzadas"
+  - nombre: Enterprise
+    precio: 99
+    moneda: USD
+    periodo: month
+    precio_mes_anual: null
+    precio_anual: 950
+    verificado: true
+cuotas: "Gratis y Pro: 3 GB (almacenamiento extra a 0,15 $/GB al mes); Enterprise: 20 GB. Proyectos ilimitados en todos"
 rv: true
 scorm: false
 lti: false
 exportacion: parcial
-exportacion_detalle: "Exportación del tour para uso sin conexión solo en el plan Pro"
+exportacion_detalle: "Exportar un proyecto cuesta 19 $ de pago único por proyecto, según su documentación"
 codigo_abierto: false
 marca_blanca: parcial
 dominio_propio: true
 analitica_sin_cookies: null
-street_view: false
+street_view: true
 verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
   es: "SaaS con plan gratuito generoso (proyectos ilimitados, 3 GB) y editor moderno."
   en: "SaaS with a generous free plan (unlimited projects, 3 GB) and a modern editor."
-notas: "Pro cuesta 22 $/mes o 200 $/año. Sin plan educativo conocido."
+notas: "Comprobado el 27-9-2026 en https://panoee.com/pricing y https://panoee.com/document/export-a-virtual-tour/. Pro (22 $/mes) o Pro+ (200 $/año): dos dominios propios, logotipo propio, Street View y contraseña; la marca blanca completa es de Enterprise (99 $/mes o 950 $/año). Hay además un plan de pago por uso de 7 a 12 $/mes. Sin plan educativo conocido."

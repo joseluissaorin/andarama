@@ -6,7 +6,7 @@ title: Primeros pasos
 
 Abre `/studio/` en tu instancia y pulsa **Crear cuenta**. El primer usuario registrado se convierte automáticamente en administrador de la instancia. Según la política configurada, el registro puede ser abierto, por invitación o limitado a dominios institucionales; si la instancia tiene SSO institucional (OIDC), usa **Entrar con SSO**.
 
-En [app.andarama.com](https://app.andarama.com) la cuenta la gestiona Clerk (correo con código, contraseña o passkey) y para crear recorridos hace falta un plan; en el [ejecutable de escritorio](/docs/despliegue/escritorio/) y en cualquier instalación propia no hay planes ni cuotas de plan.
+En [app.andarama.com](https://app.andarama.com) la cuenta la gestiona Clerk (correo con código, contraseña o passkey) y para crear recorridos hace falta un plan o la prueba gratuita de 14 días, sin tarjeta; en el [ejecutable de escritorio](/docs/despliegue/escritorio/) y en cualquier instalación propia no hay planes ni cuotas de plan.
 
 Cada cuenta pertenece a una o varias **organizaciones**. Los roles por organización son:
 
@@ -17,13 +17,15 @@ Cada cuenta pertenece a una o varias **organizaciones**. Los roles por organizac
 | Colaborador | Editar proyectos compartidos (sin publicar) |
 | Lector | Ver borradores |
 
+Para invitar a otras personas y repartir el trabajo, véase [Trabajar en equipo](/docs/usuario/equipo/).
+
 ## Crear el primer tour
 
 1. En **Proyectos**, pulsa **Nuevo tour** y ponle título (opcionalmente carpeta o plantilla).
 2. Sube panoramas equirectangulares (2:1) en **Biblioteca de medios** o directamente desde el editor.
 3. Añade escenas eligiendo cada panorama.
 4. Coloca hotspots haciendo clic sobre el panorama.
-5. Pulsa **Publicar**: obtendrás una URL pública `/t/tu-slug`, código QR y código de embebido.
+5. Pulsa **Publicar**: obtendrás una URL pública `/t/tu-slug`, código QR y código de embebido. Véase [Publicar y compartir](/docs/usuario/publicar/).
 
 ## Instalar el Studio como aplicación
 

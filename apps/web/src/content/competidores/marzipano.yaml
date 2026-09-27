@@ -16,8 +16,9 @@ marca_blanca: true
 dominio_propio: true
 analitica_sin_cookies: null
 street_view: false
-verificado: false
+verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
-  es: "Librería JavaScript de código abierto de Google para visores 360; gratuita, sin editor completo ni soporte."
-  en: "Google's open-source JavaScript library for 360 viewers; free, without a full editor or support."
-notas: "Sin planes ni empresa detrás del soporte. Incluye una herramienta web básica (Marzipano Tool) para montar tours sencillos; el resto exige programar."
+  es: "Librería JavaScript de código abierto publicada por Google para visores 360; gratuita, sin editor completo ni soporte, y con el repositorio archivado."
+  en: "Open-source JavaScript library for 360 viewers published by Google; free, without a full editor or support, and with its repository archived."
+notas: "Licencia Apache 2.0, sin precio de licencia. La web aclara que no es un producto oficial de Google, y el repositorio github.com/google/marzipano está archivado (solo lectura; último cambio en octubre de 2023), así que ya no recibe mantenimiento. Incluye una herramienta web básica (Marzipano Tool) para tours sencillos; el resto exige programar. Fuentes: https://www.marzipano.net y https://github.com/google/marzipano (27-9-2026)."

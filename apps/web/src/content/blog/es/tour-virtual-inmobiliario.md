@@ -74,7 +74,7 @@ Seamos justos con la referencia del sector. Matterport aporta el **modelo 3D con
 - **Compradores lejanos que quieren medir** (dónde cabe el sofá) sin visitar.
 - **Agencias con alto volumen** que rotan espacios y para las que las cuotas anuales por espacio activo no molestan.
 
-Para un piso corriente, una casa de pueblo o un local, el recorrido 360 cumple igual y cuesta una fracción. Los precios de Matterport, con lo que hemos podido y no hemos podido verificar, están en [cuánto cuesta Matterport](/blog/matterport-precio/), y siete alternativas comparadas, en [alternativas a Matterport](/blog/alternativas-a-matterport/).
+Para un piso corriente, una casa de pueblo o un local, el recorrido 360 cumple igual y cuesta una fracción. Los precios de Matterport, comprobados en su web el 27 de septiembre de 2026, están en [cuánto cuesta Matterport](/blog/matterport-precio/), y siete alternativas comparadas, en [alternativas a Matterport](/blog/alternativas-a-matterport/).
 
 ## Errores que se ven a diario
 

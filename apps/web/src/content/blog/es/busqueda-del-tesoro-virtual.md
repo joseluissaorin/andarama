@@ -14,7 +14,7 @@ faq:
   - q: "¿Los alumnos pueden hacer trampas viendo la lista de hotspots?"
     a: "El visor no enseña una lista de tesoros; solo el contador. La versión accesible en texto sí lista el contenido de cada escena, así que para el juego conviene no destacarla."
   - q: "¿Se puede jugar en casa?"
-    a: "Sí. Es un enlace, y con el código de clase del plan Aula cada alumno entra desde su casa sin crear cuenta; el docente ve el progreso."
+    a: "Sí. Es un enlace, y el alumnado no necesita cuenta para abrir y jugar un recorrido, así que cada alumno entra desde casa con cualquier navegador."
 ---
 
 Una **búsqueda del tesoro virtual** es un recorrido por fotos 360 en el que hay objetos escondidos por las escenas y el alumnado tiene que encontrarlos todos, ayudado por pistas que aparecen aquí y allá. Es la actividad inmersiva más fácil de montar (una hora con las fotos hechas), funciona desde tercero de Primaria y no necesita gafas: se juega en la pizarra, en tabletas o en el móvil. Aquí está cómo se monta con Andarama y ocho variantes según la edad y la asignatura.
@@ -47,7 +47,7 @@ Con tres o cuatro tesoros por escena y cinco escenas ya hay una sesión.
 
 ### 3. Pon la explicación en el propio tesoro
 
-El objetivo no es solo encontrarlo: es aprender algo al hacerlo. Cada tesoro tiene un campo de **premio** (un texto corto en Markdown que se lee al encontrarlo) y otro de **pista**. Aprovecha el primero: «Has encontrado el astrolabio. Los navegantes lo usaban para medir la altura del Sol y saber en qué latitud estaban». Si necesitas más, un hotspot de **Texto** o de **Imagen** al lado hace de ficha.
+El objetivo no es solo encontrarlo: es aprender algo al hacerlo. Cada tesoro tiene un campo de **premio** (un texto corto en Markdown que se lee al encontrarlo) y otro de **pista**: mientras quede algún tesoro en la escena, el contador de arriba ofrece un botón «Pista» que la muestra sin revelar dónde está el objeto. Aprovecha el de premio: «Has encontrado el astrolabio. Los navegantes lo usaban para medir la altura del Sol y saber en qué latitud estaban». Si necesitas más, un hotspot de **Texto** o de **Imagen** al lado hace de ficha.
 
 ### 4. Reparte pistas
 
@@ -57,13 +57,13 @@ Hotspots de **Etiqueta flotante** con textos ambiguos («aquí alguien guardaba 
 
 Tres maneras, y se pueden combinar:
 
-- El **mensaje al completar** de la propia búsqueda: el texto que el visor enseña cuando se ha encontrado el último tesoro. Es lo mínimo, y a menudo basta.
+- El **mensaje al completar** de la propia búsqueda: el aviso que el visor enseña unos segundos al encontrar el último tesoro. Es lo mínimo y pasa rápido, así que conviene acompañarlo de una de las otras dos.
 - Un **quiz** final que solo se puede responder con lo aprendido en los tesoros, con el **certificado** en PDF activado en Ajustes del tour.
 - Un cofre que aparece: en lugar de tesoros, se esconden hotspots de **Contador/estado** disfrazados de objeto, cada uno suma uno a una variable, y un hotspot final con **condición de visibilidad** se muestra cuando la variable llega al total. Es la mecánica del [escape room](/blog/escape-room-digital/), y pierde el contador automático, así que solo compensa con los mayores.
 
 ### 6. Prueba, publica y comparte
 
-Previsualiza el recorrido entero, publica y comparte el enlace o el código QR. Con el [plan Aula](/aula/), el alumnado entra con un **código de clase** sin crear cuentas, y el docente ve el progreso de cada grupo.
+Previsualiza el recorrido entero, publica y comparte el enlace o el código QR. El alumnado no necesita cuenta para jugar: basta el enlace. El [plan Aula](/aula/) cuesta 42 $ al año e incluye cinco recorridos.
 
 ## Ocho variantes
 

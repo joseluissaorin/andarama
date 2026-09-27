@@ -12,7 +12,9 @@ import { glob } from "astro/loaders";
 const siNoParcial = z.union([z.boolean(), z.literal("parcial")]).nullable();
 
 const blog = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/blog" }),
+  // El id sale de la ruta («en/marzipano»), no del campo `slug`: las
+  // traducciones pueden repetir el slug del original sin pisarse.
+  loader: glob({ pattern: "**/*.md", base: "./src/content/blog", generateId: ({ entry }) => entry.replace(/\.md$/, "") }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -70,6 +72,8 @@ const competidores = defineCollection({
     analitica_sin_cookies: siNoParcial,
     street_view: z.boolean(),
     verificado: z.boolean(),
+    /** Día en que se comprobaron las cifras en la web oficial. */
+    fecha_verificacion: z.coerce.date().nullable().optional(),
     descripcion: z.record(z.string()),
     notas: z.string().nullable(),
   }),

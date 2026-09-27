@@ -11,8 +11,8 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 |---|---|---|
 | **Navegación** | Salta a otra escena | Escena destino, modo de entrada (fija/relativa/mirar atrás), transición propia, variante flecha de suelo, icono que aclara el destino (puerta, escaleras, exterior…) |
 | **Enlace** | Abre una URL, teléfono o email | URL, tipo (`url`/`tel`/`mailto`), pestaña nueva |
-| **Estado** | Muta variables del tour | Acciones (`set` con valor, `inc`, `dec`, `toggle`) y salto de escena opcional |
-| **Polígono** | Zona activa dibujada sobre el panorama | Contorno redibujable, relleno/borde/opacidad/relleno al pasar, acción (ir a escena, abrir URL, variables, activar otro hotspot) |
+| **Estado** | Muta variables del tour | Acciones (`set` con valor, `inc`, `dec`, `toggle`) y salto de escena opcional. Véase [Variables, contador y polígono](/docs/usuario/variables/) |
+| **Polígono** | Zona activa dibujada sobre el panorama | Contorno redibujable, relleno/borde/opacidad/relleno al pasar, acción (ir a escena, abrir URL, activar otro hotspot). El visor admite también cambiar variables (`setVars`), pero el editor todavía no lo ofrece |
 
 ## Contenido
 
@@ -38,7 +38,7 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 
 | Tipo | Qué hace | Campos propios |
 |---|---|---|
-| **Pregunta (quiz)** | Una pregunta por marcador: única/múltiple/verdadero-falso con puntuación, intentos, feedback y compuerta (retiene en la escena hasta acertar) | Ver la guía de docencia |
+| **Pregunta (quiz)** | Una pregunta por marcador: única/múltiple/verdadero-falso con puntuación, intentos, feedback y compuerta (retiene en la escena hasta acertar) | Ver la [guía de docencia](/docs/usuario/docencia/) |
 | **Formulario** | Campos configurables con anti-spam Turnstile | Título, mensaje de éxito, texto del botón, destino (API, webhook, email) |
 | **Comparador** | Antes/después de dos imágenes con deslizador, o **vista dividida de dos escenas sincronizadas** | Modo, imágenes o escenas, etiquetas |
 
@@ -54,7 +54,7 @@ se pulsa sobre el panorama para colocarlo.
 
 ## Tamaño del marcador
 
-El botón de cada hotspot se ajusta con un deslizador en la pestaña **Aspecto**,
+El botón de cada hotspot se ajusta con un deslizador en la pestaña **Estilo**,
 con muestra a escala y atajos S, M, L y XL. Sin tocarlo, cada marcador hereda el
 **tamaño por defecto del tour** (Ajustes del tour), que es la forma cómoda de
 subir o bajar todos a la vez. El tamaño elegido también se respeta dentro de las

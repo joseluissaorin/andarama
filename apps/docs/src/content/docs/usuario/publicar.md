@@ -1,5 +1,6 @@
 ---
 title: Publicar y compartir
+description: Previsualizar, publicar con la visibilidad adecuada, controlar la tarjeta del enlace, exportar y poner el recorrido en modo quiosco.
 ---
 
 ## Previsualizar antes de publicar
@@ -31,6 +32,8 @@ Además: fecha de publicación programada y fecha de expiración.
 
 Tras publicar obtienes: URL pública con **deep links** (`#s=escena&y=120&p=-5&f=70`), **código QR**, **código de embebido** responsive y metadatos Open Graph con imagen de la vista inicial.
 
+El código de embebido y el web component se explican en [Embeber un tour](/docs/usuario/embeber/), y los pasos para el aula virtual en [Insertar en Moodle](/docs/usuario/moodle/). Si el recorrido lleva o no la insignia «Hecho con Andarama» depende del plan con el que se publica: véase [La insignia](/docs/usuario/insignia/).
+
 ### La galería pública de andarama.com
 
 En la instancia alojada, un tour **público** puede pedir además una página propia en la galería, `andarama.com/explorar/{slug}/`, pensada para que los buscadores la encuentren por el nombre del lugar. Al publicar, activa **«Mostrar en la galería pública de andarama.com»** y rellena:
@@ -45,6 +48,8 @@ La ficha lleva el visor embebido, el botón de pantalla completa, la portada cap
 Cada ficha la revisa una persona antes de que aparezca: hasta que se aprueba, el diálogo de publicar dice «Ficha en revisión» y la página no se lista ni se indexa (el recorrido, en cambio, ya está publicado en su enlace). Si cambias los textos de la ficha, vuelve a revisión; republicar solo el contenido no la toca.
 
 ### API postMessage del visor embebido
+
+La referencia completa está en [Embeber un tour](/docs/usuario/embeber/#api-postmessage).
 
 ```js
 // controlar el visor desde la página que lo embebe
@@ -72,7 +77,7 @@ con una vista previa de cómo quedará:
 | Imagen | 1200 × 630 px. Sin ella, casi ninguna red muestra tarjeta grande |
 | Texto alternativo | Accesibilidad de esa imagen |
 | Tipo de tarjeta | Imagen grande o pequeña (X/Twitter) |
-| Cuenta de X del sitio | `@ull` |
+| Cuenta de X del sitio | `@museodelaciudad` |
 | Idioma declarado | `es_ES` |
 | No indexar | Añade `robots noindex`, útil en tours internos |
 
@@ -83,37 +88,11 @@ igual de bien.
 
 ## Exportar paquete estático
 
-**Exportar** genera en tu navegador, en segundo plano y sin congelar el editor, un ZIP autocontenido (index.html + visor + tour.json + tiles + medios) **sin ninguna dependencia externa**: funciona por FTP en cualquier hosting, con `python3 -m http.server`, en GitHub Pages o Cloudflare Pages sin configuración. No lleva backend, ni CDN, ni llamadas a la plataforma: una vez subido, el tour vive por su cuenta.
-
-Eso sí, hay que **servirlo**, no abrirlo: el paquete estándar no funciona haciendo doble clic en `index.html` (`file://`), porque el navegador bloquea desde el sistema de ficheros tanto los módulos JavaScript como los panoramas. Para verlo en local, `python3 -m http.server` en la carpeta y abrir `http://localhost:8000`.
-
-Opciones:
-
-- **Idiomas incluidos** y **resolución máxima de tiles** (para reducir peso).
-- **Incluir descargas**: muestra u oculta el botón de descarga de los hotspots de imagen y PDF. Los archivos siguen dentro del paquete (el visitante los ve en el recorrido), así que no cambia el tamaño.
-- **Analítica**: endpoint propio configurable o desactivada.
-- **Service worker offline**: PWA instalable, ideal para museos y kioscos sin red.
-- **HTML único**: un solo `index.html` con el visor y los medios en base64, que sí se abre con doble clic. «Tours pequeños» significa que el archivo pesa aproximadamente un tercio más que la suma de sus fotos y vídeos y el navegador lo carga entero en memoria: como orientación, por debajo de unos 100 MB (entre 10 y 15 panoramas sin vídeo). Se puede combinar con SCORM. Solo admite escenas equirectangulares: los tiles multirresolución no se pueden incrustar porque el visor calcula sus URL nivel a nivel, así que con un tour teselado la opción aparece desactivada. Al abrirse por `file://` no hay WebXR (no es contexto seguro) y la VR queda en modo cardboard.
-- **SCORM 1.2 / 2004**: paquete para LMS con reporte de finalización y puntuación, también con HTML único.
-- **Kiosko**: autopilot + reinicio por inactividad + bloqueo de salida.
-
-En Chrome y Edge se pide primero dónde guardar el ZIP y se escribe directamente en ese fichero mientras se genera; en los demás navegadores se descarga al terminar. Las fotos y teselas se descargan en paralelo y se guardan sin recomprimir (ya vienen comprimidas); solo se comprimen los ficheros de texto.
-
-El ZIP incluye además un `LEEME.md` con las instrucciones de subida y un
-`.htaccess` con los tipos MIME (`.webp`, `.avif`, `.glb`, `.webmanifest`) y las
-cabeceras de caché que necesitan los alojamientos compartidos con Apache. El
-paquete funciona igual dentro de un subdirectorio (`https://midominio.es/tours/mi-tour/`):
-todas las rutas son relativas.
-
-### Realidad virtual en el paquete exportado
-
-El paquete lleva el mismo motor que el tour publicado, así que el botón **Modo
-VR** funciona también desde el ZIP, con una condición: **hay que servirlo por
-HTTPS**. WebXR solo existe en contextos seguros; abriendo el `index.html` con
-doble clic (`file://`) el tour se ve, pero el modo inmersivo cae al respaldo
-cardboard. Cualquier alojamiento con certificado —incluidos GitHub Pages,
-Cloudflare Pages o Netlify, gratuitos— sirve. Véase la
-[guía de realidad virtual](/docs/usuario/realidad-virtual/).
+**Exportar** genera en tu navegador un paquete que funciona sin Andarama detrás:
+un ZIP para cualquier alojamiento, un HTML único que se abre con doble clic, una
+versión que sigue funcionando sin conexión (PWA/kiosco) o un paquete SCORM para
+el aula virtual. Qué hace cada opción, cuándo usarla y sus límites están en
+[Exportar: ZIP, HTML único, PWA y SCORM](/docs/usuario/exportar/).
 
 También puedes automatizar la publicación desde CI con un token de API (`POST /api/v1/projects/{id}/publish`) y recibir webhooks de publicación.
 
@@ -153,4 +132,5 @@ Hay tres caminos, y los tres llevan al mismo sitio:
   mundo. Funciona en los dos sentidos: `?kiosk=0` saca el recorrido suelto de
   un tour publicado en quiosco, por si quieres compartirlo con alguien.
 - **Al exportar** (**Exportar › Modo quiosco**), si lo que quieres es un
-  paquete que funcione sin conexión ni servidor.
+  paquete que funcione sin Andarama detrás (y, con el service worker, sin
+  conexión). Véase [Exportar](/docs/usuario/exportar/).

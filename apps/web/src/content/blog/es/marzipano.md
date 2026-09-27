@@ -19,7 +19,7 @@ faq:
     a: "No tiene modo WebXR. Hay ejemplos de pantalla partida para cartón en su repositorio, pero no una sesión inmersiva con manos o mandos; eso lo añade Andarama en su capa."
 ---
 
-**Marzipano** es una librería JavaScript de código abierto, publicada por Google con licencia Apache 2.0, para construir visores de fotos 360 en el navegador. Es rápida, ligera, soporta panoramas equirectangulares y en caras de cubo con multirresolución, y es gratis sin condiciones. Lo que no es: un editor. Para algo más que enlazar panoramas hay que programar, no tiene realidad virtual WebXR, ni analítica, ni quiz, ni SCORM, y no hay empresa detrás que dé soporte. Andarama usa Marzipano como base de su motor y añade encima el editor y todo lo demás; por eso la comparación honesta es «Marzipano con editor», y por eso hay casos en los que Marzipano a secas es mejor.
+**Marzipano** es una librería JavaScript de código abierto, publicada por Google con licencia Apache 2.0, para construir visores de fotos 360 en el navegador. Es rápida, ligera, soporta panoramas equirectangulares y en caras de cubo con multirresolución, y es gratis sin condiciones. Lo que no es: un editor. Para algo más que enlazar panoramas hay que programar, no tiene realidad virtual WebXR, ni analítica, ni quiz, ni SCORM, y no hay empresa detrás que dé soporte: la propia web aclara que no es un producto oficial de Google y el [repositorio](https://github.com/google/marzipano) está archivado desde octubre de 2023 (comprobado el 27 de septiembre de 2026), así que no recibe cambios. Andarama usa Marzipano como base de su motor y añade encima el editor y todo lo demás; por eso la comparación honesta es «Marzipano con editor», y por eso hay casos en los que Marzipano a secas es mejor.
 
 Un aviso antes de seguir: la ficha de Marzipano que sale en la tabla lleva `verificado: false`. Al no tener planes ni precios no hay nada que comprobar en una página de tarifas, pero sus capacidades las hemos anotado de memoria y de la documentación pública, no de una revisión reciente; si algo ha cambiado, agradecemos el aviso.
 
@@ -61,7 +61,7 @@ Para una única visita sencilla, gratis y que se sube por FTP, es una buena solu
 
 ## Andarama: Marzipano con editor (y lo que hay debajo)
 
-El motor 360 de Andarama está construido **sobre Marzipano**, con capas propias: teselado en el navegador, proyecciones (pequeño planeta, ojo de pez, Panini), WebXR con manos y mandos, diecisiete tipos de hotspot dibujados también dentro de las gafas, audio espacial, vídeo 360 y brújula. Encima, el editor con grafo, el plano, las traducciones, la publicación con enlace y QR, la analítica sin cookies, el quiz con nota, el escape room, el SCORM y el LTI.
+El motor 360 de Andarama está construido **sobre Marzipano**, con capas propias: teselado en el navegador, proyecciones (pequeño planeta, ojo de pez, Panini), WebXR con manos y mandos, diecisiete tipos de hotspot dibujados también dentro de las gafas, audio espacial, vídeo 360 y brújula. Encima, el editor con grafo, el plano, las traducciones, la publicación con enlace y QR, la analítica sin cookies, el quiz con nota, el escape room, el SCORM y el LTI 1.3 (todavía en pruebas: la nota aún no vuelve sola a Moodle).
 
 Lo que se conserva del espíritu de Marzipano es lo importante: el **tour exportado es un fichero estático**. Un ZIP con el HTML, el visor y las teselas que se sube a cualquier hosting y funciona sin Andarama detrás, igual que un tour de la Marzipano Tool. El formato `tour.json` está [documentado](https://docs.andarama.com/referencia/tour-json/) y el programa entero es de código abierto (EUPL-1.2), así que quien quiera leer cómo se usa Marzipano por dentro puede hacerlo.
 
@@ -80,7 +80,7 @@ Sé honesto contigo mismo sobre lo que necesitas:
 - **No quieres programar** y necesitas editar el tour más de una vez.
 - **Contenido rico**: textos, imágenes con zoom, vídeo sobre las paredes, audio, PDF, comparador, idiomas.
 - **Realidad virtual** de verdad, en gafas, sin instalar nada.
-- **Docencia y formación**: quiz con nota, escape room, LTI con Moodle, SCORM.
+- **Docencia y formación**: quiz con nota, escape room, SCORM 1.2 y 2004.
 - **Publicación y datos**: enlace, QR, inserción, dominio propio, analítica sin cookies.
 - **Que siga siendo tuyo**: exportación estática y código abierto, como con Marzipano, pero con editor.
 

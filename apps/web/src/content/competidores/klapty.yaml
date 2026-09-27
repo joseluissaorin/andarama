@@ -3,16 +3,37 @@ web: https://www.klapty.com
 pais: "CH"
 tipo: saas
 gratis: true
-gratis_detalle: "Plan gratuito con marca de Klapty y funciones limitadas"
+gratis_detalle: "Plan gratuito con 1 tour activo, 100 visitas al mes y marca de agua de Klapty"
 planes:
-  - nombre: Pro
-    precio: 19
+  - nombre: Basic
+    precio: 14.9
     moneda: EUR
     periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: false
-cuotas: null
+    precio_mes_anual: 12.42
+    precio_anual: 149
+    verificado: true
+  - nombre: Advanced
+    precio: 29.9
+    moneda: EUR
+    periodo: month
+    precio_mes_anual: 24.92
+    precio_anual: 299
+    verificado: true
+  - nombre: Premier
+    precio: 59.9
+    moneda: EUR
+    periodo: month
+    precio_mes_anual: 49.92
+    precio_anual: 599
+    verificado: true
+  - nombre: Platinum
+    precio: 99.9
+    moneda: EUR
+    periodo: month
+    precio_mes_anual: 83.25
+    precio_anual: 999
+    verificado: true
+cuotas: "Tours activos: 1 (Free), 20 (Basic), 50 (Advanced), 150 (Premier) y 300 (Platinum); visitas al mes: 100, 1000, 5000, 10 000 y 20 000, con recargo por cada 1000 visitas adicionales"
 rv: true
 scorm: false
 lti: false
@@ -20,11 +41,12 @@ exportacion: false
 exportacion_detalle: null
 codigo_abierto: false
 marca_blanca: parcial
-dominio_propio: parcial
+dominio_propio: false
 analitica_sin_cookies: null
 street_view: false
-verificado: false
+verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
   es: "SaaS suizo-francés con plan gratuito, orientado a inmobiliarias y turismo, con app móvil de captura."
   en: "Swiss-French SaaS with a free plan, aimed at real estate and tourism, with a mobile capture app."
-notas: "Sede en Suiza con equipo francés. El precio del plan Pro es de memoria y debe comprobarse."
+notas: "Sede en Suiza con equipo francés. La web da el mismo importe en dólares, euros o francos suizos; el pago anual ahorra un 20 %. La marca de agua desaparece desde Basic, la marca Klapty se elimina desde Premier y las opciones de marca blanca llegan en Platinum; la tabla no menciona dominio propio. Enterprise, desde 199,90 al mes bajo presupuesto. Fuente: https://www.klapty.com/pricing-360-tours (27-9-2026)."
