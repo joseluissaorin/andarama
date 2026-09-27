@@ -2,7 +2,7 @@
 title: Guía de administración
 ---
 
-El primer usuario registrado es **administrador de la instancia** y ve la sección **Administración** del Studio.
+Los administradores de la instancia ven la sección **Administración** del Studio. En una instalación propia, lo recomendable es fijarlos con la variable `ADMIN_EMAILS` (correos separados por comas): solo esas direcciones reciben el papel al registrarse. Si no se define y la instancia no usa Clerk, el primer usuario registrado es el administrador.
 
 ## Ajustes de instancia
 
