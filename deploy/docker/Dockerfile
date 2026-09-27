@@ -5,13 +5,19 @@
 FROM node:22-bookworm-slim AS build
 RUN corepack enable
 WORKDIR /app
-COPY pnpm-workspace.yaml package.json ./
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY tooling ./tooling
 COPY packages ./packages
 COPY apps ./apps
 COPY deploy ./deploy
-RUN pnpm install --frozen-lockfile=false
+# Con el lockfile del repositorio: la imagen lleva las mismas versiones que
+# la CI ha probado, no las que salgan ese día.
+RUN pnpm install --frozen-lockfile
 RUN pnpm build:packages
+# La documentación y el sitio público van antes que el Studio: collect-assets
+# los copia a /docs y /landing (la galería /explorar/ usa sus hojas de estilo).
+RUN pnpm --filter @andarama/docs build
+RUN pnpm --filter @andarama/web build
 RUN pnpm --filter @andarama/studio build
 RUN pnpm --filter @andarama/api build:node
 

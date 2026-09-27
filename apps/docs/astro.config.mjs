@@ -70,6 +70,7 @@ export default defineConfig({
           translations: { en: "Deployment" },
           items: [
             { label: "Cloudflare (referencia)", translations: { en: "Cloudflare (reference)" }, slug: "despliegue/cloudflare" },
+            { label: "Instalación en un servidor propio", translations: { en: "Install on your own server" }, slug: "despliegue/servidor-propio" },
             { label: "Self-host (Docker)", translations: { en: "Self-host (Docker)" }, slug: "despliegue/docker" },
             { label: "Ejecutable de escritorio", translations: { en: "Desktop app" }, slug: "despliegue/escritorio" },
             { label: "Dominio propio para un tour", translations: { en: "Custom domain for a tour" }, slug: "despliegue/dominios" },

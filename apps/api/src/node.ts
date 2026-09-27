@@ -30,17 +30,28 @@ import { guessContentType } from "./routes/projects.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
+/**
+ * Lee una variable de entorno tratando la cadena vacía como «no definida».
+ * El docker-compose pasa todas las opcionales como `${VAR:-}`, así que llegan
+ * vacías; con `!= null` bastaba eso para encender Clerk, OIDC o S3 sin
+ * claves y dejar el Studio colgado en «Cargando».
+ */
+function env(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value == null || value === "" ? undefined : value;
+}
+
 async function main(): Promise<void> {
   // docker-compose pasa las variables opcionales vacías (`${X:-}`): una
   // variable vacía es una variable sin definir, no una clave de Clerk "".
   for (const [key, value] of Object.entries(process.env)) {
     if (value === "") delete process.env[key];
   }
-  const dataDir = resolve(process.env.DATA_DIR ?? "./data");
-  const port = parseInt(process.env.PORT ?? "8788", 10);
-  const publicUrl = (process.env.PUBLIC_URL ?? `http://localhost:${port}`).replace(/\/$/, "");
-  const secret = process.env.APP_SECRET ?? "dev-secret-cambia-esto";
-  if (secret === "dev-secret-cambia-esto" && process.env.NODE_ENV === "production") {
+  const dataDir = resolve(env("DATA_DIR") ?? "./data");
+  const port = parseInt(env("PORT") ?? "8788", 10);
+  const publicUrl = (env("PUBLIC_URL") ?? `http://localhost:${port}`).replace(/\/$/, "");
+  const secret = env("APP_SECRET") ?? "dev-secret-cambia-esto";
+  if (secret === "dev-secret-cambia-esto" && env("NODE_ENV") === "production") {
     console.error("ATENCION: define APP_SECRET en produccion");
   }
 
@@ -53,6 +64,14 @@ async function main(): Promise<void> {
   });
   if (applied.length > 0) console.log(`[db] migraciones aplicadas: ${applied.join(", ")}`);
 
+  const s3Endpoint = env("S3_ENDPOINT");
+  const smtpPort = env("SMTP_PORT");
+  const oidcIssuer = env("OIDC_ISSUER");
+  const oidcClientId = env("OIDC_CLIENT_ID");
+  const oidcClientSecret = env("OIDC_CLIENT_SECRET");
+  const clerkPublishableKey = env("CLERK_PUBLISHABLE_KEY");
+  const clerkSecretKey = env("CLERK_SECRET_KEY");
+
   const queue = createInProcessQueue();
   const runtime: PlatformRuntime = {
     platform: "node",
@@ -64,13 +83,13 @@ async function main(): Promise<void> {
       hmacSecret: secret,
       publicUrl,
       s3:
-        process.env.S3_ENDPOINT != null
+        s3Endpoint != null
           ? {
-              endpoint: process.env.S3_ENDPOINT,
-              bucket: process.env.S3_BUCKET ?? "andarama",
-              accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
-              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
-              region: process.env.S3_REGION,
+              endpoint: s3Endpoint,
+              bucket: env("S3_BUCKET") ?? "andarama",
+              accessKeyId: env("S3_ACCESS_KEY_ID") ?? "",
+              secretAccessKey: env("S3_SECRET_ACCESS_KEY") ?? "",
+              region: env("S3_REGION"),
             }
           : undefined,
     }),
@@ -78,12 +97,12 @@ async function main(): Promise<void> {
     analytics: createSqlAnalytics(db),
     passwords: createArgon2Hasher(),
     email: createSmtpEmail({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT != null ? parseInt(process.env.SMTP_PORT, 10) : undefined,
-      secure: process.env.SMTP_SECURE === "1",
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-      from: process.env.EMAIL_FROM ?? "andarama@localhost",
+      host: env("SMTP_HOST"),
+      port: smtpPort != null ? parseInt(smtpPort, 10) : undefined,
+      secure: env("SMTP_SECURE") === "1",
+      user: env("SMTP_USER"),
+      pass: env("SMTP_PASS"),
+      from: env("EMAIL_FROM") ?? "andarama@localhost",
     }),
     deferred: (p) => {
       void p.catch((err) => console.error("[deferred]", err));
@@ -98,27 +117,27 @@ async function main(): Promise<void> {
   const config: AppConfig = {
     publicUrl,
     secret,
-    emailFrom: process.env.EMAIL_FROM ?? "andarama@localhost",
-    turnstileSiteKey: process.env.TURNSTILE_SITE_KEY,
-    turnstileSecret: process.env.TURNSTILE_SECRET,
+    emailFrom: env("EMAIL_FROM") ?? "andarama@localhost",
+    turnstileSiteKey: env("TURNSTILE_SITE_KEY"),
+    turnstileSecret: env("TURNSTILE_SECRET"),
     maxUploadBytes: 512 * 1024 * 1024,
     oidc:
-      process.env.OIDC_ISSUER != null && process.env.OIDC_CLIENT_ID != null && process.env.OIDC_CLIENT_SECRET != null
+      oidcIssuer != null && oidcClientId != null && oidcClientSecret != null
         ? {
-            issuer: process.env.OIDC_ISSUER,
-            clientId: process.env.OIDC_CLIENT_ID,
-            clientSecret: process.env.OIDC_CLIENT_SECRET,
-            allowedDomains: process.env.OIDC_ALLOWED_DOMAINS?.split(",").map((d) => d.trim()),
+            issuer: oidcIssuer,
+            clientId: oidcClientId,
+            clientSecret: oidcClientSecret,
+            allowedDomains: env("OIDC_ALLOWED_DOMAINS")?.split(",").map((d) => d.trim()),
           }
         : undefined,
     // Opcional también en Node: quien quiera Clerk en su servidor puede ponerlo
     clerk:
-      process.env.CLERK_PUBLISHABLE_KEY != null && process.env.CLERK_SECRET_KEY != null
+      clerkPublishableKey != null && clerkSecretKey != null
         ? {
-            publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
-            secretKey: process.env.CLERK_SECRET_KEY,
-            jwtKey: process.env.CLERK_JWT_KEY,
-            authorizedParties: process.env.CLERK_AUTHORIZED_PARTIES?.split(",").map((s) => s.trim()).filter((s) => s !== ""),
+            publishableKey: clerkPublishableKey,
+            secretKey: clerkSecretKey,
+            jwtKey: env("CLERK_JWT_KEY"),
+            authorizedParties: env("CLERK_AUTHORIZED_PARTIES")?.split(",").map((s) => s.trim()).filter((s) => s !== ""),
           }
         : undefined,
     templates: parseTemplatesConfig(process.env.SAMPLE_PROJECT_ID, process.env.TEMPLATE_PROJECTS),
@@ -138,6 +157,7 @@ async function main(): Promise<void> {
 
   // Estaticos: Studio (SPA) y bundle del visor
   const assetRoots = findAssetRoots();
+  const showLanding = env("SHOW_LANDING") === "1";
 
   const server = serve(
     {
@@ -167,15 +187,28 @@ async function main(): Promise<void> {
           }
         }
         if (new URL(effectiveRequest.url).pathname === "/") {
-          // La portada del self-host es la landing; el Studio vive en /studio
-          const landing = await serveStatic(assetRoots, "/landing/index.html");
-          if (landing != null) return landing;
+          // En una instalación propia la portada lleva directo al Studio: la
+          // landing es la de andarama.com (precios, «Entrar» en
+          // app.andarama.com) y a un centro que instala la suya lo manda fuera.
+          // Quien la quiera puede pedirla con SHOW_LANDING=1.
+          if (showLanding) {
+            const landing = await serveStatic(assetRoots, "/landing/index.html");
+            if (landing != null) return landing;
+          }
           return Response.redirect(`${publicUrl}/studio/`, 302);
         }
         const response = await app.fetch(effectiveRequest);
         if (response.status === 404 && request.method === "GET" && !url.pathname.startsWith("/api/")) {
           const asset = await serveStatic(assetRoots, url.pathname);
           if (asset != null) return asset;
+          // El sitio público (apps/web) está en /landing dentro de los assets,
+          // pero sus enlaces internos son de raíz (/en/, /blog/, /_astro/…),
+          // igual que en el apex de Cloudflare.
+          const seccion = /^\/(studio|docs|viewer|landing)(\/|$)/.test(url.pathname);
+          if (!seccion) {
+            const web = await serveStatic(assetRoots, `/landing${url.pathname}`);
+            if (web != null) return web;
+          }
           if (url.pathname.startsWith("/studio")) {
             const spa = await serveStatic(assetRoots, "/studio/index.html");
             if (spa != null) return spa;
@@ -218,7 +251,7 @@ function findMigrationsDir(): string {
 function findAssetRoots(): string[] {
   const roots: string[] = [];
   const candidates = [
-    process.env.ASSETS_DIR,
+    env("ASSETS_DIR"),
     resolve(here, "./assets"),
     resolve(here, "../assets"),
     resolve(here, "../../studio/dist-root"),

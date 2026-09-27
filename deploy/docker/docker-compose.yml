@@ -1,27 +1,36 @@
-# Self-hosting de Andarama (§5.7): docker compose up -d
-# Requisitos minimos: 1 vCPU / 1 GB RAM.
+# Instalación propia de Andarama (§5.7). Guía completa:
+# https://docs.andarama.com/despliegue/servidor-propio/
+#
+#   cp .env.example .env        # y rellénalo
+#   docker compose up -d --build                  # solo Andarama, puerto 8788
+#   docker compose --profile https up -d --build  # con Caddy y HTTPS automático
+#
+# Requisitos mínimos: 1 vCPU / 1 GB RAM.
 services:
   andarama:
-    image: ghcr.io/joseluissaorin/andarama:latest
+    image: ${ANDARAMA_IMAGE:-ghcr.io/joseluissaorin/andarama:latest}
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile
     restart: unless-stopped
     ports:
-      - "8788:8788"
+      # Con Caddy delante, ANDARAMA_BIND=127.0.0.1 deja el 8788 fuera de Internet.
+      - "${ANDARAMA_BIND:-0.0.0.0}:${ANDARAMA_PORT:-8788}:8788"
     volumes:
       - anda-data:/data
     environment:
-      # URL publica de la instancia (obligatoria detras de proxy/TLS)
+      # URL pública de la instancia (obligatoria detrás de proxy/TLS)
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8788}
       # Secreto de instancia: genera uno con `openssl rand -hex 32`
       APP_SECRET: ${APP_SECRET:?Define APP_SECRET en .env}
-      # Administradores de la instancia, separados por comas. Si se deja vacia,
-      # el primer usuario registrado administra la instancia.
+      # Correos que serán administradores de la instancia (separados por comas)
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
-      # SMTP opcional (verificacion de email, invitaciones)
+      # Portada de andarama.com en / (por defecto / lleva al Studio)
+      SHOW_LANDING: ${SHOW_LANDING:-}
+      # SMTP opcional (verificación de correo, invitaciones)
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       EMAIL_FROM: ${EMAIL_FROM:-andarama@localhost}
@@ -30,29 +39,39 @@ services:
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
       OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
       OIDC_ALLOWED_DOMAINS: ${OIDC_ALLOWED_DOMAINS:-}
-      # Almacenamiento S3/MinIO opcional (por defecto: FS local en /data)
+      # Almacenamiento S3/MinIO opcional (por defecto: disco local en /data)
       S3_ENDPOINT: ${S3_ENDPOINT:-}
       S3_BUCKET: ${S3_BUCKET:-}
+      S3_REGION: ${S3_REGION:-}
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
-      # Turnstile opcional
+      # Turnstile opcional (antispam en formularios públicos)
       TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
       TURNSTILE_SECRET: ${TURNSTILE_SECRET:-}
-      # Clerk opcional (cuentas y planes como en andarama.com; el self-host no lo necesita)
+      # Clerk opcional (cuentas y planes como en andarama.com; la instalación propia no lo necesita)
       CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:-}
       CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
       CLERK_WEBHOOK_SECRET: ${CLERK_WEBHOOK_SECRET:-}
 
-  # TLS automatico opcional con Caddy (descomenta y apunta tu dominio):
-  # caddy:
-  #   image: caddy:2
-  #   restart: unless-stopped
-  #   ports: ["80:80", "443:443"]
-  #   volumes:
-  #     - ./Caddyfile:/etc/caddy/Caddyfile:ro
-  #     - caddy-data:/data
-  #   depends_on: [andarama]
+  # HTTPS automático con Caddy (Let's Encrypt). Se enciende con
+  # `--profile https` y toma el dominio de DOMINIO en el .env.
+  caddy:
+    image: caddy:2
+    profiles: ["https"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMINIO: ${DOMINIO:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [andarama]
 
 volumes:
   anda-data:
-  # caddy-data:
+  caddy-data:
+  caddy-config:

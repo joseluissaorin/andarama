@@ -64,9 +64,18 @@ jobs:
         run: docker build -f deploy/docker/Dockerfile -t andarama:ci .
       - name: Humo de la imagen
         run: |
-          docker run -d --name andarama -p 8788:8788 -e APP_SECRET=ci-secret andarama:ci
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:8788/api/v1/health > /dev/null; then exit 0; fi
+          # Las opcionales vacías, como las pasa el docker-compose: no deben
+          # encender Clerk, OIDC ni S3 (el Studio se quedaba en «Cargando»).
+          docker run -d --name andarama -p 8788:8788 -e APP_SECRET=ci-secret \
+            -e CLERK_PUBLISHABLE_KEY= -e CLERK_SECRET_KEY= -e OIDC_ISSUER= -e OIDC_CLIENT_ID= \
+            -e OIDC_CLIENT_SECRET= -e S3_ENDPOINT= -e TURNSTILE_SITE_KEY= andarama:ci
+          for _ in $(seq 1 30); do
+            if curl -sf http://localhost:8788/api/v1/health > /dev/null; then
+              curl -sf http://localhost:8788/api/v1/config | tee /dev/stderr | grep -q '"auth":"local"'
+              curl -sf -o /dev/null http://localhost:8788/studio/
+              curl -sf -o /dev/null http://localhost:8788/explorar/
+              exit 0
+            fi
             sleep 2
           done
           docker logs andarama

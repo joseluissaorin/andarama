@@ -1,6 +1,13 @@
-# TLS automatico para Andarama self-host. Sustituye tours.ejemplo.es por tu dominio
-# y define PUBLIC_URL=https://tours.ejemplo.es en el .env del compose.
-tours.ejemplo.es {
+# HTTPS automático para una instalación propia de Andarama.
+# El dominio sale de DOMINIO en el .env (p. ej. pruebaandarama.jls.name);
+# PUBLIC_URL tiene que ser https:// con ese mismo dominio.
+# Caddy pide y renueva solo el certificado de Let's Encrypt: basta con que el
+# DNS apunte al servidor y los puertos 80 y 443 estén abiertos.
+{$DOMINIO} {
+	encode zstd gzip
+	# Subidas de panorámicas grandes: el servidor admite hasta 512 MB.
+	request_body {
+		max_size 512MB
+	}
 	reverse_proxy andarama:8788
-	encode gzip zstd
 }
