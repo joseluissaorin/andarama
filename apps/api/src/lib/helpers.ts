@@ -172,10 +172,33 @@ const KIND_MIMES: Record<string, string[]> = {
   video: ["video/mp4", "video/webm"],
   audio: ["audio/mpeg", "audio/mp4", "audio/ogg", "audio/wav", "video/mp4"],
   pdf: ["application/pdf"],
-  model: ["model/gltf-binary"],
+  model: ["model/gltf-binary", "model/gltf+json", "model/stl", "model/obj", "model/vnd.usdz+zip"],
   subtitle: [],
   file: [],
 };
+
+/**
+ * Formato real de un modelo 3D. Solo se reconocía GLB, así que un STL (el
+ * formato de las impresoras 3D, muy usado en clase) se borraba al subirlo
+ * con «el contenido no coincide». Se mira el fichero entero: el STL binario
+ * se reconoce por su tamaño exacto (84 + 50 bytes por triángulo), porque su
+ * cabecera es libre y a menudo empieza también por «solid».
+ */
+export function sniffModel(bytes: Uint8Array): string | null {
+  if (bytes.length >= 4 && ascii(bytes, 0, 4) === "glTF") return "model/gltf-binary";
+  if (bytes.length >= 84) {
+    const triangles = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(80, true);
+    if (84 + triangles * 50 === bytes.length) return "model/stl";
+  }
+  if (bytes.length >= 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04) return "model/vnd.usdz+zip";
+  const head = bytes.slice(0, 4096);
+  if (head.includes(0)) return null; // binario desconocido
+  const text = new TextDecoder("utf-8", { fatal: false }).decode(head).replace(/^﻿/, "").trimStart();
+  if (/^solid\b/i.test(text) && /\bfacet\b|\bendsolid\b/i.test(text)) return "model/stl";
+  if (text.startsWith("{") && text.includes('"asset"')) return "model/gltf+json";
+  if (/^(v|vt|vn|f|o|g|mtllib|usemtl)\s/m.test(text) && /^v\s+-?[\d.]/m.test(text)) return "model/obj";
+  return null;
+}
 
 export function mimeAllowedForKind(kind: string, sniffed: string | null): boolean {
   const allowed = KIND_MIMES[kind];

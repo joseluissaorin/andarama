@@ -10,7 +10,7 @@ import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
 import { guessContentType } from "./projects.js";
-import { audit, getSettings, mimeAllowedForKind, sanitizeSvgServer, sniffMime } from "../lib/helpers.js";
+import { audit, getSettings, mimeAllowedForKind, sanitizeSvgServer, sniffMime, sniffModel } from "../lib/helpers.js";
 
 const KINDS = ["panorama", "image", "video", "audio", "pdf", "model", "floorplan", "subtitle", "file"] as const;
 
@@ -185,7 +185,7 @@ export function mediaRoutes(): Hono<AppEnv> {
     // Sniffing de magic bytes sobre los primeros KB
     const bytes = await runtime.storage.getBytes(row.r2Key);
     if (bytes == null) throw badRequest("El fichero no se ha subido");
-    const sniffed = sniffMime(bytes.slice(0, 4096));
+    const sniffed = row.kind === "model" ? sniffModel(bytes) : sniffMime(bytes.slice(0, 4096));
     if (!mimeAllowedForKind(row.kind, sniffed)) {
       await runtime.storage.delete(row.r2Key);
       await db.delete(media).where(eq(media.id, row.id));

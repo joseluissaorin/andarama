@@ -44,6 +44,12 @@ function num(value: string, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+/** Formato del hotspot de modelo 3D según la extensión del fichero. */
+export function modelFormatFromName(filename: string): "glb" | "gltf" | "obj" | "stl" | null {
+  const ext = /\.([a-z0-9]+)$/i.exec(filename)?.[1]?.toLowerCase();
+  return ext === "glb" || ext === "gltf" || ext === "obj" || ext === "stl" ? ext : null;
+}
+
 const RAD = Math.PI / 180;
 const toDeg = (rad: number): string => (rad / RAD).toFixed(1);
 
@@ -1373,6 +1379,11 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             setContent({ after: { ...content.after, url: `media:${item.id}` } });
           } else if (field === "icono") {
             setStyle({ icon: { ...(style.icon ?? {}), url: `media:${item.id}`, name: undefined } });
+          } else if (field === "url" && hotspot.type === "model3d") {
+            // El formato sale de la extensión: con un STL y el selector en
+            // GLB, el visor intentaba abrirlo como glTF y no se veía nada.
+            const format = modelFormatFromName(item.filename);
+            setContent({ url: `media:${item.id}`, ...(format != null ? { format } : {}) });
           } else {
             setContent({ [field]: `media:${item.id}` });
           }
