@@ -8,6 +8,7 @@ import {
   buildZip,
   filterTourLangs,
   limitTourResolution,
+  readAhead,
   renderAccessibleHtml,
   renderImsManifest,
   renderIndexHtml,
@@ -52,6 +53,61 @@ describe("ZipWriter", () => {
     expect(listing).toContain("dir/tour.json");
     const check = execFileSync("unzip", ["-t", zipPath]).toString();
     expect(check).toContain("No errors detected");
+  });
+});
+
+describe("ZIP más rápido", () => {
+  it("comprime el texto y guarda tal cual lo que ya viene comprimido", async () => {
+    const texto = new TextEncoder().encode(JSON.stringify({ escenas: Array.from({ length: 400 }, (_, i) => ({ id: `s${i}`, titulo: "Aula" })) }));
+    const foto = new Uint8Array(4096).map((_, i) => (i * 7919) % 251);
+    const zip = await buildZip([
+      { name: "tour.json", data: texto },
+      { name: "media/foto.jpg", data: foto },
+    ]);
+    // El ZIP ocupa bastante menos que el texto sin comprimir
+    expect(zip.length).toBeLessThan(texto.length / 2 + foto.length + 400);
+    const dir = mkdtempSync(join(tmpdir(), "anda-zip-"));
+    const zipPath = join(dir, "d.zip");
+    writeFileSync(zipPath, zip);
+    const detalle = execFileSync("unzip", ["-v", zipPath]).toString();
+    expect(detalle).toMatch(/Defl:N.*tour\.json/);
+    expect(detalle).toMatch(/Stored.*media\/foto\.jpg/);
+    expect(execFileSync("unzip", ["-t", zipPath]).toString()).toContain("No errors detected");
+    // Y se puede desactivar
+    const plano = await buildZip([{ name: "tour.json", data: texto }], { deflate: false });
+    expect(plano.length).toBeGreaterThan(texto.length);
+  });
+
+  it("lee en paralelo y entrega en orden", async () => {
+    let enVuelo = 0;
+    let maximo = 0;
+    const orden: number[] = [];
+    await readAhead(
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      4,
+      async (n) => {
+        enVuelo++;
+        maximo = Math.max(maximo, enVuelo);
+        await new Promise((r) => setTimeout(r, (10 - n) * 2));
+        enVuelo--;
+        return new Uint8Array([n]);
+      },
+      async (n, data) => {
+        expect(data[0]).toBe(n);
+        orden.push(n);
+      },
+    );
+    expect(orden).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(maximo).toBe(4);
+  });
+
+  it("un error de lectura se propaga", async () => {
+    await expect(
+      readAhead([1, 2, 3], 3, async (n) => {
+        if (n === 2) throw new Error("fallo");
+        return new Uint8Array([n]);
+      }, async () => {}),
+    ).rejects.toThrow("fallo");
   });
 });
 
@@ -136,6 +192,36 @@ describe("runExport", () => {
     expect(listing).toContain("tiles/m1/1/f/0/0.webp");
     expect(listing).not.toContain("tiles/m1/2/f/0/0.webp");
     expect(listing).not.toContain("tiles/m1/3/f/0/0.webp");
+  });
+});
+
+describe("SCORM con HTML único", () => {
+  it("el adaptador va dentro de index.html y el manifiesto se incluye", async () => {
+    const tour = sampleTour();
+    tour.scenes[0]!.source = { kind: "equirect", url: "media/pano.jpg" } as never;
+    const files = new Map<string, Uint8Array>();
+    const chunks: Uint8Array[] = [];
+    const writer = new ZipWriter((c) => {
+      chunks.push(c);
+    }, { deflate: false });
+    const original = writer.addFile.bind(writer);
+    writer.addFile = async (name: string, data: Uint8Array) => {
+      files.set(name, data);
+      await original(name, data);
+    };
+    await runExport(
+      tour,
+      [{ path: "viewer.standalone.js", data: new TextEncoder().encode("/* visor */") }],
+      { list: async () => ["media/pano.jpg"], read: async () => new Uint8Array([1, 2, 3]) },
+      { singleFile: true, scorm: "1.2" },
+      writer,
+    );
+    const html = new TextDecoder().decode(files.get("index.html"));
+    expect(html).toContain("Adaptador SCORM 1.2");
+    expect(html).toContain("andarama:state");
+    expect(files.has("imsmanifest.xml")).toBe(true);
+    // No hay fichero aparte que nadie cargaría
+    expect(files.has("scorm-adapter.js")).toBe(false);
   });
 });
 

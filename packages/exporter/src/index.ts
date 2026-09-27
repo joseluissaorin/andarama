@@ -12,7 +12,7 @@ import {
 } from "./templates.js";
 import { renderImsManifest, renderScormAdapter, type ScormVersion } from "./scorm.js";
 
-export { ZipWriter, buildZip, crc32 } from "./zip.js";
+export { ZipWriter, buildZip, crc32, deflateRaw, isCompressible, type ZipWriterOptions } from "./zip.js";
 export * from "./templates.js";
 export { renderImsManifest, renderScormAdapter, type ScormVersion } from "./scorm.js";
 
@@ -40,6 +40,11 @@ export interface ExportOptions {
   scorm?: ScormVersion | null;
   /** Modo kiosko: autopilot + reinicio por inactividad. */
   kiosk?: boolean;
+  /**
+   * Lecturas de assets en paralelo (por defecto 6). Antes se pedían de una en
+   * una y una escena teselada tiene miles de teselas: el ZIP tardaba minutos.
+   */
+  concurrency?: number;
 }
 
 export interface AssetFile {
@@ -144,6 +149,34 @@ function shouldSkipTile(path: string, skippedLevelFor: Map<string, number>): boo
   return false;
 }
 
+/**
+ * Lee varios elementos a la vez y los entrega en su orden. La red era el
+ * cuello de botella del export; el orden se conserva para que el paquete
+ * salga siempre igual. La memoria queda acotada a `concurrency` lecturas.
+ */
+export async function readAhead<T>(
+  items: T[],
+  concurrency: number,
+  read: (item: T) => Promise<Uint8Array>,
+  consume: (item: T, data: Uint8Array) => Promise<void>,
+): Promise<void> {
+  const inflight = new Map<number, Promise<Uint8Array>>();
+  let launched = 0;
+  const width = Math.max(1, Math.floor(concurrency));
+  for (let consumed = 0; consumed < items.length; consumed++) {
+    while (launched < items.length && launched - consumed < width) {
+      const i = launched++;
+      const p = read(items[i]!);
+      // Se marca como atendida: si falla, el error sale al esperarla en orden
+      p.catch(() => {});
+      inflight.set(i, p);
+    }
+    const data = await inflight.get(consumed)!;
+    inflight.delete(consumed);
+    await consume(items[consumed]!, data);
+  }
+}
+
 function guessMime(path: string): string {
   const ext = path.split(".").pop()?.toLowerCase() ?? "";
   const map: Record<string, string> = {
@@ -161,6 +194,9 @@ function guessMime(path: string): string {
     webm: "video/webm",
     pdf: "application/pdf",
     glb: "model/gltf-binary",
+    gltf: "model/gltf+json",
+    stl: "model/stl",
+    obj: "model/obj",
     vtt: "text/vtt",
   };
   return map[ext] ?? "application/octet-stream";
@@ -236,21 +272,22 @@ export async function runExport(
     await writer.addFile(path, data);
     packageFiles.push(path);
   };
+  const concurrency = options.concurrency ?? 6;
+  const scormJs = options.scorm != null ? renderScormAdapter(options.scorm, tour.quiz?.passingScore ?? null) : null;
 
   if (options.singleFile === true) {
     // HTML unico: assets como data URIs, visor inline.
-    const assetPaths = await assets.list();
+    // En single-file los tiles multires no se pueden mapear (URLs calculadas);
+    // las escenas multires ya deben venir convertidas a equirect por el llamador.
+    const assetPaths = (await assets.list()).filter(
+      (path) => !shouldSkipTile(path, skippedLevelFor) && !/\/\d+\/[fblrud]\/\d+\/\d+\.(webp|jpg|avif)$/.test(path),
+    );
     const dataUris = new Map<string, string>();
     let done = 0;
-    for (const path of assetPaths) {
-      if (shouldSkipTile(path, skippedLevelFor)) continue;
-      // En single-file los tiles multires no se pueden mapear (URLs calculadas);
-      // las escenas multires ya deben venir convertidas a equirect por el llamador.
-      if (/\/\d+\/[fblrud]\/\d+\/\d+\.(webp|jpg|avif)$/.test(path)) continue;
-      const data = await assets.read(path);
+    await readAhead(assetPaths, concurrency, (path) => assets.read(path), async (path, data) => {
       dataUris.set(path, `data:${guessMime(path)};base64,${toBase64(data)}`);
       onProgress?.({ phase: "assets", done: ++done, total: assetPaths.length });
-    }
+    });
     const tourJson = JSON.stringify(tour);
     const rewritten = tourJson.replace(/"((?:media|tiles|assets)\/[^"]+)"/g, (match, path: string) => {
       const uri = dataUris.get(path);
@@ -270,6 +307,9 @@ export async function runExport(
       inlineConfig: `{"tour": ${rewritten}, "analyticsEndpoint": ${JSON.stringify(options.analyticsEndpoint ?? null)}, "kiosk": ${options.kiosk === true}}`,
       inlineViewerJs: new TextDecoder().decode(viewerJs.data),
       kiosk: options.kiosk,
+      // El adaptador SCORM va dentro del propio HTML: antes se empaquetaba
+      // aparte, nadie lo cargaba y el aula virtual no recibía nada.
+      inlineScormJs: scormJs ?? undefined,
     });
     await add("index.html", enc.encode(html));
     await add("LEEME.md", enc.encode(renderReadme(title)));
@@ -287,20 +327,14 @@ export async function runExport(
     // Los códigos de inserción con más que un iframe viajan como documentos
     // aparte, que el visor abre en un marco aislado
     for (const doc of embedDocuments(tour, lang)) await add(doc.path, enc.encode(doc.html));
-    const assetPaths = await assets.list();
+    // Los PDF y las imágenes se mantienen aunque no haya descargas: el
+    // visitante los ve dentro del recorrido; solo se retira el botón.
+    const assetPaths = (await assets.list()).filter((path) => !shouldSkipTile(path, skippedLevelFor));
     done = 0;
-    for (const path of assetPaths) {
-      if (shouldSkipTile(path, skippedLevelFor)) {
-        onProgress?.({ phase: "assets", done: ++done, total: assetPaths.length });
-        continue;
-      }
-      if (options.includeDownloads === false && path.endsWith(".pdf")) {
-        // los PDF se mantienen (visor integrado); solo se retiran los botones
-      }
-      const data = await assets.read(path);
+    await readAhead(assetPaths, concurrency, (path) => assets.read(path), async (path, data) => {
       await add(path, data);
       onProgress?.({ phase: "assets", done: ++done, total: assetPaths.length });
-    }
+    });
     const accessibleHtml = renderAccessibleHtml(tour, lang);
     const html = renderIndexHtml({
       title,
@@ -330,8 +364,9 @@ export async function runExport(
     await add("sw.js", enc.encode(renderServiceWorker(["./index.html", ...packageFiles.filter((f) => f !== "sw.js").map((f) => `./${f}`)], version)));
   }
 
-  if (options.scorm != null) {
-    await add("scorm-adapter.js", enc.encode(renderScormAdapter(options.scorm, tour.quiz?.passingScore ?? null)));
+  if (options.scorm != null && scormJs != null) {
+    // En el HTML único el adaptador ya va dentro de index.html
+    if (options.singleFile !== true) await add("scorm-adapter.js", enc.encode(scormJs));
     await add(
       "imsmanifest.xml",
       enc.encode(

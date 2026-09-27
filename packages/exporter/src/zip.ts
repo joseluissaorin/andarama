@@ -1,8 +1,11 @@
 /**
- * Escritor ZIP minimo en streaming (metodo STORE, sin compresion: los
- * tiles WebP/JPEG y medios ya vienen comprimidos). Funciona en navegador
- * y Node sin dependencias. Limite: formato ZIP clasico (< 4 GB y < 65535
- * entradas), suficiente y documentado; el visor exporta tiles ya optimizados.
+ * Escritor ZIP minimo en streaming. Los tiles WebP/JPEG, los vídeos y el
+ * resto de medios ya vienen comprimidos y se guardan tal cual (STORE):
+ * recomprimirlos solo gasta tiempo. Los ficheros de texto (tour.json, el
+ * visor, HTML, CSS, SVG…) se comprimen con DEFLATE usando CompressionStream,
+ * que es nativo y no bloquea el hilo, si el entorno lo tiene; si no, STORE.
+ * Funciona en navegador y Node sin dependencias. Límite: formato ZIP clásico
+ * (< 4 GB y < 65535 entradas).
  */
 
 const CRC_TABLE = (() => {
@@ -29,9 +32,39 @@ interface CentralEntry {
   name: Uint8Array;
   crc: number;
   size: number;
+  compressedSize: number;
+  method: number;
   offset: number;
   dosTime: number;
   dosDate: number;
+}
+
+/** Extensiones que merece la pena comprimir: texto. El resto ya lo está. */
+const COMPRESSIBLE = /\.(json|js|mjs|cjs|html|htm|css|svg|md|txt|xml|vtt|srt|webmanifest|map|csv|obj|gltf|stl)$|(^|\/)\.htaccess$/i;
+
+export function isCompressible(name: string): boolean {
+  return COMPRESSIBLE.test(name);
+}
+
+/** DEFLATE crudo con CompressionStream; null si el entorno no lo tiene. */
+export async function deflateRaw(data: Uint8Array): Promise<Uint8Array | null> {
+  const CS = (globalThis as { CompressionStream?: new (format: string) => { readable: ReadableStream<Uint8Array>; writable: WritableStream<Uint8Array> } }).CompressionStream;
+  if (CS == null) return null;
+  try {
+    const stream = new Blob([data as BlobPart]).stream().pipeThrough(new CS("deflate-raw") as unknown as TransformStream<Uint8Array, Uint8Array>);
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+export interface ZipWriterOptions {
+  /**
+   * Comprimir los ficheros de texto. `true` (por defecto) usa
+   * CompressionStream si existe; `false` lo guarda todo sin comprimir; una
+   * función permite otro compresor (devuelve null para guardar sin comprimir).
+   */
+  deflate?: boolean | ((data: Uint8Array) => Promise<Uint8Array | null>);
 }
 
 function dosDateTime(date: Date): { dosTime: number; dosDate: number } {
@@ -69,31 +102,50 @@ export class ZipWriter {
   private offset = 0;
   private closed = false;
 
-  constructor(private write: (chunk: Uint8Array) => void | Promise<void>) {}
+  private deflate: ((data: Uint8Array) => Promise<Uint8Array | null>) | null;
+
+  constructor(
+    private write: (chunk: Uint8Array) => void | Promise<void>,
+    options: ZipWriterOptions = {},
+  ) {
+    this.deflate = options.deflate === false ? null : typeof options.deflate === "function" ? options.deflate : deflateRaw;
+  }
 
   async addFile(name: string, data: Uint8Array, date = new Date(2024, 0, 1, 12, 0, 0)): Promise<void> {
     if (this.closed) throw new Error("ZIP cerrado");
     const nameBytes = new TextEncoder().encode(name);
     const crc = crc32(data);
     const { dosTime, dosDate } = dosDateTime(date);
+    let body = data;
+    let method = 0; // STORE
+    if (this.deflate != null && data.length > 256 && isCompressible(name)) {
+      const packed = await this.deflate(data);
+      if (packed != null && packed.length < data.length) {
+        body = packed;
+        method = 8; // DEFLATE
+      }
+    }
     const header = concat(
       u32(0x04034b50),
       u16(20), // version needed
       u16(0x0800), // UTF-8 names
-      u16(0), // method STORE
+      u16(method),
       u16(dosTime),
       u16(dosDate),
       u32(crc),
-      u32(data.length),
+      u32(body.length),
       u32(data.length),
       u16(nameBytes.length),
       u16(0),
       nameBytes,
     );
-    this.entries.push({ name: nameBytes, crc, size: data.length, offset: this.offset, dosTime, dosDate });
+    this.entries.push({ name: nameBytes, crc, size: data.length, compressedSize: body.length, method, offset: this.offset, dosTime, dosDate });
+    // Las longitudes se toman antes de escribir: quien recibe los trozos
+    // puede transferirlos (Web Worker) y dejarlos vacíos
+    const written = header.length + body.length;
     await this.write(header);
-    await this.write(data);
-    this.offset += header.length + data.length;
+    await this.write(body);
+    this.offset += written;
   }
 
   async close(): Promise<void> {
@@ -107,11 +159,11 @@ export class ZipWriter {
         u16(20),
         u16(20),
         u16(0x0800),
-        u16(0),
+        u16(e.method),
         u16(e.dosTime),
         u16(e.dosDate),
         u32(e.crc),
-        u32(e.size),
+        u32(e.compressedSize),
         u32(e.size),
         u16(e.name.length),
         u16(0),
@@ -122,8 +174,8 @@ export class ZipWriter {
         u32(e.offset),
         e.name,
       );
-      await this.write(record);
       centralSize += record.length;
+      await this.write(record);
     }
     const eocd = concat(
       u32(0x06054b50),
@@ -135,8 +187,9 @@ export class ZipWriter {
       u32(centralStart),
       u16(0),
     );
+    const eocdLength = eocd.length;
     await this.write(eocd);
-    this.offset += centralSize + eocd.length;
+    this.offset += centralSize + eocdLength;
   }
 
   get bytesWritten(): number {
@@ -149,11 +202,11 @@ export class ZipWriter {
 }
 
 /** Conveniencia: construye un ZIP completo en memoria. */
-export async function buildZip(files: { name: string; data: Uint8Array }[]): Promise<Uint8Array> {
+export async function buildZip(files: { name: string; data: Uint8Array }[], options: ZipWriterOptions = {}): Promise<Uint8Array> {
   const chunks: Uint8Array[] = [];
   const writer = new ZipWriter((c) => {
     chunks.push(c);
-  });
+  }, options);
   for (const f of files) {
     await writer.addFile(f.name, f.data);
   }
