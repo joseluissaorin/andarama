@@ -56,6 +56,7 @@
   "after": "之后",
   "open_external": "在新标签页中打开",
   "accessible_mode": "无障碍版本",
+  "made_with_andarama": "由 Andarama 制作",
   "accessible_intro": "导览的无障碍线性版本，包含所有场景和内容。",
   "back_to_360": "返回 360 视图",
   "scene_of": "第 {index} 个场景，共 {total} 个",

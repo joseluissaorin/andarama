@@ -56,6 +56,7 @@
   "after": "Sonra",
   "open_external": "Yeni sekmede açılır",
   "accessible_mode": "Erişilebilir sürüm",
+  "made_with_andarama": "Andarama ile yapıldı",
   "accessible_intro": "Turun tüm sahneleri ve içerikleriyle erişilebilir doğrusal sürümü.",
   "back_to_360": "360 görünümüne dön",
   "scene_of": "Sahne {index}/{total}",

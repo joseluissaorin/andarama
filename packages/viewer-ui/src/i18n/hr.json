@@ -56,6 +56,7 @@
   "after": "Poslije",
   "open_external": "Otvara se u novoj kartici",
   "accessible_mode": "Pristupačna verzija",
+  "made_with_andarama": "Izrađeno s Andarama",
   "accessible_intro": "Pristupačna linearna verzija ture sa svim scenama i sadržajima.",
   "back_to_360": "Natrag na 360 prikaz",
   "scene_of": "Scena {index} od {total}",

@@ -56,6 +56,7 @@
   "after": "Na",
   "open_external": "Wordt geopend in een nieuw tabblad",
   "accessible_mode": "Toegankelijke versie",
+  "made_with_andarama": "Gemaakt met Andarama",
   "accessible_intro": "Toegankelijke lineaire versie van de tour met alle scènes en inhoud.",
   "back_to_360": "Terug naar de 360-weergave",
   "scene_of": "Scène {index} van {total}",

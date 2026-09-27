@@ -913,6 +913,7 @@
   "step_dwell_hint": "Sekunder att stanna vid det här stoppet",
   "route_loop_on_hint": "Upprepas oavbrutet. Det är vad en obemannad skärm vill ha.",
   "route_loop_off_hint": "Spelas en gång, slutar på startscenen och börjar bara om igen om någon ber om det.",
+  "autopilot_json_hint": "Rutter redigeras på fliken Graf, i Autopilot-läget. Det här är samma rådata, om något behöver justeras manuellt.",
   "ui_autopilotButton": "Knapp för automatisk tour",
   "ui_autopilotButton_desc": "”Play”-knappen nere till vänster som spelar upp tours. Visas bara om det finns minst en.",
   "markdown_toolbar": "Formatering",

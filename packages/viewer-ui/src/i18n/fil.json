@@ -56,6 +56,7 @@
   "after": "Pagkatapos",
   "open_external": "Bubukas sa bagong tab",
   "accessible_mode": "Accessible na bersyon",
+  "made_with_andarama": "Gawa gamit ang Andarama",
   "accessible_intro": "Accessible na linear na bersyon ng virtual tour na naglalaman ng lahat ng eksena at nilalaman.",
   "back_to_360": "Bumalik sa 360 view",
   "scene_of": "Eksena {index} sa {total}",

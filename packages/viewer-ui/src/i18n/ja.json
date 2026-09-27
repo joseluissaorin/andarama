@@ -56,6 +56,7 @@
   "after": "アフター",
   "open_external": "新しいタブで開きます",
   "accessible_mode": "アクセシブル版",
+  "made_with_andarama": "Andaramaで作成",
   "accessible_intro": "すべてのシーンとコンテンツを含む、ツアーのアクセシブル版です。",
   "back_to_360": "360度ビューに戻る",
   "scene_of": "シーン {index} / {total}",

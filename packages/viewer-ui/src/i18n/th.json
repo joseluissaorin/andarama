@@ -56,6 +56,7 @@
   "after": "หลัง",
   "open_external": "เปิดในแท็บใหม่",
   "accessible_mode": "เวอร์ชันที่เข้าถึงได้",
+  "made_with_andarama": "สร้างด้วย Andarama",
   "accessible_intro": "เวอร์ชันที่เข้าถึงได้แบบเรียงลำดับของทัวร์ พร้อมฉากและเนื้อหาทั้งหมด",
   "back_to_360": "กลับไปยังมุมมอง 360",
   "scene_of": "ฉาก {index} จาก {total}",

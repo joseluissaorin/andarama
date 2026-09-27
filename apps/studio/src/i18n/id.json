@@ -913,6 +913,7 @@
   "step_dwell_hint": "Detik untuk menetap di pemberhentian ini",
   "route_loop_on_hint": "Berulang tanpa henti. Inilah yang diinginkan layar tanpa pengawasan.",
   "route_loop_off_hint": "Diputar sekali, berakhir di scene awal, dan hanya mengulang jika ada yang memintanya.",
+  "autopilot_json_hint": "Rute diedit di tab Graf, mode Autopilot. Ini adalah data mentah yang sama, jika ada yang perlu disesuaikan secara manual.",
   "ui_autopilotButton": "Tombol tur otomatis",
   "ui_autopilotButton_desc": "Tombol \"putar\" di kiri bawah yang memutar rute. Hanya muncul jika ada setidaknya satu rute.",
   "markdown_toolbar": "Format",

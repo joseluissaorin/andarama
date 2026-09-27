@@ -56,6 +56,7 @@
   "after": "Efter",
   "open_external": "Åbnes i en ny fane",
   "accessible_mode": "Tilgængelig version",
+  "made_with_andarama": "Lavet med Andarama",
   "accessible_intro": "Tilgængelig lineær version af rundvisningen med alle scener og alt indhold.",
   "back_to_360": "Tilbage til 360-visningen",
   "scene_of": "Scene {index} af {total}",

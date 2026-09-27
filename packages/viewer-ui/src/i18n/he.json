@@ -56,6 +56,7 @@
   "after": "אחרי",
   "open_external": "נפתח בכרטיסייה חדשה",
   "accessible_mode": "גרסה נגישה",
+  "made_with_andarama": "נוצר עם Andarama",
   "accessible_intro": "גרסה נגישה וליניארית של הסיור עם כל הסצנות והתכנים.",
   "back_to_360": "חזרה לתצוגת 360",
   "scene_of": "סצנה {index} מתוך {total}",

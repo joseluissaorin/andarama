@@ -56,6 +56,7 @@
   "after": "Jälkeen",
   "open_external": "Avautuu uuteen välilehteen",
   "accessible_mode": "Esteetön versio",
+  "made_with_andarama": "Tehty Andaramalla",
   "accessible_intro": "Kierroksen esteetön lineaarinen versio, jossa on kaikki kohtaukset ja sisällöt.",
   "back_to_360": "Takaisin 360-näkymään",
   "scene_of": "Kohtaus {index}/{total}",

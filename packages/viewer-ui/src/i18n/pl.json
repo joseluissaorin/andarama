@@ -56,6 +56,7 @@
   "after": "Po",
   "open_external": "Otwiera się w nowej karcie",
   "accessible_mode": "Wersja dostępna",
+  "made_with_andarama": "Stworzono w Andarama",
   "accessible_intro": "Dostępna wersja liniowa wirtualnego spaceru ze wszystkimi scenami i treściami.",
   "back_to_360": "Wróć do widoku 360",
   "scene_of": "Scena {index} z {total}",

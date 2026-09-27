@@ -56,6 +56,7 @@
   "after": "После",
   "open_external": "Открывается в новой вкладке",
   "accessible_mode": "Доступная версия",
+  "made_with_andarama": "Сделано в Andarama",
   "accessible_intro": "Линейная доступная версия тура со всеми сценами и контентом.",
   "back_to_360": "Вернуться к обзору 360",
   "scene_of": "Сцена {index} из {total}",

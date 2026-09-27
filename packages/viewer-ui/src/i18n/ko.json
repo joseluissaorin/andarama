@@ -56,6 +56,7 @@
   "after": "이후",
   "open_external": "새 탭에서 열립니다",
   "accessible_mode": "접근성 버전",
+  "made_with_andarama": "Andarama로 제작",
   "accessible_intro": "모든 장면과 콘텐츠가 포함된 투어의 선형 접근성 버전입니다.",
   "back_to_360": "360도 보기로 돌아가기",
   "scene_of": "장면 {index} / {total}",

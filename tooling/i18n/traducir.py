@@ -159,20 +159,49 @@ def prompt_lote(codigo: str, entradas: dict[str, dict[str, str]]) -> str:
     )
 
 
-def llamar_modelo(prompt: str, sistema: str, modelo: str) -> dict[str, str]:
-    """Una llamada a or.py; devuelve el JSON parseado o lanza una excepción."""
-    if not OR.exists():
-        sys.exit(f"No existe {OR}: hace falta la skill openrouter.")
-    r = subprocess.run(
-        [sys.executable, str(OR), "--json", "-m", modelo, "-s", sistema, "-t", "0.2"],
-        input=prompt,
-        capture_output=True,
-        text=True,
-        timeout=900,
+def llamar_gemini(prompt: str, sistema: str, modelo: str) -> str:
+    """Una llamada directa a Gemini (--modelo gemini-…), con la clave de ~/.claude/.secrets/gemini.env."""
+    from google import genai
+    from google.genai import types
+
+    clave = os.environ.get("GEMINI_API_KEY") or next(
+        (
+            l.split("=", 1)[1].strip()
+            for l in (Path.home() / ".claude/.secrets/gemini.env").read_text().splitlines()
+            if l.startswith("GEMINI_API_KEY=")
+        ),
+        None,
     )
-    if r.returncode != 0:
-        raise RuntimeError(f"or.py devolvió {r.returncode}: {r.stderr.strip()[-400:]}")
-    texto = r.stdout.strip()
+    if not clave:
+        sys.exit("No hay GEMINI_API_KEY ni ~/.claude/.secrets/gemini.env")
+    cliente = genai.Client(api_key=clave)
+    r = cliente.models.generate_content(
+        model=modelo,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=sistema, temperature=0.2, response_mime_type="application/json"
+        ),
+    )
+    return (r.text or "").strip()
+
+
+def llamar_modelo(prompt: str, sistema: str, modelo: str) -> dict[str, str]:
+    """Una llamada a or.py (o a Gemini si el modelo empieza por «gemini»); devuelve el JSON parseado o lanza una excepción."""
+    if modelo.startswith("gemini"):
+        texto = llamar_gemini(prompt, sistema, modelo)
+    else:
+        if not OR.exists():
+            sys.exit(f"No existe {OR}: hace falta la skill openrouter.")
+        r = subprocess.run(
+            [sys.executable, str(OR), "--json", "-m", modelo, "-s", sistema, "-t", "0.2"],
+            input=prompt,
+            capture_output=True,
+            text=True,
+            timeout=900,
+        )
+        if r.returncode != 0:
+            raise RuntimeError(f"or.py devolvió {r.returncode}: {r.stderr.strip()[-400:]}")
+        texto = r.stdout.strip()
     # Por si el modelo envuelve la respuesta en vallas o añade una coletilla.
     inicio, fin = texto.find("{"), texto.rfind("}")
     if inicio < 0 or fin < 0:

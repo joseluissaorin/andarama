@@ -913,6 +913,7 @@
   "step_dwell_hint": "この停止地点での滞在秒数",
   "route_loop_on_hint": "止まることなく繰り返し再生されます。誰も操作しない画面向けです。",
   "route_loop_off_hint": "1回だけ再生されて最初のシーンで終わり、誰かが操作したときだけもう一度始まります。",
+  "autopilot_json_hint": "ルートは「グラフ」タブのAutopilotモードで編集します。これは手動で微調整が必要な場合のための生データです。",
   "ui_autopilotButton": "自動ツアーボタン",
   "ui_autopilotButton_desc": "左下にあるツアーを再生する「再生」ボタンです。ツアーがある場合にのみ表示されます。",
   "markdown_toolbar": "書式",

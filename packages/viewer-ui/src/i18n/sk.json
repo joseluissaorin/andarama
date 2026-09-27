@@ -56,6 +56,7 @@
   "after": "Potom",
   "open_external": "Otvorí sa na novej karte",
   "accessible_mode": "Prístupná verzia",
+  "made_with_andarama": "Vytvorené pomocou Andarama",
   "accessible_intro": "Lineárna prístupná verzia prehliadky so všetkými scénami a obsahom.",
   "back_to_360": "Späť na 360° zobrazenie",
   "scene_of": "Scéna {index} z {total}",
