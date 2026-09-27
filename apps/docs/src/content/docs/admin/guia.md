@@ -2,7 +2,13 @@
 title: Guía de administración
 ---
 
-El primer usuario registrado es **administrador de la instancia** y ve la sección **Administración** del Studio.
+Quien administra la instancia ve la sección **Administración** del Studio. Quién lo es se decide así:
+
+- Con la variable **`ADMIN_EMAILS`** (direcciones separadas por comas, sin distinguir mayúsculas), solo esas personas administran: quien figura en la lista se hace administrador al darse de alta o al iniciar sesión, y nadie más se promueve solo. Es lo recomendado en cualquier instancia pública.
+- Sin `ADMIN_EMAILS`, en una autoinstalación **sin Clerk**, el primer usuario registrado administra la instancia, como siempre.
+- Con Clerk y sin `ADMIN_EMAILS`, nadie se hace administrador automáticamente.
+
+Quitar a alguien de la lista no le retira el rol: eso se hace desde **Administración → Usuarios**, y queda auditado. Las copias de seguridad importadas tampoco conceden administración: sus usuarios entran como usuarios normales salvo los que figuren en `ADMIN_EMAILS`.
 
 ## Ajustes de instancia
 
@@ -29,7 +35,16 @@ Los trabajos pesados (tiles de imágenes gigantes, transcodificación) aparecen 
 
 ## Auditoría
 
-Registro de auditoría de acciones sensibles: quién publicó, despublicó, borró, cambió roles o ajustes, y cuándo.
+Registro de auditoría de acciones sensibles: quién publicó, despublicó, borró, cambió roles o ajustes, y cuándo. Algunas acciones que conviene conocer:
+
+| Acción | Cuándo |
+|---|---|
+| `user.register`, `user.provision` | Alta con contraseña o alta con Clerk, con el rol con el que nace la cuenta |
+| `admin.role_change` | Cualquier cambio del rol global, con el valor anterior y el nuevo (`from`, `to`) y la vía: el panel, la lista `ADMIN_EMAILS` al entrar, el alta desde el panel o la importación de una copia |
+| `user.deleted` | Supresión de una cuenta pedida por Clerk, con lo que se borró |
+| `billing.clerk_webhook` | Cambio de plan o fecha del primer pago recibidos de Clerk Billing |
+| `lti.registration_create`, `lti.registration_delete` | Alta y retirada de plataformas LTI |
+| `org.export` | Descarga de la exportación completa de una organización |
 
 ## Webhooks
 
@@ -77,6 +92,15 @@ todos los tours. Lo único que la condiciona es el alojamiento.
   por defecto): todos los hotspots, solo la navegación o una selección.
 - Los tours exportados conservan la realidad virtual, pero solo entran en modo
   inmersivo si se suben a un alojamiento con HTTPS.
+
+## Exportación completa de una organización
+
+Quien administra una organización puede descargar todo lo suyo desde **Valores por defecto de la organización → Exportar la organización** (o `GET /api/v1/orgs/:orgId/export`). Es un ZIP con:
+
+- `LEEME.txt`, que explica el contenido;
+- `organizacion.json`: la organización, sus miembros y el índice de proyectos;
+- `medios.json`: el inventario de medios, cada uno con la ruta desde la que se descarga el original con la misma sesión (los ficheros no van dentro para que el ZIP quepa en memoria);
+- por cada proyecto, en `proyectos/<nombre>/`: `proyecto.json` (el borrador con escenas, hotspots, traducciones y versiones), `tour.json` (el recorrido compilado), `comentarios.json`, `formularios.csv` y `resultados-quiz.csv`.
 
 ## Copias de seguridad
 

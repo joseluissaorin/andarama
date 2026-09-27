@@ -15,15 +15,22 @@ title: "Docencia: quiz, LTI y SCORM"
 
 Andarama es una herramienta LTI 1.3 Advantage con **Deep Linking** (el docente elige el tour desde Moodle) y **Assignment and Grade Services** (la puntuación del quiz vuelve al libro de calificaciones).
 
-Configuración (administrador de la instancia, panel Administración, pestaña LTI):
+Configuración: la hace el **administrador de la organización** en **Valores por defecto de la organización → LTI: Moodle y otros LMS** (en andarama.com hace falta un plan que incluya LTI, como Formación). El operador de la instancia también puede dar de alta plataformas para cualquier organización desde **Administración → LTI**.
 
 1. En Moodle: Administración del sitio, Plugins, Herramientas externas, "configurar una herramienta manualmente":
    - URL de la herramienta e **Initiate login URL**: `https://tu-instancia/api/v1/lti/login`
    - **Redirection URI**: `https://tu-instancia/api/v1/lti/launch`
    - **JWKS URL**: `https://tu-instancia/api/v1/lti/jwks`
    - Servicios: activar IMS LTI Assignment and Grade Services y Deep Linking.
-2. En Andarama: registra la plataforma con el Issuer de Moodle, Client ID, Auth URL (`/mod/lti/auth.php`), Token URL (`/mod/lti/token.php`) y JWKS (`/mod/lti/certs.php`).
+2. En Andarama: registra la plataforma con el Issuer de Moodle, Client ID, **Deployment ID** (Moodle lo muestra en los detalles de la herramienta), Auth URL (`/mod/lti/auth.php`), Token URL (`/mod/lti/token.php`) y JWKS (`/mod/lti/certs.php`).
 3. El docente añade una actividad de herramienta externa y selecciona el tour vía Deep Linking (o fija `custom.tour = slug`).
+
+Cada plataforma registrada pertenece a una organización, y eso tiene consecuencias:
+
+- El selector de Deep Linking solo ofrece los **recorridos publicados de esa organización**, y un lanzamiento solo abre recorridos suyos.
+- El selector firma cada opción (registro, recorrido, dirección de vuelta y despliegue) y la firma caduca a los quince minutos: si el docente tarda más, basta con volver a abrir el selector desde Moodle.
+- Se rechazan los lanzamientos con un `deployment_id` distinto del registrado o con una versión de LTI distinta de la 1.3.0.
+- Si el plan deja de incluir LTI, los lanzamientos se cortan hasta que se renueve.
 
 Cuando el alumnado completa el quiz dentro del tour lanzado desde Moodle, la puntuación se envía automáticamente vía AGS.
 

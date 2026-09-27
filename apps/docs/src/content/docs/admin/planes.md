@@ -64,6 +64,7 @@ Se decide **al publicar**, no al servir: el puntero `current.json` de la publica
 ## Cómo se aplica la cuota
 
 - La cuota de una organización la fija **el plan de quien responde de ella** (la persona que la creó). Los colaboradores invitados no necesitan plan propio para editar.
+- La cuota es **de la persona, no de cada organización**: los recorridos y el almacenamiento se suman en todas las organizaciones de las que responde. Abrir organizaciones nuevas no multiplica lo que compró; el uso que muestra el Studio en cualquiera de ellas es el total.
 - Al cambiar de plan, el token de sesión trae el plan nuevo y la cuota se actualiza en la siguiente petición. La página **Plan** del Studio fuerza ese refresco al volver de la pasarela.
 - Sin plan de pago (y sin prueba vigente) no se puede crear ningún recorrido; lo demás (mirar, editar lo compartido, exportar) sigue funcionando.
 - El administrador de la instancia no se cobra a sí mismo: su cuota es la que fija en la organización, como en el self-host, y tiene todas las capacidades.
@@ -91,7 +92,7 @@ Para saber qué anuncio trae cada alta sin meter píxeles de terceros en el Stud
 
 1. Al cargar, el Studio lee de la URL (y del referente, si la landing enlaza conservando la query) `gclid`, `msclkid`, `utm_source`, `utm_medium`, `utm_campaign` y `utm_term`, y los guarda en `localStorage` noventa días. **El primer toque gana**: una visita posterior con otros parámetros no lo pisa.
 2. La primera vez que existe la cuenta local (`GET /api/v1/me` devuelve `billing.attributionPending: true`), el Studio los manda a `POST /api/v1/me/attribution`. El servidor los valida (solo esas claves, más la ruta de entrada, el host del referente y la hora del primer toque; cualquier otra cosa se rechaza) y los escribe **una sola vez** en `users.attribution_json` y `attributed_at`. Nunca llevan datos personales.
-3. El administrador descarga `GET /api/v1/admin/attribution/export` (CSV): usuario, correo, plan, plan concedido, fecha de alta, fecha del primer pago (`plan_updated_at` cuando hay plan), `Google Click ID`, `Microsoft Click Id`, las `utm_*` y las fechas del toque y de la atribución. Con `?only=attributed` salen solo quienes llegaron con algún identificador; con `?since=<epoch ms>` se acota por fecha de alta. Las columnas llevan los nombres que esperan las plantillas de subida de conversiones de Google Ads y Microsoft Ads, para copiar y pegar hasta que exista la subida automática.
+3. El administrador descarga `GET /api/v1/admin/attribution/export` (CSV): usuario, correo, plan, plan concedido, fecha de alta, fecha del primer pago (`first_paid_at`, que fecha el webhook de Clerk Billing; si no la hay, `plan_updated_at` cuando hay plan), `Google Click ID`, `Microsoft Click Id`, las `utm_*` y las fechas del toque y de la atribución. Con `?only=attributed` salen solo quienes llegaron con algún identificador; con `?since=<epoch ms>` se acota por fecha de alta. Las columnas llevan los nombres que esperan las plantillas de subida de conversiones de Google Ads y Microsoft Ads, para copiar y pegar hasta que exista la subida automática.
 
 Solo funciona en modo Clerk: en el self-host el endpoint responde `ok: false` y no guarda nada.
 
@@ -129,7 +130,10 @@ No hace falta para el self-host, pero cualquiera puede repetir el montaje:
 | `CLERK_SECRET_KEY` | Clave secreta; verifica los tokens y consulta el perfil al dar de alta |
 | `CLERK_JWT_KEY` | Opcional. Clave pública PEM para verificar sin red |
 | `CLERK_AUTHORIZED_PARTIES` | Opcional. Orígenes admitidos separados por comas; por defecto, la URL pública y su subdominio `app.` |
+| `CLERK_WEBHOOK_SECRET` | Opcional. Secreto de firma (`whsec_...`) del webhook de Clerk: supresión de cuentas y fecha del primer pago. Véase [Webhook de Clerk](/docs/despliegue/cloudflare/#webhook-de-clerk) |
+| `ADMIN_EMAILS` | Recomendada. Administradores de la instancia, separados por comas. Con Clerk y sin esta lista nadie administra la instancia |
 
-4. Aplica las migraciones `0007_clerk_billing`, `0008_coupons` y `0009_trial_attribution` (el arranque en Node y `pnpm deploy:cloudflare` lo hacen solos).
+4. Aplica las migraciones de `0007_clerk_billing` a `0011_security_accounts` (el arranque en Node y `pnpm deploy:cloudflare` lo hacen solos).
+5. Da de alta el webhook de Clerk (`user.deleted` y los eventos de Billing) como se explica en [Webhook de Clerk](/docs/despliegue/cloudflare/#webhook-de-clerk).
 
 Con las dos primeras variables definidas la instancia pasa a modo Clerk; sin ellas, sigue con sus cuentas propias.
