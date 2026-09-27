@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, RefreshCw, Search, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Trash2, UploadCloud } from "lucide-react";
+import { Camera, RefreshCw, Search, FileAudio, FileBox, FileImage, FileText, FileVideo, FolderKanban, FolderOpen, Image as ImageIcon, Map, Orbit, Trash2, UploadCloud } from "lucide-react";
 import { Badge, Button, Dialog, EmptyState, Field, Input, Select, Spinner, useToast } from "@andarama/ui";
 import { api, ApiRequestError } from "../api";
 import { useAuth } from "../stores";
@@ -258,7 +258,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
                     type="button"
                     onClick={() => setProject(item.id)}
                     className={`flex w-full items-center gap-2 truncate rounded-lg px-2 py-1.5 text-left ${
-                      project === item.id ? "bg-[var(--anda-primary-soft)] font-medium text-[var(--anda-primary)]" : "hover:bg-[var(--anda-surface-2)]"
+                      project === item.id ? "bg-[var(--anda-primary-soft)] font-medium text-[var(--anda-primary-ink)]" : "hover:bg-[var(--anda-surface-2)]"
                     }`}
                   >
                     <FolderKanban className="h-3.5 w-3.5 shrink-0 opacity-70" />
@@ -283,7 +283,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
                           type="button"
                           onClick={() => setFolder(value)}
                           className={`flex w-full items-center gap-2 truncate rounded-lg px-2 py-1.5 text-left ${
-                            folder === value ? "bg-[var(--anda-primary-soft)] font-medium text-[var(--anda-primary)]" : "hover:bg-[var(--anda-surface-2)]"
+                            folder === value ? "bg-[var(--anda-primary-soft)] font-medium text-[var(--anda-primary-ink)]" : "hover:bg-[var(--anda-surface-2)]"
                           }`}
                         >
                           <FolderOpen className="h-3.5 w-3.5 shrink-0 opacity-70" />
@@ -402,7 +402,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
           }}
           className="mb-3 inline-flex cursor-grab items-center gap-2 rounded-xl border border-dashed border-[var(--anda-primary)] bg-[var(--anda-surface)] px-3 py-2 text-[13px]"
         >
-          <FolderOpen className="h-4 w-4 text-[var(--anda-primary)]" />
+          <FolderOpen className="h-4 w-4 text-[var(--anda-primary-ink)]" />
           {t("drag_group_hint", {
             count: String(
               (selected.size > 1 ? (list.data ?? []).filter((m) => selected.has(m.id)) : (list.data ?? [])).filter((m) => isPano(m)).length,
@@ -482,7 +482,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
               >
                 <div className="anda-portada flex h-28 items-center justify-center overflow-hidden border-b border-[var(--anda-border)] bg-[var(--anda-surface-2)]">
                   {isPano(m) ? (
-                    <PlanetThumb media={m} onOpen360={() => { setDetail(null); setPreview(m); }} />
+                    <PlanetThumb media={m} />
                   ) : m.derivatives.some((d) => d.kind === "thumb") ? (
                     <img src={`/api/v1/media/${m.id}/derived/thumb`} alt="" className="h-full w-full object-cover" loading="lazy" />
                   ) : m.kind === "image" || m.kind === "floorplan" ? (
@@ -503,6 +503,23 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
                   </div>
                 </div>
               </button>
+              {/* El «Ver en 360» va fuera del botón de la tarjeta: un botón
+                  dentro de otro no se alcanza con teclado ni lo anuncia bien
+                  un lector de pantalla. Se pinta encima de la miniatura. */}
+              {isPano(m) && (
+                <button
+                  type="button"
+                  title={t("open_360")}
+                  aria-label={`${t("open_360")}: ${m.filename}`}
+                  className="absolute right-1 top-[80px] rounded-md bg-black/60 p-1.5 text-white opacity-0 transition-opacity hover:bg-black/80 focus-visible:opacity-100 group-hover:opacity-100"
+                  onClick={() => {
+                    setDetail(null);
+                    setPreview(m);
+                  }}
+                >
+                  <Orbit className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
               {fullPage && (
                 <input
                   type="checkbox"

@@ -409,7 +409,7 @@ export function PublishDialog({ open, onClose, project, onPublished, beforePubli
           {result.galleryUrl != null && (
             <p className="text-sm">
               <span className="mr-1.5 font-semibold">{t("gallery_url")}:</span>
-              <a href={result.galleryUrl} target="_blank" rel="noopener noreferrer" className="break-all text-[var(--anda-primary)]">
+              <a href={result.galleryUrl} target="_blank" rel="noopener noreferrer" className="break-all text-[var(--anda-primary-ink)]">
                 {result.galleryUrl}
               </a>
             </p>
@@ -422,7 +422,7 @@ export function PublishDialog({ open, onClose, project, onPublished, beforePubli
               href={result.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="anda-hueco min-w-0 flex-1 break-all p-3 text-sm text-[var(--anda-primary)]"
+              className="anda-hueco min-w-0 flex-1 break-all p-3 text-sm text-[var(--anda-primary-ink)]"
             >
               {result.url}
             </a>

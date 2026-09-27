@@ -117,7 +117,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   return (
     <section className="anda-barra flex h-56 flex-col border-b-0 border-t border-t-[var(--anda-border)]">
       <header className="flex items-center gap-2 px-3 py-1.5">
-        <Images className="h-4 w-4 text-[var(--anda-primary)]" />
+        <Images className="h-4 w-4 text-[var(--anda-primary-ink)]" />
         <h2 className="text-[13px] font-semibold">{t("media_dock")}</h2>
 
         {/* Por defecto, solo lo de este tour */}

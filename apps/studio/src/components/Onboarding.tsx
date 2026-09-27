@@ -84,7 +84,7 @@ export function OnboardingChecklist({ compact = false }: { compact?: boolean }):
   const sinFotos = !data.hasPhotos && !data.steps.upload && (
     <p className="text-[12.5px] text-[var(--anda-text-dim)]">
       {t("onboarding_no_photos")}{" "}
-      <a href={toolsUrl(lang)} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--anda-primary)] hover:underline">
+      <a href={toolsUrl(lang)} target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--anda-primary-ink)] hover:underline">
         {t("onboarding_tools_link")}
       </a>
       {data.sampleProjectId != null && !compact && (
@@ -93,7 +93,7 @@ export function OnboardingChecklist({ compact = false }: { compact?: boolean }):
           <Link
             to="/p/$projectId"
             params={{ projectId: data.sampleProjectId }}
-            className="font-semibold text-[var(--anda-primary)] hover:underline"
+            className="font-semibold text-[var(--anda-primary-ink)] hover:underline"
           >
             {t("onboarding_open_sample")}
           </Link>

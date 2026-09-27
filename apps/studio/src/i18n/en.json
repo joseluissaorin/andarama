@@ -1103,5 +1103,12 @@
   "help_export_sw": "Adds what the tour needs to work offline once it has been opened for the first time, and to be installed as an app. Useful in a museum, a fair or a classroom without wifi: open it once with a connection and it keeps working if the connection drops. It cannot be combined with the single HTML file.",
   "help_export_single": "Produces a single index.html file with the viewer and all the photos inside, which opens with a double click without a server. «Small» means there is no fixed scene limit, but the file weighs about a third more than all its photos and videos together and the browser loads it whole into memory: as a guide, it works well below about 100 MB, usually 10 to 15 regular panoramas without video. Not available if any scene is tiled (very large photos). It can be combined with SCORM.",
   "help_export_scorm": "Produces a ZIP to upload to Moodle (or another virtual classroom) as a SCORM activity. The classroom records whether the student completed the tour (all scenes viewed or all questions answered) and their quiz score, compared with the passing score in Tour settings. Choose SCORM 1.2 if your platform is old and 2004 otherwise. It also works with the single HTML file. On andarama.com it is included in the Formación plan.",
-  "help_export_kiosk": "For screens with nobody in front of them (a museum, a fair, a reception desk): the tour moves on by itself following the automatic visit and, if nobody touches it for a while, starts again."
+  "help_export_kiosk": "For screens with nobody in front of them (a museum, a fair, a reception desk): the tour moves on by itself following the automatic visit and, if nobody touches it for a while, starts again.",
+  "a11y_menu": "Menu",
+  "a11y_close_menu": "Close the menu",
+  "a11y_main_nav": "Main",
+  "a11y_editing_now": "People editing",
+  "a11y_editor_views": "Editor views",
+  "a11y_target_lang": "Target language",
+  "a11y_skip_to_content": "Skip to content"
 }

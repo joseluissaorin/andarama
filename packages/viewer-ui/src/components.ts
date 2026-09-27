@@ -1,6 +1,6 @@
 import type { Floorplan, Scene } from "@andarama/schema";
 import { createIconSvg, resolveUrl, type TourViewer } from "@andarama/viewer";
-import { el, toast } from "./dom.js";
+import { el, mountScreen, toast } from "./dom.js";
 import type { Translator } from "./i18n.js";
 
 /**
@@ -63,11 +63,21 @@ export function buildSceneMenu(viewer: TourViewer, t: Translator, baseUrl: strin
     }
   };
 
+  // Cerrado, el menú está fuera de la vista pero seguía en el orden de
+  // tabulación: `inert` lo saca del teclado y del lector de pantalla.
+  root.inert = true;
+  let returnFocus: HTMLElement | null = null;
   const setOpen = (open: boolean): void => {
+    const wasOpen = root.dataset.open === "true";
     root.dataset.open = String(open);
+    root.inert = !open;
     if (open) {
+      if (!wasOpen) returnFocus = document.activeElement as HTMLElement | null;
       render(search.value);
       search.focus();
+    } else if (wasOpen) {
+      if (root.contains(document.activeElement) && returnFocus?.isConnected === true) returnFocus.focus();
+      returnFocus = null;
     }
   };
   closeBtn.addEventListener("click", () => setOpen(false));
@@ -381,11 +391,11 @@ export function showFinalScreen(viewer: TourViewer, t: Translator, container: HT
     const a = el("a", { href: cfg.cta.url, className: "anda-primary-btn", text: viewer.text(cfg.cta.label), style: "display:inline-block;text-decoration:none;" });
     card.appendChild(a);
   }
-  const close = el("button", { className: "anda-btn", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
+  const close = el("button", { className: "anda-btn", type: "button", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
   close.appendChild(createIconSvg("x", 18));
-  const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true" }, card, close);
-  close.addEventListener("click", () => screen.remove());
-  container.appendChild(screen);
+  const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true", "aria-label": viewer.text(cfg.title) || t("close") }, card, close);
+  const cerrar = mountScreen(container, screen);
+  close.addEventListener("click", cerrar);
 }
 
 export function showHelp(t: Translator, container: HTMLElement): void {
@@ -399,12 +409,11 @@ export function showHelp(t: Translator, container: HTMLElement): void {
   const close = el("button", { className: "anda-primary-btn", type: "button", text: t("close") });
   card.appendChild(close);
   const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true", "aria-label": t("help_title") }, card);
-  close.addEventListener("click", () => screen.remove());
+  const cerrar = mountScreen(container, screen, { focus: close });
+  close.addEventListener("click", cerrar);
   screen.addEventListener("click", (e) => {
-    if (e.target === screen) screen.remove();
+    if (e.target === screen) cerrar();
   });
-  container.appendChild(screen);
-  close.focus();
 }
 
 export function showShareDialog(viewer: TourViewer, t: Translator, container: HTMLElement): void {
@@ -433,13 +442,13 @@ export function showShareDialog(viewer: TourViewer, t: Translator, container: HT
     row.appendChild(native);
   }
   card.appendChild(row);
-  const close = el("button", { className: "anda-btn", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
+  const close = el("button", { className: "anda-btn", type: "button", "aria-label": t("close"), style: "position:absolute;top:14px;right:14px;" });
   close.appendChild(createIconSvg("x", 18));
   const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true", "aria-label": t("share") }, card, close);
-  close.addEventListener("click", () => screen.remove());
+  const cerrar = mountScreen(container, screen, { focus: input });
+  close.addEventListener("click", cerrar);
   screen.addEventListener("click", (e) => {
-    if (e.target === screen) screen.remove();
+    if (e.target === screen) cerrar();
   });
-  container.appendChild(screen);
   input.select();
 }

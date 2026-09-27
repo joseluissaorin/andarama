@@ -126,7 +126,7 @@ export function HotspotPalette({ open, onClose, onPick }: {
                       index === active ? "anda-ficha--activa" : ""
                     }`}
                   >
-                    <span className="anda-hueco mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center !rounded-lg text-[var(--anda-primary)]">
+                    <span className="anda-hueco mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center !rounded-lg text-[var(--anda-primary-ink)]">
                       <Icon className="h-4 w-4" />
                     </span>
                     <span className="min-w-0">

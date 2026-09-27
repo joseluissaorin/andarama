@@ -302,6 +302,9 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
             role="separator"
             aria-label={t("resize_panel")}
             aria-orientation="vertical"
+            aria-valuenow={panelWidth}
+            aria-valuemin={PANEL_MIN}
+            aria-valuemax={PANEL_MAX}
             tabIndex={0}
             className="absolute -left-1 top-0 z-20 h-full w-2 cursor-col-resize hover:bg-[var(--anda-primary)]/25"
             onPointerDown={(e) => {
@@ -737,7 +740,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
       {/* Barra de herramientas del lienzo: nada flota sobre el visor */}
       <div className="anda-barra flex min-h-10 items-center gap-2 px-3 py-1.5">
         {placement.kind !== "none" ? (
-          <span className="flex items-center gap-2 rounded-full bg-[var(--anda-primary-soft)] px-3 py-1 text-[13px] font-medium text-[var(--anda-primary)]">
+          <span className="flex items-center gap-2 rounded-full bg-[var(--anda-primary-soft)] px-3 py-1 text-[13px] font-medium text-[var(--anda-primary-ink)]">
             <Crosshair className="h-3.5 w-3.5" />
             {placement.kind === "polygon"
               ? `${t("polygon_hint")} (${placement.points.length})`

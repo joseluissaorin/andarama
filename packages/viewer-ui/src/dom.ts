@@ -66,3 +66,34 @@ export function trapFocus(container: HTMLElement, onEscape: () => void): () => v
   container.addEventListener("keydown", handler);
   return () => container.removeEventListener("keydown", handler);
 }
+
+/**
+ * Monta una pantalla modal (`.anda-screen`, ya con role="dialog") dentro del
+ * visor: encierra el foco, la cierra con Escape (salvo `escape: false`) y, al
+ * cerrarla, devuelve el foco a donde estaba. Devuelve la función que la
+ * cierra; `onClose` se llama una sola vez, la cierre quien la cierre.
+ */
+export function mountScreen(
+  container: HTMLElement,
+  screen: HTMLElement,
+  opts: { focus?: HTMLElement | null; onClose?: () => void; escape?: boolean } = {},
+): () => void {
+  const previous = document.activeElement as HTMLElement | null;
+  let closed = false;
+  const close = (): void => {
+    if (closed) return;
+    closed = true;
+    release();
+    screen.remove();
+    if (previous != null && previous.isConnected && previous !== document.body) previous.focus();
+    opts.onClose?.();
+  };
+  const release = trapFocus(screen, () => {
+    if (opts.escape !== false) close();
+  });
+  container.appendChild(screen);
+  const target =
+    opts.focus ?? screen.querySelector<HTMLElement>("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+  target?.focus();
+  return close;
+}

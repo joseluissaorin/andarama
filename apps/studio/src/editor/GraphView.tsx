@@ -1183,7 +1183,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
               variant="ghost"
               aria-label={t("snap_grid")}
               aria-pressed={snap}
-              className={snap ? "text-[var(--anda-primary)]" : ""}
+              className={snap ? "text-[var(--anda-primary-ink)]" : ""}
               onClick={() => setSnap((v) => !v)}
             >
               <Magnet className="h-4 w-4" />

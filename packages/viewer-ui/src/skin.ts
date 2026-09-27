@@ -3,7 +3,7 @@ import { createIconSvg, resolveUrl, TourViewer, type QuizStateEvent } from "@and
 import { injectStyles } from "./styles.js";
 import { createTranslator, ensureUiLang, type Translator } from "./i18n.js";
 import { registerUiIcons } from "./icons.js";
-import { el, iconButton, toast } from "./dom.js";
+import { el, iconButton, mountScreen, toast } from "./dom.js";
 import { PanelHost } from "./panels.js";
 import {
   buildCompass,
@@ -165,7 +165,14 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   if (ui.sceneMenu !== false) {
     const menu = buildSceneMenu(viewer, t, baseUrl);
     container.appendChild(menu.root);
-    topPill.appendChild(iconButton("menu", t("menu"), menu.toggle));
+    const menuBtn = iconButton("menu", t("menu"), menu.toggle);
+    // El botón dice si el menú de escenas está abierto
+    menuBtn.setAttribute("aria-expanded", "false");
+    new MutationObserver(() => menuBtn.setAttribute("aria-expanded", menu.root.dataset.open ?? "false")).observe(menu.root, {
+      attributes: true,
+      attributeFilter: ["data-open"],
+    });
+    topPill.appendChild(menuBtn);
   }
   if (ui.titleBar !== false) {
     topPill.appendChild(el("h1", { className: "anda-title", text: viewer.text(tour.meta.title) }));
@@ -268,7 +275,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   let compact = saved != null ? saved === "on" : window.matchMedia("(max-width: 640px)").matches;
   const applyCompact = (): void => {
     controls.classList.toggle("is-compact", compact);
-    compactBtn.setAttribute("aria-pressed", String(compact));
+    compactBtn.setAttribute("aria-expanded", String(!compact));
     compactBtn.setAttribute("aria-label", compact ? t("expand_controls") : t("compact_controls"));
     compactBtn.replaceChildren(createIconSvg(compact ? "chevrons-up" : "chevrons-down", 20));
   };
@@ -722,13 +729,10 @@ export function mountViewer(options: SkinOptions): MountedSkin {
         card.append(nameInput, dl);
       }
       const close = el("button", { className: "anda-primary-btn", type: "button", text: t("close"), style: "margin-left:10px;" });
-      const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true" }, card);
+      const screen = el("div", { className: "anda-screen", role: "dialog", "aria-modal": "true", "aria-label": t("quiz_report") }, card);
       card.appendChild(close);
-      close.addEventListener("click", () => {
-        screen.remove();
-        showFinalScreen(viewer, t, container);
-      });
-      container.appendChild(screen);
+      const cerrar = mountScreen(container, screen, { onClose: () => showFinalScreen(viewer, t, container) });
+      close.addEventListener("click", cerrar);
     }
   });
 

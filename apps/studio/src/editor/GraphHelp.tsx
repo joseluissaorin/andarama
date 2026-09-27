@@ -129,7 +129,7 @@ export function GraphHelp({ mode }: { mode: "scenes" | "plan" | "geo" | "autopil
             <div className="grid gap-4 sm:grid-cols-2">
               {groups.map((group) => (
                 <section key={group.title}>
-                  <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-primary)]">{group.title}</h4>
+                  <h4 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-primary-ink)]">{group.title}</h4>
                   <ul className="space-y-1">
                     {group.items.map((item) => (
                       <li key={item.what} className="flex items-start gap-2 text-[13px]">

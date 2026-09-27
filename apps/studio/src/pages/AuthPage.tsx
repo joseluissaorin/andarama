@@ -27,7 +27,7 @@ function MarcoAcceso({ title, children }: { title: string; children: React.React
       <div className="anda-enter flex w-full max-w-4xl overflow-hidden rounded-3xl border border-[var(--anda-border)] bg-[var(--anda-surface)] shadow-[var(--anda-relieve-alto)]">
         {/* Panel de marca: naranja plano de risografía, el grito con su
             desregistro y la criatura paseando por su suelo */}
-        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[#ff8a00] p-10 text-[#fff8ec] md:flex">
+        <div className="relative hidden w-[46%] flex-col justify-between overflow-hidden bg-[#ff8a00] p-10 text-[#33260f] md:flex">
           <div className="flex items-center gap-3">
             <span className="text-[24px] font-bold tracking-tight">andarama</span>
           </div>
@@ -41,11 +41,11 @@ function MarcoAcceso({ title, children }: { title: string; children: React.React
             <p className="mt-4 max-w-[300px] text-[18px] font-bold leading-relaxed">
               andarama me deja <span className="rounded-md bg-[#ffd900] px-1.5 text-[#33260f]">andar</span> por panoramas
             </p>
-            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed text-[#fff8ec]/85">{t("auth_pitch")}</p>
+            <p className="mt-4 max-w-[280px] text-[13.5px] leading-relaxed">{t("auth_pitch")}</p>
           </div>
           <div>
             <CriaturaPaseo size={54} className="text-[#33260f]" />
-            <p className="mt-3 font-mono text-[11px] text-[#fff8ec]/75">{t("auth_open_source")}</p>
+            <p className="mt-3 font-mono text-[11px]">{t("auth_open_source")}</p>
           </div>
         </div>
 
@@ -256,12 +256,12 @@ function LocalAuthPage({ mode }: { mode: AuthMode }): React.ReactNode {
             <button type="button" className="hover:underline" onClick={() => setForgotMode(!forgotMode)}>
               {t("forgot")}
             </button>
-            <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/register" })}>
+            <button type="button" className="font-semibold text-[var(--anda-primary-ink)] hover:underline" onClick={() => void navigate({ to: "/register" })}>
               {t("register")}
             </button>
           </>
         ) : (
-          <button type="button" className="font-semibold text-[var(--anda-primary)] hover:underline" onClick={() => void navigate({ to: "/login" })}>
+          <button type="button" className="font-semibold text-[var(--anda-primary-ink)] hover:underline" onClick={() => void navigate({ to: "/login" })}>
             {t("login")}
           </button>
         )}

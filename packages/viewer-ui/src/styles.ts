@@ -177,7 +177,7 @@ export const VIEWER_CSS = `
 .anda-scenemenu__search { margin: 0 16px 12px; position: relative; }
 .anda-scenemenu__search input { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--u3-border);
   background: var(--u3-surface-2); color: inherit; font-size: 14px; font-family: inherit; transition: border-color .15s ease; }
-.anda-scenemenu__search input:focus { outline: none; border-color: var(--u3-primary); }
+.anda-scenemenu__search input:focus { border-color: var(--u3-primary); }
 .anda-scenemenu__search input::placeholder { color: var(--u3-fg-dim); }
 .anda-scenemenu__list { overflow-y: auto; flex: 1; padding: 0 12px 16px; }
 .anda-scenemenu__cat { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em;
@@ -479,7 +479,7 @@ export const VIEWER_CSS = `
 .anda-live__input { display: flex; gap: 7px; padding: 12px; border-top: 1px solid var(--u3-border); }
 .anda-live__input input { flex: 1; padding: 9px 13px; border-radius: 10px; border: 1px solid var(--u3-border);
   background: var(--u3-surface-2); color: inherit; font-family: inherit; font-size: 13.5px; }
-.anda-live__input input:focus { outline: none; border-color: var(--u3-primary); }
+.anda-live__input input:focus { border-color: var(--u3-primary); }
 .anda-live-pointer { position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, var(--u3-primary-strong), var(--u3-primary)); border: 3px solid #fff;
   z-index: 24; pointer-events: none; box-shadow: 0 0 0 6px rgba(139,152,232,.3), 0 3px 12px rgba(0,0,0,.5); }

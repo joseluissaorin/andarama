@@ -84,7 +84,7 @@ export function CssGuideDialog({ open, onClose }: { open: boolean; onClose: () =
           <div className="overflow-hidden rounded-lg border border-[var(--anda-border)]">
             {CSS_VARS.map((v) => (
               <div key={v.name} className="flex gap-3 border-b border-[var(--anda-border)] px-3 py-1.5 last:border-0">
-                <code className="w-40 shrink-0 font-mono text-xs text-[var(--anda-primary)]">{v.name}</code>
+                <code className="w-40 shrink-0 font-mono text-xs text-[var(--anda-primary-ink)]">{v.name}</code>
                 <span className="text-[var(--anda-text-dim)]">{v.what}</span>
               </div>
             ))}
@@ -96,7 +96,7 @@ export function CssGuideDialog({ open, onClose }: { open: boolean; onClose: () =
           <div className="overflow-hidden rounded-lg border border-[var(--anda-border)]">
             {CSS_HOOKS.map((h) => (
               <div key={h.selector} className="flex gap-3 border-b border-[var(--anda-border)] px-3 py-1.5 last:border-0">
-                <code className="w-40 shrink-0 font-mono text-xs text-[var(--anda-primary)]">{h.selector}</code>
+                <code className="w-40 shrink-0 font-mono text-xs text-[var(--anda-primary-ink)]">{h.selector}</code>
                 <span className="text-[var(--anda-text-dim)]">{h.what}</span>
               </div>
             ))}
