@@ -1,5 +1,5 @@
 ---
-title: "Teaching: quiz, SCORM and LTI (in testing)"
+title: "Teaching: quiz, SCORM and LTI"
 description: Quizzes with a passing score, final report and certificate, treasure hunts, variables, and how to get grades into your LMS.
 ---
 
@@ -91,17 +91,13 @@ file". Export options are covered in
 [Export](/docs/en/usuario/exportar/), and the Moodle steps in
 [Add to Moodle](/docs/en/usuario/moodle/).
 
-## LTI 1.3 (in testing)
+## LTI 1.3
 
-Andarama includes an LTI 1.3 Advantage tool configuration, with **Deep
-Linking** (teachers pick the tour from inside Moodle) and, by design,
-**Assignment and Grade Services** (sending the grade back).
-
-:::caution[In testing]
-The LTI integration is in testing: Moodle can launch the tour, but the quiz
-grade **does not flow back** to the gradebook this way yet. If you need grades,
-use SCORM.
-:::
+Andarama is an LTI 1.3 Advantage tool with **Deep Linking** (teachers pick the
+tour from inside Moodle) and **Assignment and Grade Services** (the quiz grade
+goes back to the gradebook on its own). The tour is not copied into Moodle:
+when you republish, the course sees the new version. It has been tested end to
+end with Moodle 4.5 LTS.
 
 The organization admin sets it up under **Organisation settings → LTI: Moodle
 and other LMSs** (on andarama.com this needs a plan that includes LTI, such as
@@ -109,7 +105,7 @@ Formación); the instance operator can also register platforms from
 **Administration → LTI**. Each platform belongs to one organization: Deep
 Linking only offers that organization's published tours, and launches with a
 different `deployment_id` are rejected. The full steps are in
-[Add to Moodle](/docs/en/usuario/moodle/#5-lti-13-en-pruebas).
+[Add to Moodle](/docs/en/usuario/moodle/#5-lti-13).
 
 ## No grade needed: link or iframe
 

@@ -1,6 +1,6 @@
 ---
 title: "Cómo meter un recorrido 360 en Moodle (SCORM, iframe y LTI)"
-description: "Cómo poner un tour 360 en Moodle: incrustado en una página, sin nota, o como paquete SCORM con nota. Y en qué punto está la integración LTI 1.3."
+description: "Cómo poner un tour 360 en Moodle: incrustado en una página, sin nota, o como paquete SCORM con nota. O por LTI 1.3, con la nota directa al libro de calificaciones."
 lang: es
 slug: recorrido-360-moodle
 cluster: docencia
@@ -8,27 +8,27 @@ fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "¿Cuál es la diferencia entre SCORM y LTI para un recorrido 360?"
-    a: "SCORM es un paquete que se sube a Moodle y vive allí: si cambias el tour, hay que volver a subirlo. LTI es una conexión: Moodle abre el tour que está en Andarama, siempre actualizado. En Andarama, LTI 1.3 está en pruebas y la nota todavía no vuelve sola; para nota, hoy, SCORM."
+    a: "SCORM es un paquete que se sube a Moodle y vive allí: si cambias el tour, hay que volver a subirlo. LTI es una conexión: Moodle abre el tour que está en Andarama, siempre actualizado. Los dos llevan la nota del quiz al libro de calificaciones."
   - q: "¿Puedo poner un tour en Moodle sin nota, solo para verlo?"
     a: "Sí: el código de inserción del tour se pega en una página o una etiqueta de Moodle y aparece embebido, con pantalla completa y realidad virtual. No hay calificación, pero no hace falta configurar nada."
   - q: "¿La nota del quiz llega al libro de calificaciones?"
-    a: "Con SCORM, sí: el paquete envía la puntuación y el estado de finalización a la actividad SCORM y, con la configuración habitual, al libro de calificaciones. Por LTI todavía no: está en pruebas."
+    a: "Con SCORM, sí: el paquete envía la puntuación y el estado de finalización a la actividad SCORM y, con la configuración habitual, al libro de calificaciones. Con LTI 1.3, también: la nota se escribe sola en el libro de calificaciones de Moodle en cuanto el alumno termina el quiz."
   - q: "¿Qué plan de Andarama hace falta?"
-    a: "En andarama.com, el paquete SCORM está en el plan Formación. En una instalación propia del centro o de la universidad no hay planes: todo está disponible. Incrustar un tour funciona con cualquier plan."
+    a: "En andarama.com, el paquete SCORM y la integración LTI 1.3 están en el plan Formación. En una instalación propia del centro o de la universidad no hay planes: todo está disponible. Incrustar un tour funciona con cualquier plan."
 ---
 
-Hay dos maneras listas de meter un **recorrido 360 en Moodle**, y la elección depende de si necesitas nota o no: incrustar el tour en una página con un iframe o un web component (sin nota, cero configuración) o subirlo como **paquete SCORM** (con nota y finalización, pero congelado en el momento de exportar). Hay una tercera, la conexión por **LTI 1.3**, que en Andarama está en pruebas: el docente puede elegir el tour desde Moodle, pero la nota todavía no vuelve sola al libro de calificaciones. Esta guía explica las tres con Andarama, cómo se configuran y cuándo conviene cada una. Lo mismo vale, con pequeñas diferencias, para Canvas, Blackboard y Sakai.
+Hay tres maneras de meter un **recorrido 360 en Moodle**: incrustar el tour en una página con un iframe o un web component (sin nota, cero configuración), subirlo como **paquete SCORM** (con nota y finalización, pero congelado en el momento de exportar) o conectarlo por **LTI 1.3** (con nota y siempre actualizado, tras dar de alta la herramienta una sola vez). Esta guía explica las tres con Andarama, cómo se configuran y cuándo conviene cada una. Incrustar y SCORM valen, con pequeñas diferencias, para Canvas, Blackboard y Sakai; LTI 1.3 es un estándar que esas plataformas también admiten, pero los pasos de esta guía son los de Moodle, que es donde lo hemos comprobado.
 
 ## Las tres opciones, de un vistazo
 
-| | Incrustar | SCORM | LTI 1.3 (en pruebas) |
+| | Incrustar | SCORM | LTI 1.3 |
 |---|---|---|---|
-| Nota en Moodle | No | Sí (actividad SCORM) | Todavía no |
+| Nota en Moodle | No | Sí (actividad SCORM) | Sí (libro de calificaciones) |
 | Se actualiza solo | Sí | No (hay que volver a subir) | Sí |
-| Configuración | Ninguna | Ninguna | Una vez, por la administración |
+| Configuración | Ninguna | Ninguna | Una vez, en Moodle y en Andarama |
 | Quién lo hace | Cualquier docente | Cualquier docente | Docente, tras el alta de la herramienta |
 | Realidad virtual | Sí | Sí, servido por HTTPS | Sí |
-| Plan en andarama.com | Cualquiera | Formación | Piloto, bajo petición |
+| Plan en andarama.com | Cualquiera | Formación | Formación |
 
 ## Opción 1: incrustar el tour en una página
 
@@ -49,7 +49,7 @@ Si el tour se publica como **no listado**, solo lo verá quien tenga el enlace; 
 
 ## Opción 2: SCORM
 
-Es hoy el camino para tener nota en cualquier campus, y para quien quiere el paquete en su mano. Desde el editor de Andarama, **Exportar** ofrece SCORM 1.2 y SCORM 2004 (3.ª edición). El paquete lleva dentro el visor, el `tour.json`, las teselas y los medios, y reporta al campus:
+Es el camino para tener nota en cualquier campus sin configurar nada, y para quien quiere el paquete en su mano. Desde el editor de Andarama, **Exportar** ofrece SCORM 1.2 y SCORM 2004 (3.ª edición). El paquete lleva dentro el visor, el `tour.json`, las teselas y los medios, y reporta al campus:
 
 - `completion_status` al visitar todas las escenas (o al completar el quiz).
 - `score.raw`, `score.min` y `score.max`, y `success_status` según la puntuación mínima configurada en el tour.
@@ -63,52 +63,57 @@ En Moodle:
 
 Dos cosas que hay que saber. La primera: el paquete es una **foto fija** del tour. Si corriges una pregunta, hay que exportar y subir de nuevo. La segunda: la realidad virtual dentro del paquete exige que Moodle sirva por HTTPS (lo normal hoy); si no, el botón de gafas cae al modo cartón. Una tercera: el paquete SCORM no se puede combinar con la exportación «HTML único». Todo está descrito en [publicar y exportar](https://docs.andarama.com/usuario/publicar/).
 
-## Opción 3: LTI 1.3 Advantage (en pruebas)
+## Opción 3: LTI 1.3
 
-Es la integración que más se nos pide, y conviene ser claros: en Andarama está **en pruebas**. Está diseñada como **herramienta LTI 1.3** con dos servicios:
+Es la integración más cómoda cuando el campus la tiene dada de alta. Andarama funciona como **herramienta LTI 1.3 Advantage** con dos servicios:
 
-- **Deep Linking**: el docente, desde Moodle, pulsa «añadir herramienta externa» y elige el tour en un selector, sin copiar direcciones.
-- **Assignment and Grade Services (AGS)**: el envío de la puntuación del quiz al libro de calificaciones. Esta es la parte que todavía no funciona sola: hoy la nota no vuelve a Moodle por LTI.
+- **Deep Linking**: el docente, desde Moodle, pulsa «Seleccionar contenido» y elige el tour en un selector, sin copiar direcciones.
+- **Assignment and Grade Services (AGS)**: la puntuación del quiz llega sola al libro de calificaciones de Moodle.
 
-La ventaja de fondo es que el tour no se copia a ningún sitio: Moodle lo abre desde Andarama, así que cualquier cambio se ve al momento. Si necesitas nota ya, usa SCORM.
+El tour no se copia a ningún sitio: Moodle lo abre desde Andarama, así que al volver a publicarlo el curso ve la versión nueva al momento, sin subir nada. El alumnado lo abre dentro de Moodle y no necesita cuenta en Andarama. Lo hemos probado de punta a punta con Moodle 4.5 LTS.
 
-### Configuración (una sola vez, la administración)
+### En Moodle (una sola vez, la administración del sitio)
 
-En Moodle, Administración del sitio, Plugins, Herramientas externas, «configurar una herramienta manualmente»:
+En **Administración del sitio › Plugins › Módulos de actividad › Herramienta externa › Gestionar herramientas**, «configurar una herramienta manualmente», con versión **LTI 1.3**:
 
-- URL de la herramienta e **Initiate login URL**: `https://tu-instancia/api/v1/lti/login`
-- **Redirection URI**: `https://tu-instancia/api/v1/lti/launch`
-- **JWKS URL**: `https://tu-instancia/api/v1/lti/jwks`
-- Servicios: activar Deep Linking.
+- **Initiate login URL**: `https://tu-instancia/api/v1/lti/login`
+- **Tool URL**, **Redirection URI(s)** y **Content Selection URL**: `https://tu-instancia/api/v1/lti/launch`
+- **Public key type**: «Keyset URL», con `https://tu-instancia/api/v1/lti/jwks`
+- Marcar **Supports Deep Linking (Content-Item Message)**.
+- En Servicios, **IMS LTI Assignment and Grade Services**: «Use this service for grade sync and column management».
+- En Privacidad, **Accept grades from the tool**: «Always».
 
-En Andarama, la administración de la instancia registra la plataforma (panel Administración, pestaña LTI) con el Issuer de Moodle, el Client ID, la Auth URL (`/mod/lti/auth.php`), la Token URL (`/mod/lti/token.php`) y el JWKS (`/mod/lti/certs.php`). En una instalación propia lo hace la persona que administra Andarama; en andarama.com, si queréis participar en las pruebas, escribidnos desde la [página de universidades](/universidades/) con los datos del campus.
+Al guardar, Moodle muestra en los detalles de la herramienta el **Platform ID**, el **Client ID**, el **Deployment ID** y sus tres direcciones (autenticación, token y claves públicas).
 
-La guía con los pasos exactos está en [docencia: LTI 1.3](https://docs.andarama.com/usuario/docencia/).
+### En Andarama (una sola vez, la administración de la organización)
 
-### Uso (cada docente)
+En Studio, **Ajustes de la organización › LTI: Moodle y otros LMS**, se registra la plataforma con esos datos: Platform ID, Client ID, Deployment ID y las tres URL de Moodle (`/mod/lti/auth.php`, `/mod/lti/token.php` y `/mod/lti/certs.php`). Lo hace quien administra la organización, sin depender de la administración de la instancia; en una instalación propia también puede hacerlo quien la opera.
 
-1. En el curso, «Añadir una actividad», **Herramienta externa**, elegir Andarama.
-2. Pulsar «Seleccionar contenido» y escoger el tour en el selector (Deep Linking). También se puede fijar a mano con el parámetro `custom.tour = slug`.
-3. Guardar. La actividad aparece en el curso y abre el tour.
+### Cada docente
 
-Mientras la integración esté en pruebas, no cuentes con que la nota del quiz llegue a Moodle por esta vía.
+1. En el curso, «Añadir una actividad o un recurso», **Herramienta externa**, elegir Andarama.
+2. Pulsar **Seleccionar contenido** y escoger un tour publicado en el selector. El nombre de la actividad se rellena con el título del tour.
+3. Guardar. El alumnado abre la actividad dentro de Moodle, responde al quiz y la nota aparece en el libro de calificaciones.
+
+La guía con cada campo está en [Moodle: LTI 1.3](https://docs.andarama.com/usuario/moodle/#5-lti-13).
 
 ## Cuál elegir
 
 - **Salida virtual, museo, visita al centro, sin nota**: incrustar. Cinco minutos.
-- **Formación con nota en un campus que no tiene LTI, o que exige que el material esté en el propio Moodle** (auditorías, empresas): SCORM.
-- **Universidad o centro con Moodle propio y varios docentes**: SCORM para lo que se evalúa, incrustado para lo demás; y, si os interesa, un piloto de LTI sin depender de él para las notas.
+- **Con nota, en un centro con plan Formación o instalación propia, sin volver a subir nada cada vez que cambia el tour**: LTI 1.3.
+- **Con nota, en cualquier otro caso** (el campus no da de alta herramientas externas, o exige que el material esté en el propio Moodle, como en auditorías y empresas): SCORM.
 
-En muchos centros conviven las dos: el mismo tour incrustado en la página de bienvenida y como SCORM en la asignatura o en el curso de acogida de la empresa colaboradora.
+En muchos centros conviven varias: el mismo tour incrustado en la página de bienvenida y como SCORM en la asignatura o en el curso de acogida de la empresa colaboradora.
 
 ## Qué se necesita en Andarama
 
-- En **andarama.com**, la exportación SCORM está en el [plan Formación](/formacion/) (99 $ al mes o 990 $ al año, con 100 recorridos, 200 GB, marca blanca y dominio propio). Incrustar un tour publicado funciona con cualquier plan.
-- En una **instalación propia** (Docker, la cuenta de Cloudflare del centro o el ejecutable de escritorio) no hay planes: SCORM está disponible sin más, y también la integración LTI en pruebas. Es la opción natural para una universidad con equipo técnico, y el programa es de código abierto (EUPL-1.2).
+- En **andarama.com**, la exportación SCORM y la integración LTI 1.3 están en el [plan Formación](/formacion/) (99 $ al mes o 990 $ al año, con 100 recorridos, 200 GB, marca blanca y dominio propio). Incrustar un tour publicado funciona con cualquier plan.
+- En una **instalación propia** (Docker, la cuenta de Cloudflare del centro o el ejecutable de escritorio) no hay planes: SCORM y LTI 1.3 están disponibles sin más. Es la opción natural para una universidad con equipo técnico, y el programa es de código abierto (EUPL-1.2).
 
 ## Errores frecuentes
 
 - **El iframe desaparece al guardar la página.** El filtro HTML de Moodle lo ha quitado. Solución: permisos del rol o web component.
 - **El SCORM se abre pero no manda la nota.** Comprueba que el tour tiene al menos un quiz y una puntuación mínima configurada; sin ella no hay `success_status` que reportar.
-- **LTI: «invalid issuer» o error al lanzar.** Las URL de Moodle (issuer, auth, token, certs) no coinciden con las registradas en Andarama; suele ser una barra final de más o un `http` donde debería ser `https`.
+- **LTI: «invalid issuer» o error al lanzar.** El Platform ID, el Deployment ID o las URL de Moodle (auth, token, certs) no coinciden con los registrados en Andarama; suele ser una barra final de más o un `http` donde debería ser `https`.
+- **LTI: el tour se abre pero la nota no llega.** En la herramienta de Moodle falta activar Assignment and Grade Services o poner «Accept grades from the tool» en «Always».
 - **En las gafas no entra en RV desde Moodle.** El iframe no tiene `allow="xr-spatial-tracking"`, o el campus se sirve por `http`.

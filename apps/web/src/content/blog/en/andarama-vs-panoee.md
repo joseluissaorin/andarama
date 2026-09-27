@@ -75,7 +75,7 @@ Both have a VR mode. In Andarama it's full WebXR: open the link in the browser o
 
 ## Teaching and training
 
-Panoee isn't built for the classroom and has no education plan. Andarama includes graded quizzes (passing score, final report, PDF certificate of completion), gates that hold students in a scene until they answer correctly, scavenger hunts, escape rooms with variables and conditions, live guided tours (the guide moves, attendees follow in their own browser, voice goes over Meet, Teams or Zoom), and SCORM 1.2 and 2004 packages. Students don't need an account to view or play a tour. LTI 1.3 exists but is still in testing. If you teach or run training, there's no contest; if you don't, skip this section.
+Panoee isn't built for the classroom and has no education plan. Andarama includes graded quizzes (passing score, final report, PDF certificate of completion), gates that hold students in a scene until they answer correctly, scavenger hunts, escape rooms with variables and conditions, live guided tours (the guide moves, attendees follow in their own browser, voice goes over Meet, Teams or Zoom), and SCORM 1.2 and 2004 packages. Students don't need an account to view or play a tour. Through LTI 1.3, the grade also goes straight to the Moodle gradebook. If you teach or run training, there's no contest; if you don't, skip this section.
 
 ## Branding, domain and data
 

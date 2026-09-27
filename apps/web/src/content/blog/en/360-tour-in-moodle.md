@@ -1,6 +1,6 @@
 ---
 title: "How to put a 360 tour in Moodle (SCORM, iframe and LTI)"
-description: "How to add a 360 virtual tour to Moodle or Canvas: embedded on a page with no grade, or as a SCORM package with a grade. Plus where LTI 1.3 stands."
+description: "How to add a 360 virtual tour to Moodle or Canvas: embedded on a page with no grade, or as a SCORM package with a grade. Or through LTI 1.3, with the grade going straight to the gradebook."
 lang: en
 slug: 360-tour-in-moodle
 cluster: docencia
@@ -9,29 +9,29 @@ fecha: 2026-09-27
 autor: jose-luis-saorin
 faq:
   - q: "What's the difference between SCORM and LTI for a 360 tour?"
-    a: "SCORM is a package you upload to Moodle and it lives there: if you change the tour, you upload it again. LTI is a connection: Moodle opens the tour where it lives, always up to date. In Andarama, LTI 1.3 is in testing and grades don't flow back on their own yet; for grades, use SCORM today."
+    a: "SCORM is a package you upload to Moodle and it lives there: if you change the tour, you upload it again. LTI is a connection: Moodle opens the tour where it lives, always up to date. Both send the quiz grade to the gradebook."
   - q: "Can I add a tour to Moodle just for viewing, with no grade?"
     a: "Yes. Paste the tour's embed code into a Moodle page or text and media area and it shows up embedded, with full screen and VR. There's no grade, but there's nothing to configure either."
   - q: "Does the quiz grade reach the gradebook?"
-    a: "With SCORM, yes: the package reports the score and completion status to the SCORM activity and, with the usual settings, to the gradebook. Through LTI, not yet: it's in testing."
+    a: "With SCORM, yes: the package reports the score and completion status to the SCORM activity and, with the usual settings, to the gradebook. With LTI 1.3, yes too: the grade is written to the Moodle gradebook automatically as soon as the student finishes the quiz."
   - q: "Which Andarama plan do I need?"
-    a: "On andarama.com, SCORM export is in the Formación plan. On a school's or university's own installation there are no plans: everything is available. Embedding a published tour works on any plan."
+    a: "On andarama.com, SCORM export and the LTI 1.3 integration are in the Formación plan. On a school's or university's own installation there are no plans: everything is available. Embedding a published tour works on any plan."
 ---
 
-There are two ready-to-use ways to put a **360 tour in Moodle**, and the choice depends on whether you need a grade: embed the tour on a page with an iframe or a web component (no grade, zero setup), or upload it as a **SCORM package** (grade and completion, but frozen at the moment you export). There's a third, connecting through **LTI 1.3**, which in Andarama is still in testing: an instructor can pick the tour from inside Moodle, but the grade doesn't flow back to the gradebook on its own yet. This guide covers all three, how to set them up and when each one makes sense. The same applies, with small differences, to Canvas, Blackboard and D2L Brightspace.
+There are three ways to put a **360 tour in Moodle**: embed the tour on a page with an iframe or a web component (no grade, zero setup), upload it as a **SCORM package** (grade and completion, but frozen at the moment you export), or connect it through **LTI 1.3** (grade and always up to date, after registering the tool once). This guide covers all three, how to set them up and when each one makes sense. Embedding and SCORM work the same way, with small differences, in Canvas, Blackboard and D2L Brightspace; LTI 1.3 is a standard those platforms support too, but the steps here are Moodle's, which is where we've verified it.
 
 If you want to follow along with a real tour, [start a free 14-day Formación trial](https://app.andarama.com/register?plan=formacion), no credit card required.
 
 ## The options at a glance
 
-| | Embed | SCORM | LTI 1.3 (in testing) |
+| | Embed | SCORM | LTI 1.3 |
 |---|---|---|---|
-| Grade in Moodle | No | Yes (SCORM activity) | Not yet |
+| Grade in Moodle | No | Yes (SCORM activity) | Yes (gradebook) |
 | Updates itself | Yes | No (upload again) | Yes |
-| Setup | None | None | Once, by the site admin |
+| Setup | None | None | Once, in Moodle and in Andarama |
 | Who can do it | Any instructor | Any instructor | Instructors, once the tool is registered |
 | Virtual reality | Yes | Yes, served over HTTPS | Yes |
-| Plan on andarama.com | Any | Formación | Pilot, on request |
+| Plan on andarama.com | Any | Formación | Formación |
 
 ## Option 1: embed the tour on a page
 
@@ -52,7 +52,7 @@ If you publish the tour as **unlisted**, only people with the link can see it; i
 
 ## Option 2: SCORM
 
-Today this is the way to get a grade into any LMS, and the right choice if you want the package in your own hands. In the Andarama editor, **Export** offers SCORM 1.2 and SCORM 2004 (3rd edition). The package bundles the viewer, the `tour.json`, the tiles and the media, and reports back to the LMS:
+This is the way to get a grade into any LMS with no setup, and the right choice if you want the package in your own hands. In the Andarama editor, **Export** offers SCORM 1.2 and SCORM 2004 (3rd edition). The package bundles the viewer, the `tour.json`, the tiles and the media, and reports back to the LMS:
 
 - `completion_status` when the student has visited every scene (or finished the quiz).
 - `score.raw`, `score.min` and `score.max`, plus `success_status` based on the passing score set in the tour.
@@ -68,51 +68,59 @@ In Canvas, the equivalent is importing the package through the SCORM integration
 
 A few things to know. First, the package is a **snapshot** of the tour: if you fix a question, you export and upload again. Second, VR inside the package requires Moodle to be served over HTTPS (standard nowadays); otherwise the headset button falls back to cardboard mode. Third, SCORM can't be combined with the single-file HTML export. It's all described in [publishing and exporting](https://docs.andarama.com/en/usuario/publicar/).
 
-## Option 3: LTI 1.3 Advantage (in testing)
+## Option 3: LTI 1.3
 
-It's the integration people ask us about most, so let's be clear: in Andarama it's **in testing**. It's designed as an **LTI 1.3 tool** with two services:
+It's the most convenient integration once your Moodle has the tool registered. Andarama works as an **LTI 1.3 Advantage tool** with two services:
 
-- **Deep Linking**: the instructor clicks "add external tool" in Moodle and picks the tour from a selector, without copying URLs.
-- **Assignment and Grade Services (AGS)**: sending the quiz score to the gradebook. This is the part that doesn't work on its own yet: today, grades don't come back to Moodle through LTI.
+- **Deep Linking**: the instructor clicks "Select content" in Moodle and picks the tour from a selector, without copying URLs.
+- **Assignment and Grade Services (AGS)**: the quiz score lands in the Moodle gradebook automatically.
 
-The underlying advantage is that the tour isn't copied anywhere: Moodle opens it from Andarama, so every change shows up right away. If you need grades now, use SCORM.
+The tour isn't copied anywhere: Moodle opens it from Andarama, so when you republish it the course shows the new version right away, with nothing to upload. Students open it inside Moodle and don't need an Andarama account. We've tested it end to end with Moodle 4.5 LTS.
 
-### Setup (once, by the admin)
+### In Moodle (once, by the site admin)
 
-In Moodle, go to Site administration, Plugins, External tool, and "configure a tool manually":
+Go to **Site administration › Plugins › Activity modules › External tool › Manage tools**, "configure a tool manually", with version **LTI 1.3**:
 
-- Tool URL and **Initiate login URL**: `https://your-instance/api/v1/lti/login`
-- **Redirection URI**: `https://your-instance/api/v1/lti/launch`
-- **JWKS URL**: `https://your-instance/api/v1/lti/jwks`
-- Services: enable IMS LTI Assignment and Grade Services and Deep Linking.
+- **Initiate login URL**: `https://your-instance/api/v1/lti/login`
+- **Tool URL**, **Redirection URI(s)** and **Content Selection URL**: `https://your-instance/api/v1/lti/launch`
+- **Public key type**: "Keyset URL", set to `https://your-instance/api/v1/lti/jwks`
+- Tick **Supports Deep Linking (Content-Item Message)**.
+- Under Services, **IMS LTI Assignment and Grade Services**: "Use this service for grade sync and column management".
+- Under Privacy, **Accept grades from the tool**: "Always".
 
-In Andarama, the instance admin registers the platform (Admin panel, LTI tab) with Moodle's Issuer, the Client ID, the Auth URL (`/mod/lti/auth.php`), the Token URL (`/mod/lti/token.php`) and the JWKS (`/mod/lti/certs.php`). On a self-hosted install, whoever runs Andarama does this; on andarama.com, if you'd like to join the pilot, get in touch through the [training page](/en/training/) with your LMS details. The exact steps are in the [teaching documentation](https://docs.andarama.com/en/usuario/docencia/).
+Once saved, the tool's details in Moodle show the **Platform ID**, **Client ID**, **Deployment ID** and Moodle's three URLs (authentication, access token and public keyset).
 
-### Use (each instructor)
+### In Andarama (once, by the organisation admin)
 
-1. In the course, choose "Add an activity", **External tool**, then Andarama.
-2. Click "Select content" and pick the tour in the selector (Deep Linking), or set it by hand with the `custom.tour = slug` parameter.
-3. Save. The activity appears in the course and opens the tour.
+In Studio, under **Ajustes de la organización › LTI: Moodle y otros LMS** (organisation settings), register the platform with those details: Platform ID, Client ID, Deployment ID and Moodle's three URLs (`/mod/lti/auth.php`, `/mod/lti/token.php` and `/mod/lti/certs.php`). Your organisation's admin does this without waiting on the instance admin; on a self-hosted install, whoever runs it can do it too.
 
-While the integration is in testing, don't count on the quiz grade reaching Moodle this way.
+### Each instructor
+
+1. In the course, choose "Add an activity or resource", **External tool**, then Andarama.
+2. Click **Select content** and pick a published tour in the selector. The activity name is filled in with the tour's title.
+3. Save. Students open the activity inside Moodle, answer the quiz, and the grade shows up in the gradebook.
+
+Every field is described in the user guide, [Moodle: LTI 1.3](https://docs.andarama.com/usuario/moodle/#5-lti-13).
 
 ## Which one to choose
 
 - **Virtual field trip, museum visit, campus tour, no grade**: embed. Five minutes. We collect ideas in [virtual field trips](/en/blog/virtual-field-trips/).
-- **Graded training on any LMS, or when the material has to live inside Moodle** (audits, corporate compliance): SCORM.
-- **A university or district with its own Moodle and many instructors**: SCORM for anything graded, embedding for everything else; and, if you're interested, an LTI pilot without depending on it for grades.
+- **Graded, on the Formación plan or a self-hosted install, without re-uploading every time the tour changes**: LTI 1.3.
+- **Graded, in any other case** (your LMS doesn't register external tools, or the material has to live inside Moodle, as in audits and corporate compliance): SCORM.
 
-Many schools use both: the same tour embedded on the welcome page and as SCORM in the course. The same goes for game-based activities like a [digital escape room](/en/blog/digital-escape-room/), where the quiz gates hold students in a scene until they get it right, and for headset sessions from our guide to [VR in education](/en/blog/vr-in-education/).
+Many schools mix them: the same tour embedded on the welcome page and as SCORM in the course. The same goes for game-based activities like a [digital escape room](/en/blog/digital-escape-room/), where the quiz gates hold students in a scene until they get it right, and for headset sessions from our guide to [VR in education](/en/blog/vr-in-education/).
 
 ## What you need in Andarama
 
-- On **andarama.com**, SCORM export is in the Formación plan ($99 a month or $990 a year, with 100 tours, 200 GB, white label and a custom domain). Embedding a published tour works on any plan.
-- On a **self-hosted install** (Docker, your school's Cloudflare account or the desktop app) there are no plans: SCORM is simply there, and so is the LTI integration in testing. It's the natural choice for a university with a technical team, and the software is open source (EUPL-1.2).
+- On **andarama.com**, SCORM export and the LTI 1.3 integration are in the Formación plan ($99 a month or $990 a year, with 100 tours, 200 GB, white label and a custom domain). Embedding a published tour works on any plan.
+- On a **self-hosted install** (Docker, your school's Cloudflare account or the desktop app) there are no plans: SCORM and LTI 1.3 are simply there. It's the natural choice for a university with a technical team, and the software is open source (EUPL-1.2).
 
 ## Common errors
 
 - **The iframe disappears when you save the page.** Moodle's HTML filter removed it. Fix: role permissions or the web component.
 - **The SCORM package opens but doesn't send a grade.** Check that the tour has at least one quiz and a passing score set; without it there's no `success_status` to report.
+- **LTI: "invalid issuer" or an error on launch.** The Platform ID, Deployment ID or Moodle URLs (auth, token, certs) don't match what's registered in Andarama; usually a stray trailing slash or `http` where it should be `https`.
+- **LTI: the tour opens but the grade doesn't arrive.** The Moodle tool is missing Assignment and Grade Services, or "Accept grades from the tool" isn't set to "Always".
 - **In the headset, VR won't start from Moodle.** The iframe is missing `allow="xr-spatial-tracking"`, or the site is served over `http`.
 
 Ready to try it with your own course? [Open a free trial](https://app.andarama.com/register?plan=formacion) and export your first SCORM package today.

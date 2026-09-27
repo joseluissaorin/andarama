@@ -1,5 +1,5 @@
 ---
-title: "Docencia: quiz, SCORM y LTI (en pruebas)"
+title: "Docencia: quiz, SCORM y LTI"
 description: Quiz con nota mínima, informe y certificado, búsqueda del tesoro, variables, y cómo llevar la nota al aula virtual.
 ---
 
@@ -89,17 +89,13 @@ propia está siempre disponible. No funciona combinado con «HTML único». Las
 opciones de exportación están en [Exportar](/docs/usuario/exportar/), y los
 pasos en Moodle en [Insertar en Moodle](/docs/usuario/moodle/).
 
-## LTI 1.3 (en pruebas)
+## LTI 1.3
 
-Andarama incluye una configuración de herramienta LTI 1.3 Advantage, con
-**Deep Linking** (el docente elige el recorrido desde Moodle) y, en diseño,
-**Assignment and Grade Services** (la devolución de la nota).
-
-:::caution[En pruebas]
-La integración LTI está en pruebas: Moodle puede lanzar el recorrido, pero la
-nota del quiz **todavía no vuelve** al libro de calificaciones por esta vía.
-Si necesitas la nota, usa SCORM.
-:::
+Andarama es una herramienta LTI 1.3 Advantage con **Deep Linking** (el docente
+elige el recorrido desde Moodle) y **Assignment and Grade Services** (la nota
+del quiz vuelve sola al libro de calificaciones). El recorrido no se copia en
+Moodle: al republicarlo, el curso ve la versión nueva. Está comprobado de punta
+a punta con Moodle 4.5 LTS.
 
 La configuración la hace el **administrador de la organización** en **Ajustes de la organización → LTI: Moodle y otros LMS** (en andarama.com
 hace falta un plan que incluya LTI, como Formación); el operador de la
@@ -107,7 +103,7 @@ instancia también puede dar de alta plataformas desde **Administración → LTI
 Cada plataforma pertenece a una organización: el selector de Deep Linking solo
 ofrece sus recorridos publicados, y se rechazan los lanzamientos con un
 `deployment_id` distinto del registrado. Los pasos completos están en
-[Insertar en Moodle](/docs/usuario/moodle/#5-lti-13-en-pruebas).
+[Insertar en Moodle](/docs/usuario/moodle/#5-lti-13).
 
 ## Sin nota: enlace o iframe
 

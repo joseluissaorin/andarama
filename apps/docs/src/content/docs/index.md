@@ -32,7 +32,7 @@ Las tres primeras son gratis y son el mismo programa: el plan gratuito de Andara
 - Multiidioma de contenido con export/import XLIFF y CSV.
 - Accesibilidad con WCAG 2.1 AA como referencia de diseño (sin auditoría de conformidad) y modo de contenido accesible lineal (también útil para SEO).
 - Tours guiados en vivo (un guía controla la vista de N asistentes), comentarios, versiones, presencia.
-- Quiz con puntuación y certificado, búsqueda del tesoro, variables y condiciones para montar un [escape room](/docs/usuario/escape-room/), export **SCORM 1.2/2004** con la nota para el aula virtual y **LTI 1.3** (en pruebas).
+- Quiz con puntuación y certificado, búsqueda del tesoro, variables y condiciones para montar un [escape room](/docs/usuario/escape-room/), export **SCORM 1.2/2004** con la nota para el aula virtual y **LTI 1.3** con Deep Linking y la nota de vuelta en Moodle.
 - Analítica propia sin cookies (RGPD): embudo de escenas, hotspots más usados y mapa de calor de orientaciones.
 - Export ZIP autocontenido (también HTML único, kiosko y PWA offline).
 - Modo quiosco desde el propio enlace publicado, con recorridos guiados que entran por el paso que une las escenas y esperan en cada parada.

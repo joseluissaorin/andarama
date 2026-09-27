@@ -67,7 +67,7 @@ Stacks tend to be narrow and lit by fluorescent tubes. A few tips:
 
 - **Library website**: an embed code (web component or iframe) for any CMS, with our [WordPress plugin](/en/wordpress/) if that's what you run; sharing the link shows a social card with the starting view.
 - **Lobby**: the same tour in **kiosk mode** on a screen, chaining several tours, with the controls open to anyone who touches them and a return to the start after a minute. For screens without a network connection, the **PWA** package works offline.
-- **Learning management system**: for an academic library, the teaching scenes can go into Moodle, Canvas or another LMS as a SCORM 1.2 or 2004 package (Formación plan or self-hosted), so the quiz score lands in the gradebook. LTI 1.3 exists but is still in testing: for now the grade doesn't flow back on its own. Details in our guide to a [360 tour in Moodle](/en/blog/360-tour-in-moodle/).
+- **Learning management system**: for an academic library, the teaching scenes can go into Moodle, Canvas or another LMS as a SCORM 1.2 or 2004 package (Formación plan or self-hosted), so the quiz score lands in the gradebook. In Moodle there's also LTI 1.3: the tour opens from Andarama, always up to date, and the grade lands in the gradebook on its own. Details in our guide to a [360 tour in Moodle](/en/blog/360-tour-in-moodle/).
 - **Deep links**: every document has its own address (`#s=incunabulum-12`), so the catalog record can link straight to its scene.
 
 ## Accessibility and privacy

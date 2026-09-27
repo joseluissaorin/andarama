@@ -66,7 +66,7 @@ Los dos tienen modo RV. Kuula ofrece un modo para gafas y para cartón. Andarama
 
 ## Docencia y formación
 
-Aquí no hay comparación posible, y lo decimos sin presumir: Kuula no está pensado para el aula. Andarama trae de serie quiz con nota, mínimo para aprobar, intentos, informe final y certificado PDF; búsqueda del tesoro y escape room con compuertas y variables de estado; visitas guiadas en directo, en las que la clase sigue al docente desde su navegador; y paquetes SCORM 1.2 y 2004 para llevar la nota a Moodle, Canvas o Blackboard (plan Formación). La integración LTI 1.3 está en pruebas. El plan Aula cuesta 42 $ al año por docente, y el alumnado no necesita cuenta.
+Aquí no hay comparación posible, y lo decimos sin presumir: Kuula no está pensado para el aula. Andarama trae de serie quiz con nota, mínimo para aprobar, intentos, informe final y certificado PDF; búsqueda del tesoro y escape room con compuertas y variables de estado; visitas guiadas en directo, en las que la clase sigue al docente desde su navegador; y paquetes SCORM 1.2 y 2004 para llevar la nota a Moodle, Canvas o Blackboard (plan Formación). Con LTI 1.3, Moodle abre el tour directamente y la nota llega sola al libro de calificaciones. El plan Aula cuesta 42 $ al año por docente, y el alumnado no necesita cuenta.
 
 ## Street View y comunidad
 

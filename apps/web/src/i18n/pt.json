@@ -187,7 +187,7 @@
       "lista": [
         { "titulo": "Quiz com nota", "texto": "Perguntas espalhadas pelo tour, pontuação, mínimo para aprovar, embaralhamento, tentativas, relatório final e certificado PDF com o nome do aluno." },
         { "titulo": "Caça ao tesouro", "texto": "Objetos escondidos pelas cenas, progresso visível e variáveis de estado que abrem portas quando todos foram encontrados." },
-        { "titulo": "Moodle e companhia", "texto": "Pacote SCORM 1.2 e 2004 com conclusão e nota para Moodle, Canvas, Blackboard ou qualquer outro campus. O LTI 1.3 está em fase de testes e disponível sob pedido." },
+        { "titulo": "Moodle e companhia", "texto": "Pacote SCORM 1.2 e 2004 com conclusão e nota para Moodle, Canvas, Blackboard ou qualquer outro campus. E LTI 1.3 com Deep Linking: o professor escolhe o tour a partir do Moodle e a nota do quiz volta sozinha ao livro de notas." },
         { "titulo": "Visitas guiadas ao vivo", "texto": "Uma sala com código: o guia move a cena e a vista de todos, aponta com o ponteiro, conversa no chat; cada participante pode se soltar e voltar a sincronizar." },
         { "titulo": "Formulários", "texto": "Inscrição, pesquisa ou contato dentro do próprio tour. As respostas ficam guardadas e se baixam em CSV, ou se reenviam a um webhook." },
         { "titulo": "Analítica sem cookies", "texto": "Visitas, funil de cenas, hotspots mais usados, tempo por cena e mapa de calor de para onde as pessoas olham. Sem rastrear ninguém: cumpre a LGPD e o RGPD de fábrica." }
@@ -247,7 +247,7 @@
         { "q": "Que câmera eu preciso?", "a": "Qualquer uma que tire uma foto equirretangular (Insta360, Ricoh Theta, GoPro Max, Kandao…) ou o celular com um app de panoramas. Também servem cubemaps, panoramas parciais e fotos planas gigapixel. O fatiamento é feito no seu navegador até 32K; acima disso, no servidor." },
         { "q": "Os tours continuam funcionando se o Andarama desaparecer?", "a": "Sim. O ZIP exportado é estático e autocontido: HTML, o visualizador e os tiles. Sobe-se em qualquer hospedagem, abre-se de um pen drive com o HTML único e conserva a realidade virtual. E o formato <code>tour.json</code> está documentado e versionado." },
         { "q": "Onde ficam os meus dados?", "a": "Se você instala por conta própria, no seu servidor ou na sua conta da Cloudflare. Em andarama.com, no banco de dados do Andarama; a Clerk guarda só a conta e a cobrança. A analítica dos visitantes não usa cookies nem guarda endereços IP." },
-        { "q": "Funciona com o Moodle?", "a": "Sim, com o pacote SCORM 1.2 ou 2004: ele é enviado ao Moodle (ou ao Canvas, Blackboard, Sakai…) como qualquer outra atividade e informa a conclusão e a nota do quiz. A integração por LTI 1.3 está em fase de testes e a ativamos sob pedido." },
+        { "q": "Funciona com o Moodle?", "a": "Sim, de duas maneiras. Por LTI 1.3: a administração registra o Andarama uma vez como ferramenta externa, os professores escolhem o tour a partir do curso e a nota do quiz chega sozinha ao livro de notas (plano Formación ou instalação própria). Ou com o pacote SCORM 1.2 ou 2004: ele é enviado ao Moodle (ou ao Canvas, Blackboard, Sakai…) como qualquer outra atividade e informa a conclusão e a nota do quiz." },
         { "q": "Posso trabalhar com mais gente no mesmo tour?", "a": "Sim. Organizações com papéis, compartilhamento por projeto, presença e bloqueio suave por cena para ninguém pisar no pé de ninguém, comentários ancorados na foto e histórico de versões para voltar atrás." },
         { "q": "Que óculos servem?", "a": "Qualquer um com navegador WebXR (Meta Quest, Pico, Vision Pro com Safari, PC com headset). Abre-se o endereço do tour no navegador dos óculos e clica-se no botão de realidade virtual. Sem óculos, o modo papelão funciona em qualquer celular." },
         { "q": "O que significa “uso razoável”?", "a": "Que os planos foram pensados para uma pessoa ou uma equipe pequena. Se o uso deixar de parecer isso, conversamos antes de cortar qualquer coisa. E se você precisa de algo sem cotas, a instalação própria é grátis e é o mesmo programa." }
@@ -295,7 +295,7 @@
       "excursion": { "items": ["Sem o selo “Feito com Andarama”", "Domínio próprio para os seus tours"], "cta": "Começar" },
       "formacion": {
         "items": [
-          "SCORM para o seu campus (LTI 1.3 sob pedido)",
+          "SCORM e LTI 1.3: a nota volta ao seu campus",
           "Marca branca e domínio próprio",
           "Equipe com várias pessoas editando",
           "Fatura em euros sob pedido para instituições"
@@ -319,11 +319,11 @@
         { "titulo": "Realidade virtual sem instalar nada", "texto": "O mesmo tour abre no Meta Quest, Pico ou Vision Pro a partir do navegador deles. Mãos, controles e olhar; painéis, quiz e comparador dentro da sessão. E no modo papelão com qualquer celular." }
       ],
       "scorm": {
-        "titulo": "SCORM e o seu campus",
-        "texto": "O tour se exporta como pacote SCORM 1.2 ou 2004 com relatório de conclusão e nota, para Moodle, Canvas, Blackboard, Sakai ou qualquer LMS. A integração por LTI 1.3 está em fase de testes: se o seu campus precisar dela, a ativamos com você sob pedido.",
+        "titulo": "LTI, SCORM e o seu campus",
+        "texto": "Por LTI 1.3, o professor escolhe o tour a partir do curso no Moodle e a nota do quiz volta sozinha ao livro de notas; ao republicar, o curso vê a versão nova sem enviar nada. E, para qualquer LMS, o tour se exporta como pacote SCORM 1.2 ou 2004 com relatório de conclusão e nota.",
         "tics": [
           "SCORM 1.2 e 2004 com estado de conclusão, nota e tempo",
-          "LTI 1.3 em fase de testes, disponível sob pedido",
+          "LTI 1.3 com Deep Linking e a nota de volta no Moodle",
           "Relatório final com acertos por pergunta e certificado PDF",
           "Analítica sem cookies: tempo por cena e para onde cada turma olha"
         ]
@@ -349,7 +349,7 @@
       "bloques": [
         { "titulo": "Código aberto de verdade", "texto": "EUPL-1.2, a licença da Comissão Europeia. O código completo está no GitHub: pode-se ler, auditar, modificar e implantar sem pedir permissão. E o formato <code>tour.json</code> está documentado: o que se cria hoje continua abrindo amanhã." },
         { "titulo": "LGPD e RGPD de fábrica", "texto": "A analítica dos visitantes não usa cookies nem guarda endereços IP. Os dados ficam onde a instituição decidir: no seu servidor, na sua conta da Cloudflare ou em andarama.com, com um contrato de tratamento de dados que preparamos sob pedido." },
-        { "titulo": "Moodle, Canvas e Blackboard", "texto": "O tour se exporta como pacote SCORM 1.2 ou 2004, que informa ao campus a conclusão e a nota do quiz. A integração por LTI 1.3 está em fase de testes e a ativamos sob pedido com o campus da instituição." },
+        { "titulo": "Moodle, Canvas e Blackboard", "texto": "Por LTI 1.3, os professores escolhem o tour a partir do curso e a nota do quiz volta sozinha ao livro de notas, sem copiar nada para o Moodle. O tour também se exporta como pacote SCORM 1.2 ou 2004, que informa ao campus a conclusão e a nota." },
         { "titulo": "Contas institucionais", "texto": "Organizações com papéis, verificação em duas etapas e painel de administração com cotas e uso por departamento. Na instalação própria, além disso, SSO por OIDC com cadastro automático por domínio de e-mail." },
         { "titulo": "Fatura e contrato", "texto": "Para instituições, fatura em euros sob pedido com os dados fiscais delas, por transferência e, se necessário, pela FACe. Para volumes maiores ou condições particulares, prepara-se uma proposta sob medida." },
         { "titulo": "Instância própria com suporte", "texto": "Se a instituição preferir ter tudo em casa, a mesma aplicação se implanta na Cloudflare dela ou em Docker, e contrata-se suporte, atualizações e acompanhamento dos professores." }

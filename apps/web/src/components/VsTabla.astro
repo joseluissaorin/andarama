@@ -38,8 +38,8 @@ const filas: { nombre: string; andarama: { clase: string; texto: string }; otro:
   { nombre: t(lang, `${k}.planes`), andarama: { clase: "", texto: "Andar · Aula · Paseo · Excursión · Formación · De por vida" }, otro: { clase: "", texto: c.planes.length > 0 ? c.planes.map(precio).join(" · ") : t(lang, `${k}.sin_datos`) } },
   { nombre: t(lang, `${k}.cuotas`), andarama: { clase: "", texto: t(lang, `${k}.andarama_cuotas`) }, otro: { clase: "", texto: c.cuotas ?? t(lang, `${k}.sin_datos`) } },
   { nombre: t(lang, `${k}.rv`), andarama: celda(true), otro: celda(c.rv) },
-  // LTI 1.3 está en pruebas (bajo petición): parcial, no «sí»
-  { nombre: t(lang, `${k}.scorm`), andarama: { clase: "si", texto: `SCORM: ${celda(true).texto} · LTI: ${celda("parcial").texto}` }, otro: { clase: celda(c.scorm).clase, texto: `SCORM: ${celda(c.scorm).texto} · LTI: ${celda(c.lti).texto}` } },
+  // LTI 1.3 con Deep Linking y nota de vuelta (AGS), probado de punta a punta con Moodle 4.5
+  { nombre: t(lang, `${k}.scorm`), andarama: { clase: "si", texto: `SCORM: ${celda(true).texto} · LTI: ${celda(true).texto}` }, otro: { clase: celda(c.scorm).clase, texto: `SCORM: ${celda(c.scorm).texto} · LTI: ${celda(c.lti).texto}` } },
   { nombre: t(lang, `${k}.exportacion`), andarama: { clase: "si", texto: "ZIP, HTML, PWA, SCORM" }, otro: { clase: celda(c.exportacion).clase, texto: c.exportacion_detalle ?? celda(c.exportacion).texto } },
   { nombre: t(lang, `${k}.codigo_abierto`), andarama: { clase: "si", texto: "EUPL-1.2" }, otro: celda(c.codigo_abierto) },
   { nombre: t(lang, `${k}.marca_blanca`), andarama: { clase: "si", texto: "Excursión, Formación, De por vida" }, otro: celda(c.marca_blanca) },

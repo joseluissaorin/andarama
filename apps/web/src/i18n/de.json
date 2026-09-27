@@ -187,7 +187,7 @@
       "lista": [
         { "titulo": "Quiz mit Note", "texto": "Fragen über die Tour verteilt, Punktzahl, Bestehensgrenze, Zufallsreihenfolge, Versuche, Abschlussbericht und PDF-Zertifikat mit dem Namen des Lernenden." },
         { "titulo": "Schatzsuche", "texto": "In den Szenen versteckte Objekte, sichtbarer Fortschritt und Zustandsvariablen, die Türen öffnen, wenn alle gefunden sind." },
-        { "titulo": "Moodle und Co.", "texto": "SCORM-Paket 1.2 und 2004 mit Abschluss und Note für Moodle, Canvas, Blackboard oder jeden anderen Campus. LTI 1.3 ist in der Testphase und auf Anfrage verfügbar." },
+        { "titulo": "Moodle und Co.", "texto": "SCORM-Paket 1.2 und 2004 mit Abschluss und Note für Moodle, Canvas, Blackboard oder jeden anderen Campus. Und LTI 1.3 mit Deep Linking: Die Lehrkraft wählt den Rundgang direkt in Moodle aus, und die Quiz-Note landet von selbst in der Bewertungsübersicht." },
         { "titulo": "Geführte Live-Touren", "texto": "Ein Raum mit Code: Der Guide bewegt Szene und Blick aller, zeigt mit dem Zeiger, chattet; jeder Teilnehmende kann sich lösen und wieder synchronisieren." },
         { "titulo": "Formulare", "texto": "Anmeldung, Umfrage oder Kontakt direkt im Rundgang. Die Antworten werden gespeichert und als CSV heruntergeladen oder an einen Webhook weitergeleitet." },
         { "titulo": "Analytik ohne Cookies", "texto": "Besuche, Szenen-Trichter, meistgenutzte Hotspots, Zeit je Szene und Heatmap, wohin die Leute schauen. Ohne jemanden zu tracken: DSGVO-konform ab Werk." }
@@ -247,7 +247,7 @@
         { "q": "Welche Kamera brauche ich?", "a": "Jede, die ein equirektanguläres Foto liefert (Insta360, Ricoh Theta, GoPro Max, Kandao …), oder das Handy mit einer Panorama-App. Auch Cubemaps, Teilpanoramen und flache Gigapixel-Fotos gehen. Die Kachelung passiert bis 32K in deinem Browser; darüber auf dem Server." },
         { "q": "Funktionieren die Rundgänge weiter, wenn Andarama verschwindet?", "a": "Ja. Das exportierte ZIP ist statisch und eigenständig: HTML, der Viewer und die Kacheln. Es lässt sich auf jedes Hosting laden, mit der einzelnen HTML-Datei vom USB-Stick öffnen und behält die Virtual Reality. Und das Format <code>tour.json</code> ist dokumentiert und versioniert." },
         { "q": "Wo liegen meine Daten?", "a": "Wenn du es selbst installierst, auf deinem Server oder in deinem Cloudflare-Konto. Auf andarama.com in der Datenbank von Andarama; Clerk speichert nur Konto und Zahlung. Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen." },
-        { "q": "Funktioniert es mit Moodle?", "a": "Ja, mit dem SCORM-Paket 1.2 oder 2004: Es wird wie jede andere Aktivität in Moodle (oder Canvas, Blackboard, Sakai …) hochgeladen und meldet den Abschluss und die Quiz-Note. Die Integration per LTI 1.3 ist in der Testphase, wir schalten sie auf Anfrage frei." },
+        { "q": "Funktioniert es mit Moodle?", "a": "Ja, auf zwei Wegen. Per LTI 1.3: Die Administration registriert Andarama einmal als externes Tool, Lehrkräfte wählen den Rundgang im Kurs aus, und die Quiz-Note landet von selbst in der Bewertungsübersicht (Tarif Formación oder eigene Installation). Oder mit dem SCORM-Paket 1.2 oder 2004: Es wird wie jede andere Aktivität in Moodle (oder Canvas, Blackboard, Sakai …) hochgeladen und meldet den Abschluss und die Quiz-Note." },
         { "q": "Kann ich mit mehreren Leuten an derselben Tour arbeiten?", "a": "Ja. Organisationen mit Rollen, Freigabe je Projekt, Anwesenheit und sanfte Sperre je Szene, damit ihr euch nicht in die Quere kommt, im Foto verankerte Kommentare und Versionsverlauf zum Zurückspringen." },
         { "q": "Welche VR-Brillen gehen?", "a": "Jede mit WebXR-Browser (Meta Quest, Pico, Vision Pro mit Safari, PC mit Headset). Man öffnet die Adresse der Tour im Browser der Brille und drückt den Virtual-Reality-Button. Ohne Brille läuft der Cardboard-Modus auf jedem Handy." },
         { "q": "Was bedeutet „angemessene Nutzung“?", "a": "Dass die Pläne für eine Person oder ein kleines Team gedacht sind. Wenn die Nutzung nicht mehr danach aussieht, reden wir, bevor irgendetwas abgeschaltet wird. Und wenn du etwas ohne Kontingente brauchst: Die eigene Installation ist kostenlos und dasselbe Programm." }
@@ -295,7 +295,7 @@
       "excursion": { "items": ["Ohne das Abzeichen „Erstellt mit Andarama“", "Eigene Domain für deine Rundgänge"], "cta": "Loslegen" },
       "formacion": {
         "items": [
-          "SCORM für deinen Campus (LTI 1.3 auf Anfrage)",
+          "SCORM und LTI 1.3: Die Note geht zurück an deinen Campus",
           "White Label und eigene Domain",
           "Team mit mehreren Bearbeitenden",
           "Rechnung in Euro auf Anfrage für Institutionen"
@@ -319,11 +319,11 @@
         { "titulo": "Virtual Reality ohne Installation", "texto": "Derselbe Rundgang öffnet sich auf Meta Quest, Pico oder Vision Pro direkt im Browser. Hände, Controller und Blick; Panels, Quiz und Vergleich innerhalb der Sitzung. Und im Cardboard-Modus mit jedem Handy." }
       ],
       "scorm": {
-        "titulo": "SCORM und dein Campus",
-        "texto": "Der Rundgang wird als SCORM-Paket 1.2 oder 2004 mit Abschlussbericht und Note exportiert, für Moodle, Canvas, Blackboard, Sakai oder jedes andere LMS. Die Integration per LTI 1.3 ist in der Testphase: Wenn dein Campus sie braucht, schalten wir sie auf Anfrage gemeinsam mit dir frei.",
+        "titulo": "LTI, SCORM und dein Campus",
+        "texto": "Per LTI 1.3 wählt die Lehrkraft den Rundgang im Moodle-Kurs aus, und die Quiz-Note landet von selbst in der Bewertungsübersicht; nach dem erneuten Veröffentlichen sieht der Kurs die neue Version, ohne dass etwas hochgeladen wird. Und für jedes LMS wird der Rundgang als SCORM-Paket 1.2 oder 2004 mit Abschlussbericht und Note exportiert.",
         "tics": [
           "SCORM 1.2 und 2004 mit Abschlussstatus, Note und Zeit",
-          "LTI 1.3 in der Testphase, auf Anfrage verfügbar",
+          "LTI 1.3 mit Deep Linking und der Note zurück in Moodle",
           "Abschlussbericht mit Treffern je Frage und PDF-Zertifikat",
           "Analytik ohne Cookies: Zeit je Szene und wohin jede Gruppe schaut"
         ]
@@ -349,7 +349,7 @@
       "bloques": [
         { "titulo": "Wirklich Open Source", "texto": "EUPL-1.2, die Lizenz der Europäischen Kommission. Der vollständige Code liegt auf GitHub: Er lässt sich lesen, prüfen, verändern und ausrollen, ohne jemanden zu fragen. Und das Format <code>tour.json</code> ist dokumentiert: Was heute entsteht, öffnet sich auch morgen noch." },
         { "titulo": "DSGVO ab Werk", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen. Die Daten liegen dort, wo die Institution es bestimmt: auf ihrem Server, in ihrem Cloudflare-Konto oder auf andarama.com, mit einem Auftragsverarbeitungsvertrag, den wir auf Anfrage vorbereiten." },
-        { "titulo": "Moodle, Canvas und Blackboard", "texto": "Der Rundgang wird als SCORM-Paket 1.2 oder 2004 exportiert, das dem Campus den Abschluss und die Quiz-Note meldet. Die Integration per LTI 1.3 ist in der Testphase, wir schalten sie auf Anfrage mit dem Campus der Institution frei." },
+        { "titulo": "Moodle, Canvas und Blackboard", "texto": "Per LTI 1.3 wählen Lehrkräfte den Rundgang im Kurs aus, und die Quiz-Note landet von selbst in der Bewertungsübersicht, ohne dass etwas nach Moodle kopiert wird. Außerdem lässt sich der Rundgang als SCORM-Paket 1.2 oder 2004 exportieren, das dem Campus Abschluss und Note meldet." },
         { "titulo": "Institutionelle Konten", "texto": "Organisationen mit Rollen, Zwei-Faktor-Authentifizierung und Admin-Panel mit Kontingenten und Nutzung je Fachbereich. Bei der eigenen Installation außerdem SSO per OIDC mit automatischer Anmeldung nach E-Mail-Domain." },
         { "titulo": "Rechnung und Vertrag", "texto": "Für Institutionen gibt es auf Anfrage eine Rechnung in Euro mit ihren Steuerdaten, zahlbar per Überweisung und bei Bedarf über FACe. Für größere Volumen oder besondere Bedingungen erstellen wir ein individuelles Angebot." },
         { "titulo": "Eigene Instanz mit Support", "texto": "Wenn die Institution es lieber im Haus haben möchte, wird dieselbe Anwendung auf ihrem Cloudflare oder in Docker ausgerollt, mit Support, Updates und Begleitung der Lehrenden im Vertrag." }

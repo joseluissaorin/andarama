@@ -70,7 +70,7 @@ Both have a VR mode. Kuula supports headsets and cardboard viewers. Andarama doe
 
 ## Teaching and training
 
-Here there is no real contest, and we say it without bragging: Kuula isn't built for the classroom. Andarama ships graded quizzes with a passing score, attempts, a final report and a PDF certificate; scavenger hunts and escape rooms built with gates and state variables; live guided tours in which the class follows the teacher in their own browsers; and SCORM 1.2 and 2004 packages to send scores to Canvas, Moodle or Blackboard (Training plan or self-hosted). LTI 1.3 is in testing. Students never need an account, which matters when your district asks about FERPA and COPPA. Our [classroom page](/en/classroom/) and [digital escape room guide](/en/blog/digital-escape-room/) show what that looks like.
+Here there is no real contest, and we say it without bragging: Kuula isn't built for the classroom. Andarama ships graded quizzes with a passing score, attempts, a final report and a PDF certificate; scavenger hunts and escape rooms built with gates and state variables; live guided tours in which the class follows the teacher in their own browsers; and SCORM 1.2 and 2004 packages to send scores to Canvas, Moodle or Blackboard (Training plan or self-hosted). With LTI 1.3, Moodle opens the tour directly and the grade lands in the gradebook on its own. Students never need an account, which matters when your district asks about FERPA and COPPA. Our [classroom page](/en/classroom/) and [digital escape room guide](/en/blog/digital-escape-room/) show what that looks like.
 
 ## Street View and community
 

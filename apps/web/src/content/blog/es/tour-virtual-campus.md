@@ -12,7 +12,7 @@ faq:
   - q: "¿Se puede alojar en la infraestructura de la universidad?"
     a: "Sí. El programa es de código abierto y se despliega con Docker o en una cuenta de Cloudflare de la universidad; con SSO por OIDC el profesorado entra con su cuenta institucional."
   - q: "¿Cómo se integra con el campus virtual?"
-    a: "Con nota, como paquete SCORM (plan Formación o instalación propia). Sin nota, incrustado con un iframe o un web component. La integración por LTI 1.3 está en pruebas: todavía no devuelve la nota sola al libro de calificaciones."
+    a: "Con nota, como paquete SCORM (plan Formación o instalación propia). Sin nota, incrustado con un iframe o un web component. En Moodle, también por LTI 1.3: la nota llega sola al libro de calificaciones y el tour está siempre actualizado."
   - q: "¿Cuánto se tarda?"
     a: "Un campus de cinco edificios y sesenta puntos de vista se fotografía en dos o tres jornadas y se monta en dos semanas. El mantenimiento después es cambiar fotos cuando cambia algo."
 ---
@@ -75,7 +75,7 @@ En ambos casos el tour se exporta como paquete estático y el formato está docu
 
 ## Integración con el campus virtual
 
-Para que la nota de los quiz llegue al campus virtual, el camino hoy es el paquete **SCORM** (1.2 o 2004), que se sube a Moodle, Canvas o Blackboard como cualquier otra actividad. Para mostrar un espacio sin nota basta con incrustarlo con un iframe o un web component. La integración por **LTI 1.3** existe, pero está en pruebas: la nota todavía no vuelve sola al libro de calificaciones. Lo explicamos paso a paso en [cómo meter un recorrido 360 en Moodle](/blog/recorrido-360-moodle/).
+Para que la nota de los quiz llegue al campus virtual, un camino es el paquete **SCORM** (1.2 o 2004), que se sube a Moodle, Canvas o Blackboard como cualquier otra actividad. Para mostrar un espacio sin nota basta con incrustarlo con un iframe o un web component. En Moodle está además la integración por **LTI 1.3** (plan Formación o instalación propia): el docente elige el tour desde el curso, la nota llega sola al libro de calificaciones y, al volver a publicar el tour, el curso se actualiza sin subir nada. Lo explicamos paso a paso en [cómo meter un recorrido 360 en Moodle](/blog/recorrido-360-moodle/).
 
 ## Datos y privacidad
 

@@ -13,7 +13,7 @@ Andarama es de código abierto bajo EUPL-1.2. **El plan gratuito es montárselo 
 | **Aula** | 42 $ al año por docente | hasta 5 | 10 GB | Más recorridos y espacio para un curso |
 | **Paseo** | 20 $ al mes o 200 $ al año | hasta 10 | 50 GB | Más recorridos y más espacio |
 | **Excursión** | 500 $ al año | hasta 500 | 100 GB | Sin insignia, dominio propio |
-| **Formación** | 99 $ al mes o 990 $ al año | hasta 100 | 200 GB | SCORM, LTI 1.3 (en pruebas), sin insignia, dominio propio |
+| **Formación** | 99 $ al mes o 990 $ al año | hasta 100 | 200 GB | SCORM, LTI 1.3, sin insignia, dominio propio |
 | **De por vida** | 1000 $, una sola vez | hasta 1000 | 200 GB | Sin insignia, dominio propio |
 
 El quiz con nota, el certificado, la búsqueda del tesoro y lo necesario para montar un escape room (compuertas, variables y condiciones) están en **todos** los planes, igual que la exportación ZIP, HTML único y PWA.
@@ -43,7 +43,7 @@ Además de la cuota, cada plan enciende unas capacidades. En el self-host todas 
 |---|---|---|
 | `classroom` | Reservada para el código de clase, que todavía no existe; hoy no activa nada | Aula |
 | `scorm` | Exportar el recorrido como paquete SCORM 1.2 o 2004 | Formación |
-| `lti` | Lanzarlo desde Moodle u otro LMS por LTI 1.3 (en pruebas: la nota todavía no vuelve al LMS) | Formación |
+| `lti` | Lanzarlo desde Moodle u otro LMS por LTI 1.3, con Deep Linking y la nota de vuelta al libro de calificaciones | Formación |
 | `whiteLabel` | Sin la insignia «Hecho con Andarama» | Excursión, Formación, De por vida |
 | `customDomain` | Servir el recorrido bajo un dominio propio (CNAME) | Excursión, Formación, De por vida |
 | `team` | Reservada para limitar el equipo por plan; hoy nada la comprueba y todos los planes pueden invitar | Formación |
@@ -54,7 +54,7 @@ Dónde se aplican hoy:
 - **Dominio propio**: al publicar con `customDomain`, la API exige la capacidad (`403` con `code: "capability"` y `capability: "customDomain"`). Un dominio ya puesto no se rompe al republicar solo el contenido.
 - **LTI**: el launch de Resource Link comprueba el plan de quien responde del recorrido; sin la capacidad, Moodle recibe un `403`.
 - **SCORM**: el paquete se arma en el navegador con lo que devuelve `POST /projects/:id/export`, así que el control está en el Studio: sin la capacidad, el selector de SCORM del diálogo de exportación aparece desactivado con su explicación. Si algún día hiciera falta cerrarlo en el servidor, el sitio es ese mismo endpoint (bastaría un parámetro `scorm` y `requireOrgCapability`).
-- **LTI**, además, está en pruebas: el lanzamiento llega al recorrido, pero el visor todavía no devuelve la nota por AGS. Véase [Insertar en Moodle](/docs/usuario/moodle/).
+- **LTI**, además, se comprueba al dar de alta la plataforma y al abrir el selector de Deep Linking. Los pasos están en [Insertar en Moodle](/docs/usuario/moodle/#5-lti-13).
 - **`classroom`, `team` e `invoice`**: la capacidad está definida y el Studio la enseña en la página Plan, pero nada la consulta todavía. No hay código de clase; las invitaciones funcionan en todos los planes; la factura con datos fiscales no es automática.
 
 La lista de capacidades del usuario viene en `GET /api/v1/me` (`billing.capabilities`) y en `GET /api/v1/billing/me`. En el self-host el valor es `null`: todo permitido.

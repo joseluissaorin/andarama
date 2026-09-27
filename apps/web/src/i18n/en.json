@@ -187,7 +187,7 @@
       "lista": [
         { "titulo": "Graded quiz", "texto": "Questions spread across the tour, scoring, pass mark, shuffling, attempts, final report and a PDF certificate with the student's name." },
         { "titulo": "Treasure hunt", "texto": "Objects hidden across the scenes, visible progress and state variables that open doors once everything has been found." },
-        { "titulo": "Moodle and friends", "texto": "A SCORM 1.2 and 2004 package with completion and grade for Moodle, Canvas, Blackboard or any other LMS. LTI 1.3 is in testing and available on request." },
+        { "titulo": "Moodle and friends", "texto": "A SCORM 1.2 and 2004 package with completion and grade for Moodle, Canvas, Blackboard or any other LMS. And LTI 1.3 with Deep Linking: the instructor picks the tour from Moodle and the quiz grade goes straight back to the gradebook." },
         { "titulo": "Live guided visits", "texto": "A room with a code: the guide moves the scene and everyone's view, points with the pointer, chats; each attendee can wander off and sync back." },
         { "titulo": "Forms", "texto": "Sign-up, survey or contact inside the tour itself. Answers are stored and downloaded as CSV, or forwarded to a webhook." },
         { "titulo": "Cookie-free analytics", "texto": "Visits, scene funnel, most-used hotspots, time per scene and a heatmap of where people look. Without tracking anyone: GDPR-compliant out of the box." }
@@ -247,7 +247,7 @@
         { "q": "Which camera do I need?", "a": "Any that produces an equirectangular photo (Insta360, Ricoh Theta, GoPro Max, Kandao…) or a phone with a panorama app. Cubemaps, partial panoramas and gigapixel flat photos work too. Tiling happens in your browser up to 32K; above that, on the server." },
         { "q": "Do the tours keep working if Andarama disappears?", "a": "Yes. The exported ZIP is static and self-contained: HTML, the viewer and the tiles. Upload it to any hosting, open it from a USB stick with the single HTML file, and it keeps virtual reality. And the <code>tour.json</code> format is documented and versioned." },
         { "q": "Where does my data live?", "a": "If you self-host, on your server or in your Cloudflare account. On andarama.com, in Andarama's database; Clerk only stores the account and the billing. Visitor analytics use no cookies and store no IP addresses." },
-        { "q": "Does it work with Moodle?", "a": "Yes, with the SCORM 1.2 or 2004 package: upload it to Moodle (or Canvas, Blackboard, Sakai…) like any other activity and it reports completion and the quiz grade. The LTI 1.3 integration is in testing and we enable it on request." },
+        { "q": "Does it work with Moodle?", "a": "Yes, in two ways. Through LTI 1.3: the admin registers Andarama once as an external tool, instructors pick the tour from the course and the quiz grade lands in the gradebook on its own (Formación plan or self-hosted). Or with the SCORM 1.2 or 2004 package: upload it to Moodle (or Canvas, Blackboard, Sakai…) like any other activity and it reports completion and the quiz grade." },
         { "q": "Can I work with other people on the same tour?", "a": "Yes. Organisations with roles, per-project sharing, presence and soft per-scene locking so you don't step on each other, comments anchored on the photo and version history to go back." },
         { "q": "Which headsets work?", "a": "Any with a WebXR browser (Meta Quest, Pico, Vision Pro with Safari, a PC with a headset). Open the tour's address from the headset's browser and press the VR button. Without a headset, cardboard mode works on any phone." },
         { "q": "What does “fair use” mean?", "a": "That the plans are meant for one person or a small team. If usage stops looking like that, we talk before cutting anything off. And if you need something without quotas, self-hosting is free and it is the same program." }
@@ -295,7 +295,7 @@
       "excursion": { "items": ["No “Made with Andarama” badge", "Your own domain for your tours"], "cta": "Get started" },
       "formacion": {
         "items": [
-          "SCORM for your LMS (LTI 1.3 on request)",
+          "SCORM and LTI 1.3: grades go back to your LMS",
           "White label and your own domain",
           "A team with several people editing",
           "Invoice in euros on request for institutions"
@@ -320,11 +320,11 @@
         { "titulo": "Virtual reality with nothing to install", "texto": "The same tour opens on Meta Quest, Pico or Vision Pro straight from their browser. Hands, controllers and gaze; panels, quiz and comparer inside the session. And cardboard mode on any phone." }
       ],
       "scorm": {
-        "titulo": "SCORM and your LMS",
-        "texto": "The tour exports as a SCORM 1.2 or 2004 package with completion report and grade, for Moodle, Canvas, Blackboard, Sakai or any LMS. The LTI 1.3 integration is in testing: if your LMS needs it, we enable it with you on request.",
+        "titulo": "LTI, SCORM and your LMS",
+        "texto": "Through LTI 1.3, the instructor picks the tour from the Moodle course and the quiz grade goes straight back to the gradebook; when you republish, the course sees the new version without uploading anything. And for any LMS, the tour exports as a SCORM 1.2 or 2004 package with completion report and grade.",
         "tics": [
           "SCORM 1.2 and 2004 with completion status, score and time",
-          "LTI 1.3 in testing, available on request",
+          "LTI 1.3 with Deep Linking and grades back in Moodle",
           "Final report with per-question results and a PDF certificate",
           "Cookie-free analytics: time per scene and where each group looks"
         ]
@@ -350,7 +350,7 @@
       "bloques": [
         { "titulo": "Genuinely open source", "texto": "EUPL-1.2, the European Commission's licence. The full code is on GitHub: read it, audit it, modify it and deploy it without asking anyone. And the <code>tour.json</code> format is documented: what you create today keeps opening tomorrow." },
         { "titulo": "GDPR out of the box", "texto": "Visitor analytics use no cookies and store no IP addresses. Data lives wherever the institution says: on its server, in its Cloudflare account or on andarama.com, with a data-processing agreement we prepare on request." },
-        { "titulo": "Moodle, Canvas and Blackboard", "texto": "The tour exports as a SCORM 1.2 or 2004 package, which reports completion and the quiz grade to the LMS. The LTI 1.3 integration is in testing and we enable it on request with the institution's LMS." },
+        { "titulo": "Moodle, Canvas and Blackboard", "texto": "Through LTI 1.3, instructors pick the tour from the course and the quiz grade goes straight back to the gradebook, with nothing copied into Moodle. The tour also exports as a SCORM 1.2 or 2004 package, which reports completion and the grade to the LMS." },
         { "titulo": "Institutional accounts", "texto": "Organisations with roles, two-step verification and an admin panel with quotas and usage per department. On a self-hosted install, SSO via OIDC with automatic sign-up by email domain as well." },
         { "titulo": "Invoice and contract", "texto": "For institutions, an invoice in euros on request with their tax details, paid by bank transfer and, if needed, submitted through FACe (the Spanish public e-invoicing hub). For larger volumes or particular conditions, we prepare a tailored offer." },
         { "titulo": "Your own instance with support", "texto": "If the institution prefers to keep it in-house, the very same application is deployed on its Cloudflare or on Docker, with support, updates and onboarding for teaching staff." }
