@@ -943,5 +943,9 @@
   "slug_use_suggestion": "Usar «{suggested}»",
   "slug_changed_org": "La dirección «{requested}» ya la usaba otro recorrido de tu organización, así que este se ha publicado en «{slug}».",
   "slug_changed_other": "La dirección «{requested}» ya la usaba otra persona, así que tu recorrido se ha publicado en «{slug}». Puedes cambiarla al volver a publicar.",
-  "media_already_scene": "{count} de los medios ya eran escenas del recorrido: no se han duplicado."
+  "media_already_scene": "{count} de los medios ya eran escenas del recorrido: no se han duplicado.",
+  "rename_media_offer": "¿Renombrar también la foto? «{from}» pasaría a llamarse «{to}» en la biblioteca.",
+  "rename_media_yes": "Renombrar la foto",
+  "rename_media_no": "No, dejarla como está",
+  "rename_media_done": "Foto renombrada: {name}"
 }

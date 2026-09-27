@@ -16,7 +16,8 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { Button, Dialog, Field, Input, Select, Switch, Textarea } from "@andarama/ui";
+import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
+import { api } from "../api";
 import { parseVideoRef, renderMarkdown } from "@andarama/viewer-ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
@@ -84,6 +85,26 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const [pickerFor, setPickerFor] = useState<"panorama" | "ambient" | "narration" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [newCategory, setNewCategory] = useState<string | null>(null);
+  const toast = useToast();
+  /** Oferta de renombrar también la foto tras cambiar el título de la escena. */
+  const [renameOffer, setRenameOffer] = useState<{ mediaId: string; from: string; to: string } | null>(null);
+  useEffect(() => setRenameOffer(null), [scene.id]);
+  const offerMediaRename = async (): Promise<void> => {
+    const mediaId = scene.mediaId;
+    const title = scene.title.trim();
+    if (!canEdit || mediaId == null || title === "") return;
+    try {
+      const info = await api<{ filename: string; scenes: number }>(`/media/${mediaId}`);
+      // Una foto que usan otras escenas (de este u otro recorrido) no se toca
+      if (info.scenes > 1) return;
+      const ext = /\.[a-z0-9]+$/i.exec(info.filename)?.[0] ?? "";
+      const to = `${title.replace(/[\\/:*?"<>|]+/g, "-").slice(0, 190)}${ext}`;
+      if (to === info.filename) return;
+      setRenameOffer({ mediaId, from: info.filename, to });
+    } catch {
+      // sin permiso sobre el medio o sin red: no se ofrece nada
+    }
+  };
   // Áreas del tour: la misma cosa que agrupa el grafo, da la categoría del
   // menú de escenas y, si tiene plano, es la planta del minimapa.
   const areas = areasOf(editor.snapshot!);
@@ -122,7 +143,40 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         <h3 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{scene.title}</h3>
         <div className="space-y-3">
           <Field label={t("scene_title")} htmlFor="sc-title">
-            <Input id="sc-title" value={scene.title} disabled={!canEdit} onChange={(e) => patchScene((s) => { s.title = e.target.value; })} />
+            <Input
+              id="sc-title"
+              value={scene.title}
+              disabled={!canEdit}
+              onChange={(e) => {
+                setRenameOffer(null);
+                patchScene((s) => { s.title = e.target.value; });
+              }}
+              onBlur={() => void offerMediaRename()}
+            />
+            {/* El título de la escena y el nombre de la foto iban por separado:
+                en la biblioteca seguía saliendo «IMG_20240312_1015.jpg». */}
+            {renameOffer != null && (
+              <div className="mt-1.5 rounded-lg bg-[var(--anda-surface-2)] p-2 text-[12px]" role="status">
+                <p>{t("rename_media_offer", { from: renameOffer.from, to: renameOffer.to })}</p>
+                <div className="mt-1.5 flex gap-1.5">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const offer = renameOffer;
+                      setRenameOffer(null);
+                      void api(`/media/${offer.mediaId}`, { method: "PATCH", body: { filename: offer.to } })
+                        .then(() => toast.push(t("rename_media_done", { name: offer.to }), "ok"))
+                        .catch((err: unknown) => toast.push(String(err instanceof Error ? err.message : err), "error"));
+                    }}
+                  >
+                    {t("rename_media_yes")}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setRenameOffer(null)}>
+                    {t("rename_media_no")}
+                  </Button>
+                </div>
+              </div>
+            )}
           </Field>
           <Field label={t("type")} htmlFor="sc-type">
             <Select id="sc-type" value={scene.type} disabled={!canEdit} onChange={(e) => patchScene((s) => { s.type = e.target.value as SceneRow["type"]; })}>

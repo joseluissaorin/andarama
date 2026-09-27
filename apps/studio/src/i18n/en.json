@@ -943,5 +943,9 @@
   "slug_use_suggestion": "Use «{suggested}»",
   "slug_changed_org": "The address «{requested}» was already used by another tour in your organization, so this one was published at «{slug}».",
   "slug_changed_other": "The address «{requested}» was already taken by someone else, so your tour was published at «{slug}». You can change it when you publish again.",
-  "media_already_scene": "{count} of the media were already scenes in this tour: they were not duplicated."
+  "media_already_scene": "{count} of the media were already scenes in this tour: they were not duplicated.",
+  "rename_media_offer": "Rename the photo too? «{from}» would become «{to}» in the library.",
+  "rename_media_yes": "Rename the photo",
+  "rename_media_no": "No, keep it",
+  "rename_media_done": "Photo renamed: {name}"
 }

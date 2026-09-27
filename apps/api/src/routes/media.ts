@@ -418,6 +418,29 @@ export function mediaRoutes(): Hono<AppEnv> {
     );
   });
 
+  /**
+   * Nombre y uso de un medio. El editor lo consulta al renombrar una escena
+   * para ofrecer renombrar también la foto, solo si ninguna otra escena (de
+   * este u otro recorrido) la usa: las subidas se deduplican por contenido.
+   */
+  r.get("/:mediaId", async (c) => {
+    const auth = requireAuth(c);
+    requireScope(auth, "media:read");
+    const db = c.get("db");
+    const row = await ownedMedia(c, auth, c.req.param("mediaId"), "reader");
+    const usedBy = await db
+      .select({ id: scenes.id, projectId: scenes.projectId })
+      .from(scenes)
+      .where(eq(scenes.mediaId, row.id));
+    return c.json({
+      id: row.id,
+      filename: row.filename,
+      kind: row.kind,
+      scenes: usedBy.length,
+      projects: new Set(usedBy.map((s: { projectId: string }) => s.projectId)).size,
+    });
+  });
+
   /** Renombrar, mover de carpeta o asignar a un tour. */
   r.patch("/:mediaId", async (c) => {
     const auth = requireAuth(c);
