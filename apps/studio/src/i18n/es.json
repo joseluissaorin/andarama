@@ -932,5 +932,15 @@
   "is_start_scene": "Es la escena inicial del recorrido",
   "start_scene_first": "La primera de la lista",
   "editor_mute": "Silenciar el sonido mientras editas",
-  "editor_unmute": "Activar el sonido"
+  "editor_unmute": "Activar el sonido",
+  "publish_again": "Volver a publicar",
+  "publish_slug_hint": "La parte final del enlace del recorrido: letras minúsculas, números y guiones.",
+  "slug_invalid": "Usa al menos 3 caracteres: letras minúsculas sin tilde, números y guiones.",
+  "slug_free": "Dirección disponible.",
+  "slug_own": "Es la dirección actual de este recorrido.",
+  "slug_taken_org": "Otro recorrido de tu organización ya usa esta dirección. Prueba con «{suggested}».",
+  "slug_taken_other": "Otra persona ya usa esta dirección: si la mantienes, se publicará como «{suggested}».",
+  "slug_use_suggestion": "Usar «{suggested}»",
+  "slug_changed_org": "La dirección «{requested}» ya la usaba otro recorrido de tu organización, así que este se ha publicado en «{slug}».",
+  "slug_changed_other": "La dirección «{requested}» ya la usaba otra persona, así que tu recorrido se ha publicado en «{slug}». Puedes cambiarla al volver a publicar."
 }

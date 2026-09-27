@@ -224,7 +224,9 @@ export function tourRoutes(): Hono<AppEnv> {
       description: resolveL10n(tour.meta.description, lang, tour.meta.defaultLang) || undefined,
       lang,
       viewerPath: `/viewer/viewer.js`,
-      tourJsonPath: `/t/${slug}/tour.json`,
+      // La versión va en la URL: tras republicar, el HTML nuevo pide un
+      // tour.json nuevo y ninguna caché intermedia puede servir el viejo.
+      tourJsonPath: `/t/${slug}/tour.json?v=${pointer.version}`,
       ogImage:
         tour.meta.ogImage != null
           ? `${c.get("config").publicUrl}/t/${slug}/${tour.meta.ogImage}`
@@ -258,7 +260,10 @@ export function tourRoutes(): Hono<AppEnv> {
       ].join("; "),
     );
     res.headers.delete("x-frame-options");
-    res.headers.set("cache-control", pointer.visibility === "public" ? "public, max-age=60" : "private, no-store");
+    // Sin max-age: el HTML apunta a la versión vigente y, tras republicar, el
+    // móvil tiene que verla al recargar (antes se quedaba hasta un minuto con
+    // la anterior, y Safari aún más al restaurar la pestaña).
+    res.headers.set("cache-control", pointer.visibility === "public" ? "public, no-cache" : "private, no-store");
     return res;
   });
 
@@ -291,7 +296,7 @@ export function tourRoutes(): Hono<AppEnv> {
     const obj = await runtime.storage.get(`pub/${slug}/${pointer.version}/tour.json`);
     if (obj == null) throw notFound();
     return new Response(obj.body as unknown as BodyInit, {
-      headers: { "content-type": "application/json", "cache-control": "public, max-age=60" },
+      headers: { "content-type": "application/json", "cache-control": tourJsonCacheControl(pointer, c.req.query("v")) },
     });
   });
 
@@ -382,6 +387,17 @@ export function tourRoutes(): Hono<AppEnv> {
   });
 
   return r;
+}
+
+/**
+ * Caché de tour.json. Con `?v=` igual a la versión vigente la respuesta es
+ * inmutable (esa versión no cambia nunca); sin versión, o con una vieja, se
+ * revalida siempre para que republicar se note en el acto.
+ */
+export function tourJsonCacheControl(pointer: Pick<PublicationPointer, "version" | "visibility">, v: string | undefined): string {
+  const scope = pointer.visibility === "public" || pointer.visibility === "unlisted" ? "public" : "private";
+  if (v != null && v === String(pointer.version)) return `${scope}, max-age=31536000, immutable`;
+  return scope === "public" ? "public, no-cache" : "private, no-store";
 }
 
 function notFoundPage(c: any): Response {

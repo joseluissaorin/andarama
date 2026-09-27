@@ -117,8 +117,28 @@ export function EditorPage(): React.ReactNode {
     history.replaceState(null, "", `${location.pathname}${qs === "" ? "" : `?${qs}`}`);
   }, [tab, graphMode, editor.selectedSceneId]);
 
-  // Autosave con indicador (§3.5)
+  // Autosave con indicador (§3.5). Un solo guardado a la vez: publicar
+  // fuerza uno y no debe cruzarse con el del temporizador.
+  const syncing = useRef<Promise<void> | null>(null);
   const doSync = useCallback(async (): Promise<void> => {
+    while (syncing.current != null) await syncing.current.catch(() => {});
+    const run = runSync();
+    syncing.current = run;
+    try {
+      await run;
+    } finally {
+      syncing.current = null;
+    }
+  }, [projectId]);
+
+  /** Publicar compila desde la base de datos: antes hay que guardar lo pendiente. */
+  const flushSync = useCallback(async (): Promise<void> => {
+    if (syncTimer.current != null) clearTimeout(syncTimer.current);
+    await doSync();
+    if (useEditor.getState().saving === "error") throw new Error(t("save_failed_short"));
+  }, [doSync]);
+
+  const runSync = async (): Promise<void> => {
     const state = useEditor.getState();
     if (!state.dirty || state.snapshot == null || syncedRef.current == null) return;
     state.setSaving("saving");
@@ -141,7 +161,7 @@ export function EditorPage(): React.ReactNode {
         toast.push(t("save_failed", { error: message }), "error");
       }
     }
-  }, [projectId]);
+  };
 
   useEffect(() => {
     if (!editor.dirty) return;
@@ -386,7 +406,13 @@ export function EditorPage(): React.ReactNode {
         )}
       </div>
 
-      <PublishDialog open={dialog === "publish"} onClose={() => setDialog(null)} project={project} onPublished={(pub) => setProject({ ...project, publication: pub })} />
+      <PublishDialog
+        open={dialog === "publish"}
+        onClose={() => setDialog(null)}
+        project={project}
+        beforePublish={flushSync}
+        onPublished={(pub) => setProject((p) => (p != null ? { ...p, publication: pub } : p))}
+      />
       <ExportDialog open={dialog === "export"} onClose={() => setDialog(null)} project={project} />
       <ShareDialog open={dialog === "share"} onClose={() => setDialog(null)} project={project} />
       <LiveDialog open={dialog === "live"} onClose={() => setDialog(null)} project={project} />

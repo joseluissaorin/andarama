@@ -14,15 +14,34 @@ import type { ProjectInfo } from "./EditorPage";
 // Publicar (§3.6, §2.13)
 // ---------------------------------------------------------------------------
 
-export function PublishDialog({ open, onClose, project, onPublished }: {
+type SlugStatus =
+  | { slug: string; status: "own" | "free" | "invalid" }
+  | { slug: string; status: "org" | "taken"; suggested: string };
+
+interface PublishResult {
+  url: string;
+  kioskUrl: string;
+  tourUrl: string;
+  kiosk: boolean;
+  slug: string;
+  slugChanged?: { requested: string; reason: "org" | "taken" };
+  warnings: { message: string }[];
+}
+
+export function PublishDialog({ open, onClose, project, onPublished, beforePublish }: {
   open: boolean;
   onClose: () => void;
   project: ProjectInfo;
   onPublished: (pub: { slug: string; visibility: string; hasPassword: boolean; kiosk: boolean }) => void;
+  /** Espera a que el autoguardado termine: el servidor compila desde la base de datos. */
+  beforePublish?: () => Promise<void>;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
   const [slug, setSlug] = useState(project.publication?.slug ?? project.slug);
+  /** Solo se manda la dirección si se ha escrito a mano: si no, decide el servidor. */
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [slugStatus, setSlugStatus] = useState<SlugStatus | null>(null);
   const [visibility, setVisibility] = useState(project.publication?.visibility ?? "public");
   const [password, setPassword] = useState("");
   const [domains, setDomains] = useState("");
@@ -32,22 +51,66 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
   const [note, setNote] = useState("");
   const [kiosk, setKiosk] = useState(project.publication?.kiosk === true);
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] } | null>(null);
+  const [result, setResult] = useState<PublishResult | null>(null);
   /** Errores que impiden publicar, con su lista: antes solo salía un aviso genérico. */
   const [blockers, setBlockers] = useState<string[] | null>(null);
+
+  // El diálogo se queda montado mientras se edita: al reabrirlo se veía el
+  // resultado de la publicación anterior, sin botón para volver a publicar,
+  // y solo funcionaba saliendo del proyecto. Cada apertura empieza de cero.
+  useEffect(() => {
+    if (!open) return;
+    setResult(null);
+    setBlockers(null);
+    setSlug(project.publication?.slug ?? project.slug);
+    setSlugTouched(false);
+    setSlugStatus(null);
+    setVisibility(project.publication?.visibility ?? "public");
+    setKiosk(project.publication?.kiosk === true);
+    setPassword("");
+    setNote("");
+  }, [open]);
+
+  // Disponibilidad de la dirección mientras se escribe
+  useEffect(() => {
+    if (!open || !slugTouched) return;
+    const timer = setTimeout(() => {
+      void api<SlugStatus>(`/projects/${project.id}/publish/slug?slug=${encodeURIComponent(slug)}`)
+        .then(setSlugStatus)
+        .catch(() => setSlugStatus(null));
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [slug, slugTouched, open]);
+
+  const slugHint = (): string | undefined => {
+    if (slugStatus == null || slugStatus.slug !== slug) return undefined;
+    switch (slugStatus.status) {
+      case "invalid":
+        return t("slug_invalid");
+      case "free":
+        return t("slug_free");
+      case "own":
+        return t("slug_own");
+      case "org":
+        return t("slug_taken_org", { suggested: slugStatus.suggested });
+      case "taken":
+        return t("slug_taken_other", { suggested: slugStatus.suggested });
+    }
+  };
 
   const publish = async (): Promise<void> => {
     setBusy(true);
     setBlockers(null);
     try {
+      await beforePublish?.();
       // La portada para compartir: la escena inicial con la proyección real
       // del visor. Si la captura falla, se publica igual y el servidor usa la
       // previsualización equirectangular.
       const shareImage = (await captureShareImage(project.id)) ?? undefined;
-      const res = await api<{ slug: string; url: string; kioskUrl: string; tourUrl: string; kiosk: boolean; warnings: { message: string }[] }>(`/projects/${project.id}/publish`, {
+      const res = await api<PublishResult>(`/projects/${project.id}/publish`, {
         method: "POST",
         body: {
-          slug,
+          slug: slugTouched ? slug : undefined,
           shareImage,
           visibility,
           password: password !== "" ? password : undefined,
@@ -59,12 +122,25 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
           note: note !== "" ? note : undefined,
         },
       });
-      setResult({ url: res.url, kioskUrl: res.kioskUrl, tourUrl: res.tourUrl, kiosk: res.kiosk, warnings: res.warnings });
-      onPublished({ slug: res.slug, visibility, hasPassword: password !== "", kiosk: res.kiosk });
+      setResult(res);
+      setSlug(res.slug);
+      setSlugTouched(false);
+      onPublished({
+        slug: res.slug,
+        visibility,
+        hasPassword: visibility === "password" && (password !== "" || project.publication?.hasPassword === true),
+        kiosk: res.kiosk,
+      });
       toast.push(t("publish_ok"), "ok");
     } catch (err) {
       const issues = err instanceof ApiRequestError ? (err.extra?.issues as { message?: string }[] | undefined) : undefined;
       if (issues != null && issues.length > 0) setBlockers(issues.map((i) => String(i.message ?? "")));
+      // Dirección ocupada por otro recorrido propio: se propone la sugerencia
+      const suggested = err instanceof ApiRequestError ? (err.extra?.suggestedSlug as string | undefined) : undefined;
+      if (suggested != null) {
+        setSlug(suggested);
+        setSlugTouched(true);
+      }
       toast.push(String(err instanceof Error ? err.message : err), "error");
     } finally {
       setBusy(false);
@@ -93,10 +169,16 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               </Button>
             )}
             <Button onClick={() => void publish()} loading={busy}>
-              {t("publish")}
+              {project.publication != null ? t("republish") : t("publish")}
             </Button>
           </>
-        ) : undefined
+        ) : (
+          // Tras publicar se puede seguir editando y volver a publicar sin
+          // cerrar el diálogo ni salir del proyecto.
+          <Button variant="secondary" onClick={() => setResult(null)}>
+            {t("publish_again")}
+          </Button>
+        )
       }
     >
       {result == null ? (
@@ -111,8 +193,26 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
               </ul>
             </div>
           )}
-          <Field label={t("publish_slug")} htmlFor="pb-slug">
-            <Input id="pb-slug" value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))} />
+          <Field label={t("publish_slug")} htmlFor="pb-slug" hint={slugHint() ?? t("publish_slug_hint")}>
+            <div className="flex gap-2">
+              <Input
+                id="pb-slug"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"));
+                  setSlugTouched(true);
+                }}
+              />
+              {slugStatus != null && slugStatus.slug === slug && (slugStatus.status === "org" || slugStatus.status === "taken") && (
+                <Button
+                  variant="secondary"
+                  className="shrink-0"
+                  onClick={() => setSlug(slugStatus.suggested)}
+                >
+                  {t("slug_use_suggestion", { suggested: slugStatus.suggested })}
+                </Button>
+              )}
+            </div>
           </Field>
           <Field label={t("visibility")} htmlFor="pb-vis">
             <Select id="pb-vis" value={visibility} onChange={(e) => setVisibility(e.target.value)}>
@@ -158,6 +258,14 @@ export function PublishDialog({ open, onClose, project, onPublished }: {
         </div>
       ) : (
         <div className="space-y-3">
+          {result.slugChanged != null && (
+            <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] text-amber-700" role="status">
+              {t(result.slugChanged.reason === "org" ? "slug_changed_org" : "slug_changed_other", {
+                requested: result.slugChanged.requested,
+                slug: result.slug,
+              })}
+            </p>
+          )}
           <p className="text-sm">{result.kiosk ? t("open_mode_kiosk") : t("publish_url")}:</p>
           {/* El enlace recién publicado se va a pegar en algún sitio: el botón
               de copiar tiene que estar aquí, no en otro diálogo. */}

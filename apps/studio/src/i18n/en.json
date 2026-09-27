@@ -932,5 +932,15 @@
   "is_start_scene": "This is the tour's start scene",
   "start_scene_first": "The first one in the list",
   "editor_mute": "Mute sound while editing",
-  "editor_unmute": "Turn sound on"
+  "editor_unmute": "Turn sound on",
+  "publish_again": "Publish again",
+  "publish_slug_hint": "The last part of the tour's link: lowercase letters, numbers and hyphens.",
+  "slug_invalid": "Use at least 3 characters: lowercase letters, numbers and hyphens.",
+  "slug_free": "Address available.",
+  "slug_own": "This is this tour's current address.",
+  "slug_taken_org": "Another tour in your organization already uses this address. Try «{suggested}».",
+  "slug_taken_other": "Someone else already uses this address: if you keep it, it will be published as «{suggested}».",
+  "slug_use_suggestion": "Use «{suggested}»",
+  "slug_changed_org": "The address «{requested}» was already used by another tour in your organization, so this one was published at «{slug}».",
+  "slug_changed_other": "The address «{requested}» was already taken by someone else, so your tour was published at «{slug}». You can change it when you publish again."
 }

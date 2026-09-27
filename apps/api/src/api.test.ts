@@ -248,6 +248,24 @@ describe("flujo critico", () => {
     expect(tour.version).toBe(1);
   });
 
+  it("republicar se ve al recargar: HTML sin caché y tour.json con la versión en la URL", async () => {
+    const page = await call(`/t/${publishedSlug}`, { auth: false });
+    expect(page.headers.get("cache-control")).toBe("public, no-cache");
+    expect(await page.text()).toContain(`/t/${publishedSlug}/tour.json?v=1`);
+    const fijo = await call(`/t/${publishedSlug}/tour.json?v=1`, { auth: false });
+    expect(fijo.headers.get("cache-control")).toContain("immutable");
+    const suelto = await call(`/t/${publishedSlug}/tour.json`, { auth: false });
+    expect(suelto.headers.get("cache-control")).toBe("public, no-cache");
+
+    const re = await call(`/api/v1/projects/${projectId}/publish`, { method: "POST", body: { visibility: "public" } });
+    const { version } = (await re.json()) as { version: number };
+    expect(version).toBe(2);
+    // El HTML ya apunta a la nueva versión y la vieja deja de ser inmutable
+    expect(await (await call(`/t/${publishedSlug}`, { auth: false })).text()).toContain(`tour.json?v=2`);
+    const viejo = await call(`/t/${publishedSlug}/tour.json?v=1`, { auth: false });
+    expect(viejo.headers.get("cache-control")).toBe("public, no-cache");
+  });
+
   it("el enlace se puede publicar en modo quiosco, y el normal lo admite por parametro", async () => {
     // Publicado como quiosco: la pagina sale ya en bucle, sin parametros
     const res = await call(`/api/v1/projects/${projectId}/publish`, {
@@ -371,6 +389,58 @@ describe("flujo critico", () => {
     expect([403, 404]).toContain(res.status);
     cookies = savedCookies;
     csrf = savedCsrf;
+  });
+
+  it("el slug ocupado por otra organización se resuelve con sufijo y aviso", async () => {
+    const savedCookies = cookies;
+    const savedCsrf = csrf;
+    cookies = "";
+    csrf = "";
+    await call("/api/v1/auth/login", { method: "POST", body: { email: "otro@test.ull", password: "password-larga-2" } });
+    const propia = (await (await call("/api/v1/me")).json()) as { orgs: { id: string }[] };
+    const creado = await call("/api/v1/projects", { method: "POST", body: { orgId: propia.orgs[0]!.id, title: "Tour de prueba" } });
+    const ajeno = ((await creado.json()) as { id: string }).id;
+    await call(`/api/v1/projects/${ajeno}/scenes`, {
+      method: "POST",
+      body: { title: "Única", sourceJson: { kind: "equirect", url: "media:falso" } },
+    });
+    // Mientras se escribe, el diálogo ya sabe que está ocupada y cuál sugerir
+    const check = (await (await call(`/api/v1/projects/${ajeno}/publish/slug?slug=${publishedSlug}`)).json()) as { status: string; suggested: string };
+    expect(check.status).toBe("taken");
+    expect(check.suggested).toBe(`${publishedSlug}-2`);
+    // Publicar pidiendo la misma dirección ya no da 409: se añade sufijo y se avisa
+    const pub = await call(`/api/v1/projects/${ajeno}/publish`, { method: "POST", body: { slug: publishedSlug, visibility: "public" } });
+    expect(pub.status).toBe(201);
+    const body = (await pub.json()) as { slug: string; slugChanged?: { requested: string; reason: string } };
+    expect(body.slug).toBe(`${publishedSlug}-2`);
+    expect(body.slugChanged).toEqual({ requested: publishedSlug, reason: "taken" });
+    // Republicar conserva la suya, sin más avisos
+    const re = (await (await call(`/api/v1/projects/${ajeno}/publish`, { method: "POST", body: { visibility: "public" } })).json()) as {
+      slug: string;
+      slugChanged?: unknown;
+    };
+    expect(re.slug).toBe(`${publishedSlug}-2`);
+    expect(re.slugChanged).toBeUndefined();
+    expect(((await (await call(`/api/v1/projects/${ajeno}/publish/slug?slug=${publishedSlug}-2`)).json()) as { status: string }).status).toBe("own");
+    await call(`/api/v1/projects/${ajeno}/unpublish`, { method: "POST", body: {} });
+    await call(`/api/v1/projects/${ajeno}`, { method: "DELETE" });
+    cookies = savedCookies;
+    csrf = savedCsrf;
+
+    // Dentro de la misma organización, escribirla a mano pide otra con sugerencia
+    const mio = await call("/api/v1/projects", { method: "POST", body: { orgId, title: "Otro tour" } });
+    const mioId = ((await mio.json()) as { id: string }).id;
+    await call(`/api/v1/projects/${mioId}/scenes`, {
+      method: "POST",
+      body: { title: "Única", sourceJson: { kind: "equirect", url: "media:falso" } },
+    });
+    const choque = await call(`/api/v1/projects/${mioId}/publish`, { method: "POST", body: { slug: publishedSlug, visibility: "public" } });
+    expect(choque.status).toBe(409);
+    const problema = (await choque.json()) as { detail: string; suggestedSlug: string; reason: string };
+    expect(problema.reason).toBe("org");
+    expect(problema.suggestedSlug).toMatch(new RegExp(`^${publishedSlug}-\\d$`));
+    expect(problema.detail).toContain("tu organización");
+    await call(`/api/v1/projects/${mioId}`, { method: "DELETE" });
   });
 
   it("plantillas: hereda la configuracion y no cruza organizaciones", async () => {
