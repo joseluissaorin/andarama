@@ -1,6 +1,6 @@
 ---
 title: "Real estate virtual tours: 10 listings for $20 a month"
-description: "How to make a real estate virtual tour that sells: what to shoot, floor plans, MLS and website publishing, cost per listing, and when to pay for Matterport."
+description: "How to make a real estate virtual tour that sells: what to shoot, floor plans, MLS and website publishing, cost per listing and when to pay for Matterport."
 lang: en
 slug: real-estate-virtual-tours
 cluster: verticales
