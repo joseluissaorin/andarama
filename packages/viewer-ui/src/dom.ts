@@ -31,7 +31,8 @@ export function iconButton(iconName: string, label: string, onClick: () => void)
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 export function toast(container: HTMLElement, message: string): void {
-  container.querySelector(".anda-toast")?.remove();
+  // El contador del tesoro también es un .anda-toast, pero fijo: no se toca
+  container.querySelector(".anda-toast:not(.anda-toast--hud)")?.remove();
   const t = el("div", { className: "anda-toast", role: "status", text: message });
   container.appendChild(t);
   if (toastTimer != null) clearTimeout(toastTimer);

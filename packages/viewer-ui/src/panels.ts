@@ -21,6 +21,7 @@ import { createIconSvg } from "@andarama/viewer";
 import type { Translator } from "./i18n.js";
 import { parseVideoRef } from "./video.js";
 import { embedFileName, embedSource } from "./embed.js";
+import { rememberFormSent, visitorId, wasFormSent } from "./visitor.js";
 
 export interface PanelContext {
   viewer: TourViewer;
@@ -114,22 +115,49 @@ export class PanelHost {
     this.ctx.container.querySelectorAll(".anda-tooltip-bubble").forEach((b) => b.remove());
     const bubble = el("div", { className: "anda-tooltip-bubble", role: "status", "data-for": hotspot.id, text });
     this.ctx.container.appendChild(bubble);
+    // La burbuja se mide con el visor, no con la pantalla: si el texto no
+    // cabe encima del marcador se abre debajo, y si tampoco, se desplaza por
+    // dentro (rueda, dedo o teclado). Antes un texto largo se salía por
+    // arriba y no había forma de leerlo.
     const place = (): void => {
       const cRect = this.ctx.container.getBoundingClientRect();
       const aRect = anchor.getBoundingClientRect();
-      bubble.style.left = `${aRect.left - cRect.left + aRect.width / 2}px`;
-      bubble.style.top = `${aRect.top - cRect.top - 10}px`;
+      const margen = 8;
+      const alto = bubble.offsetHeight;
+      const ancho = bubble.offsetWidth;
+      const arriba = aRect.top - cRect.top - 10;
+      const abajo = aRect.bottom - cRect.top + 10;
+      const debajo = arriba - alto < margen && abajo + alto <= cRect.height - margen;
+      bubble.classList.toggle("anda-tooltip-bubble--below", debajo);
+      bubble.classList.toggle("anda-tooltip-bubble--scroll", bubble.scrollHeight > bubble.clientHeight + 1);
+      const centro = aRect.left - cRect.left + aRect.width / 2;
+      const mitad = ancho / 2;
+      const x = Math.min(Math.max(centro, mitad + margen), Math.max(mitad + margen, cRect.width - mitad - margen));
+      bubble.style.left = `${x}px`;
+      bubble.style.top = `${debajo ? abajo : Math.max(arriba, alto + margen)}px`;
     };
     place();
+    if (bubble.scrollHeight > bubble.clientHeight + 1) bubble.tabIndex = 0;
     const offView = this.ctx.viewer.on("viewChange", place);
     const offScene = this.ctx.viewer.on("sceneChange", () => cleanup());
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const cleanup = (): void => {
       offView();
       offScene();
+      if (timer != null) clearTimeout(timer);
       bubble.remove();
     };
     if ((hotspot as { permanent?: boolean }).permanent !== true) {
-      setTimeout(cleanup, 6000);
+      // Tiempo de lectura según la longitud; leer o desplazar lo alarga
+      const lectura = Math.min(30000, 6000 + text.length * 45);
+      const armar = (): void => {
+        if (timer != null) clearTimeout(timer);
+        timer = setTimeout(cleanup, lectura);
+      };
+      armar();
+      for (const evt of ["pointerenter", "pointerdown", "scroll", "wheel", "touchstart", "focus"]) {
+        bubble.addEventListener(evt, armar, { passive: true });
+      }
     }
   }
 }
@@ -200,6 +228,13 @@ function treasurePanel(hs: TreasureHotspot, ctx: PanelContext): PanelContent {
     const cuenta = el("p", { className: "anda-treasure-found__count" });
     cuenta.textContent = ctx.t("treasure_progress", { found: String(estado.found), total: String(estado.total) });
     body.appendChild(cuenta);
+    // El último: el mensaje final va aquí, en el panel que se está leyendo, y
+    // no en un aviso de dos segundos que el propio panel tapaba.
+    if (estado.found >= estado.total) {
+      const final = el("p", { className: "anda-treasure-found__done" });
+      final.textContent = ctx.viewer.text(ctx.viewer.tour.treasureHunt?.completionMessage) || ctx.t("treasure_complete_all");
+      body.appendChild(final);
+    }
   }
   return { body };
 }
@@ -694,6 +729,13 @@ function webPanel(hs: WebHotspot, ctx: PanelContext): PanelContent {
 
 function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "anda-panel__body" });
+  // De un solo envío y ya enviado (en esta visita o en otra): se dice y
+  // no se vuelve a pintar el formulario. Reabrir el hotspot ya no lo duplica.
+  if (hs.once === true && (wasFormSent(hs.id) || ctx.viewer.formSubmitted(hs.id))) {
+    ctx.viewer.markFormSubmitted(hs.id);
+    body.appendChild(el("p", { className: "anda-prose anda-form__done", text: ctx.t("form_already_sent") }));
+    return { body };
+  }
   const form = el("form", { className: "anda-form", novalidate: true });
   const fields: { id: string; input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement; required: boolean }[] = [];
 
@@ -771,7 +813,7 @@ function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
     submit.disabled = true;
     status.textContent = ctx.t("sending");
     const destination = ctx.formEndpoint != null && hs.destination.api !== false ? ctx.formEndpoint : hs.destination.webhook;
-    const send = async (): Promise<void> => {
+    const send = async (): Promise<"sent" | "already"> => {
       if (destination == null) throw new Error("sin destino");
       const res = await fetch(destination, {
         method: "POST",
@@ -781,14 +823,22 @@ function formPanel(hs: FormHotspot, ctx: PanelContext): PanelContent {
           lang: ctx.viewer.currentLang(),
           data,
           turnstileToken,
+          visitorId: visitorId(),
         }),
       });
+      // 409: el servidor ya tiene el envío de este visitante
+      if (res.status === 409) return "already";
       if (!res.ok) throw new Error(String(res.status));
+      return "sent";
     };
     send()
-      .then(() => {
-        ctx.viewer.trackForm(hs.id);
-        form.replaceChildren(el("p", { className: "anda-prose", text: ctx.viewer.text(hs.successMessage) || ctx.t("form_success") }));
+      .then((resultado: "sent" | "already") => {
+        if (resultado === "sent") ctx.viewer.trackForm(hs.id);
+        if (hs.once === true) rememberFormSent(hs.id);
+        ctx.viewer.markFormSubmitted(hs.id);
+        const texto =
+          resultado === "already" ? ctx.t("form_already_sent") : ctx.viewer.text(hs.successMessage) || ctx.t("form_success");
+        form.replaceChildren(el("p", { className: "anda-prose", text: texto }));
       })
       .catch(() => {
         submit.disabled = false;
@@ -972,14 +1022,30 @@ function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
     const finished = isCorrect || (maxAttempts > 0 && attempts >= maxAttempts);
     if (finished) {
       check.disabled = true;
-      ctx.viewer.reportQuizAnswer(hs.id, isCorrect, hs.points ?? 1);
-      // La compuerta se abre al acertar; y también al agotar los intentos,
-      // porque dejar a alguien encerrado en una sala no enseña nada.
-      if (hs.gate === true) ctx.viewer.setNavigationBlocked(false);
+      // El visor recalcula la compuerta con todas las preguntas de la escena:
+      // acertar esta no abre la salida si otra con compuerta sigue mal.
+      ctx.viewer.reportQuizAnswer(hs.id, isCorrect, hs.points ?? 1, selected);
     }
-    if (hs.gate === true && !finished) {
-      ctx.viewer.setNavigationBlocked(true);
+    if (hs.gate === true && !isCorrect) {
+      // El aviso es el de la pregunta, no el de la narración
       feedback.append(el("p", { text: ctx.t("quiz_gate_message"), style: "margin:6px 0 0;font-size:13px;" }));
+      if (finished) {
+        // Sin intentos y con la salida cerrada: se puede volver a probar. La
+        // nota ya quedó fijada con esta respuesta; esto solo abre la compuerta.
+        const retry = el("button", { className: "anda-primary-btn", type: "button", text: ctx.t("quiz_retry"), style: "margin-top:10px;" });
+        retry.addEventListener("click", () => {
+          attempts = 0;
+          for (const o of optEls) {
+            o.input.checked = false;
+            o.input.disabled = false;
+            delete o.wrap.dataset.state;
+          }
+          check.disabled = false;
+          feedback.replaceChildren();
+          feedback.className = "";
+        });
+        feedback.append(retry);
+      }
     }
   });
   return { body };

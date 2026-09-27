@@ -93,8 +93,8 @@ export const VIEWER_CSS = `
   background: rgba(10, 14, 28, 0.62); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,.16); color: #fff; padding: 5px 13px; border-radius: 14px;
   font-size: 12.5px; font-weight: 600; letter-spacing: .01em; line-height: 1.3; text-align: center;
-  width: max-content; max-width: min(260px, 42vw); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+  width: max-content; max-width: min(260px, 42vw); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3;
+  line-clamp: 3; -webkit-box-orient: vertical; text-overflow: ellipsis; overflow-wrap: anywhere; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .anda-hotspot__label--hover { opacity: 0; transform: translateX(-50%) translateY(-3px); transition: opacity .18s ease, transform .18s ease; }
 .anda-hotspot:hover .anda-hotspot__label--hover, .anda-hotspot:focus-visible .anda-hotspot__label--hover { opacity: 1; transform: translateX(-50%); }
 .anda-hotspot--pulse .anda-hotspot__icon--chip::after { content: ""; position: absolute; inset: -7px; border-radius: 50%;
@@ -211,10 +211,15 @@ export const VIEWER_CSS = `
 @media (prefers-reduced-motion: reduce) { .anda-compass__needle { transition: none; } }
 
 /* ============ Tooltip anclado ============ */
-.anda-tooltip-bubble { position: absolute; transform: translate(-50%, -100%); z-index: 33; max-width: min(300px, 60vw);
+.anda-tooltip-bubble { position: absolute; transform: translate(-50%, -100%); z-index: 33; max-width: min(320px, calc(100% - 24px));
+  max-height: min(45%, 360px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  touch-action: pan-y; overflow-wrap: anywhere; white-space: pre-line;
   background: var(--u3-bg-solid); color: var(--u3-fg); border: 1px solid var(--u3-border); border-radius: 12px;
-  padding: 9px 13px; font-size: 13px; line-height: 1.45; box-shadow: 0 8px 28px rgba(0,0,0,.4); pointer-events: none;
+  padding: 9px 13px; font-size: 13px; line-height: 1.45; box-shadow: 0 8px 28px rgba(0,0,0,.4); pointer-events: auto;
   animation: u3fadein .15s ease; }
+.anda-tooltip-bubble--below { transform: translate(-50%, 0); }
+.anda-tooltip-bubble--below::after { display: none; }
+.anda-tooltip-bubble--scroll::after { display: none; }
 .anda-tooltip-bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%) rotate(45deg);
   width: 10px; height: 10px; background: var(--u3-bg-solid); border-right: 1px solid var(--u3-border); border-bottom: 1px solid var(--u3-border); }
 
@@ -230,16 +235,17 @@ export const VIEWER_CSS = `
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 32; display: flex;
   align-items: center; justify-content: center; padding: 22px; animation: u3fadein .2s ease; }
 @keyframes u3fadein { from { opacity: 0; } to { opacity: 1; } }
-.anda-panel { background: var(--u3-bg-solid); color: var(--u3-fg); border-radius: 20px; max-width: min(780px, 94vw);
-  max-height: min(86vh, 940px); width: 100%; display: flex; flex-direction: column; overflow: hidden;
+.anda-panel { background: var(--u3-bg-solid); color: var(--u3-fg); border-radius: 20px; max-width: min(780px, 100%);
+  max-height: min(100%, 940px); width: 100%; display: flex; flex-direction: column; overflow: hidden;
   border: 1px solid var(--u3-border); box-shadow: 0 24px 80px rgba(0,0,0,.55); animation: u3panelin .22s cubic-bezier(.2,.9,.3,1.1); }
 @keyframes u3panelin { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .anda-panel, .anda-panel-backdrop { animation: none; } }
-.anda-panel--wide { max-width: min(1100px, 96vw); }
+.anda-panel--wide { max-width: min(1100px, 100%); }
 .anda-panel__head { display: flex; align-items: center; gap: 10px; padding: 16px 18px; border-bottom: 1px solid var(--u3-border); }
 .anda-panel__head h2 { margin: 0; font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; flex: 1;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.anda-panel__body { overflow-y: auto; padding: 20px; flex: 1; min-height: 0; -webkit-overflow-scrolling: touch; }
+.anda-panel__body { overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 20px; flex: 1; min-height: 0;
+  -webkit-overflow-scrolling: touch; }
 .anda-panel__body--flush { padding: 0; }
 .anda-panel__body img { max-width: 100%; height: auto; }
 /* ============ Modo quiosco ============
@@ -268,6 +274,7 @@ export const VIEWER_CSS = `
 .anda-treasure-found__icon { display: block; margin: 0 auto 10px; color: var(--u3-primary); }
 .anda-treasure-found__title { margin: 0 0 6px; font-size: 19px; font-weight: 700; color: var(--u3-fg); }
 .anda-treasure-found__count { margin: 12px 0 0; font-size: 13px; color: var(--u3-fg-dim); }
+.anda-treasure-found__done { margin: 14px 0 0; font-size: 16px; font-weight: 700; color: var(--u3-primary); }
 
 .anda-prose { line-height: 1.65; font-size: 15px; }
 .anda-prose--small { font-size: 13.5px; }
@@ -473,6 +480,15 @@ export const VIEWER_CSS = `
 
 /* ============ HUD del tesoro ============ */
 .anda-toast--hud { bottom: auto; top: max(74px, calc(env(safe-area-inset-top) + 60px)); animation: none; }
+.anda-treasure-hud { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px;
+  max-width: min(420px, calc(100% - 32px)); padding: 8px 10px 8px 18px; z-index: 24; }
+.anda-treasure-hud--done { padding: 11px 20px; color: var(--u3-glass-fg); font-weight: 700; }
+.anda-treasure-hud__btn { border: 1px solid var(--u3-glass-border); background: transparent; color: inherit; font: inherit;
+  font-size: 13px; font-weight: 600; border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.anda-treasure-hud__btn:hover, .anda-treasure-hud__btn:focus-visible { background: rgba(255,255,255,.14); }
+.anda-treasure-hud__btn[hidden], .anda-treasure-hud__hint[hidden] { display: none; }
+.anda-treasure-hud__hint { flex-basis: 100%; margin: 2px 0 2px; font-size: 13.5px; font-weight: 500; line-height: 1.4; text-align: center;
+  max-height: 9.5em; overflow-y: auto; }
 /* Retículo de mirada (giroscopio): sostener la mirada acciona el marcador */
 .anda-gaze{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:60;opacity:.7;transition:opacity .2s}
 .anda-gaze.is-cursor{opacity:.95}

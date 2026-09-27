@@ -1,6 +1,7 @@
 import { mountViewer } from "./skin.js";
 import type { Tour } from "@andarama/schema";
 import { baseFromTourUrl } from "./url.js";
+import { launchParams } from "./quiz-result.js";
 
 /**
  * Punto de entrada del bundle standalone: paginas de tour publicadas
@@ -14,6 +15,8 @@ interface StandaloneConfig {
   baseUrl?: string;
   analyticsEndpoint?: string | null;
   formEndpoint?: string | null;
+  /** Resultado del quiz: solo en el tour servido por la plataforma. */
+  quizEndpoint?: string | null;
   turnstileSiteKey?: string | null;
   kiosk?: boolean;
   liveUrl?: string;
@@ -52,6 +55,8 @@ async function boot(): Promise<void> {
   }
   const params = new URLSearchParams(location.search);
   const liveRoom = params.get("live");
+  // Lanzamiento desde un LMS: /api/v1/lti/launch redirige con ?lti= y ?name=
+  const lanzamiento = launchParams(location.search);
   // La instancia queda accesible en window.Andarama.instance: los integradores
   // (y las pruebas) pueden pilotar el visor ya montado sin volver a montarlo.
   window.Andarama!.instance = mountViewer({
@@ -60,6 +65,9 @@ async function boot(): Promise<void> {
     baseUrl: cfg.baseUrl ?? container.dataset.base ?? baseFromTourUrl(tourUrl),
     analyticsEndpoint: cfg.analyticsEndpoint,
     formEndpoint: cfg.formEndpoint,
+    quizEndpoint: cfg.quizEndpoint ?? null,
+    ltiLaunchId: lanzamiento.ltiLaunchId,
+    participantName: lanzamiento.participantName,
     turnstileSiteKey: cfg.turnstileSiteKey,
     // ?kiosk=1 lo enciende y ?kiosk=0 lo apaga aunque el paquete venga en
     // quiosco: una misma dirección sirve para la pantalla y para la persona.
