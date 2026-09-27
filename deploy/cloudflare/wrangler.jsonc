@@ -95,7 +95,10 @@
   "vars": {
     "ANALYTICS_BACKEND": "d1",
     "ANALYTICS_DATASET": "andarama_events",
-    "PUBLIC_URL": "https://andarama.com"
+    "PUBLIC_URL": "https://andarama.com",
+    // Administradores de la instancia, separados por comas (sin distinguir
+    // mayúsculas). Solo estas direcciones se hacen administradoras al entrar.
+    "ADMIN_EMAILS": "jlsf2005@gmail.com,admin@ull360.dev"
   },
 
   "observability": {
@@ -114,4 +117,6 @@
   //     Clerk, como en andarama.com; sin ellas, cuentas propias sin planes)
   //   CLERK_JWT_KEY / CLERK_AUTHORIZED_PARTIES (opcional; verificación sin red
   //     y orígenes admitidos)
+  //   CLERK_WEBHOOK_SECRET (opcional; secreto de firma "whsec_..." del webhook
+  //     de Clerk: supresión de cuentas y fecha del primer pago)
 }

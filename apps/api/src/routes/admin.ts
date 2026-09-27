@@ -259,6 +259,7 @@ export function adminRoutes(): Hono<AppEnv> {
         planOverride: u.planOverride,
         createdAt: u.createdAt,
         planUpdatedAt: u.planUpdatedAt,
+        firstPaidAt: u.firstPaidAt,
         attributedAt: u.attributedAt,
         attribution: u.attributionJson != null ? parseJson<Attribution | null>(u.attributionJson, null) : null,
       }));

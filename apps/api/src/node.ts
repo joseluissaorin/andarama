@@ -30,6 +30,11 @@ import { guessContentType } from "./routes/projects.js";
 const here = dirname(fileURLToPath(import.meta.url));
 
 async function main(): Promise<void> {
+  // docker-compose pasa las variables opcionales vacías (`${X:-}`): una
+  // variable vacía es una variable sin definir, no una clave de Clerk "".
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value === "") delete process.env[key];
+  }
   const dataDir = resolve(process.env.DATA_DIR ?? "./data");
   const port = parseInt(process.env.PORT ?? "8788", 10);
   const publicUrl = (process.env.PUBLIC_URL ?? `http://localhost:${port}`).replace(/\/$/, "");
