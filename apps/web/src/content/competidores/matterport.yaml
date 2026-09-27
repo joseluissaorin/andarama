@@ -5,21 +5,21 @@ tipo: saas
 gratis: true
 gratis_detalle: "Plan Free para siempre: 1 espacio activo y 2 usuarios, sin tarjeta"
 planes:
-  - nombre: Starter (5 espacios)
+  - nombre: Starter 5
     precio: 14
     moneda: USD
     periodo: month
     precio_mes_anual: 12
     precio_anual: 144
     verificado: true
-  - nombre: Professional (20 espacios)
+  - nombre: Professional 20
     precio: 69
     moneda: USD
     periodo: month
     precio_mes_anual: 58
     precio_anual: 696
     verificado: true
-  - nombre: Business (100 espacios)
+  - nombre: Business 100
     precio: 355
     moneda: USD
     periodo: month
