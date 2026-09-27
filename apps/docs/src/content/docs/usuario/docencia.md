@@ -1,35 +1,113 @@
 ---
-title: "Docencia: quiz, LTI y SCORM"
+title: "Docencia: quiz, SCORM y LTI (en pruebas)"
+description: Quiz con nota mínima, informe y certificado, búsqueda del tesoro, variables, y cómo llevar la nota al aula virtual.
 ---
 
-## Quizzes y gamificación
+Andarama sirve para convertir un recorrido en una actividad: preguntas con
+nota, objetos que encontrar, puertas que se abren al resolver algo. El
+alumnado no necesita cuenta: juega con el enlace, embebido en el aula virtual
+o desde un paquete exportado.
 
-- Cada hotspot de **quiz** es **una pregunta**: define enunciado, tipo (única/múltiple/V-F), opciones, feedback, puntos e intentos. Un cuestionario son varias preguntas repartidas por la escena o por el tour (el botón **Añadir otra pregunta** crea la siguiente al lado); el informe final las suma todas.
-- La **compuerta** retiene al visitante en la escena hasta que acierta la pregunta (o agota los intentos): los pasos se ven apagados y, al pulsarlos, se abre la pregunta. Antes solo actuaba después de fallar, y quien no abría la pregunta se iba sin más.
-- En Ajustes del tour: puntuación mínima para aprobar, aleatorización, informe final y **certificado de finalización** (PDF con el nombre del participante).
-- **Búsqueda del tesoro**: se coloca el hotspot **Tesoro** en las escenas que se quiera y el visor lleva la cuenta de los encontrados. Se ve como una gema; para esconderlo de verdad se cambia el icono o se quita el fondo circular en «Estilo».
-- **Variables de estado**: los hotspots de contador/estado permiten puertas que se abren, cambio día/noche, rutas condicionadas, etc.
-- Las narraciones pueden **bloquear la navegación** hasta terminar (útil en prácticas guiadas).
+## Quiz
 
-## LTI 1.3 (Aula Virtual / Moodle)
+- Cada hotspot de **quiz** es **una pregunta**: enunciado, tipo (única,
+  múltiple o verdadero/falso), opciones, feedback, puntos e intentos (0 =
+  ilimitados). Un cuestionario son varias preguntas repartidas por la escena o
+  por el recorrido (el botón **Añadir otra pregunta** crea la siguiente al
+  lado); el informe final las suma todas.
+- La **compuerta** (**Compuerta (no avanzar sin acertar)**) retiene al
+  visitante en la escena hasta que acierta la pregunta: los pasos se ven
+  apagados y, al pulsarlos, se abre la pregunta con el aviso «Responde
+  correctamente para poder avanzar». Fallar o agotar los intentos no abre la
+  compuerta. Si hay varias preguntas con compuerta en la misma escena, hay que
+  acertarlas todas.
+- En **Ajustes del tour › Cuestionarios**:
+  - **Puntuación mínima (%)** para aprobar.
+  - **Informe final**: al responder todas las preguntas del recorrido, un
+    resumen con la puntuación y si se ha aprobado.
+  - **Certificado de finalización**: en el informe, quien aprueba escribe su
+    nombre y descarga un PDF.
+  - **Pedir el nombre al enviar el resultado**: antes de enviarlo, el visor
+    pide el nombre del alumno.
 
-Andarama es una herramienta LTI 1.3 Advantage con **Deep Linking** (el docente elige el tour desde Moodle) y **Assignment and Grade Services** (la puntuación del quiz vuelve al libro de calificaciones).
+Al responder todas las preguntas del recorrido publicado, el resultado de cada
+visitante (puntuación, si aprueba y, si se ha pedido, su nombre) llega al
+servidor y se descarga como CSV desde **Analítica › Resultados de quiz**. No
+hay código de clase ni agrupación por grupos: cada envío es una fila. Los
+paquetes exportados no envían nada. Para tener la nota en el libro de
+calificaciones del aula virtual, usa el
+[paquete SCORM](#scorm-la-nota-en-el-aula-virtual).
 
-Configuración (administrador de la instancia, panel Administración, pestaña LTI):
+## Búsqueda del tesoro
 
-1. En Moodle: Administración del sitio, Plugins, Herramientas externas, "configurar una herramienta manualmente":
-   - URL de la herramienta e **Initiate login URL**: `https://tu-instancia/api/v1/lti/login`
-   - **Redirection URI**: `https://tu-instancia/api/v1/lti/launch`
-   - **JWKS URL**: `https://tu-instancia/api/v1/lti/jwks`
-   - Servicios: activar IMS LTI Assignment and Grade Services y Deep Linking.
-2. En Andarama: registra la plataforma con el Issuer de Moodle, Client ID, Auth URL (`/mod/lti/auth.php`), Token URL (`/mod/lti/token.php`) y JWKS (`/mod/lti/certs.php`).
-3. El docente añade una actividad de herramienta externa y selecciona el tour vía Deep Linking (o fija `custom.tour = slug`).
+Se coloca el hotspot **Tesoro** en las escenas que se quiera y el visor lleva
+la cuenta de los encontrados. Cada tesoro puede mostrar un texto al
+encontrarlo, y en **Ajustes del tour › Búsqueda del tesoro** se escribe el
+título del juego y el mensaje al completarlo. Se ve como una gema; para
+esconderlo de verdad se cambia el icono o se quita el fondo circular en
+«Estilo».
 
-Cuando el alumnado completa el quiz dentro del tour lanzado desde Moodle, la puntuación se envía automáticamente vía AGS.
+Cada tesoro puede llevar una **Pista**. Mientras quede algún tesoro por
+encontrar en la escena, el contador de arriba ofrece un botón **Pista** que
+muestra la del siguiente tesoro pendiente, sin revelar dónde está. Al
+encontrarlos todos, el contador lo dice con el mensaje final del juego y se
+queda a la vista.
 
-## SCORM
+Un tesoro también puede llevar **Compuerta (no salir de la escena sin
+encontrarlo)**: nadie sale de la escena hasta encontrarlo y, al intentarlo, se
+muestra su pista. Los formularios tienen la misma opción.
 
-Para LMS sin LTI, exporta el tour como **paquete SCORM 1.2 o 2004 (3rd Ed.)**. El paquete reporta:
+## Variables y escape room
 
-- `completion_status` al visitar todas las escenas (o completar el quiz).
-- `score.raw/min/max` (y `success_status` según la puntuación mínima configurada).
+Los hotspots de **contador/estado** cambian variables del recorrido, y las
+**condiciones** de cualquier hotspot las leen: puertas que se abren al
+encontrar una llave, rutas que dependen de lo que se ha hecho, cambio de día a
+noche. Con eso, los tesoros y el quiz con compuerta se construye un escape
+room completo.
+
+- [Variables, contador y polígono](/docs/usuario/variables/): cómo funcionan,
+  con el ejemplo de la puerta con llave.
+- [Cómo hacer un escape room](/docs/usuario/escape-room/): paso a paso, con un
+  ejemplo de tres salas.
+
+Las narraciones de una escena también pueden **bloquear la navegación** hasta
+terminar (útil en prácticas guiadas).
+
+## SCORM: la nota en el aula virtual
+
+Para que la nota llegue a Moodle o a cualquier plataforma compatible, exporta
+el recorrido como **paquete SCORM 1.2 o 2004 (3.ª edición)**. El paquete
+reporta:
+
+- `completion_status` al visitar todas las escenas o responder todas las
+  preguntas.
+- `score.raw`, `score.min` y `score.max`, y `success_status` según la
+  puntuación mínima configurada.
+
+En andarama.com, el paquete SCORM es del plan Formación; en una instalación
+propia está siempre disponible. No funciona combinado con «HTML único». Las
+opciones de exportación están en [Exportar](/docs/usuario/exportar/), y los
+pasos en Moodle en [Insertar en Moodle](/docs/usuario/moodle/).
+
+## LTI 1.3 (en pruebas)
+
+Andarama incluye una configuración de herramienta LTI 1.3 Advantage, con
+**Deep Linking** (el docente elige el recorrido desde Moodle) y, en diseño,
+**Assignment and Grade Services** (la devolución de la nota).
+
+:::caution[En pruebas]
+La integración LTI está en pruebas: Moodle puede lanzar el recorrido, pero la
+nota del quiz **todavía no vuelve** al libro de calificaciones por esta vía.
+Si necesitas la nota, usa SCORM.
+:::
+
+La configuración (URL de la herramienta, JWKS, registro de la plataforma en
+**Administración › Plataformas LTI (Moodle)**) está en
+[Insertar en Moodle](/docs/usuario/moodle/#5-lti-13-en-pruebas).
+
+## Sin nota: enlace o iframe
+
+Para una salida virtual sin evaluación basta con pegar el enlace o el código de
+embebido en una página del curso: véase [Embeber un tour](/docs/usuario/embeber/).
+Y para una clase en directo, el profesor puede guiar al grupo por el recorrido
+con una [visita guiada con Meet o Teams](/docs/usuario/en-vivo/).

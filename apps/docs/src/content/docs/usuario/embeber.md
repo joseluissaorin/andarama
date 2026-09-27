@@ -5,7 +5,21 @@ description: Insertar un tour publicado en cualquier página HTML con el web com
 
 Un tour publicado se puede insertar en cualquier página web, campus virtual o gestor de contenidos.
 
-## Web component (recomendado)
+## ¿Iframe o web component?
+
+Los dos meten el recorrido dentro de otra web y muestran exactamente lo mismo.
+
+- El **código de embebido** (iframe) es la opción universal: se pega en
+  cualquier sitio que admita HTML, incluidos Moodle, WordPress o Google Sites.
+- El **web component** hace lo mismo con una etiqueta más corta,
+  `<anda-tour>`, que ajusta sola la proporción. Úsalo solo si controlas el
+  HTML de la página y puedes añadir un `<script>`: muchos editores de aulas
+  virtuales y gestores de contenidos quitan los scripts al guardar.
+
+Para Moodle, con los pasos exactos y la opción de nota por SCORM, véase
+[Insertar en Moodle](/docs/usuario/moodle/).
+
+## Web component
 
 Pega estas dos líneas en cualquier HTML:
 
@@ -32,13 +46,13 @@ El componente crea el iframe por ti (con pantalla completa, giroscopio y WebXR p
   allow="fullscreen; gyroscope; accelerometer; xr-spatial-tracking"
   allowfullscreen
   title="Mi tour virtual"></iframe>
+```
 
 El atributo `allow` es el que habilita la realidad virtual dentro del iframe:
 sin `xr-spatial-tracking` el botón **Modo VR** aparece pero la sesión no
 arranca, porque el documento incrustado no tiene permiso para pedirla. La
 página que embebe debe servirse además por HTTPS. Véase la
 [guía de realidad virtual](/docs/usuario/realidad-virtual/).
-```
 
 Ambos fragmentos aparecen listos para copiar en **Compartir** dentro del editor.
 
@@ -63,7 +77,7 @@ window.addEventListener("message", (e) => {
 
 ## Restricción de dominios
 
-Si el tour se publica con visibilidad **Dominios**, solo podrá embeberse desde los dominios de la lista (se aplica con `frame-ancestors` y comprobación de `Referer`).
+Si el tour se publica con la visibilidad **Restringido a dominios de embebido**, solo podrá embeberse desde los dominios de la lista (se aplica con `frame-ancestors` y comprobación de `Referer`).
 
 ## Pilotar el visor ya montado
 

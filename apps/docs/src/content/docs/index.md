@@ -30,13 +30,13 @@ Las tres primeras son gratis y son el mismo programa: el plan gratuito de Andara
 - Biblioteca de medios con previsualización 360 al vuelo: el ratón encima enseña un little planet y el doble clic abre el panorama completo.
 - Valores por defecto en cascada (instancia, organización, usuario, plantilla) y control de la tarjeta que se ve al compartir el enlace.
 - Multiidioma de contenido con export/import XLIFF y CSV.
-- Accesibilidad WCAG 2.1 AA con modo de contenido accesible lineal (también útil para SEO).
+- Accesibilidad con WCAG 2.1 AA como referencia de diseño (sin auditoría de conformidad) y modo de contenido accesible lineal (también útil para SEO).
 - Tours guiados en vivo (un guía controla la vista de N asistentes), comentarios, versiones, presencia.
-- Quiz con puntuación y certificado, búsqueda del tesoro, **LTI 1.3** con devolución de calificaciones a Moodle y export **SCORM 1.2/2004**.
+- Quiz con puntuación y certificado, búsqueda del tesoro, variables y condiciones para montar un [escape room](/docs/usuario/escape-room/), export **SCORM 1.2/2004** con la nota para el aula virtual y **LTI 1.3** (en pruebas).
 - Analítica propia sin cookies (RGPD): embudo de escenas, hotspots más usados y mapa de calor de orientaciones.
 - Export ZIP autocontenido (también HTML único, kiosko y PWA offline).
 - Modo quiosco desde el propio enlace publicado, con recorridos guiados que entran por el paso que une las escenas y esperan en cada parada.
-- Código de inserción HTML en el hotspot Web (Sketchfab, Genially, H5P…), barra Markdown en los textos, varias preguntas por quiz y comparador de escenas dentro del panel.
+- Código de inserción HTML en el hotspot Web (Sketchfab, Genially, H5P…), barra Markdown en los textos, varias preguntas por escena y comparador de escenas dentro del panel.
 
 ## Licencia
 
