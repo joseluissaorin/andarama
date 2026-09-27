@@ -41,6 +41,7 @@
     "dev:node": "pnpm --filter @andarama/api dev:node",
     "test": "pnpm -r test",
     "test:e2e": "playwright test -c tooling/playwright.config.ts",
+    "test:lti-moodle": "playwright test -c tooling/lti-moodle/playwright.config.ts",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
     "typecheck": "pnpm -r typecheck",
     "deploy:cloudflare": "node deploy/cloudflare/bootstrap.mjs",
