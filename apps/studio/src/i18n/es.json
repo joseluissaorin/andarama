@@ -942,5 +942,6 @@
   "slug_taken_other": "Otra persona ya usa esta dirección: si la mantienes, se publicará como «{suggested}».",
   "slug_use_suggestion": "Usar «{suggested}»",
   "slug_changed_org": "La dirección «{requested}» ya la usaba otro recorrido de tu organización, así que este se ha publicado en «{slug}».",
-  "slug_changed_other": "La dirección «{requested}» ya la usaba otra persona, así que tu recorrido se ha publicado en «{slug}». Puedes cambiarla al volver a publicar."
+  "slug_changed_other": "La dirección «{requested}» ya la usaba otra persona, así que tu recorrido se ha publicado en «{slug}». Puedes cambiarla al volver a publicar.",
+  "media_already_scene": "{count} de los medios ya eran escenas del recorrido: no se han duplicado."
 }

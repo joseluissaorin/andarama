@@ -152,12 +152,15 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
           const items = canEdit ? readMediaDrag(e.dataTransfer) : null;
           if (items == null) return;
           e.preventDefault();
-          let first: string | undefined;
+          let result: { created: string[]; reused: string[] } = { created: [], reused: [] };
           editor.apply((draft) => {
-            first = scenesFromMedia(draft, project.id, items)[0];
+            result = scenesFromMedia(draft, project.id, items);
           });
+          const first = result.created[0] ?? result.reused[0];
           if (first != null) editor.select(first);
-          toast.push(t("scenes_created", { count: String(items.length) }), "ok");
+          if (result.created.length > 0) toast.push(t("scenes_created", { count: String(result.created.length) }), "ok");
+          // Soltar otra vez la misma foto ya no duplica la escena: se avisa
+          if (result.reused.length > 0) toast.push(t("media_already_scene", { count: String(result.reused.length) }), "info");
         }}
       >
         <div className="flex items-center justify-between px-3 py-2.5">
@@ -511,7 +514,8 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         e.preventDefault();
         const viewer = skinRef.current?.viewer;
         const rect = node.getBoundingClientRect();
-        const coords = viewer?.marzipanoViewer().view()?.screenToCoordinates?.({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        // También en escenas planas (gigapíxel 2D), donde la vista no da ángulos
+        const coords = viewer?.screenToHotspotCoords(e.clientX - rect.left, e.clientY - rect.top);
         if (coords == null) return;
         const id = clientId();
         editor.apply((draft) => {
@@ -546,9 +550,8 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
     const coordsFor = (e: MouseEvent): { yaw: number; pitch: number } | null => {
       const viewer = skinRef.current?.viewer;
       if (viewer == null) return null;
-      const view = viewer.marzipanoViewer().view();
       const rect = node.getBoundingClientRect();
-      return view?.screenToCoordinates?.({ x: e.clientX - rect.left, y: e.clientY - rect.top }) ?? null;
+      return viewer.screenToHotspotCoords(e.clientX - rect.left, e.clientY - rect.top);
     };
     const isChrome = (e: MouseEvent): boolean => {
       const el = e.target as HTMLElement;
@@ -847,14 +850,8 @@ function PoligonoEnCurso({ contenedor, puntos, viewer }: {
     caja.addEventListener("pointerleave", onLeave);
     const seguir = (): void => {
       if (!vivo) return;
-      const view = viewer.current?.viewer.marzipanoViewer().view();
-      const pts = puntos.map((p) => {
-        try {
-          return (view?.coordinatesToScreen?.({ yaw: p.yaw, pitch: p.pitch }) as { x: number; y: number } | null) ?? null;
-        } catch {
-          return null;
-        }
-      });
+      const v = viewer.current?.viewer;
+      const pts = puntos.map((p) => v?.hotspotCoordsToScreen(p.yaw, p.pitch) ?? null);
       setPantalla((prev) => {
         const next = { pts, raton: ratonRef.current, w: caja.clientWidth, h: caja.clientHeight };
         const igual =

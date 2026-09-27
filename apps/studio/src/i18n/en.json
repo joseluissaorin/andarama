@@ -942,5 +942,6 @@
   "slug_taken_other": "Someone else already uses this address: if you keep it, it will be published as «{suggested}».",
   "slug_use_suggestion": "Use «{suggested}»",
   "slug_changed_org": "The address «{requested}» was already used by another tour in your organization, so this one was published at «{slug}».",
-  "slug_changed_other": "The address «{requested}» was already taken by someone else, so your tour was published at «{slug}». You can change it when you publish again."
+  "slug_changed_other": "The address «{requested}» was already taken by someone else, so your tour was published at «{slug}». You can change it when you publish again.",
+  "media_already_scene": "{count} of the media were already scenes in this tour: they were not duplicated."
 }

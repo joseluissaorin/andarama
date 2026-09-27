@@ -13,17 +13,30 @@ export interface MediaDragItem {
   id: string;
   filename: string;
   kind: string;
-  /** true si tiene tiles o es panorama: solo estos pueden ser escena 360. */
+  /** true si es un panorama esférico: solo estos pueden ser escena 360. */
   pano: boolean;
   video: boolean;
 }
 
+/** Proporción 2:1 (con margen): la de una foto esférica equirectangular. */
+export function isEquirectAspect(width: number | null, height: number | null): boolean {
+  if (width == null || height == null || height === 0) return false;
+  const r = width / height;
+  return r > 1.9 && r < 2.1;
+}
+
 export function mediaDragPayload(media: MediaItem): MediaDragItem {
+  const aspectKnown = media.width != null && media.height != null;
   return {
     id: media.id,
     filename: media.filename,
     kind: media.kind,
-    pano: media.kind === "panorama" || media.derivatives.some((d) => d.kind === "tiles"),
+    // Una imagen que no es 2:1 no es un panorama aunque esté teselada: sale
+    // como escena plana (gigapíxel 2D) y no como esfera deformada.
+    pano:
+      media.kind === "panorama" ||
+      isEquirectAspect(media.width, media.height) ||
+      (!aspectKnown && media.derivatives.some((d) => d.kind === "tiles")),
     video: media.kind === "video",
   };
 }
@@ -59,21 +72,31 @@ export function sceneTitleFromFilename(filename: string): string {
  * Crea escenas a partir de medios arrastrados. Vive aquí y no en cada vista
  * para que soltar en el grafo y soltar en la lista produzcan exactamente lo
  * mismo.
+ *
+ * Un medio que ya es escena del tour no se vuelve a crear: soltar dos veces la
+ * misma foto duplicaba la escena. Esas se devuelven en `reused` para avisar y
+ * seleccionarlas. Las imágenes que no son 2:1 salen como escena plana.
  */
 export function scenesFromMedia(
   draft: { scenes: SceneRow[]; settings: Record<string, unknown> },
   projectId: string,
   items: MediaDragItem[],
-): string[] {
+): { created: string[]; reused: string[] } {
   const ids: string[] = [];
+  const reused: string[] = [];
   for (const item of items) {
+    const existing = draft.scenes.find((s) => s.mediaId === item.id);
+    if (existing != null) {
+      reused.push(existing.id);
+      continue;
+    }
     const id = clientId();
     draft.scenes.push({
       id,
       projectId,
       sort: draft.scenes.length,
       title: sceneTitleFromFilename(item.filename),
-      type: item.video ? "video" : "image",
+      type: item.video ? "video" : item.pano ? "image" : "flat",
       mediaId: item.id,
       sourceJson: null,
       initialViewJson: null,
@@ -85,5 +108,5 @@ export function scenesFromMedia(
     ids.push(id);
   }
   if (draft.settings.startScene == null && ids[0] != null) draft.settings.startScene = ids[0];
-  return ids;
+  return { created: ids, reused };
 }

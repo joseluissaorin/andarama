@@ -26,6 +26,7 @@ import { DeviceOrientationControlMethod } from "./engine/gyro.js";
 import { littlePlanetIntroParams, ProjectionPass, projectToScreen, type ProjectionFrameState } from "./engine/projections.js";
 import { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
 import { resolveStartView } from "./engine/startView.js";
+import { anglesToViewCoords, viewCoordsToAngles } from "./engine/flatCoords.js";
 import { VRManager, type VrEnvironment, type VrHotspot } from "./engine/vr.js";
 import { SceneMarkers } from "./hotspots/markers.js";
 import { AnalyticsClient } from "./analytics.js";
@@ -308,6 +309,37 @@ export class TourViewer {
 
   marzipanoViewer(): any {
     return this.viewer;
+  }
+
+  /** La escena actual es un gigapíxel 2D (vista plana en {x, y}). */
+  private currentIsFlat(): boolean {
+    return this.currentScene()?.source.kind === "flat";
+  }
+
+  /**
+   * Punto de la pantalla (px relativos al contenedor) a la posición de un
+   * hotspot, también en escenas planas. El editor lo usa para colocar y
+   * soltar: con la vista plana, `screenToCoordinates` no devuelve ángulos.
+   */
+  screenToHotspotCoords(x: number, y: number): { yaw: number; pitch: number } | null {
+    const v = this.viewer.view();
+    if (v?.screenToCoordinates == null) return null;
+    try {
+      return viewCoordsToAngles(v.screenToCoordinates({ x, y }), this.currentIsFlat());
+    } catch {
+      return null;
+    }
+  }
+
+  /** Lo contrario: dónde cae en pantalla la posición de un hotspot. */
+  hotspotCoordsToScreen(yaw: number, pitch: number): { x: number; y: number } | null {
+    const v = this.viewer.view();
+    if (v?.coordinatesToScreen == null) return null;
+    try {
+      return (v.coordinatesToScreen(anglesToViewCoords({ yaw, pitch }, this.currentIsFlat())) as { x: number; y: number } | null) ?? null;
+    } catch {
+      return null;
+    }
   }
 
   text(value: Parameters<typeof resolveL10n>[0]): string {
@@ -1076,7 +1108,8 @@ export class TourViewer {
     // Doble clic para zoom
     this.container.addEventListener("dblclick", (e) => {
       const v = this.viewer.view();
-      if (v?.screenToCoordinates == null) return;
+      // La vista plana no tiene yaw ni fov: el zoom es de la rueda
+      if (v?.screenToCoordinates == null || this.currentIsFlat()) return;
       const rect = this.container.getBoundingClientRect();
       const coords = v.screenToCoordinates({ x: e.clientX - rect.left, y: e.clientY - rect.top });
       if (coords != null) {
