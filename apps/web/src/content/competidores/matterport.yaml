@@ -3,30 +3,30 @@ web: https://matterport.com
 pais: "US"
 tipo: saas
 gratis: true
-gratis_detalle: "Plan gratuito con 1 espacio activo y marca de Matterport"
+gratis_detalle: "Plan Free para siempre: 1 espacio activo y 2 usuarios, sin tarjeta"
 planes:
-  - nombre: Starter
-    precio: 9.99
+  - nombre: Starter (5 espacios)
+    precio: 14
     moneda: USD
     periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: false
-  - nombre: Pro
+    precio_mes_anual: 12
+    precio_anual: 144
+    verificado: true
+  - nombre: Professional (20 espacios)
     precio: 69
     moneda: USD
     periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: false
-  - nombre: Business
-    precio: 309
+    precio_mes_anual: 58
+    precio_anual: 696
+    verificado: true
+  - nombre: Business (100 espacios)
+    precio: 355
     moneda: USD
     periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: false
-cuotas: "Gratis: 1 espacio activo; los planes de pago amplían el número de espacios activos"
+    precio_mes_anual: 296
+    precio_anual: 3552
+    verificado: true
+cuotas: "El precio sube con los espacios activos: Starter de 5 a 20 (14 a 56 $/mes), Professional de 20 a 150 (69 a 429 $/mes), Business de 100 a 300 (355 a 870 $/mes); Enterprise, bajo presupuesto. Pago anual con hasta un 16 % de descuento"
 rv: true
 scorm: false
 lti: false
@@ -37,8 +37,9 @@ marca_blanca: parcial
 dominio_propio: false
 analitica_sin_cookies: null
 street_view: true
-verificado: false
+verificado: true
+fecha_verificacion: 2026-09-27
 descripcion:
   es: "Gemelos digitales 3D con captura por cámara o LiDAR; el estándar del sector inmobiliario, con planes anuales caros."
   en: "3D digital twins captured with a camera or LiDAR; the real-estate industry standard, with pricey annual plans."
-notas: "Los planes de pago se facturan anualmente; las cifras de Starter, Pro y Business son de memoria y deben comprobarse. Orientado a modelos 3D, no a panoramas 360 clásicos; requiere cámara compatible o app móvil."
+notas: "Precios en USD comprobados el 27-9-2026 en https://matterport.com/plans (tabla de precios por espacios activos del catálogo oficial de la tienda, buy.matterport.com). Cifras de entrada de cada plan: Starter 5 espacios, Professional 20, Business 100. Extras por espacio: MatterPak 49 a 59 $, plano esquemático desde 14,99 $, reactivar un espacio archivado 9,99 $. Orientado a modelos 3D, no a panoramas 360 clásicos."
