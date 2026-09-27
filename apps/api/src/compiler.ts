@@ -96,6 +96,9 @@ export async function compileProject(db: Db, projectId: string): Promise<Compile
       : [];
   const mediaMap = new Map<string, MediaInfo>();
   for (const row of mediaRows) {
+    // Solo medios de la organización del proyecto: una referencia a un medio
+    // ajeno (escena u hotspot) se queda sin resolver y no se publica
+    if (row.orgId !== project.orgId) continue;
     mediaMap.set(row.id, { row, derivatives: derivativeRows.filter((d) => d.mediaId === row.id) });
   }
 
