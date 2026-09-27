@@ -55,10 +55,6 @@ function usd(lang: Lang, cents: number): string {
   return t(lang, "precios.formato.usd", { n: cifra(cents / 100) });
 }
 
-function eur(lang: Lang, n: number): string {
-  return t(lang, "precios.formato.eur", { n: cifra(n) });
-}
-
 function tarjetaAlojada(lang: Lang, plan: PlanInfo): PlanCard {
   const esAula = plan.slug === "aula";
   // Aula se cobra en dólares como todo lo demás (42 $ al año por docente): sin equivalentes en euros que no cobre nadie
