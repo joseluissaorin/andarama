@@ -5,6 +5,7 @@ import type { AppEnv, AuthState, UserRow } from "./context.js";
 import { newId, nowMs, slugify } from "./util.js";
 import { getSettings } from "./helpers.js";
 import { TRIAL_MS, planFromClaim } from "./plans.js";
+import { provisionSample } from "./templates.js";
 
 /**
  * Clerk como puerta de la instancia alojada.
@@ -132,7 +133,7 @@ export async function resolveClerkAuth(c: Context<AppEnv>, verifier: ClerkVerifi
   return { user, session: null, tokenScopes: null, clerkSessionId: claims.sid ?? null };
 }
 
-/** Alta JIT: usuario y su organización propia (de la que responde). */
+/** Alta JIT: usuario, su organización propia (de la que responde) y el tour de ejemplo. */
 async function provisionUser(
   c: Context<AppEnv>,
   clerkId: string,
@@ -174,5 +175,8 @@ async function provisionUser(
     createdAt: nowMs(),
   });
   await db.insert(orgMembers).values({ orgId, userId, role: "admin", createdAt: nowMs() });
+  // El primer minuto no es una pantalla vacía: un recorrido de ejemplo ya
+  // montado, clonado de la organización Plantillas (si el operador la tiene)
+  if (!isFirstUser) await provisionSample(db, c.get("config"), orgId, userId);
   return (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0]!;
 }

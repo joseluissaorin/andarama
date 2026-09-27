@@ -392,7 +392,8 @@ export function tourRoutes(): Hono<AppEnv> {
     const base = c.get("config").publicUrl;
     const xml = (s: string): string => s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
     const fecha = (ms: number): string => new Date(ms).toISOString().slice(0, 10);
-    const enGaleria = pubs.filter((p) => p.inGallery);
+    // Solo las fichas aprobadas: una pendiente de moderación no se indexa
+    const enGaleria = pubs.filter((p) => p.inGallery && p.galleryApproved);
     const ultima = enGaleria.reduce((max, p) => Math.max(max, p.publishedAt), 0);
     const urls = [
       ...(enGaleria.length > 0 ? [`  <url><loc>${base}/explorar/</loc><lastmod>${fecha(ultima)}</lastmod></url>`] : []),

@@ -60,7 +60,8 @@ export async function assertTourQuota(db: Db, config: AppConfig, orgId: string):
   const count = await db
     .select({ id: projects.id })
     .from(projects)
-    .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt)));
+    // El tour de ejemplo que se clona al dar de alta no cuenta en la cuota
+    .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt), eq(projects.isSample, false)));
   if (count.length >= quota.quotaTours) {
     const detail =
       quota.fromPlan && quota.plan == null

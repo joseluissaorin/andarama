@@ -1,15 +1,15 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
-import { projects, publications, versions, webhooks } from "@andarama/db";
+import { projects, publications, users, versions, webhooks } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
-import { projectAccess } from "../lib/authz.js";
+import { isInstanceAdmin, projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
 import { assertTourQuota } from "../lib/quota.js";
-import { orgHas, requireOrgCapability } from "../lib/capabilities.js";
+import { orgHas, requireActivePlan, requireOrgCapability } from "../lib/capabilities.js";
 import { compileProject } from "../compiler.js";
 import { hmacSign } from "@andarama/adapters";
 
@@ -128,8 +128,52 @@ export function resolveGallery(
   return merged;
 }
 
+/** Estado de moderación de una ficha: solo las aprobadas se listan en /explorar/. */
+export type GalleryStatus = "off" | "pending" | "approved" | "rejected";
+
+export interface GalleryReview {
+  galleryApproved: boolean;
+  galleryReviewedAt: number | null;
+}
+
+export function galleryStatus(g: { inGallery: boolean } & Partial<GalleryReview>): GalleryStatus {
+  if (!g.inGallery) return "off";
+  if (g.galleryApproved === true) return "approved";
+  return g.galleryReviewedAt != null ? "rejected" : "pending";
+}
+
+/** Los textos que se moderan: si cambia cualquiera, la ficha vuelve a revisión. */
+const GALLERY_REVIEWED_FIELDS = [
+  "galleryTitle", "galleryDescription", "galleryCredits", "placeName", "placeCountry", "placeLat", "placeLng", "galleryLang",
+] as const satisfies readonly (keyof GalleryColumns)[];
+
+export function sameGalleryTexts(a: GalleryColumns, b: GalleryColumns): boolean {
+  return GALLERY_REVIEWED_FIELDS.every((k) => a[k] === b[k]);
+}
+
+/**
+ * Moderación de la galería: la campaña trae desconocidos y una ficha basura
+ * indexada daña la marca. Una ficha nueva o con los textos cambiados queda
+ * pendiente hasta que la apruebe un administrador; republicar el contenido
+ * sin tocar la ficha conserva la revisión. Lo que publica un administrador
+ * de la instancia entra aprobado.
+ */
+export function resolveGalleryReview(
+  next: GalleryColumns,
+  existing: (GalleryColumns & GalleryReview) | undefined,
+  byInstanceAdmin: boolean,
+  now: number,
+): GalleryReview {
+  if (next.inGallery && byInstanceAdmin) return { galleryApproved: true, galleryReviewedAt: now };
+  if (existing != null && sameGalleryTexts(existing, next)) {
+    return { galleryApproved: existing.galleryApproved, galleryReviewedAt: existing.galleryReviewedAt };
+  }
+  return { galleryApproved: false, galleryReviewedAt: null };
+}
+
 /** La ficha de la galería tal como la ve el Studio (para rellenar el diálogo). */
-export function galleryInfo(g: GalleryColumns): {
+export function galleryInfo(g: GalleryColumns & Partial<GalleryReview>): {
+  status: GalleryStatus;
   enabled: boolean;
   title: string | null;
   description: string | null;
@@ -141,6 +185,7 @@ export function galleryInfo(g: GalleryColumns): {
   lang: string | null;
 } {
   return {
+    status: galleryStatus(g),
     enabled: g.inGallery,
     title: g.galleryTitle,
     description: g.galleryDescription,
@@ -199,6 +244,8 @@ export function publishRoutes(): Hono<AppEnv> {
     const runtime = c.get("runtime");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     if (!access.canPublish) throw forbidden("Tu rol no permite publicar");
+    // Al caducar la prueba lo publicado sigue en línea, pero republicar pide plan
+    await requireActivePlan(db, c.get("config"), access.project.orgId);
     const body = publishSchema.parse(await c.req.json().catch(() => ({})));
     if (body.visibility === "password" && body.password == null) {
       const existing = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
@@ -216,6 +263,11 @@ export function publishRoutes(): Hono<AppEnv> {
     // La ficha de la galería se valida antes de congelar nada: un cuerpo
     // incoherente no debe dejar artefactos a medias en el almacenamiento
     const gallery = resolveGallery(body.gallery, existingPub, body.visibility, compiled.tour.meta.defaultLang);
+    const review = resolveGalleryReview(gallery, existingPub, isInstanceAdmin(auth.user), nowMs());
+    // Aviso a quien modera cuando una ficha entra en revisión (nueva o con textos cambiados)
+    const nuevaEnRevision =
+      galleryStatus({ ...gallery, ...review }) === "pending" &&
+      !(existingPub != null && galleryStatus(existingPub) === "pending" && sameGalleryTexts(existingPub, gallery));
     let slug = body.slug ?? existingPub?.slug ?? slugify(access.project.title);
     const slugOwner = (await db.select().from(publications).where(eq(publications.slug, slug)).limit(1))[0];
     if (slugOwner != null && slugOwner.projectId !== access.project.id) {
@@ -312,6 +364,11 @@ export function publishRoutes(): Hono<AppEnv> {
     // Invalidar cache KV del puntero
     await runtime.kv.delete(`pub:${slug}`);
 
+    // Primera publicación de esta persona: el Studio lo cuenta como activación
+    const firstForUser =
+      existingPub == null &&
+      (await db.select({ id: publications.projectId }).from(publications).where(eq(publications.publishedBy, auth.user.id)).limit(1)).length === 0;
+
     if (existingPub != null) {
       await db
         .update(publications)
@@ -326,6 +383,7 @@ export function publishRoutes(): Hono<AppEnv> {
           expireAt: body.expireAt ?? null,
           kiosk,
           ...gallery,
+          ...review,
           posterKey,
           publishedAt: nowMs(),
           publishedBy: auth.user.id,
@@ -344,6 +402,7 @@ export function publishRoutes(): Hono<AppEnv> {
         expireAt: body.expireAt ?? null,
         kiosk,
         ...gallery,
+        ...review,
         posterKey,
         publishedAt: nowMs(),
         publishedBy: auth.user.id,
@@ -351,6 +410,9 @@ export function publishRoutes(): Hono<AppEnv> {
     }
     // La galería se cachea por generación: publicar la cambia
     await bumpGalleryGeneration(runtime.kv);
+    if (nuevaEnRevision) {
+      runtime.deferred(notifyGalleryReview(c, { slug, title: gallery.galleryTitle ?? access.project.title, author: auth.user.email }));
+    }
     await db.update(projects).set({ status: "published", updatedAt: nowMs() }).where(eq(projects.id, access.project.id));
     await audit(c, "project.publish", "project", access.project.id, { slug, version: number }, access.project.orgId);
     await fireWebhooks(c, access.project.orgId, access.project.id, "publish", { slug, version: number });
@@ -364,8 +426,10 @@ export function publishRoutes(): Hono<AppEnv> {
       kioskUrl: `${c.get("config").publicUrl}/t/${slug}${kiosk ? "" : "?kiosk=1"}`,
       tourUrl: `${c.get("config").publicUrl}/t/${slug}${kiosk ? "?kiosk=0" : ""}`,
       kiosk,
-      gallery: galleryInfo(gallery),
-      galleryUrl: gallery.inGallery ? `${c.get("config").publicUrl}/explorar/${slug}/` : null,
+      firstForUser,
+      gallery: galleryInfo({ ...gallery, ...review }),
+      // Solo hay ficha pública cuando un administrador la ha aprobado
+      galleryUrl: galleryStatus({ ...gallery, ...review }) === "approved" ? `${c.get("config").publicUrl}/explorar/${slug}/` : null,
       warnings: compiled.issues.filter((i) => i.severity === "warning"),
     }, 201);
   });
@@ -462,6 +526,8 @@ export function publishRoutes(): Hono<AppEnv> {
     const runtime = c.get("runtime");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     if (!access.canPublish) throw forbidden();
+    // Volver a una versión anterior es republicar: pide plan como publicar
+    await requireActivePlan(db, c.get("config"), access.project.orgId);
     const number = parseInt(c.req.param("number"), 10);
     const row = (await db
       .select()
@@ -659,5 +725,35 @@ async function fireWebhooks(
         }).catch((err) => console.error(`[webhook] ${hook.url} fallo:`, err));
       })(),
     );
+  }
+}
+
+/**
+ * Avisa por correo a los administradores de la instancia de que hay una ficha
+ * de la galería esperando revisión. Sin transporte de correo configurado no
+ * hace nada: la pestaña «Galería» del panel de administración sigue
+ * enseñando las pendientes.
+ */
+async function notifyGalleryReview(
+  c: { get: (k: any) => any },
+  info: { slug: string; title: string; author: string },
+): Promise<void> {
+  const runtime = c.get("runtime");
+  if (runtime.email?.configured !== true) return;
+  const db = c.get("db");
+  const admins = (await db.select({ email: users.email }).from(users).where(eq(users.roleGlobal, "admin"))) as { email: string }[];
+  const base = c.get("config").publicUrl as string;
+  for (const admin of admins) {
+    await runtime.email
+      .send({
+        to: admin.email,
+        subject: `Ficha pendiente en la galería: ${info.title}`,
+        text:
+          `${info.author} ha pedido una ficha en la galería pública para «${info.title}».\n\n` +
+          `Recorrido: ${base}/t/${info.slug}\n` +
+          `Revísala y apruébala o recházala en el panel de administración, pestaña «Galería»:\n${base}/studio/admin\n\n` +
+          "Hasta que se apruebe, la ficha no aparece en /explorar/ ni en el sitemap.",
+      })
+      .catch((err: unknown) => console.warn("[galería] no se pudo avisar:", err instanceof Error ? err.message : String(err)));
   }
 }

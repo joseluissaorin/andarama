@@ -2,12 +2,10 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { and, asc, eq, inArray, isNotNull, lt } from "drizzle-orm";
 import {
-  hotspots as hotspotsTable,
   projectMembers,
   projects,
   publications,
   scenes as scenesTable,
-  translations as translationsTable,
   users,
 } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
@@ -21,6 +19,8 @@ import { resolveNewTourSettings, type OrgDefaults, type UserPrefs } from "../lib
 import { galleryInfo } from "./publish.js";
 import { compileProject } from "../compiler.js";
 import { embedResponse } from "../lib/embed.js";
+import { orgPlanActive, requireActivePlan } from "../lib/capabilities.js";
+import { cloneProjectContent, isOperatorTemplate, listSectorTemplates } from "../lib/templates.js";
 
 export function projectRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
@@ -66,6 +66,15 @@ export function projectRoutes(): Hono<AppEnv> {
     );
   });
 
+  /**
+   * Plantillas por sector del operador («Nuevo proyecto»): Escape room, PRL,
+   * Museo, Campus, Inmobiliaria… Lista vacía si la instancia no las tiene.
+   */
+  r.get("/sector-templates", async (c) => {
+    requireAuth(c);
+    return c.json(await listSectorTemplates(c.get("db"), c.get("config")));
+  });
+
   r.post("/", async (c) => {
     const auth = requireAuth(c);
     requireScope(auth, "projects:write");
@@ -100,14 +109,20 @@ export function projectRoutes(): Hono<AppEnv> {
     // comprobacion bastaba conocer un id de proyecto para clonar el contenido
     // de otra organizacion.
     let templateSettings: Record<string, unknown> | null = null;
-    if (body.fromTemplate != null) {
+    if (body.fromTemplate != null && isOperatorTemplate(c.get("config"), body.fromTemplate)) {
+      // Plantilla del operador (organización Plantillas): la puede usar
+      // cualquiera; sus medios se reutilizan sin copiarse
+      const tpl = (await db.select().from(projects).where(eq(projects.id, body.fromTemplate)).limit(1))[0];
+      if (tpl == null || tpl.deletedAt != null) throw notFound("Plantilla no encontrada");
+      templateSettings = parseJson<Record<string, unknown>>(tpl.settingsJson, {});
+    } else if (body.fromTemplate != null) {
       const tplAccess = await projectAccess(db, body.fromTemplate, auth.user);
       if (tplAccess.project.orgId !== body.orgId) {
         throw forbidden("La plantilla pertenece a otra organización");
       }
       // La razon de ser de una plantilla es la configuracion (tema, idiomas,
       // pantallas, variables, plano, quiz); duplicar solo las escenas dejaba
-      // fuera justo lo reutilizable. startScene se conserva: duplicateContent
+      // fuera justo lo reutilizable. startScene se conserva: cloneProjectContent
       // lo reapunta al id nuevo.
       templateSettings = parseJson<Record<string, unknown>>(tplAccess.project.settingsJson, {});
     }
@@ -134,7 +149,7 @@ export function projectRoutes(): Hono<AppEnv> {
     });
 
     if (body.fromTemplate != null) {
-      await duplicateContent(c, body.fromTemplate, id, auth.user.id);
+      await cloneProjectContent(db, body.fromTemplate, id);
     }
     await audit(c, "project.create", "project", id, { title: body.title }, body.orgId);
     return c.json({ id, slug }, 201);
@@ -146,10 +161,18 @@ export function projectRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     const pub = (await db.select().from(publications).where(eq(publications.projectId, access.project.id)).limit(1))[0];
+    // Prueba caducada (o sin plan): se puede mirar y exportar, no editar ni republicar
+    const planLocked = !(await orgPlanActive(db, c.get("config"), access.project.orgId));
     return c.json({
       ...projectSummary(access.project),
       settings: parseJson(access.project.settingsJson, {}),
-      permissions: { canEdit: access.canEdit, canPublish: access.canPublish, canManage: access.canManage, role: access.role },
+      planLocked,
+      permissions: {
+        canEdit: access.canEdit && !planLocked,
+        canPublish: access.canPublish && !planLocked,
+        canManage: access.canManage,
+        role: access.role,
+      },
       publication: pub != null ? { slug: pub.slug, visibility: pub.visibility, publishedAt: pub.publishedAt, versionId: pub.versionId, expireAt: pub.expireAt, publishAt: pub.publishAt, domains: parseJson(pub.domainsJson, []), hasPassword: pub.passwordHash != null, kiosk: pub.kiosk === true, gallery: galleryInfo(pub) } : null,
     });
   });
@@ -169,6 +192,10 @@ export function projectRoutes(): Hono<AppEnv> {
         isTemplate: z.boolean().optional(),
       })
       .parse(await c.req.json());
+    // Ordenar en carpetas y etiquetas sigue libre; el contenido pide plan
+    if (body.title != null || body.settings != null || body.isTemplate != null) {
+      await requireActivePlan(db, c.get("config"), access.project.orgId);
+    }
     const patch: Record<string, unknown> = { updatedAt: nowMs() };
     if (body.title != null) patch.title = body.title;
     if (body.folder !== undefined) patch.folder = body.folder;
@@ -250,7 +277,7 @@ export function projectRoutes(): Hono<AppEnv> {
       createdAt: nowMs(),
       updatedAt: nowMs(),
     });
-    await duplicateContent(c, access.project.id, id, auth.user.id);
+    await cloneProjectContent(db, access.project.id, id);
     await audit(c, "project.duplicate", "project", id, { from: access.project.id }, access.project.orgId);
     return c.json({ id, slug }, 201);
   });
@@ -402,52 +429,6 @@ export function guessContentType(key: string): string {
   return map[ext] ?? "application/octet-stream";
 }
 
-/** Copia escenas, hotspots y traducciones a otro proyecto. */
-async function duplicateContent(
-  c: { get: (k: "db") => import("../lib/context.js").Db },
-  fromId: string,
-  toId: string,
-  _userId: string,
-): Promise<void> {
-  const db = c.get("db");
-  const sceneRows = await db.select().from(scenesTable).where(eq(scenesTable.projectId, fromId));
-  const idMap = new Map<string, string>();
-  for (const s of sceneRows) idMap.set(s.id, newId());
-  for (const s of sceneRows) {
-    await db.insert(scenesTable).values({ ...s, id: idMap.get(s.id)!, projectId: toId });
-  }
-  const sceneIds = sceneRows.map((s) => s.id);
-  if (sceneIds.length > 0) {
-    const { inArray } = await import("drizzle-orm");
-    const hsRows = await db.select().from(hotspotsTable).where(inArray(hotspotsTable.sceneId, sceneIds));
-    const hsIdMap = new Map<string, string>();
-    for (const h of hsRows) hsIdMap.set(h.id, newId());
-    for (const h of hsRows) {
-      let content = h.contentJson;
-      // Reapuntar targets de navegacion a los nuevos IDs de escena
-      for (const [oldId, newSceneId] of idMap) {
-        content = content.replaceAll(`"${oldId}"`, `"${newSceneId}"`);
-      }
-      await db.insert(hotspotsTable).values({ ...h, id: hsIdMap.get(h.id)!, sceneId: idMap.get(h.sceneId)!, contentJson: content });
-    }
-    const trRows = await db.select().from(translationsTable).where(eq(translationsTable.projectId, fromId));
-    for (const t of trRows) {
-      const entityId = t.entity === "scene" ? idMap.get(t.entityId) : t.entity === "hotspot" ? hsIdMap.get(t.entityId) : t.entityId;
-      if (entityId == null && t.entity !== "tour") continue;
-      await db.insert(translationsTable).values({ ...t, id: newId(), projectId: toId, entityId: entityId ?? t.entityId });
-    }
-  }
-  // Actualizar startScene en settings
-  const proj = (await db.select().from(projects).where(eq(projects.id, toId)).limit(1))[0];
-  if (proj != null) {
-    const settings = parseJson<Record<string, unknown>>(proj.settingsJson, {});
-    if (typeof settings.startScene === "string" && idMap.has(settings.startScene)) {
-      settings.startScene = idMap.get(settings.startScene);
-      await db.update(projects).set({ settingsJson: JSON.stringify(settings) }).where(eq(projects.id, toId));
-    }
-  }
-}
-
 function projectSummary(p: typeof projects.$inferSelect, cover?: string | null): Record<string, unknown> {
   return {
     id: p.id,
@@ -458,6 +439,8 @@ function projectSummary(p: typeof projects.$inferSelect, cover?: string | null):
     tags: parseJson(p.tagsJson, []),
     status: p.status,
     isTemplate: p.isTemplate,
+    /** Tour de ejemplo clonado al dar de alta: no cuenta en la cuota. */
+    isSample: p.isSample,
     /** Medio de la escena inicial: la portada del tour en el panel. */
     coverMediaId: cover ?? null,
     createdBy: p.createdBy,

@@ -16,6 +16,7 @@ import {
 import type { PlatformRuntime } from "@andarama/adapters";
 import { createApp } from "./app.js";
 import type { AppConfig, Db } from "./lib/context.js";
+import { parseTemplatesConfig } from "./lib/templates.js";
 import { purgeExpiredSessions } from "./lib/session.js";
 import { purgeTrashedProjects } from "./routes/projects.js";
 import { getSettings } from "./lib/helpers.js";
@@ -63,6 +64,10 @@ interface Env {
   CLERK_SECRET_KEY?: string;
   CLERK_JWT_KEY?: string;
   CLERK_AUTHORIZED_PARTIES?: string;
+  /** Proyecto que se clona como tour de ejemplo a cada cuenta nueva. */
+  SAMPLE_PROJECT_ID?: string;
+  /** Plantillas por sector de «Nuevo proyecto»: `sector:id` separados por comas. */
+  TEMPLATE_PROJECTS?: string;
 }
 
 function buildRuntime(env: Env, publicUrl: string, waitUntil: (p: Promise<unknown>) => void, uploadOrigin?: string): PlatformRuntime {
@@ -140,6 +145,7 @@ function buildConfig(env: Env, publicUrl: string): AppConfig {
             authorizedParties: env.CLERK_AUTHORIZED_PARTIES?.split(",").map((s) => s.trim()).filter((s) => s !== ""),
           }
         : undefined,
+    templates: parseTemplatesConfig(env.SAMPLE_PROJECT_ID, env.TEMPLATE_PROJECTS),
   };
 }
 

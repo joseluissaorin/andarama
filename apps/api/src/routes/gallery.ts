@@ -29,10 +29,11 @@ const CACHE_TTL = 60;
 
 type PublicationRow = typeof publications.$inferSelect;
 
-/** Solo lo público, en la galería y dentro de su ventana de publicación. */
+/** Solo lo público, en la galería, aprobado por un administrador y dentro de su ventana de publicación. */
 function visibleNow(now: number): SQL {
   return and(
     eq(publications.inGallery, true),
+    eq(publications.galleryApproved, true),
     eq(publications.visibility, "public"),
     or(isNull(publications.expireAt), gt(publications.expireAt, now)),
     or(isNull(publications.publishAt), lte(publications.publishAt, now)),
