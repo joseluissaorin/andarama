@@ -1,0 +1,18 @@
+# Lo que no debe entrar en el contexto de `docker build` (la imagen compila
+# desde el código fuente; los node_modules y builds locales la romperían).
+.git
+**/node_modules
+**/dist
+**/dist-node
+**/dist-root
+**/.astro
+**/.wrangler
+**/*Copia en conflicto*
+**/.env
+**/.env.*
+!**/.env.example
+test-results
+playwright-report
+apps/desktop/dist
+docs
+examples
