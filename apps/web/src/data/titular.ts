@@ -9,7 +9,9 @@ import { pagePath, type Lang, type PageKey } from "../i18n";
 export const TITULAR = {
   nombre: "José Luis Saorín Ferrer",
   nif: "79081262V",
-  domicilio: "Calle Prolongación Ramón y Cajal, 1C, 3B, 38003 Santa Cruz de Tenerife",
+  // Provisional hasta que el titular decida si publica la dirección completa o
+  // un domicilio profesional (art. 10 de la LSSI pide la dirección completa).
+  domicilio: "Santa Cruz de Tenerife",
   correo: "jl@joseluissaorin.com",
   /** Proveedor de los correos transaccionales, tal como se nombra en la privacidad. */
   proveedorCorreo: "Resend, Inc.",
