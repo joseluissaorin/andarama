@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Save } from "lucide-react";
+import { Download, Save } from "lucide-react";
 import { Button, Field, Input, Select, Spinner, Switch, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
 import { Cabecera } from "../components/Cabecera";
+import { LtiRegistrations } from "../components/LtiRegistrations";
 import { MediaPicker } from "../editor/MediaPicker";
 
 /**
@@ -47,6 +48,9 @@ export function OrgDefaultsPage(): React.ReactNode {
   const t = useT();
   const toast = useToast();
   const orgId = useAuth((s) => s.currentOrgId);
+  const isOrgAdmin = useAuth(
+    (s) => s.me?.user?.roleGlobal === "admin" || s.me?.orgs.find((o) => o.id === s.currentOrgId)?.role === "admin",
+  );
   const [draft, setDraft] = useState<Defaults>({});
   const [saving, setSaving] = useState(false);
   const [logoPickerFor, setLogoPickerFor] = useState<string | null>(null);
@@ -282,6 +286,24 @@ export function OrgDefaultsPage(): React.ReactNode {
         </Button>
         <p className="text-xs text-[var(--anda-text-dim)]">{t("defaults_propagation_note")}</p>
       </div>
+
+      {isOrgAdmin && (
+        <section className="space-y-4 anda-bloque p-5">
+          <h2 className="text-[15px] font-semibold">{t("lti_org_title")}</h2>
+          <p className="text-sm text-[var(--anda-text-dim)]">{t("lti_org_intro")}</p>
+          <LtiRegistrations orgId={orgId} />
+        </section>
+      )}
+
+      {isOrgAdmin && (
+        <section className="space-y-3 anda-bloque p-5">
+          <h2 className="text-[15px] font-semibold">{t("org_export_title")}</h2>
+          <p className="text-sm text-[var(--anda-text-dim)]">{t("org_export_intro")}</p>
+          <Button variant="outline" onClick={() => window.open(`/api/v1/orgs/${orgId}/export`, "_blank")}>
+            <Download className="h-4 w-4" /> {t("org_export_download")}
+          </Button>
+        </section>
+      )}
 
       <MediaPicker
         open={logoPickerFor != null}

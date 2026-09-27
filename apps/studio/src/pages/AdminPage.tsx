@@ -5,6 +5,7 @@ import { Badge, Button, Dialog, Field, Input, Select, Spinner, Switch, Tabs, Tab
 import { api, ApiRequestError } from "../api";
 import { useT } from "../i18n";
 import { Cabecera } from "../components/Cabecera";
+import { LtiRegistrations } from "../components/LtiRegistrations";
 
 /** Panel de administración global de la instancia (§3.7). */
 export function AdminPage(): React.ReactNode {
@@ -53,7 +54,7 @@ export function AdminPage(): React.ReactNode {
             <WebhooksPanel />
           </Tabs.Content>
           <Tabs.Content value="lti">
-            <LtiPanel />
+            <LtiRegistrations />
           </Tabs.Content>
           <Tabs.Content value="coupons">
             <CouponsPanel />
@@ -798,83 +799,6 @@ function WebhooksPanel(): React.ReactNode {
             )
           }
           disabled={url === ""}
-        >
-          <Plus className="h-4 w-4" /> {t("create")}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// LTI
-// ---------------------------------------------------------------------------
-
-function LtiPanel(): React.ReactNode {
-  const t = useT();
-  const queryClient = useQueryClient();
-  const mutate = useMutate();
-  const q = useQuery({
-    queryKey: ["admin-lti"],
-    queryFn: () =>
-      api<{ id: string; issuer: string; clientId: string; toolEndpoints: Record<string, string> }[]>("/lti/registrations"),
-  });
-  const [form, setForm] = useState({ issuer: "", clientId: "", deploymentId: "", authUrl: "", tokenUrl: "", jwksUrl: "" });
-  const first = q.data?.[0];
-  return (
-    <div className="max-w-2xl space-y-5">
-      {first != null && (
-        <div className="anda-ficha p-4 text-xs">
-          <p className="mb-2 font-semibold">{t("lti_endpoints_hint")}</p>
-          {Object.entries(first.toolEndpoints).map(([k, v]) => (
-            <p key={k} className="font-mono">
-              {k}: {v}
-            </p>
-          ))}
-        </div>
-      )}
-      {(q.data ?? []).map((r) => (
-        <div key={r.id} className="flex items-center gap-3 anda-ficha px-4 py-2.5 text-sm">
-          <span className="flex-1 truncate">{r.issuer}</span>
-          <span className="font-mono text-xs text-[var(--anda-text-dim)]">{r.clientId}</span>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("delete")}
-            onClick={() =>
-              mutate(
-                () => api(`/lti/registrations/${r.id}`, { method: "DELETE" }),
-                () => void queryClient.invalidateQueries({ queryKey: ["admin-lti"] }),
-              )
-            }
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ))}
-      <div className="space-y-3 rounded-lg border border-dashed border-[var(--anda-border)] p-4">
-        {(
-          [
-            ["issuer", "Issuer (https://moodle.example.org)"],
-            ["clientId", "Client ID"],
-            ["deploymentId", "Deployment ID"],
-            ["authUrl", "Auth URL (/mod/lti/auth.php)"],
-            ["tokenUrl", "Token URL (/mod/lti/token.php)"],
-            ["jwksUrl", "JWKS URL (/mod/lti/certs.php)"],
-          ] as const
-        ).map(([key, label]) => (
-          <Field key={key} label={label} htmlFor={`lti-${key}`}>
-            <Input id={`lti-${key}`} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
-          </Field>
-        ))}
-        <Button
-          onClick={() =>
-            mutate(
-              () => api("/lti/registrations", { method: "POST", body: { ...form, deploymentId: form.deploymentId || undefined } }),
-              () => void queryClient.invalidateQueries({ queryKey: ["admin-lti"] }),
-            )
-          }
-          disabled={form.issuer === "" || form.clientId === ""}
         >
           <Plus className="h-4 w-4" /> {t("create")}
         </Button>
