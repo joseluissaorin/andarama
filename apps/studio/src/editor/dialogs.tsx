@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { Copy } from "lucide-react";
-import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
+import { Button, Dialog, Field, HelpTip, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
-import { runExport, ZipWriter, type AssetProvider, type ScormVersion } from "@andarama/exporter";
+import type { ScormVersion } from "@andarama/exporter";
+import { openZipSink, runExportInWorker } from "./exportRunner";
 import { api, ApiRequestError, authHeaders } from "../api";
 import { canUse, useAuth, useEditor } from "../stores";
 import { useI18nStore, useT } from "../i18n";
@@ -242,7 +243,7 @@ export function PublishDialog({ open, onClose, project, onPublished, beforePubli
               )}
             </div>
           </Field>
-          <Field label={t("visibility")} htmlFor="pb-vis">
+          <Field label={t("visibility")} htmlFor="pb-vis" help={t("help_visibility")}>
             <Select id="pb-vis" value={visibility} onChange={(e) => setVisibility(e.target.value)}>
               <option value="public">{t("vis_public")}</option>
               <option value="unlisted">{t("vis_unlisted")}</option>
@@ -289,6 +290,11 @@ export function PublishDialog({ open, onClose, project, onPublished, beforePubli
           <Field label={t("version_note")} htmlFor="pb-note">
             <Input id="pb-note" value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
+          {/* La insignia sale o no según el plan, y se decide al publicar:
+              a unos docentes les salía y a otros no, sin saber por qué. */}
+          <p className="flex items-center gap-1.5 text-xs text-[var(--anda-text-dim)]">
+            {t("badge_question")} <HelpTip text={t("help_badge")} label={t("badge_question")} />
+          </p>
           {/* La galería pública de andarama.com: una página propia por tour,
               con el nombre del lugar, para que el buscador la encuentre.
               Solo en la instancia alojada y solo para tours públicos. */}
@@ -508,7 +514,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()} title={t("share")}>
       <div className="space-y-4">
-        <Field label={t("publish_url")}>
+        <Field label={t("publish_url")} help={t("help_share_link")}>
           <div className="flex gap-2">
             <Input readOnly value={url} aria-label={t("publish_url")} />
             <Button variant="secondary" className="shrink-0" onClick={() => copy(url)}>
@@ -527,7 +533,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
             </Button>
           </div>
         </Field>
-        <Field label={t("embed_code")}>
+        <Field label={t("embed_code")} help={t("help_embed_code")}>
           <div className="flex gap-2">
             <Textarea readOnly value={embed} rows={3} className="font-mono text-xs" aria-label={t("embed_code")} />
             <Button variant="secondary" className="shrink-0" onClick={() => copy(embed)}>
@@ -535,7 +541,7 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
             </Button>
           </div>
         </Field>
-        <Field label={t("web_component")} hint={t("web_component_hint")}>
+        <Field label={t("web_component")} hint={t("web_component_hint")} help={t("help_web_component")}>
           <div className="flex gap-2">
             <Textarea readOnly value={webComponent} rows={3} className="font-mono text-xs" aria-label={t("web_component")} />
             <Button variant="secondary" className="shrink-0" onClick={() => copy(webComponent)}>
@@ -543,8 +549,13 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
             </Button>
           </div>
         </Field>
+        {/* Cómo meterlo en Moodle: la pregunta que más se repetía */}
+        <details className="rounded-xl bg-[var(--anda-surface-2)] px-4 py-3 text-[13px]">
+          <summary className="cursor-pointer font-medium">{t("share_moodle_title")}</summary>
+          <p className="mt-2 whitespace-pre-line leading-relaxed text-[var(--anda-text-dim)]">{t("help_moodle")}</p>
+        </details>
         {qr != null && (
-          <Field label={t("qr_code")}>
+          <Field label={t("qr_code")} help={t("help_qr")}>
             <div className="flex items-center gap-4">
               <img src={qr} alt={`${t("qr_code")}: ${url}`} className="rounded-lg border border-[var(--anda-border)]" />
               <a href={qr} download={`${project.slug}-qr.png`}>
@@ -592,62 +603,61 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
   const scormPermitido = canUse(me, "scorm");
 
   const doExport = async (): Promise<void> => {
+    const fileName = `${project.slug}${scorm !== "" ? "-scorm" : ""}.zip`;
+    // Primero el destino: el diálogo de guardar necesita el gesto del clic.
+    // Donde se puede, el ZIP va directo al disco sin quedarse en memoria.
+    const sink = await openZipSink(fileName);
+    if (sink == null) return;
     setBusy(true);
     setProgress(t("export_progress"));
+    const inicio = Date.now();
     try {
       const { tour, assets } = await api<{ tour: Tour; assets: { rel: string; key: string }[] }>(
         `/projects/${project.id}/export`,
         { method: "POST", body: {} },
       );
-      // Ficheros del visor
-      const viewerList = await fetch("/viewer/files.json").then((r) => (r.ok ? (r.json() as Promise<string[]>) : []));
-      const viewerFiles = await Promise.all(
-        // Los sourcemaps no se publican: ahorran ~1,5 MB en cada paquete
-        viewerList
-          .filter((path) => !path.endsWith(".map"))
-          .map(async (path) => ({
-            path,
-            data: new Uint8Array(await (await fetch(`/viewer/${path}`)).arrayBuffer()),
-          })),
-      );
-      const assetProvider: AssetProvider = {
-        list: async () => assets.map((a) => a.rel),
-        read: async (rel) => {
-          const res = await fetch(`/api/v1/projects/${project.id}/preview/${rel}`, { credentials: "same-origin", headers: await authHeaders() });
-          if (!res.ok) throw new Error(`No se pudo leer ${rel}`);
-          return new Uint8Array(await res.arrayBuffer());
-        },
-      };
-      const chunks: Uint8Array[] = [];
-      const writer = new ZipWriter((c) => {
-        chunks.push(c);
-      });
-      const result = await runExport(
-        tour,
-        viewerFiles,
-        assetProvider,
+      // Todo el trabajo pesado (descargas en paralelo, compresión y armado
+      // del ZIP) va en un Web Worker: el editor no se congela.
+      const result = await runExportInWorker(
         {
-          langs,
-          maxLevels: maxLevels !== "" ? parseInt(maxLevels, 10) : null,
-          includeDownloads: downloads,
-          analyticsEndpoint: analyticsEndpoint !== "" ? analyticsEndpoint : null,
-          serviceWorker: sw,
-          singleFile: single,
-          scorm: scorm !== "" ? scorm : null,
-          kiosk,
+          projectId: project.id,
+          tour,
+          assets: assets.map((a) => a.rel),
+          options: {
+            langs,
+            maxLevels: maxLevels !== "" ? parseInt(maxLevels, 10) : null,
+            includeDownloads: downloads,
+            analyticsEndpoint: analyticsEndpoint !== "" ? analyticsEndpoint : null,
+            serviceWorker: sw && !single,
+            singleFile: single && !hasMultires,
+            scorm: scorm !== "" ? scorm : null,
+            kiosk,
+          },
         },
-        writer,
-        (p) => setProgress(`${t("export_progress")}: ${p.phase} ${p.done}/${p.total}`),
+        {
+          getHeaders: authHeaders,
+          onChunk: sink.write,
+          onProgress: (p) =>
+            setProgress(
+              p.phase === "assets"
+                ? t("export_phase_assets", { done: p.done, total: p.total })
+                : p.phase === "viewer"
+                  ? t("export_phase_viewer")
+                  : t("export_phase_finalize"),
+            ),
+        },
       );
-      const blob = new Blob(chunks as BlobPart[], { type: "application/zip" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${project.slug}${scorm !== "" ? "-scorm" : ""}.zip`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-      setProgress(`${t("export_done")}: ${result.files} ficheros, ${(result.bytes / 1024 / 1024).toFixed(1)} MB`);
+      await sink.close();
+      setProgress(
+        t("export_done_detail", {
+          files: result.files,
+          mb: (result.bytes / 1024 / 1024).toFixed(1),
+          s: Math.max(1, Math.round((Date.now() - inicio) / 1000)),
+        }),
+      );
       toast.push(t("export_done"), "ok");
     } catch (err) {
+      await sink.abort();
       setProgress(null);
       toast.push(String(err instanceof Error ? err.message : err), "error");
     } finally {
@@ -681,7 +691,7 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
             ))}
           </div>
         </Field>
-        <Field label={t("export_max_res")} htmlFor="ex-res">
+        <Field label={t("export_max_res")} htmlFor="ex-res" help={t("help_export_max_res")}>
           <Select id="ex-res" value={maxLevels} onChange={(e) => setMaxLevels(e.target.value)}>
             <option value="">{t("export_full_res")}</option>
             <option value="3">~2K</option>
@@ -689,27 +699,29 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
             <option value="5">~8K</option>
           </Select>
         </Field>
-        <Switch id="ex-dl" checked={downloads} onCheckedChange={setDownloads} label={t("export_downloads")} />
-        <Field label={t("export_analytics")} htmlFor="ex-analytics">
+        <Switch id="ex-dl" checked={downloads} onCheckedChange={setDownloads} label={t("export_downloads")} help={t("help_export_downloads")} />
+        <Field label={t("export_analytics")} htmlFor="ex-analytics" help={t("help_export_analytics")}>
           <Input id="ex-analytics" value={analyticsEndpoint} onChange={(e) => setAnalyticsEndpoint(e.target.value)} placeholder="https://mi-instancia/ingest/e" />
         </Field>
-        <Switch id="ex-sw" checked={sw} onCheckedChange={setSw} label={t("export_sw")} />
+        {/* El HTML único no puede llevar service worker: se desactiva a la vista */}
+        <Switch id="ex-sw" checked={sw && !single} disabled={single} onCheckedChange={setSw} label={t("export_sw")} help={t("help_export_sw")} />
         <Switch
           id="ex-single"
           checked={single && !hasMultires}
           disabled={hasMultires}
           onCheckedChange={setSingle}
           label={t("export_single")}
+          help={t("help_export_single")}
         />
         {hasMultires && <p className="-mt-2 pl-1 text-xs text-[var(--anda-text-dim)]">{t("export_single_multires")}</p>}
-        <Field label={t("export_scorm")} htmlFor="ex-scorm" hint={scormPermitido ? undefined : t("capability_scorm_hint")}>
+        <Field label={t("export_scorm")} htmlFor="ex-scorm" hint={scormPermitido ? undefined : t("capability_scorm_hint")} help={t("help_export_scorm")}>
           <Select id="ex-scorm" value={scorm} disabled={!scormPermitido} onChange={(e) => setScorm(e.target.value as "" | ScormVersion)}>
             <option value="">-</option>
             <option value="1.2">SCORM 1.2</option>
             <option value="2004">SCORM 2004 (3rd Ed.)</option>
           </Select>
         </Field>
-        <Switch id="ex-kiosk" checked={kiosk} onCheckedChange={setKiosk} label={t("export_kiosk")} />
+        <Switch id="ex-kiosk" checked={kiosk} onCheckedChange={setKiosk} label={t("export_kiosk")} help={t("help_export_kiosk")} />
         <p className="rounded-lg bg-[var(--anda-surface-2)] p-3 text-xs text-[var(--anda-text-dim)]">{t("export_vr_note")}</p>
         {progress != null && <p className="text-sm text-[var(--anda-text-dim)]">{progress}</p>}
       </div>
@@ -739,7 +751,10 @@ export function LiveDialog({ open, onClose, project }: { open: boolean; onClose:
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()} title={t("live_tour")}>
       <div className="space-y-4">
-        <p className="text-sm text-[var(--anda-text-dim)]">{t("live_note")}</p>
+        <p className="flex items-start gap-1.5 text-sm text-[var(--anda-text-dim)]">
+          <span>{t("live_note")}</span>
+          <HelpTip text={t("help_live")} label={t("live_tour")} />
+        </p>
         {base == null ? (
           <p className="text-sm text-[var(--anda-danger)]">{t("publish")} primero.</p>
         ) : room == null ? (

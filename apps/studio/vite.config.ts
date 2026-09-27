@@ -14,6 +14,8 @@ export default defineConfig({
       "/rt": { target: "http://localhost:8788", ws: true, changeOrigin: true },
     },
   },
+  // El worker del export importa el exportador: como módulo ES
+  worker: { format: "es" },
   build: {
     outDir: "dist",
     sourcemap: true,

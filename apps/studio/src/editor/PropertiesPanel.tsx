@@ -16,7 +16,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { Button, Dialog, Field, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
+import { Button, Dialog, Field, HelpTip, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { parseVideoRef, renderMarkdown } from "@andarama/viewer-ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
@@ -265,7 +265,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
               </div>
             )}
           </Field>
-          <Switch id="sc-hidden" checked={meta.hidden === true} onCheckedChange={(v) => patchMeta({ hidden: v })} label={t("hidden_scene")} disabled={!canEdit} />
+          <Switch id="sc-hidden" checked={meta.hidden === true} onCheckedChange={(v) => patchMeta({ hidden: v })} label={t("hidden_scene")} disabled={!canEdit} help={t("help_hidden_scene")} />
           {/* La escena inicial se elegía en el grafo o en Ajustes del tour;
               desde aquí, que es donde se está mirando la escena, no había
               manera. */}
@@ -288,7 +288,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
       </div>
 
 
-      <Section title={t("view_limits")}>
+      <Section title={t("view_limits")} help={t("help_view_limits")}>
         <div className="grid grid-cols-2 gap-2">
           {(["pitchMin", "pitchMax", "yawMin", "yawMax", "fovMin", "fovMax"] as const).map((key) => (
             <Field key={key} label={key} htmlFor={`lim-${key}`}>
@@ -310,7 +310,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         </div>
       </Section>
 
-      <Section title={t("scene_audio")}>
+      <Section title={t("scene_audio")} help={t("help_scene_audio")}>
         <Field label={t("ambient")}>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setPickerFor("ambient")}>
@@ -345,6 +345,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
               s.audioJson = JSON.stringify(a);
             })}
             label={t("block_navigation")}
+            help={t("help_block_navigation")}
           />
         )}
       </Section>
@@ -1033,7 +1034,9 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         )}
         {hotspot.type === "polygon" && (
           <>
-            <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("polygon_purpose")}</p>
+            <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">
+              {t("polygon_purpose")} <HelpTip text={t("help_polygon")} label={t("hotspot_polygon")} />
+            </p>
             <div className="grid grid-cols-2 gap-2">
               <Field label={t("fill")} htmlFor="hs-fill">
                 <Input id="hs-fill" type="color" value={String(content.fill ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ fill: e.target.value })} />
@@ -1136,6 +1139,9 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             </Field>
             <Switch id="hs-newtab" checked={content.newTab !== false} disabled={!canEdit} onCheckedChange={(v) => setContent({ newTab: v })} label={t("open_new_tab")} />
           </>
+        )}
+        {hotspot.type === "state" && (
+          <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("help_state")}</p>
         )}
         {hotspot.type === "state" && (
           <StateEditor content={content} scenes={snapshot.scenes} canEdit={canEdit} onChange={setContent} />
@@ -1338,7 +1344,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       )}
 
       {activeTab === "conditions" && (
-      <Section title={t("conditions")}>
+      <Section title={t("conditions")} help={t("help_conditions")}>
         <Field label={t("visibility_by_lang")} htmlFor="hs-langs" hint="es, en (vacio = todos)">
           <Input
             id="hs-langs"
@@ -1573,11 +1579,19 @@ function MarkdownField({ id, value, onChange, rows, disabled, placeholder, autoF
   );
 }
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }): React.ReactNode {
+function Section({ title, hint, help, children }: { title: string; hint?: string; help?: string; children: React.ReactNode }): React.ReactNode {
   return (
     <details open className="group rounded-xl border border-[var(--anda-border)] bg-[var(--anda-bg)] shadow-sm">
       <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--anda-text-dim)] transition-colors hover:text-[var(--anda-text)]">
-        {title}
+        <span className="flex items-center gap-1.5">
+          {title}
+          {/* El icono abre la ayuda sin plegar la sección */}
+          {help != null && (
+            <span className="normal-case tracking-normal" onClick={(e) => e.preventDefault()}>
+              <HelpTip text={help} label={title} />
+            </span>
+          )}
+        </span>
         <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </span>
@@ -1729,7 +1743,7 @@ function QuizEditor({ content, canEdit, onChange }: {
       <Field label="Feedback incorrecto" htmlFor="qz-fw">
         <Input id="qz-fw" value={String(content.feedbackWrong ?? "")} disabled={!canEdit} onChange={(e) => onChange({ feedbackWrong: e.target.value })} />
       </Field>
-      <Switch id="qz-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => onChange({ gate: v })} label={t("gate")} />
+      <Switch id="qz-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => onChange({ gate: v })} label={t("gate")} help={t("help_quiz_gate")} />
       <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("gate_hint")}</p>
     </div>
   );

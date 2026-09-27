@@ -78,7 +78,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
                 if (!langs.includes(e.target.value)) s.langs = [e.target.value, ...langs];
               })} />
           </Field>
-          <Field label={t("start_scene")} htmlFor="ts-start">
+          <Field label={t("start_scene")} htmlFor="ts-start" help={t("help_start_scene")}>
             {/* Sin opción vacía, un tour sin escena elegida aparentaba tener la
                 primera marcada, pero no guardaba nada. */}
             <Select
@@ -96,7 +96,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
               ))}
             </Select>
           </Field>
-          <Field label={t("intro_effect")} htmlFor="ts-intro">
+          <Field label={t("intro_effect")} htmlFor="ts-intro" help={t("help_intro_effect")}>
             <Select id="ts-intro" value={String(settings.intro ?? "none")} disabled={!canEdit} onChange={(e) => patch((s) => { s.intro = e.target.value; })}>
               <option value="none">{t("intro_none")}</option>
               <option value="littlePlanet">{t("intro_littleplanet")}</option>
@@ -481,7 +481,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       <section className="anda-bloque p-5">
         <h2 className="mb-4 text-[15px] font-semibold">{t("quiz_settings")}</h2>
         <div className="flex flex-wrap items-end gap-4">
-          <Field label={t("passing_score")} htmlFor="qz-pass">
+          <Field label={t("passing_score")} htmlFor="qz-pass" help={t("help_passing_score")}>
             <Input id="qz-pass" type="number" className="max-w-24" value={quiz.passingScore != null ? String(quiz.passingScore) : ""} disabled={!canEdit}
               onChange={(e) => patch((s) => { s.quiz = { ...(s.quiz as object), passingScore: e.target.value === "" ? undefined : parseInt(e.target.value, 10) }; })} />
           </Field>
@@ -565,7 +565,7 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             }}
           />
         </Field>
-        <Field label={`${t("variables")} (JSON)`} htmlFor="vars-json" hint='{"puerta_abierta": false, "puntos": 0}'>
+        <Field label={`${t("variables")} (JSON)`} htmlFor="vars-json" hint='{"puerta_abierta": false, "puntos": 0}' help={t("help_variables")}>
           <Textarea
             id="vars-json"
             rows={2}
