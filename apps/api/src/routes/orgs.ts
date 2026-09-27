@@ -9,6 +9,7 @@ import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
 import { orgQuota } from "../lib/quota.js";
+import { orgPlanActive } from "../lib/capabilities.js";
 import { INHERITED_KEYS, propagateOrgDefaults, type OrgDefaults } from "../lib/defaults.js";
 
 const roleSchema = z.enum(["admin", "editor", "collaborator", "reader"]);
@@ -146,7 +147,8 @@ export function orgRoutes(): Hono<AppEnv> {
     const projectsRow = await db
       .select({ total: sql<number>`count(*)` })
       .from(projects)
-      .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt)));
+      // El tour de ejemplo no cuenta en la cuota
+      .where(and(eq(projects.orgId, orgId), isNull(projects.deletedAt), eq(projects.isSample, false)));
     const quota = await orgQuota(db, c.get("config"), org);
     return c.json({
       quotaBytes: quota.quotaBytes,
@@ -156,6 +158,8 @@ export function orgRoutes(): Hono<AppEnv> {
       plan: quota.plan,
       fromPlan: quota.fromPlan,
       ownerId: quota.ownerId,
+      /** Instancia alojada sin plan vigente: editar, republicar y subir piden plan. */
+      planLocked: !(await orgPlanActive(db, c.get("config"), orgId)),
     });
   });
 

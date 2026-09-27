@@ -5,9 +5,11 @@ import type { Me } from "./stores";
 /**
  * Medición del embudo en la instancia alojada: Plausible y atribución.
  *
- * Solo tres eventos, sin datos personales: `registro` (la primera vez que
- * existe la cuenta local), `prueba_inicio` (si esa cuenta arranca en prueba)
- * y `pago` con el plan (cuando el plan de Clerk pasa de nada a algo). Lo que
+ * Cuatro eventos, sin datos personales: `registro` (la primera vez que
+ * existe la cuenta local), `prueba_inicio` (si esa cuenta arranca en prueba),
+ * `primer_publicado` (la primera vez que publica un recorrido suyo, que es
+ * la activación) y `pago` con el plan (cuando el plan de Clerk pasa de nada
+ * a algo). Lo que
  * ya se ha contado se apunta en localStorage por usuario para no repetirlo
  * al recargar. En el self-host no hay Plausible ni Clerk: nada de esto corre.
  */
@@ -96,6 +98,24 @@ export async function sendPendingAttribution(me: Me, storage: Storage = localSto
   } catch {
     // se reintenta en la siguiente carga
   }
+}
+
+/**
+ * Primera publicación: la API dice si es la primera de esta persona
+ * (`firstForUser`); aquí se evita contarla dos veces si se reintenta. Solo
+ * en la instancia alojada. Devuelve si se ha enviado el evento.
+ */
+export function reportFirstPublish(
+  me: Me | null,
+  firstForUser: boolean | undefined,
+  deps: Pick<GrowthDeps, "storage" | "track">,
+): boolean {
+  if (firstForUser !== true || me?.user == null || me.billing?.mode !== "clerk") return false;
+  const clave = `andarama:primer-publicado:${me.user.id}`;
+  if (deps.storage.getItem(clave) != null) return false;
+  deps.storage.setItem(clave, "1");
+  deps.track("primer_publicado");
+  return true;
 }
 
 /** Todo lo que hay que hacer al saber quién soy: eventos y atribución. */

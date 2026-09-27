@@ -193,6 +193,8 @@ export const projects = sqliteTable(
     settingsJson: text("settings_json").notNull().default("{}"),
     /** Este proyecto es una plantilla reutilizable. */
     isTemplate: integer("is_template", { mode: "boolean" }).notNull().default(false),
+    /** Tour de ejemplo clonado al dar de alta (instancia alojada): no cuenta en la cuota. */
+    isSample: integer("is_sample", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by").notNull(),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -387,6 +389,10 @@ export const publications = sqliteTable(
     placeLat: real("place_lat"),
     placeLng: real("place_lng"),
     galleryLang: text("gallery_lang"),
+    /** Un administrador aprobó la ficha: solo entonces se lista en /explorar/. */
+    galleryApproved: integer("gallery_approved", { mode: "boolean" }).notNull().default(false),
+    /** Cuándo se revisó la ficha; sin aprobar y con fecha = rechazada. */
+    galleryReviewedAt: integer("gallery_reviewed_at"),
     /** Clave en el almacenamiento de la portada capturada al publicar, si la hay. */
     posterKey: text("poster_key"),
     publishedAt: integer("published_at").notNull(),

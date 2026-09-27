@@ -12,6 +12,7 @@ import { audit, getSettings, saveSettings } from "../lib/helpers.js";
 import { createCoupons, normalizeCouponCode } from "../lib/coupons.js";
 import { PLANS, type PlanSlug } from "../lib/plans.js";
 import { attributionCsv, type Attribution } from "../lib/attribution.js";
+import { bumpGalleryGeneration, galleryInfo, galleryStatus } from "./publish.js";
 
 /** Slugs de plan que se pueden conceder a mano o por cupón. */
 const PLAN_SLUGS = Object.keys(PLANS) as [PlanSlug, ...PlanSlug[]];
@@ -351,6 +352,56 @@ export function adminRoutes(): Hono<AppEnv> {
     await db.update(projects).set({ status: "draft", updatedAt: nowMs() }).where(eq(projects.id, projectId));
     await audit(c, "admin.unpublish", "project", projectId, { slug: pub.slug });
     return c.json({ ok: true });
+  });
+
+  // ------- Moderación de la galería (/explorar/) -------
+
+  /** Fichas de la galería por estado: pendientes (por defecto), aprobadas o rechazadas. */
+  r.get("/gallery", async (c) => {
+    const db = c.get("db");
+    const status = z.enum(["pending", "approved", "rejected"]).catch("pending").parse(c.req.query("status"));
+    const rows = await db
+      .select({ pub: publications, title: projects.title, orgId: projects.orgId, orgName: orgs.name, authorEmail: users.email })
+      .from(publications)
+      .innerJoin(projects, eq(publications.projectId, projects.id))
+      .innerJoin(orgs, eq(projects.orgId, orgs.id))
+      .leftJoin(users, eq(publications.publishedBy, users.id))
+      .where(eq(publications.inGallery, true))
+      .orderBy(desc(publications.publishedAt));
+    return c.json(
+      rows
+        .filter(({ pub }) => galleryStatus(pub) === status)
+        .map(({ pub, title, orgId, orgName, authorEmail }) => ({
+          projectId: pub.projectId,
+          slug: pub.slug,
+          title,
+          orgId,
+          orgName,
+          authorEmail,
+          visibility: pub.visibility,
+          publishedAt: pub.publishedAt,
+          reviewedAt: pub.galleryReviewedAt,
+          hasPoster: pub.posterKey != null,
+          gallery: galleryInfo(pub),
+        })),
+    );
+  });
+
+  /** Aprobar o rechazar una ficha. Rechazarla no despublica el recorrido: solo lo saca de la galería. */
+  r.post("/gallery/:projectId/:decision", async (c) => {
+    const db = c.get("db");
+    const decision = z.enum(["approve", "reject"]).parse(c.req.param("decision"));
+    const projectId = c.req.param("projectId");
+    const pub = (await db.select().from(publications).where(eq(publications.projectId, projectId)).limit(1))[0];
+    if (pub == null) throw notFound("El proyecto no está publicado");
+    if (!pub.inGallery) throw badRequest("Esa publicación no pide ficha en la galería");
+    await db
+      .update(publications)
+      .set({ galleryApproved: decision === "approve", galleryReviewedAt: nowMs() })
+      .where(eq(publications.projectId, projectId));
+    await bumpGalleryGeneration(c.get("runtime").kv);
+    await audit(c, decision === "approve" ? "admin.gallery_approve" : "admin.gallery_reject", "project", projectId, { slug: pub.slug });
+    return c.json({ ok: true, status: decision === "approve" ? "approved" : "rejected" });
   });
 
   // ------- Cola de trabajos -------

@@ -25,7 +25,7 @@ const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
       <h1>{t(lang, `${k}.h1`)}</h1>
       <p class="lead">{t(lang, `${k}.lead`)}</p>
       <div class="acciones" style="margin-top: 24px">
-        <a class="btn" href="https://app.andarama.com/plan?plan=aula" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
+        <a class="btn" href="https://app.andarama.com/register?plan=aula" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
         <a class="btn btn--fantasma" href={`${pagePath(lang, "home")}#precios`}>{t(lang, `${k}.cta.secundario`)}</a>
       </div>
       <p class="susurro">{t(lang, "comunes.prueba")}</p>
@@ -42,7 +42,7 @@ const bloques = tv<{ titulo: string; texto: string }[]>(lang, `${k}.bloques`);
       <h2>{t(lang, `${k}.cta.titulo`)}</h2>
       <p>{t(lang, `${k}.cta.texto`)}</p>
       <div class="acciones">
-        <a class="btn" href="https://app.andarama.com/plan?plan=aula" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
+        <a class="btn" href="https://app.andarama.com/register?plan=aula" data-cta="registro">{t(lang, `${k}.cta.boton`)}</a>
         <a class="btn btn--fantasma" href={pagePath(lang, "formacion")}>{t(lang, "nav.formacion")}</a>
       </div>
     </section>

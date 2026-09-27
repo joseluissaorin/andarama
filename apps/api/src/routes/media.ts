@@ -9,6 +9,8 @@ import { orgQuota } from "../lib/quota.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { requireOrgRole } from "../lib/authz.js";
+import { requireActivePlan } from "../lib/capabilities.js";
+import { templateOrgIds } from "../lib/templates.js";
 import { guessContentType } from "./projects.js";
 import { audit, getSettings, mimeAllowedForKind, sanitizeSvgServer, sniffMime } from "../lib/helpers.js";
 
@@ -79,6 +81,8 @@ export function mediaRoutes(): Hono<AppEnv> {
     const runtime = c.get("runtime");
     const body = createSchema.parse(await c.req.json());
     await requireOrgRole(db, body.orgId, auth.user, "collaborator");
+    // Al caducar la prueba no se sube nada más (lo subido se queda)
+    await requireActivePlan(db, c.get("config"), body.orgId);
 
     const settings = await getSettings(db);
     if (body.bytes > settings.maxUploadMb * 1024 * 1024) {
@@ -481,6 +485,10 @@ async function ownedMedia(
   const db = c.get("db");
   const row = (await db.select().from(media).where(eq(media.id, mediaId)).limit(1))[0];
   if (row == null || row.deletedAt != null) throw notFound("Medio no encontrado");
+  // Los medios de la organización Plantillas se reutilizan sin copiar en el
+  // tour de ejemplo y en los proyectos hechos desde una plantilla: se leen
+  // desde cualquier cuenta, pero solo se tocan desde la suya
+  if (minRole === "reader" && (await templateOrgIds(db, c.get("config"))).has(row.orgId)) return row;
   await requireOrgRole(db, row.orgId, auth.user, minRole);
   return row;
 }

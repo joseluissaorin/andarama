@@ -86,4 +86,4 @@ Los números de Matterport son los orientativos de arriba; los demás están com
 
 ## En resumen
 
-Matterport cobra por alojar espacios 3D, al año, con la salida cerrada. Es caro para lo que la mayoría necesita y adecuado para quien necesita medir. Si lo que quieres es un recorrido 360 que sea tuyo, las alternativas cuestan entre cero y unos cientos al año, y la [prueba de Andarama](https://app.andarama.com) dura catorce días sin tarjeta.
+Matterport cobra por alojar espacios 3D, al año, con la salida cerrada. Es caro para lo que la mayoría necesita y adecuado para quien necesita medir. Si lo que quieres es un recorrido 360 que sea tuyo, las alternativas cuestan entre cero y unos cientos al año, y la [prueba de Andarama](https://app.andarama.com/register) dura catorce días sin tarjeta.

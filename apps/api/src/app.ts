@@ -23,6 +23,7 @@ import { liveRoutes } from "./routes/live.js";
 import { aiRoutes } from "./routes/ai.js";
 import { billingRoutes } from "./routes/billing.js";
 import { galleryApiRoutes, galleryPageRoutes } from "./routes/gallery.js";
+import { onboardingRoutes } from "./routes/onboarding.js";
 import { createClerkVerifier, type ClerkVerifier } from "./lib/clerk.js";
 import { effectivePlan, planCapabilities, planName } from "./lib/plans.js";
 import { attributionSchema, hasAttribution } from "./lib/attribution.js";
@@ -128,6 +129,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/live", liveRoutes(opts.createLiveRoom ?? null));
   api.route("/ai", aiRoutes(opts.getAi ?? (() => null)));
   api.route("/billing", billingRoutes());
+  api.route("/me/onboarding", onboardingRoutes());
   // Galería pública: listado y ficha, sin sesión
   api.route("/gallery", galleryApiRoutes());
   api.route("/", analyticsRoutes());

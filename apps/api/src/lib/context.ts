@@ -35,6 +35,12 @@ export interface AppConfig {
    * Sin esta clave la instancia usa sus cuentas propias, que es el self-host.
    */
   clerk?: import("./clerk.js").ClerkConfig;
+  /**
+   * Plantillas del operador: el tour de ejemplo que se clona al dar de alta
+   * y las plantillas por sector de «Nuevo proyecto» (SAMPLE_PROJECT_ID y
+   * TEMPLATE_PROJECTS). Sin ellas, ni ejemplo ni sección de plantillas.
+   */
+  templates?: import("./templates.js").TemplatesConfig;
 }
 
 export type UserRow = typeof users.$inferSelect;

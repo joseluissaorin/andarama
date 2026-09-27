@@ -114,4 +114,6 @@
   //     Clerk, como en andarama.com; sin ellas, cuentas propias sin planes)
   //   CLERK_JWT_KEY / CLERK_AUTHORIZED_PARTIES (opcional; verificación sin red
   //     y orígenes admitidos)
+  //   SAMPLE_PROJECT_ID (opcional; tour de ejemplo que se clona a cada cuenta nueva)
+  //   TEMPLATE_PROJECTS (opcional; plantillas por sector, "sector:id" separados por comas)
 }

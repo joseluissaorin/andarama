@@ -10,7 +10,7 @@ Andarama es de código abierto bajo EUPL-1.2. **El plan gratuito es montárselo 
 | Plan | Precio | Recorridos | Medios | Qué añade |
 |---|---|---|---|---|
 | **Andar** | 2 $ al mes | 1 | 5 GB | Lo básico para un recorrido |
-| **Aula** | 39 € al año (Clerk cobra 42 $) | hasta 5 | 10 GB | Código de clase, quiz con nota y escape room |
+| **Aula** | 42 $ al año por docente | hasta 5 | 10 GB | Código de clase, quiz con nota y escape room |
 | **Paseo** | 20 $ al mes o 200 $ al año | hasta 10 | 50 GB | Más recorridos y más espacio |
 | **Excursión** | 500 $ al año | hasta 500 | 100 GB | Sin insignia, dominio propio |
 | **Formación** | 99 $ al mes o 990 $ al año | hasta 100 | 200 GB | SCORM, LTI 1.3, sin insignia, dominio propio, equipo, factura con datos fiscales |
@@ -28,7 +28,8 @@ Quien crea una cuenta en andarama.com sin elegir plan tiene **catorce días de p
 
 - La prueba empieza al crearse la cuenta local (la primera vez que el Studio habla con la API con un token de Clerk) y queda en la columna `trial_ends_at` del usuario. Quien llega ya con un plan no la necesita y no la tiene; el administrador de la instancia tampoco.
 - Mientras dura, la página **Plan** del Studio dice «Prueba gratuita: quedan N días» y ofrece elegir plan. La API la devuelve como plan efectivo `prueba` en `GET /api/v1/billing/me`, junto con `trialEndsAt` y `trialDaysLeft`.
-- **Al caducar, lo creado se conserva.** La cuota pasa a cero (como quien no tiene plan): se puede mirar, editar y exportar lo que hay, y lo publicado sigue publicado; solo hace falta un plan para crear más.
+- **Al caducar, lo publicado sigue en línea y exportar sigue libre.** El recorrido publicado se sigue sirviendo con la insignia, y exportarlo (ZIP, `.andarama`) no pide nada: es la promesa. Lo demás pide plan: editar el contenido (escenas, puntos, ajustes, título, traducciones), publicar o republicar, restaurar una versión publicada y subir medios responden `403` con `code: "plan_required"` y `trialEnded: true`. Ordenar en carpetas y etiquetas, mirar, comentar y despublicar siguen libres.
+- En el Studio, una franja encima de todo cuenta los días que quedan; al caducar, el tablero explica qué sigue funcionando y el editor abre en solo lectura con un aviso. `GET /projects/:id` y `GET /orgs/:id/usage` devuelven `planLocked`.
 - Un cupón canjeado durante la prueba concede su plan sin más: la prueba no cuenta como plan previo.
 - El administrador puede alargarla o retirarla desde `PATCH /api/v1/admin/users/:id` con `trialEndsAt` (epoch en milisegundos, o `null`).
 
@@ -129,7 +130,26 @@ No hace falta para el self-host, pero cualquiera puede repetir el montaje:
 | `CLERK_SECRET_KEY` | Clave secreta; verifica los tokens y consulta el perfil al dar de alta |
 | `CLERK_JWT_KEY` | Opcional. Clave pública PEM para verificar sin red |
 | `CLERK_AUTHORIZED_PARTIES` | Opcional. Orígenes admitidos separados por comas; por defecto, la URL pública y su subdominio `app.` |
+| `SAMPLE_PROJECT_ID` | Opcional. Id del proyecto que se clona como tour de ejemplo a cada cuenta nueva |
+| `TEMPLATE_PROJECTS` | Opcional. Plantillas por sector de «Nuevo proyecto»: `sector:id` separados por comas (sectores con nombre: `escape_room`, `prl`, `museo`, `campus`, `inmobiliaria`) |
 
-4. Aplica las migraciones `0007_clerk_billing`, `0008_coupons` y `0009_trial_attribution` (el arranque en Node y `pnpm deploy:cloudflare` lo hacen solos).
+4. Aplica las migraciones `0007_clerk_billing`, `0008_coupons`, `0009_trial_attribution` y `0014_activation` (el arranque en Node y `pnpm deploy:cloudflare` lo hacen solos).
 
 Con las dos primeras variables definidas la instancia pasa a modo Clerk; sin ellas, sigue con sus cuentas propias.
+
+## Tour de ejemplo y plantillas por sector
+
+El primer minuto de una cuenta nueva no debería ser una pantalla vacía. El operador guarda en una organización propia («Plantillas») unos cuantos recorridos terminados y los señala con dos variables:
+
+- `SAMPLE_PROJECT_ID`: al dar de alta a alguien (con Clerk), se le clona ese recorrido en su organización. Queda marcado como ejemplo (`is_sample`), lleva la insignia «Ejemplo» en el tablero, se abre solo la primera vez y **no cuenta en la cuota**.
+- `TEMPLATE_PROJECTS`: la lista de plantillas que «Nuevo proyecto» ofrece por sector, por ejemplo `escape_room:abc,prl:def,museo:ghi,campus:jkl,inmobiliaria:mno`. Un id sin sector también vale; se muestra con su título. Un proyecto hecho desde una plantilla sí cuenta en la cuota.
+
+En los dos casos **los medios no se copian**: las escenas clonadas siguen apuntando a los panoramas de la organización Plantillas, así que cualquier cuenta puede leerlos (nunca modificarlos ni borrarlos). Por eso no conviene borrar medios de esa organización mientras haya clones que los usen. Si una variable falta o el proyecto ya no existe, no pasa nada: ni ejemplo ni sección de plantillas.
+
+## Primeros pasos
+
+El tablero y el editor enseñan una lista de cuatro pasos: subir una foto 360, añadir un punto, publicar y compartir. Los tres primeros se deducen de lo que la persona ya ha hecho (el tour de ejemplo no cuenta); compartir se apunta al copiar el enlace o el código de inserción. El progreso y el cierre de la lista se guardan en la cuenta (`GET` y `POST /api/v1/me/onboarding`). La primera publicación propia manda a Plausible el evento `primer_publicado`.
+
+## Moderación de la galería
+
+Una ficha de la galería pública (`/explorar/`) solo se lista, y solo entra en `sitemap-tours.xml`, cuando la aprueba un administrador de la instancia. Al publicar con ficha nueva, o al cambiar sus textos, la ficha queda pendiente y, si la instancia tiene correo configurado, se avisa a los administradores. La pestaña **Galería** del panel de administración enseña las pendientes, las aprobadas y las rechazadas, con su texto, su portada y quién la envió (`GET /api/v1/admin/gallery?status=pending|approved|rejected`, `POST /api/v1/admin/gallery/:projectId/approve|reject`). Rechazar una ficha no despublica el recorrido. Republicar el contenido sin tocar la ficha conserva la revisión, y lo que publica un administrador entra aprobado. Las fichas que ya estaban en la galería antes de la moderación se dieron por aprobadas en la migración `0014_activation`.

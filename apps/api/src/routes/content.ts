@@ -8,6 +8,7 @@ import { newId, nowMs } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
+import { requireActivePlan } from "../lib/capabilities.js";
 
 const HOTSPOT_TYPES = [
   "navigation", "text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf",
@@ -52,6 +53,8 @@ async function editableProject(c: Parameters<typeof projectAccess>[0] extends ne
   requireScope(auth, "projects:write");
   const access = await projectAccess(c.get("db"), projectId, auth.user);
   if (!access.canEdit) throw forbidden();
+  // Al caducar la prueba el borrador queda de solo lectura
+  await requireActivePlan(c.get("db"), c.get("config"), access.project.orgId);
   return { project: access.project };
 }
 
