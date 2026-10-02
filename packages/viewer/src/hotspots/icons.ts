@@ -361,7 +361,8 @@ export const DEFAULT_ICON_BY_TYPE: Record<HotspotType, string> = {
   polygon: "pentagon",
   tooltip: "message-square",
   link: "external-link",
-  state: "door-open",
+  // El mismo icono que la paleta del Studio (interruptor: cambia una variable)
+  state: "toggle-left",
   treasure: "gem",
 };
 
