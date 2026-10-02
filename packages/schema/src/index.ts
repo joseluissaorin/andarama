@@ -4,3 +4,4 @@ export * from "./validate.js";
 export * from "./migrate.js";
 export * from "./defaults.js";
 export * from "./langs.js";
+export * from "./quiz.js";

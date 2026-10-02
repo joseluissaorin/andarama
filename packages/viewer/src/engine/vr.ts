@@ -1,4 +1,5 @@
-import type { Hotspot } from "@andarama/schema";
+import type { Hotspot, QuizHotspot, QuizQuestion } from "@andarama/schema";
+import { isQuizAnswerCorrect, quizQuestionPoints, quizQuestions } from "@andarama/schema";
 import { XrRenderer, downscaleForTexture } from "./xr/render.js";
 import { XrInput, isTrackedPointer, type XrPointer } from "./xr/input.js";
 import { GazeDwell, gazeHitRadius } from "./xr/gaze.js";
@@ -112,7 +113,7 @@ export interface VrCallbacks {
   navigationBlock?(): VrNavigationBlock | null;
   /** Hotspots que actúan sin panel: enlace, estado, polígono. */
   onDirectAction(hotspot: VrHotspot): void;
-  onQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[]): void;
+  onQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[], questionId?: string): void;
   /** Contenido que se continúa fuera de VR: se abre al terminar la sesión. */
   onExternalRequest(url: string): void;
   onExit(): void;
@@ -752,9 +753,14 @@ export class VRManager {
         this.closePanel();
         return;
       case "prev":
-        this.panelState.index = Math.max(0, this.panelState.index - 1);
+        if (hs.type === "quiz") this.goToQuizQuestion(hs, this.panelState.index - 1);
+        else this.panelState.index = Math.max(0, this.panelState.index - 1);
         break;
       case "next": {
+        if (hs.type === "quiz") {
+          this.goToQuizQuestion(hs, this.panelState.index + 1);
+          break;
+        }
         const items = (hs.hotspot as { items?: unknown[] }).items ?? [];
         this.panelState.index = Math.min(Math.max(0, items.length - 1), this.panelState.index + 1);
         break;
@@ -787,8 +793,9 @@ export class VRManager {
       default:
         if (zone.id.startsWith("opt:")) {
           const optionId = zone.id.slice(4);
-          const quiz = hs.hotspot as { kind?: string };
-          if (this.panelState.answered) break;
+          const quiz = this.currentQuizQuestion(hs);
+          if (this.panelState.answered || quiz == null) break;
+          this.panelState.wrongHint = false;
           if (quiz.kind === "multiple") {
             if (this.panelState.selected.has(optionId)) this.panelState.selected.delete(optionId);
             else this.panelState.selected.add(optionId);
@@ -801,15 +808,58 @@ export class VRManager {
     this.panelDirty = true;
   }
 
+  /** Pregunta que enseña ahora el panel de quiz (la única, en la forma heredada). */
+  private currentQuizQuestion(hs: VrHotspot): QuizQuestion | null {
+    if (hs.type !== "quiz") return null;
+    const preguntas = quizQuestions(hs.hotspot as QuizHotspot);
+    return preguntas[Math.min(this.panelState.index, preguntas.length - 1)] ?? null;
+  }
+
+  /**
+   * Cambia de pregunta (o al resumen, índice = número de preguntas). Las ya
+   * comprobadas se enseñan como quedaron; las demás, en blanco.
+   */
+  private goToQuizQuestion(hs: VrHotspot, index: number): void {
+    const preguntas = quizQuestions(hs.hotspot as QuizHotspot);
+    if (preguntas.length <= 1) return;
+    const st = this.panelState;
+    const todas = preguntas.every((q) => st.quizResults.has(q.id));
+    const max = todas ? preguntas.length : preguntas.length - 1;
+    st.index = Math.max(0, Math.min(max, index));
+    const pregunta = preguntas[st.index];
+    const hecho = pregunta != null ? st.quizResults.get(pregunta.id) : undefined;
+    st.selected = new Set(hecho?.selected ?? []);
+    st.wrongHint = false;
+    st.answered = hecho != null;
+    st.correct = hecho?.correct === true;
+  }
+
+  /**
+   * Comprueba la pregunta actual con los mismos intentos que el visor plano:
+   * con intentos ilimitados se puede probar hasta acertar; con intentos
+   * limitados, agotarlos la deja terminada (cuenta como fallo). Solo las
+   * respuestas terminadas llegan al visor.
+   */
   private checkQuiz(hs: VrHotspot): void {
-    const quiz = hs.hotspot as { options?: { id: string; correct?: boolean }[]; points?: number };
-    const options = quiz.options ?? [];
-    const correctIds = new Set(options.filter((o) => o.correct === true).map((o) => o.id));
-    const picked = this.panelState.selected;
-    const correct = picked.size === correctIds.size && [...picked].every((id) => correctIds.has(id));
-    this.panelState.answered = true;
-    this.panelState.correct = correct;
-    this.callbacks.onQuizAnswer(hs.id, correct, quiz.points ?? 1, [...picked]);
+    const pregunta = this.currentQuizQuestion(hs);
+    const st = this.panelState;
+    if (pregunta == null || st.answered || st.selected.size === 0) return;
+    const picked = [...st.selected];
+    const correct = isQuizAnswerCorrect(pregunta, picked);
+    const tries = (st.quizTries.get(pregunta.id) ?? 0) + 1;
+    st.quizTries.set(pregunta.id, tries);
+    const max = (hs.hotspot as QuizHotspot).attempts ?? 0;
+    const finished = correct || (max > 0 && tries >= max);
+    if (!finished) {
+      st.wrongHint = true;
+      st.selected = new Set();
+      return;
+    }
+    st.wrongHint = false;
+    st.answered = true;
+    st.correct = correct;
+    st.quizResults.set(pregunta.id, { selected: new Set(picked), correct });
+    this.callbacks.onQuizAnswer(hs.id, correct, quizQuestionPoints(pregunta), picked, pregunta.id);
   }
 
   // -----------------------------------------------------------------------

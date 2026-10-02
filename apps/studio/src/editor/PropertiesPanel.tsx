@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  ArrowDown,
   ArrowUp,
   ArrowUpRight,
   Bold,
   ChevronLeft,
   ChevronRight,
+  Copy,
   Crosshair,
   Flag,
   Heading2,
@@ -25,6 +27,15 @@ import { areaOfScene, areasOf, assignScene, createArea } from "./areas";
 import { getCurrentEditorView, highlightHotspot, setEditorView, setPlacementMode } from "./ScenesView";
 import { ArrivalsPanel } from "./ArrivalsPanel";
 import { readSectionOpen, writeSectionOpen } from "./sectionState";
+import {
+  addQuestion,
+  duplicateQuestion,
+  editorQuestions,
+  moveQuestion,
+  patchQuestion,
+  removeQuestion,
+  type EditorQuizQuestion,
+} from "./quizQuestions";
 import { findMediaRename, type MediaRenameOffer } from "./mediaRename";
 import { MediaRenameOfferCard } from "./MediaRenameOfferCard";
 import { DocsLink, docsUrl } from "./DocsLink";
@@ -998,43 +1009,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           <>
             <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("quiz_one_per_hotspot")}</p>
             <DocsLink page="quiz" />
-            <QuizEditor content={content} canEdit={canEdit} onChange={setContent} />
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!canEdit}
-              onClick={() => {
-                // Otra pregunta = otro marcador, al lado de este y con la misma
-                // compuerta; se selecciona para rellenarla de seguido
-                const id = clientId();
-                const pos = readJson<{ yaw?: number; pitch?: number }>(hotspot.positionJson, {});
-                editor.apply((draft) => {
-                  draft.hotspots.push({
-                    id,
-                    sceneId: scene.id,
-                    type: "quiz",
-                    positionJson: JSON.stringify({ yaw: (pos.yaw ?? 0) + 0.18, pitch: pos.pitch ?? 0 }),
-                    styleJson: null,
-                    contentJson: JSON.stringify({
-                      question: "",
-                      kind: "single",
-                      options: [
-                        { id: "a", text: "", correct: true },
-                        { id: "b", text: "" },
-                      ],
-                      points: content.points ?? 1,
-                      altText: "Pregunta",
-                      ...(content.gate === true ? { gate: true } : {}),
-                    }),
-                    conditionsJson: null,
-                    sort: draft.hotspots.filter((h) => h.sceneId === scene.id).length,
-                  });
-                });
-                editor.select(scene.id, id);
-              }}
-            >
-              <Plus className="h-4 w-4" /> {t("quiz_add_question")}
-            </Button>
+            <QuizEditor hotspotId={hotspot.id} content={content} canEdit={canEdit} onChange={setContent} />
           </>
         )}
         {hotspot.type === "polygon" && (
@@ -1763,61 +1738,173 @@ function LabelLength({ value, tooltip = false }: { value: string; tooltip?: bool
   );
 }
 
-function QuizEditor({ content, canEdit, onChange }: {
+/**
+ * Quiz: una o varias preguntas en el mismo marcador, como tarjetas plegables
+ * (añadir, duplicar, eliminar, subir y bajar). Mientras haya una sola
+ * pregunta de las de antes se editan los campos sueltos; al añadir otra, el
+ * quiz pasa a `questions` (ver quizQuestions.ts).
+ */
+function QuizEditor({ hotspotId, content, canEdit, onChange }: {
+  hotspotId: string;
   content: Record<string, any>;
   canEdit: boolean;
   onChange: (patch: Record<string, unknown>) => void;
 }): React.ReactNode {
   const t = useT();
-  const options = (content.options as { id: string; text: string; correct?: boolean }[]) ?? [];
+  const questions = editorQuestions(content, hotspotId);
+  // Abierta de entrada la primera; la que se añade o duplica se abre sola
+  const [open, setOpen] = useState<Set<string>>(() => new Set(questions[0] != null ? [questions[0].id] : []));
+  const toggle = (id: string, value: boolean): void =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (value) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  const varias = questions.length > 1;
   return (
     <div className="space-y-3">
-      <Field label={t("question")} htmlFor="qz-q">
-        <Textarea id="qz-q" rows={2} value={String(content.question ?? "")} disabled={!canEdit} onChange={(e) => onChange({ question: e.target.value })} />
+      <div className="space-y-2">
+        {questions.map((q, i) => (
+          <QuizQuestionCard
+            key={q.id}
+            q={q}
+            index={i}
+            count={questions.length}
+            open={open.has(q.id) || !varias}
+            collapsible={varias}
+            canEdit={canEdit}
+            onToggle={(v) => toggle(q.id, v)}
+            onPatch={(patch) => onChange(patchQuestion(content, hotspotId, i, patch))}
+            onDuplicate={() => {
+              const id = clientId().slice(0, 8);
+              onChange(duplicateQuestion(content, hotspotId, i, id));
+              toggle(id, true);
+            }}
+            onDelete={() => onChange(removeQuestion(content, hotspotId, i))}
+            onMove={(delta) => onChange(moveQuestion(content, hotspotId, i, delta))}
+          />
+        ))}
+      </div>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={!canEdit}
+        onClick={() => {
+          // La pregunta nueva va en este mismo marcador; si era de una sola
+          // pregunta, la de antes pasa a ser la primera de la lista
+          const id = clientId().slice(0, 8);
+          onChange(addQuestion(content, hotspotId, id));
+          setOpen(new Set([id]));
+        }}
+      >
+        <Plus className="h-4 w-4" /> {t("quiz_add_question")}
+      </Button>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label={t("attempts")} htmlFor="qz-att">
+          <Input id="qz-att" type="number" min="0" value={String(content.attempts ?? 0)} disabled={!canEdit} onChange={(e) => onChange({ attempts: num(e.target.value, 0) })} />
+        </Field>
+        <Field label={t("quiz_pass_score")} htmlFor="qz-pass-score" help={t("help_quiz_pass_score")}>
+          <Input id="qz-pass-score" type="number" min="0" max="100" placeholder="100" value={content.passScore != null ? String(content.passScore) : ""} disabled={!canEdit}
+            onChange={(e) => {
+              const v = e.target.value.trim();
+              onChange({ passScore: v === "" ? undefined : Math.min(100, Math.max(0, num(v, 100))) });
+            }} />
+        </Field>
+      </div>
+      <Switch id="qz-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => onChange({ gate: v })} label={t("gate")} help={t("help_quiz_gate")} />
+      <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("gate_hint")}</p>
+    </div>
+  );
+}
+
+function QuizQuestionCard({ q, index, count, open, collapsible, canEdit, onToggle, onPatch, onDuplicate, onDelete, onMove }: {
+  q: EditorQuizQuestion;
+  index: number;
+  count: number;
+  open: boolean;
+  collapsible: boolean;
+  canEdit: boolean;
+  onToggle: (open: boolean) => void;
+  onPatch: (patch: Partial<EditorQuizQuestion>) => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  onMove: (delta: -1 | 1) => void;
+}): React.ReactNode {
+  const t = useT();
+  // La primera conserva los id de siempre (#qz-q, #qz-kind…)
+  const sfx = index === 0 ? "" : `-${index}`;
+  const options = q.options ?? [];
+  const titulo = t("quiz_question_n", { n: String(index + 1) });
+  const resumen = q.question.trim() !== "" ? q.question.trim() : t("quiz_question_untitled");
+  const campos = (
+    <div className="space-y-3">
+      <Field label={t("question")} htmlFor={`qz-q${sfx}`}>
+        <Textarea id={`qz-q${sfx}`} rows={2} value={q.question} disabled={!canEdit} onChange={(e) => onPatch({ question: e.target.value })} />
       </Field>
-      <Field label={t("type")} htmlFor="qz-kind">
-        <Select id="qz-kind" value={String(content.kind ?? "single")} disabled={!canEdit} onChange={(e) => onChange({ kind: e.target.value })}>
-          <option value="single">Opcion unica</option>
-          <option value="multiple">Opcion multiple</option>
-          <option value="boolean">Verdadero/Falso</option>
-        </Select>
-      </Field>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label={t("type")} htmlFor={`qz-kind${sfx}`}>
+          <Select id={`qz-kind${sfx}`} value={q.kind} disabled={!canEdit} onChange={(e) => onPatch({ kind: e.target.value as EditorQuizQuestion["kind"] })}>
+            <option value="single">{t("quiz_kind_single")}</option>
+            <option value="multiple">{t("quiz_kind_multiple")}</option>
+            <option value="boolean">{t("quiz_kind_boolean")}</option>
+          </Select>
+        </Field>
+        <Field label={t("points")} htmlFor={`qz-pts${sfx}`}>
+          <Input id={`qz-pts${sfx}`} type="number" min="0" value={String(q.points ?? 1)} disabled={!canEdit} onChange={(e) => onPatch({ points: num(e.target.value, 1) })} />
+        </Field>
+      </div>
       <Field label={t("options")}>
         <div className="space-y-1.5">
           {options.map((o, i) => (
             <div key={o.id} className="flex items-center gap-1.5">
               <input type="checkbox" checked={o.correct === true} disabled={!canEdit} aria-label={t("correct")}
-                onChange={(e) => onChange({ options: options.map((x, j) => (j === i ? { ...x, correct: e.target.checked } : content.kind === "single" && e.target.checked ? { ...x, correct: false } : x)) })} />
-              <Input value={o.text} disabled={!canEdit} aria-label={`Opcion ${i + 1}`}
-                onChange={(e) => onChange({ options: options.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)) })} />
+                onChange={(e) => onPatch({ options: options.map((x, j) => (j === i ? { ...x, correct: e.target.checked } : q.kind === "single" && e.target.checked ? { ...x, correct: false } : x)) })} />
+              <Input value={o.text} disabled={!canEdit} aria-label={t("quiz_option_n", { n: String(i + 1) })}
+                onChange={(e) => onPatch({ options: options.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)) })} />
               <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("delete")} disabled={!canEdit}
-                onClick={() => onChange({ options: options.filter((_, j) => j !== i) })}>
+                onClick={() => onPatch({ options: options.filter((_, j) => j !== i) })}>
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
           ))}
           <Button size="sm" variant="outline" disabled={!canEdit}
-            onClick={() => onChange({ options: [...options, { id: clientId().slice(0, 8), text: "" }] })}>
+            onClick={() => onPatch({ options: [...options, { id: clientId().slice(0, 8), text: "" }] })}>
             <Plus className="h-4 w-4" /> {t("add_option")}
           </Button>
         </div>
       </Field>
-      <div className="grid grid-cols-2 gap-2">
-        <Field label={t("points")} htmlFor="qz-pts">
-          <Input id="qz-pts" type="number" min="0" value={String(content.points ?? 1)} disabled={!canEdit} onChange={(e) => onChange({ points: num(e.target.value, 1) })} />
-        </Field>
-        <Field label={t("attempts")} htmlFor="qz-att">
-          <Input id="qz-att" type="number" min="0" value={String(content.attempts ?? 0)} disabled={!canEdit} onChange={(e) => onChange({ attempts: num(e.target.value, 0) })} />
-        </Field>
+      <Field label={t("quiz_feedback_correct")} htmlFor={`qz-fc${sfx}`}>
+        <Input id={`qz-fc${sfx}`} value={q.feedbackCorrect ?? ""} disabled={!canEdit} onChange={(e) => onPatch({ feedbackCorrect: e.target.value || undefined })} />
+      </Field>
+      <Field label={t("quiz_feedback_wrong")} htmlFor={`qz-fw${sfx}`}>
+        <Input id={`qz-fw${sfx}`} value={q.feedbackWrong ?? ""} disabled={!canEdit} onChange={(e) => onPatch({ feedbackWrong: e.target.value || undefined })} />
+      </Field>
+    </div>
+  );
+  if (!collapsible) return campos;
+  return (
+    <div className="rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface-2)]" data-quiz-question={index + 1}>
+      <div className="flex items-center gap-1 px-2 py-1.5">
+        <button type="button" className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1.5 py-1 text-left" aria-expanded={open} onClick={() => onToggle(!open)}>
+          <ChevronRight className={`h-3.5 w-3.5 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} aria-hidden />
+          <span className="shrink-0 text-[12.5px] font-semibold">{titulo}</span>
+          <span className="truncate text-[12.5px] text-[var(--anda-text-dim)]">{resumen}</span>
+        </button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("quiz_move_up")} title={t("quiz_move_up")} disabled={!canEdit || index === 0} onClick={() => onMove(-1)}>
+          <ArrowUp className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("quiz_move_down")} title={t("quiz_move_down")} disabled={!canEdit || index === count - 1} onClick={() => onMove(1)}>
+          <ArrowDown className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("quiz_duplicate_question")} title={t("quiz_duplicate_question")} disabled={!canEdit} onClick={onDuplicate}>
+          <Copy className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={t("quiz_delete_question")} title={t("quiz_delete_question")} disabled={!canEdit} onClick={onDelete}>
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
       </div>
-      <Field label="Feedback correcto" htmlFor="qz-fc">
-        <Input id="qz-fc" value={String(content.feedbackCorrect ?? "")} disabled={!canEdit} onChange={(e) => onChange({ feedbackCorrect: e.target.value })} />
-      </Field>
-      <Field label="Feedback incorrecto" htmlFor="qz-fw">
-        <Input id="qz-fw" value={String(content.feedbackWrong ?? "")} disabled={!canEdit} onChange={(e) => onChange({ feedbackWrong: e.target.value })} />
-      </Field>
-      <Switch id="qz-gate" checked={content.gate === true} disabled={!canEdit} onCheckedChange={(v) => onChange({ gate: v })} label={t("gate")} help={t("help_quiz_gate")} />
-      <p className="text-xs leading-relaxed text-[var(--anda-text-dim)]">{t("gate_hint")}</p>
+      {open && <div className="border-t border-[var(--anda-border)] px-3 pb-3 pt-2.5">{campos}</div>}
     </div>
   );
 }

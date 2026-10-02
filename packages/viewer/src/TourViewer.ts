@@ -10,7 +10,12 @@ import type {
   TransitionSpec,
   ViewParams,
 } from "@andarama/schema";
-import { DEFAULT_TRANSITION, DEFAULT_VIEW, migrateTour, resolveL10n } from "@andarama/schema";
+import {
+  DEFAULT_TRANSITION,
+  DEFAULT_VIEW,
+  migrateTour,
+  resolveL10n,
+} from "@andarama/schema";
 import type {
   QuizStateEvent,
   TourViewerOptions,
@@ -32,6 +37,7 @@ import { marzipanoToVr } from "./engine/xr/math.js";
 import { switchMarzipanoScene } from "./engine/xr/transition.js";
 import { SceneMarkers } from "./hotspots/markers.js";
 import { pendingGates, type GateReason } from "./engine/gate.js";
+import { QuizTracker } from "./engine/quiz.js";
 import { AnalyticsClient } from "./analytics.js";
 
 interface LoadedScene {
@@ -73,14 +79,13 @@ export class TourViewer {
   private gateReason: GateReason | null = null;
   /** Formularios ya enviados (en esta visita o, si son de un solo envío, antes). */
   private formsSent = new Set<string>();
-  /** Preguntas acertadas alguna vez: son las que abren la compuerta. */
-  private quizCleared = new Set<string>();
   /** Estado del último fotograma del pase de proyección. */
   private projectionState: ProjectionFrameState = { mode: "rectilinear", mix: 0, settled: true };
   private videoRaf = 0;
   private sceneEnterTime = 0;
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private quizAnswers = new Map<string, { correct: boolean; points: number; sceneId: string; selected?: string[] }>();
+  /** Respuestas, nota y marcadores de quiz superados (los que abren su compuerta). */
+  private readonly quiz: QuizTracker;
   private treasureFound = new Set<string>();
   private fpsWindow: number[] = [];
   private lastFrame = 0;
@@ -95,6 +100,7 @@ export class TourViewer {
 
   constructor(private options: TourViewerOptions) {
     this.tour = migrateTour(options.tour);
+    this.quiz = new QuizTracker(this.tour);
     this.container = options.container;
     this.baseUrl = options.baseUrl ?? "";
     this.reducedMotion =
@@ -204,7 +210,7 @@ export class TourViewer {
         }
         this.activateHotspot(hs.hotspot, null);
       },
-      onQuizAnswer: (hotspotId, correct, points, selected) => this.reportQuizAnswer(hotspotId, correct, points, selected),
+      onQuizAnswer: (hotspotId, correct, points, selected, questionId) => this.reportQuizAnswer(hotspotId, correct, points, selected, questionId),
       onExternalRequest: (url) => {
         this.pendingExternalUrl = url;
       },
@@ -937,21 +943,25 @@ export class TourViewer {
    * marcadas: viajan con el resultado para que el servidor recalcule la nota
    * con el tour publicado en vez de fiarse de la que manda el navegador.
    */
-  reportQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[]): void {
+  reportQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[], questionId?: string): void {
     const sceneId = this.currentId ?? "";
-    // La nota es la de la primera respuesta terminada: volver a abrir la
-    // pregunta sirve para abrir la compuerta, no para mejorar la puntuación.
-    if (!this.quizAnswers.has(hotspotId)) {
-      this.quizAnswers.set(hotspotId, { correct, points: correct ? points : 0, sceneId, selected });
-    }
-    if (correct) {
-      this.quizCleared.add(hotspotId);
-      this.vars.set(`quiz_${hotspotId}`, true);
-    }
+    // Sin pregunta explícita es la primera (la única en la forma heredada).
+    // El marcador queda superado con todas sus preguntas acertadas, o con la
+    // nota mínima del marcador si la tiene.
+    const r = this.quiz.record(hotspotId, correct, points, {
+      ...(selected != null ? { selected } : {}),
+      ...(questionId != null ? { questionId } : {}),
+    });
+    if (r.hotspotPassed) this.vars.set(`quiz_${hotspotId}`, true);
     this.emit("quizChange", this.quizState());
-    this.analytics.track({ event: "quiz", sceneId, hotspotId, meta: { correct } });
+    this.analytics.track({
+      event: "quiz",
+      sceneId,
+      hotspotId,
+      meta: { correct, ...(r.questionId !== hotspotId ? { questionId: r.questionId } : {}) },
+    });
     // La compuerta se recalcula entera: con varias preguntas con compuerta en
-    // la escena, solo se abre cuando todas están acertadas.
+    // la escena, solo se abre cuando todas están superadas.
     const scene = this.currentScene();
     if (scene != null) this.updateGate(scene);
   }
@@ -968,34 +978,30 @@ export class TourViewer {
     return this.formsSent.has(hotspotId);
   }
 
+  /** Respuesta ya terminada de una pregunta (la primera, la que puntúa). */
+  quizAnswer(hotspotId: string, questionId?: string): { correct: boolean; points: number; selected?: string[] } | null {
+    return this.quiz.answer(hotspotId, questionId);
+  }
+
+  /** ¿Está superado el quiz de este marcador (todas acertadas o nota mínima)? */
+  quizPassed(hotspotId: string): boolean {
+    return this.quiz.passed(hotspotId);
+  }
+
+  /**
+   * ¿Ha dejado de retener la compuerta de este quiz? Superado, o con intentos
+   * limitados y todas sus preguntas terminadas (la nota cuenta como fallo).
+   */
+  quizGateOpen(hotspotId: string): boolean {
+    return this.quiz.gateOpen(hotspotId);
+  }
+
+  /**
+   * Estado del quiz del tour. Cada pregunta cuenta por separado: un marcador
+   * con cinco preguntas suma cinco al total y sus puntos al máximo.
+   */
   quizState(): QuizStateEvent {
-    let total = 0;
-    let maxScore = 0;
-    const detail: QuizStateEvent["detail"] = [];
-    for (const scene of this.tour.scenes) {
-      for (const hs of scene.hotspots) {
-        if (hs.type === "quiz") {
-          total++;
-          maxScore += hs.points ?? 1;
-          const answer = this.quizAnswers.get(hs.id);
-          if (answer != null) {
-            detail.push({
-              hotspotId: hs.id,
-              sceneId: scene.id,
-              correct: answer.correct,
-              points: answer.points,
-              ...(answer.selected != null ? { selected: answer.selected } : {}),
-            });
-          }
-        }
-      }
-    }
-    const score = detail.reduce((a, d) => a + d.points, 0);
-    const passing = this.tour.quiz?.passingScore;
-    const answered = detail.length;
-    const passed =
-      answered < total ? null : passing != null ? (maxScore > 0 ? (score / maxScore) * 100 >= passing : true) : null;
-    return { score, maxScore, answered, total, passed, detail };
+    return this.quiz.state();
   }
 
   /**
@@ -1016,11 +1022,11 @@ export class TourViewer {
 
   /**
    * Al entrar en una escena, y cada vez que se responde, se envía o se
-   * encuentra algo, se recalcula qué la retiene: preguntas con compuerta sin
-   * acertar, formularios con compuerta sin enviar y tesoros con compuerta sin
-   * encontrar. La salida se abre solo cuando no queda ninguno. Agotar los
-   * intentos de una pregunta no la abre: el panel ofrece volver a intentarlo
-   * (la nota ya quedó fijada con la primera respuesta).
+   * encuentra algo, se recalcula qué la retiene: quizzes con compuerta sin
+   * superar, formularios con compuerta sin enviar y tesoros con compuerta sin
+   * encontrar. La salida se abre solo cuando no queda ninguno. Con intentos
+   * limitados, agotarlos en todas las preguntas del marcador también la abre
+   * (la nota cuenta como fallo); con intentos ilimitados hay que acertar.
    */
   private updateGate(scene: Scene): void {
     if (this.options.editMode === true) {
@@ -1028,7 +1034,7 @@ export class TourViewer {
       return;
     }
     const pendiente = pendingGates(scene.hotspots, {
-      quizCorrect: (id) => this.quizCleared.has(id),
+      quizCorrect: (id) => this.quiz.gateOpen(id),
       formSent: (id) => this.formsSent.has(id),
       treasureFound: (id) => this.treasureFound.has(id),
     })[0];

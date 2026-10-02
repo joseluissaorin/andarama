@@ -445,17 +445,48 @@ export interface QuizOption {
   correct?: boolean;
 }
 
-export interface QuizHotspot extends HotspotBase {
-  type: "quiz";
+/** Una pregunta de un hotspot de quiz con varias preguntas. */
+export interface QuizQuestion {
+  id: string;
   question: L10n;
   kind: "single" | "multiple" | "boolean";
   options: QuizOption[];
   feedbackCorrect?: L10n;
   feedbackWrong?: L10n;
+  /** Puntos de la pregunta si se acierta (1 por defecto). */
   points?: number;
-  /** Compuerta: no permite avanzar (deshabilita navegacion saliente) hasta acertar. */
+}
+
+/**
+ * Quiz: una o varias preguntas en un mismo marcador.
+ *
+ * Forma heredada (una pregunta): `question`, `kind`, `options`, `feedback*`
+ * y `points` en el propio hotspot. Forma nueva: `questions`, con una o más
+ * preguntas; si `questions` trae alguna, los campos sueltos se ignoran. Las
+ * preguntas se leen siempre con `quizQuestions(hs)`, que normaliza las dos.
+ */
+export interface QuizHotspot extends HotspotBase {
+  type: "quiz";
+  /** Varias preguntas en el mismo marcador (se muestran de una en una). */
+  questions?: QuizQuestion[];
+  question?: L10n;
+  kind?: "single" | "multiple" | "boolean";
+  options?: QuizOption[];
+  feedbackCorrect?: L10n;
+  feedbackWrong?: L10n;
+  points?: number;
+  /**
+   * Compuerta: no permite avanzar (deshabilita navegacion saliente) hasta
+   * superar el quiz del marcador. Superado = todas sus preguntas acertadas,
+   * salvo que `passScore` fije otra nota mínima.
+   */
   gate?: boolean;
-  /** Numero de intentos permitidos (0 = ilimitados). */
+  /**
+   * Nota mínima (porcentaje 0-100 de los puntos del marcador) para darlo por
+   * superado y abrir la compuerta. Sin ella hay que acertar todas.
+   */
+  passScore?: number;
+  /** Numero de intentos permitidos por pregunta (0 = ilimitados). */
   attempts?: number;
 }
 

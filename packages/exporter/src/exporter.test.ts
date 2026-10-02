@@ -13,6 +13,7 @@ import {
   renderAccessibleHtml,
   renderImsManifest,
   renderIndexHtml,
+  renderScormAdapter,
   runExport,
   stripDownloads,
   ZipWriter,
@@ -364,6 +365,47 @@ describe("plantillas", () => {
     const m2004 = renderImsManifest({ version: "2004", identifier: "x", title: "T", files: ["index.html"] });
     expect(m2004).toContain("2004 3rd Edition");
     expect(m2004).toContain('adlcp:scormType="sco"');
+  });
+});
+
+describe("adaptador SCORM con quiz de varias preguntas", () => {
+  /** Ejecuta el adaptador contra un LMS falso y devuelve lo que le escribió. */
+  function lms(version: "1.2" | "2004", passing: number | null, quiz: Record<string, unknown>): Map<string, string> {
+    const valores = new Map<string, string>();
+    const oyentes = new Map<string, (e: unknown) => void>();
+    const api =
+      version === "2004"
+        ? { Initialize: () => "true", SetValue: (k: string, v: string) => valores.set(k, v), Commit: () => "true", Terminate: () => "true" }
+        : { LMSInitialize: () => "true", LMSSetValue: (k: string, v: string) => valores.set(k, v), LMSCommit: () => "true", LMSFinish: () => "true" };
+    const win: Record<string, unknown> = {
+      addEventListener: (tipo: string, fn: (e: unknown) => void) => oyentes.set(tipo, fn),
+    };
+    win[version === "2004" ? "API_1484_11" : "API"] = api;
+    win.parent = win;
+    new Function("window", "document", renderScormAdapter(version, passing))(win, { readyState: "complete" });
+    oyentes.get("andarama:state")!({ detail: { scenesVisited: 1, scenesTotal: 3, quiz } });
+    return valores;
+  }
+
+  it("el máximo es la suma de todas las preguntas, no de los marcadores", () => {
+    // Un marcador con tres preguntas (1 + 2 + 1 puntos), todas respondidas
+    const quiz = { score: 3, maxScore: 4, answered: 3, total: 3, passed: true, detail: [] };
+    const v2004 = lms("2004", 70, quiz);
+    expect(v2004.get("cmi.score.max")).toBe("4");
+    expect(v2004.get("cmi.score.raw")).toBe("3");
+    expect(v2004.get("cmi.score.scaled")).toBe("0.7500");
+    expect(v2004.get("cmi.success_status")).toBe("passed");
+    expect(v2004.get("cmi.completion_status")).toBe("completed");
+    const v12 = lms("1.2", 80, quiz);
+    expect(v12.get("cmi.core.score.max")).toBe("4");
+    expect(v12.get("cmi.core.lesson_status")).toBe("failed");
+  });
+
+  it("con preguntas sin responder no hay aprobado ni suspenso", () => {
+    const v = lms("2004", 50, { score: 1, maxScore: 4, answered: 1, total: 3, passed: null, detail: [] });
+    expect(v.get("cmi.score.max")).toBe("4");
+    expect(v.has("cmi.success_status")).toBe(false);
+    expect(v.get("cmi.completion_status")).toBe("incomplete");
   });
 });
 

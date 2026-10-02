@@ -9,11 +9,13 @@ import type {
   Model3dHotspot,
   PdfHotspot,
   QuizHotspot,
+  QuizQuestion,
   TextHotspot,
   TreasureHotspot,
   VideoFileHotspot,
   WebHotspot,
 } from "@andarama/schema";
+import { isQuizAnswerCorrect, quizQuestionPoints, quizQuestions } from "@andarama/schema";
 import { resolveUrl, TourViewer } from "@andarama/viewer";
 import { el, trapFocus } from "./dom.js";
 import { renderMarkdown } from "./markdown.js";
@@ -1046,16 +1048,91 @@ function comparePanoramas(hs: CompareHotspot, ctx: PanelContext): PanelContent {
 
 function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
   const body = el("div", { className: "anda-panel__body" });
-  const question = el("div", { className: "anda-prose" });
-  question.innerHTML = renderMarkdown(ctx.viewer.text(hs.question));
-  body.appendChild(question);
+  const preguntas = quizQuestions(hs);
+  if (preguntas.length <= 1) {
+    // Una sola pregunta: el panel de siempre, sin paginación
+    const unica = preguntas[0];
+    if (unica != null) body.appendChild(quizQuestionView(hs, unica, `quiz-${hs.id}`, ctx, () => {}));
+    return { body };
+  }
 
-  const multi = hs.kind === "multiple";
-  const name = `quiz-${hs.id}`;
-  const options = [...hs.options];
+  // Varias preguntas: una por página, con anterior/siguiente y un resumen al
+  // final («Has acertado 4 de 5»). Cada página conserva su estado al volver.
+  const progress = el("p", { className: "anda-quiz__progress", "aria-live": "polite" });
+  const pages = preguntas.map((q) =>
+    quizQuestionView(hs, q, `quiz-${hs.id}-${q.id}`, ctx, () => {
+      renderNav();
+    }),
+  );
+  const summary = el("div", { className: "anda-quiz__summary", role: "status" });
+  const prev = el("button", { className: "anda-primary-btn anda-quiz__nav-btn", type: "button", text: ctx.t("quiz_prev") });
+  const next = el("button", { className: "anda-primary-btn anda-quiz__nav-btn", type: "button", text: ctx.t("quiz_next") });
+  const nav = el("div", { className: "anda-quiz__nav" }, prev, next);
+  body.append(progress, ...pages, summary, nav);
+
+  // Si ya se respondieron todas (panel reabierto), se empieza por el resumen
+  const terminada = (i: number): boolean => ctx.viewer.quizAnswer(hs.id, preguntas[i]!.id) != null;
+  let index = preguntas.every((_, i) => terminada(i)) ? preguntas.length : 0;
+
+  function renderSummary(): void {
+    const aciertos = preguntas.filter((q) => ctx.viewer.quizAnswer(hs.id, q.id)?.correct === true).length;
+    summary.replaceChildren(
+      el("p", { className: "anda-quiz__summary-score", text: ctx.t("quiz_summary", { correct: aciertos, total: preguntas.length }) }),
+    );
+    if (hs.gate === true && !ctx.viewer.quizGateOpen(hs.id)) {
+      summary.append(el("p", { text: ctx.t("quiz_gate_message"), style: "margin:6px 0 0;font-size:13px;" }));
+    }
+  }
+
+  function renderNav(): void {
+    const enResumen = index >= preguntas.length;
+    pages.forEach((p, i) => {
+      p.hidden = i !== index;
+    });
+    summary.hidden = !enResumen;
+    if (enResumen) renderSummary();
+    progress.textContent = enResumen ? ctx.t("quiz_summary_title") : ctx.t("quiz_question_of", { n: index + 1, total: preguntas.length });
+    prev.disabled = index === 0;
+    prev.textContent = enResumen ? ctx.t("quiz_review") : ctx.t("quiz_prev");
+    // En la última, «Siguiente» lleva al resumen cuando ya están todas
+    const todas = preguntas.every((_, i) => terminada(i));
+    next.hidden = enResumen;
+    next.disabled = index === preguntas.length - 1 && !todas;
+    next.textContent = index === preguntas.length - 1 ? ctx.t("quiz_see_result") : ctx.t("quiz_next");
+  }
+
+  prev.addEventListener("click", () => {
+    index = index >= preguntas.length ? 0 : Math.max(0, index - 1);
+    renderNav();
+  });
+  next.addEventListener("click", () => {
+    index = Math.min(preguntas.length, index + 1);
+    renderNav();
+  });
+  renderNav();
+  return { body };
+}
+
+/**
+ * Una pregunta: enunciado, opciones, comprobar y feedback. `onFinished` se
+ * llama cuando la pregunta queda terminada (acertada o sin intentos).
+ */
+function quizQuestionView(
+  hs: QuizHotspot,
+  q: QuizQuestion,
+  name: string,
+  ctx: PanelContext,
+  onFinished: () => void,
+): HTMLElement {
+  const page = el("div", { className: "anda-quiz__question" });
+  const question = el("div", { className: "anda-prose" });
+  question.innerHTML = renderMarkdown(ctx.viewer.text(q.question));
+  page.appendChild(question);
+
+  const multi = q.kind === "multiple";
   const optEls: { id: string; input: HTMLInputElement; wrap: HTMLElement; correct: boolean }[] = [];
-  const list = el("div", { role: multi ? "group" : "radiogroup", "aria-label": ctx.viewer.text(hs.question) });
-  for (const opt of options) {
+  const list = el("div", { role: multi ? "group" : "radiogroup", "aria-label": ctx.viewer.text(q.question) });
+  for (const opt of q.options) {
     const input = el("input", { type: multi ? "checkbox" : "radio", name, id: `${name}-${opt.id}` });
     const wrap = el(
       "label",
@@ -1066,20 +1143,19 @@ function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
     list.appendChild(wrap);
     optEls.push({ id: opt.id, input, wrap, correct: opt.correct === true });
   }
-  body.appendChild(list);
+  page.appendChild(list);
 
   let attempts = 0;
   const maxAttempts = hs.attempts ?? 0;
   const check = el("button", { className: "anda-primary-btn", type: "button", text: ctx.t("quiz_check") });
   const feedback = el("div", { role: "status" });
-  body.append(check, feedback);
+  page.append(check, feedback);
 
   check.addEventListener("click", () => {
     const selected = optEls.filter((o) => o.input.checked).map((o) => o.id);
     if (selected.length === 0) return;
     attempts++;
-    const correctIds = optEls.filter((o) => o.correct).map((o) => o.id);
-    const isCorrect = selected.length === correctIds.length && selected.every((s) => correctIds.includes(s));
+    const isCorrect = isQuizAnswerCorrect(q, selected);
     for (const o of optEls) {
       if (o.input.checked) o.wrap.dataset.state = o.correct ? "correct" : "wrong";
       else if (isCorrect && o.correct) o.wrap.dataset.state = "correct";
@@ -1088,36 +1164,22 @@ function quizPanel(hs: QuizHotspot, ctx: PanelContext): PanelContent {
     }
     feedback.className = `anda-quiz__feedback ${isCorrect ? "anda-quiz__feedback--ok" : "anda-quiz__feedback--ko"}`;
     feedback.textContent = isCorrect
-      ? ctx.viewer.text(hs.feedbackCorrect) || ctx.t("quiz_correct")
-      : ctx.viewer.text(hs.feedbackWrong) || ctx.t("quiz_incorrect");
+      ? ctx.viewer.text(q.feedbackCorrect) || ctx.t("quiz_correct")
+      : ctx.viewer.text(q.feedbackWrong) || ctx.t("quiz_incorrect");
     const finished = isCorrect || (maxAttempts > 0 && attempts >= maxAttempts);
     if (finished) {
       check.disabled = true;
       // El visor recalcula la compuerta con todas las preguntas de la escena:
       // acertar esta no abre la salida si otra con compuerta sigue mal.
-      ctx.viewer.reportQuizAnswer(hs.id, isCorrect, hs.points ?? 1, selected);
+      ctx.viewer.reportQuizAnswer(hs.id, isCorrect, quizQuestionPoints(q), selected, q.id);
+      onFinished();
     }
-    if (hs.gate === true && !isCorrect) {
-      // El aviso es el de la pregunta, no el de la narración
+    // El aviso es el de la pregunta, no el de la narración. Solo mientras
+    // quedan intentos: agotados, la pregunta queda terminada (cuenta como
+    // fallo) y deja de retener cuando lo están todas las del marcador.
+    if (hs.gate === true && !isCorrect && !finished) {
       feedback.append(el("p", { text: ctx.t("quiz_gate_message"), style: "margin:6px 0 0;font-size:13px;" }));
-      if (finished) {
-        // Sin intentos y con la salida cerrada: se puede volver a probar. La
-        // nota ya quedó fijada con esta respuesta; esto solo abre la compuerta.
-        const retry = el("button", { className: "anda-primary-btn", type: "button", text: ctx.t("quiz_retry"), style: "margin-top:10px;" });
-        retry.addEventListener("click", () => {
-          attempts = 0;
-          for (const o of optEls) {
-            o.input.checked = false;
-            o.input.disabled = false;
-            delete o.wrap.dataset.state;
-          }
-          check.disabled = false;
-          feedback.replaceChildren();
-          feedback.className = "";
-        });
-        feedback.append(retry);
-      }
     }
   });
-  return { body };
+  return page;
 }

@@ -1,4 +1,5 @@
 import type { Hotspot } from "@andarama/schema";
+import { quizQuestions } from "@andarama/schema";
 
 /**
  * Paneles inmersivos: el contenido de un hotspot dibujado sobre un lienzo 2D
@@ -26,13 +27,19 @@ export interface PanelZone {
 }
 
 export interface PanelState {
-  /** Índice de la galería o página del documento. */
+  /** Índice de la galería, página del documento o pregunta del quiz. */
   index: number;
-  /** Opciones marcadas en un cuestionario. */
+  /** Opciones marcadas en la pregunta actual del cuestionario. */
   selected: Set<string>;
-  /** Respuesta ya comprobada. */
+  /** Respuesta de la pregunta actual ya comprobada. */
   answered: boolean;
   correct: boolean;
+  /** Preguntas terminadas en este panel (para volver a ellas y para el resumen). */
+  quizResults: Map<string, { selected: Set<string>; correct: boolean }>;
+  /** Intentos gastados por pregunta. */
+  quizTries: Map<string, number>;
+  /** El último intento falló y aún quedan intentos (se puede volver a probar). */
+  wrongHint: boolean;
   /** Posición del divisor del comparador [0,1]. */
   compare: number;
   /** Desplazamiento vertical del texto largo. */
@@ -40,7 +47,7 @@ export interface PanelState {
 }
 
 export function newPanelState(): PanelState {
-  return { index: 0, selected: new Set(), answered: false, correct: false, compare: 0.5, scroll: 0 };
+  return { index: 0, selected: new Set(), answered: false, correct: false, quizResults: new Map(), quizTries: new Map(), wrongHint: false, compare: 0.5, scroll: 0 };
 }
 
 export interface PanelContext {
@@ -177,18 +184,40 @@ export function drawPanel(
       break;
     }
     case "quiz": {
+      // Varias preguntas: una por página, con ‹ › y un resumen al final
+      // (índice = número de preguntas). Una sola: el panel de siempre.
+      const preguntas = quizQuestions(hotspot);
+      const varias = preguntas.length > 1;
+      if (varias && state.index >= preguntas.length) {
+        const aciertos = preguntas.filter((q) => state.quizResults.get(q.id)?.correct === true).length;
+        ctx.fillStyle = FG;
+        ctx.font = "600 44px system-ui, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(ctxApi.t("quiz_summary", { correct: aciertos, total: preguntas.length }), PANEL_WIDTH / 2, 330);
+        addPrevNext(ctx, zones, ctxApi, { next: false, prevLabel: ctxApi.t("quiz_prev") });
+        break;
+      }
+      const pregunta = preguntas[Math.min(state.index, preguntas.length - 1)];
+      if (pregunta == null) break;
+      let y = 176;
+      if (varias) {
+        ctx.fillStyle = FG_DIM;
+        ctx.font = "600 26px system-ui, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(ctxApi.t("quiz_question_of", { n: state.index + 1, total: preguntas.length }), body.x, 150);
+        y = 200;
+      }
       ctx.fillStyle = FG;
       ctx.font = "500 34px system-ui, sans-serif";
       ctx.textAlign = "left";
-      const qLines = wrapText(ctx, stripMarkdown(ctxApi.text(hotspot.question)), body.w);
-      let y = 176;
-      for (const line of qLines.slice(0, 3)) {
+      const qLines = wrapText(ctx, stripMarkdown(ctxApi.text(pregunta.question)), body.w);
+      for (const line of qLines.slice(0, varias ? 2 : 3)) {
         ctx.fillText(line, body.x, y);
         y += 46;
       }
-      const options = hotspot.options ?? [];
+      const options = pregunta.options ?? [];
       y += 12;
-      for (const opt of options.slice(0, 5)) {
+      for (const opt of options.slice(0, varias ? 4 : 5)) {
         const picked = state.selected.has(opt.id);
         const height = 72;
         let fill = picked ? "rgba(163,95,209,0.35)" : "rgba(255,255,255,0.07)";
@@ -207,6 +236,12 @@ export function drawPanel(
         y += height + 14;
       }
       if (!state.answered) {
+        if (state.wrongHint) {
+          ctx.fillStyle = BAD;
+          ctx.font = "600 28px system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(ctxApi.t("quiz_incorrect"), PANEL_WIDTH / 2, PANEL_HEIGHT - 128);
+        }
         drawButton(ctx, PANEL_WIDTH / 2 - 130, PANEL_HEIGHT - 104, 260, 64, ctxApi.t("quiz_check"), true);
         zones.push({ id: "check", x: (PANEL_WIDTH / 2 - 130) / PANEL_WIDTH, y: (PANEL_HEIGHT - 104) / PANEL_HEIGHT, w: 260 / PANEL_WIDTH, h: 64 / PANEL_HEIGHT, label: ctxApi.t("quiz_check") });
       } else {
@@ -214,6 +249,17 @@ export function drawPanel(
         ctx.font = "600 34px system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(state.correct ? ctxApi.t("quiz_correct") : ctxApi.t("quiz_incorrect"), PANEL_WIDTH / 2, PANEL_HEIGHT - 72);
+      }
+      if (varias) {
+        // El último «›» lleva al resumen, solo con todas comprobadas
+        const todas = preguntas.every((q) => state.quizResults.has(q.id));
+        const ultima = state.index >= preguntas.length - 1;
+        addPrevNext(ctx, zones, ctxApi, {
+          prev: state.index > 0,
+          next: !ultima || todas,
+          prevLabel: ctxApi.t("quiz_prev"),
+          nextLabel: ultima ? ctxApi.t("quiz_see_result") : ctxApi.t("quiz_next"),
+        });
       }
       break;
     }
@@ -328,11 +374,20 @@ export function panelImageUrls(hotspot: Hotspot, ctxApi: Pick<PanelContext, "url
 
 // --- primitivas de dibujo ---
 
-function addPrevNext(ctx: CanvasRenderingContext2D, zones: PanelZone[], api: PanelContext): void {
-  drawButton(ctx, 44, PANEL_HEIGHT - 110, 150, 64, "‹", true);
-  drawButton(ctx, PANEL_WIDTH - 194, PANEL_HEIGHT - 110, 150, 64, "›", true);
-  zones.push({ id: "prev", x: 44 / PANEL_WIDTH, y: (PANEL_HEIGHT - 110) / PANEL_HEIGHT, w: 150 / PANEL_WIDTH, h: 64 / PANEL_HEIGHT, label: api.t("gallery_prev") });
-  zones.push({ id: "next", x: (PANEL_WIDTH - 194) / PANEL_WIDTH, y: (PANEL_HEIGHT - 110) / PANEL_HEIGHT, w: 150 / PANEL_WIDTH, h: 64 / PANEL_HEIGHT, label: api.t("gallery_next") });
+function addPrevNext(
+  ctx: CanvasRenderingContext2D,
+  zones: PanelZone[],
+  api: PanelContext,
+  opts: { prev?: boolean; next?: boolean; prevLabel?: string; nextLabel?: string } = {},
+): void {
+  if (opts.prev !== false) {
+    drawButton(ctx, 44, PANEL_HEIGHT - 110, 150, 64, "‹", true);
+    zones.push({ id: "prev", x: 44 / PANEL_WIDTH, y: (PANEL_HEIGHT - 110) / PANEL_HEIGHT, w: 150 / PANEL_WIDTH, h: 64 / PANEL_HEIGHT, label: opts.prevLabel ?? api.t("gallery_prev") });
+  }
+  if (opts.next !== false) {
+    drawButton(ctx, PANEL_WIDTH - 194, PANEL_HEIGHT - 110, 150, 64, "›", true);
+    zones.push({ id: "next", x: (PANEL_WIDTH - 194) / PANEL_WIDTH, y: (PANEL_HEIGHT - 110) / PANEL_HEIGHT, w: 150 / PANEL_WIDTH, h: 64 / PANEL_HEIGHT, label: opts.nextLabel ?? api.t("gallery_next") });
+  }
 }
 
 function addScrollZones(zones: PanelZone[], api: PanelContext): void {

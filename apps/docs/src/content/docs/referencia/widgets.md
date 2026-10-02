@@ -38,7 +38,7 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 
 | Tipo | Qué hace | Campos propios |
 |---|---|---|
-| **Pregunta (quiz)** | Una pregunta por marcador: única/múltiple/verdadero-falso con puntuación, intentos, feedback y compuerta (retiene en la escena hasta acertar) | Ver la [guía de docencia](/docs/usuario/docencia/) |
+| **Pregunta (quiz)** | Una o varias preguntas por marcador, de una en una y con resumen final: única/múltiple/verdadero-falso con puntuación, intentos, feedback, nota mínima y compuerta (retiene en la escena hasta superarlo) | Ver la [guía de docencia](/docs/usuario/docencia/) |
 | **Tesoro** | Objeto escondido que se cuenta al encontrarlo | Texto al encontrarlo, pista, compuerta (no salir de la escena sin encontrarlo). Ver la [guía de docencia](/docs/usuario/docencia/#búsqueda-del-tesoro) |
 | **Formulario** | Campos configurables con anti-spam Turnstile | Título, mensaje de éxito, texto del botón, destino (API, webhook, email) |
 | **Comparador** | Antes/después de dos imágenes con deslizador, o **vista dividida de dos escenas sincronizadas** | Modo, imágenes o escenas, etiquetas |

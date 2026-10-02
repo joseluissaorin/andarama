@@ -48,7 +48,7 @@ export function buildQuizPayload(state: QuizStateEvent, ctx: QuizResultContext):
 /** Huella del resultado: el mismo resultado no se manda dos veces. */
 export function quizSignature(state: QuizStateEvent, participantName?: string | null): string {
   const partes = state.detail
-    .map((d) => `${d.hotspotId}:${d.correct ? 1 : 0}:${(d.selected ?? []).join("+")}`)
+    .map((d) => `${d.hotspotId}${d.questionId != null ? `/${d.questionId}` : ""}:${d.correct ? 1 : 0}:${(d.selected ?? []).join("+")}`)
     .sort()
     .join("|");
   return `${state.score}/${state.maxScore}#${partes}#${participantName?.trim() ?? ""}`;

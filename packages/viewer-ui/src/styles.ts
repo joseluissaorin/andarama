@@ -374,6 +374,11 @@ export const VIEWER_CSS = `
 .anda-quiz__feedback { margin-top: 14px; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 550; }
 .anda-quiz__feedback--ok { background: rgba(53, 201, 142, .14); color: #4fe0a6; border: 1px solid rgba(53, 201, 142, .3); }
 .anda-quiz__feedback--ko { background: rgba(255, 123, 114, .12); color: #ff9d96; border: 1px solid rgba(255, 123, 114, .3); }
+.anda-quiz__progress { margin: 0 0 10px; font-size: 12.5px; font-weight: 600; letter-spacing: .02em; color: var(--u3-fg-dim, inherit); opacity: .85; }
+.anda-quiz__question[hidden], .anda-quiz__summary[hidden], .anda-quiz__nav-btn[hidden] { display: none; }
+.anda-quiz__nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--u3-border); }
+.anda-quiz__summary { padding: 6px 0; }
+.anda-quiz__summary-score { margin: 0; font-size: 18px; font-weight: 650; }
 
 /* ============ Plano de planta / mapa ============ */
 .anda-mappanel { position: absolute; left: 16px; bottom: 78px; width: min(400px, 74vw); background: var(--u3-bg-solid);

@@ -727,6 +727,49 @@ test("la compuerta de una pregunta retiene en la escena hasta acertar", async ({
   await expect.poll(escenaActual, { timeout: 30_000 }).not.toBe(inicial);
 });
 
+test("un quiz con dos preguntas en el mismo marcador se responde de una en una", async ({ page }) => {
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  const projectUrl = page.url().split("?")[0]!;
+  await abrirEscena(page, "Escena E2E");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("button", { name: /añadir hotspot/i }).first().click();
+  await page.locator('[role="dialog"] input').first().fill("quiz");
+  await page.getByRole("button", { name: /^Quiz/ }).first().click();
+  await page.locator(".anda-viewer").first().click({ position: { x: 560, y: 300 } });
+  await page.fill("#hs-label", "Cuestionario E2E");
+  await page.fill("#qz-q", "¿Cuántas islas tiene Canarias?");
+  // La segunda pregunta va en el mismo marcador, no en uno nuevo
+  await page.getByRole("button", { name: "Añadir pregunta", exact: true }).click();
+  const segunda = page.locator('[data-quiz-question="2"]');
+  await expect(segunda).toBeVisible();
+  await page.fill("#qz-q-1", "¿Es el Teide un volcán?");
+  await segunda.getByRole("textbox", { name: "Opción 1" }).fill("Sí");
+  await segunda.getByRole("textbox", { name: "Opción 2" }).fill("No");
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+
+  // En la vista previa se responden de una en una y al final sale el resumen
+  await page.goto(`${projectUrl}?tab=preview`);
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 40_000 });
+  const marcador = page.locator('.anda-hotspot--quiz[aria-label*="Cuestionario E2E"]').first();
+  await expect(marcador).toBeAttached({ timeout: 30_000 });
+  await marcador.dispatchEvent("click");
+  const panel = page.locator(".anda-panel");
+  await expect(panel).toContainText("Pregunta 1 de 2");
+  await expect(panel).toContainText("¿Cuántas islas tiene Canarias?");
+  await panel.locator(".anda-quiz__option:visible").first().click();
+  await panel.getByRole("button", { name: "Comprobar" }).locator("visible=true").click();
+  await panel.getByRole("button", { name: "Siguiente" }).click();
+  await expect(panel).toContainText("Pregunta 2 de 2");
+  await expect(panel).toContainText("¿Es el Teide un volcán?");
+  await panel.locator(".anda-quiz__option:visible").first().click();
+  await panel.getByRole("button", { name: "Comprobar" }).locator("visible=true").click();
+  await panel.getByRole("button", { name: "Ver el resultado" }).click();
+  await expect(panel).toContainText("Has acertado 2 de 2");
+});
+
 async function login(page: Page): Promise<void> {
   if (sessionCookies.length > 0) {
     // Solo las cookies: navegar aqui se pisaba con la navegacion de la prueba

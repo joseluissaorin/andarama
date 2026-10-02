@@ -28,17 +28,23 @@ operador las ha configurado.
 
 ## Quiz
 
-- Cada hotspot de **quiz** es **una pregunta**: enunciado, tipo (única,
-  múltiple o verdadero/falso), opciones, feedback, puntos e intentos (0 =
-  ilimitados). Un cuestionario son varias preguntas repartidas por la escena o
-  por el recorrido (el botón **Añadir otra pregunta** crea la siguiente al
-  lado); el informe final las suma todas.
+- Cada hotspot de **quiz** lleva **una o varias preguntas**: enunciado, tipo
+  (única, múltiple o verdadero/falso), opciones, feedback y puntos de cada
+  una, más los intentos (0 = ilimitados) del marcador. El botón **Añadir
+  pregunta** suma otra al mismo marcador; cada pregunta se puede plegar,
+  duplicar, subir, bajar o eliminar. El visitante las responde de una en una
+  («Pregunta 2 de 5») y al final ve cuántas ha acertado. También se pueden
+  repartir marcadores por la escena o el recorrido: el informe final suma
+  todas las preguntas.
 - La **compuerta** (**Compuerta (no avanzar sin acertar)**) retiene al
-  visitante en la escena hasta que acierta la pregunta: los pasos se ven
-  apagados y, al pulsarlos, se abre la pregunta con el aviso «Responde
-  correctamente para poder avanzar». Fallar o agotar los intentos no abre la
-  compuerta. Si hay varias preguntas con compuerta en la misma escena, hay que
-  acertarlas todas.
+  visitante en la escena hasta que supera el quiz del marcador: acertar todas
+  sus preguntas o, si se ha puesto una **Nota mínima (%)**, llegar a ese
+  porcentaje de sus puntos. Los pasos se ven apagados y, al pulsarlos, se abre
+  el quiz con el aviso «Responde correctamente para poder avanzar». Fallar no
+  abre la compuerta mientras queden intentos; con intentos limitados, agotarlos
+  en todas las preguntas del marcador sí deja salir, aunque cuentan como
+  falladas en la nota. Si hay varios marcadores con compuerta en la misma
+  escena, hay que superarlos todos.
 - En **Ajustes del tour › Cuestionarios**:
   - **Puntuación mínima (%)** para aprobar.
   - **Informe final**: al responder todas las preguntas del recorrido, un

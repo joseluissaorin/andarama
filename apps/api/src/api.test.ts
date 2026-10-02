@@ -236,6 +236,42 @@ describe("flujo critico", () => {
     expect(tour.scenes.find((s) => s.id === sceneA)?.category).toMatchObject({ es: "Planta baja", en: "Ground floor" });
   });
 
+  it("las traducciones de un quiz con varias preguntas llegan a cada pregunta", async () => {
+    const id = "quizMulti-0001";
+    const creado = await call(`/api/v1/projects/${projectId}/scenes/${sceneA}/hotspots`, {
+      method: "POST",
+      body: {
+        id,
+        type: "quiz",
+        position: { yaw: 0.2, pitch: 0 },
+        content: {
+          questions: [
+            { id: "p1", question: "¿Uno?", kind: "single", options: [{ id: "a", text: "Sí", correct: true }, { id: "b", text: "No" }] },
+            { id: "p2", question: "¿Dos?", kind: "boolean", options: [{ id: "v", text: "Verdadero", correct: true }, { id: "f", text: "Falso" }] },
+          ],
+        },
+      },
+    });
+    expect(creado.status).toBe(201);
+    await call(`/api/v1/projects/${projectId}/translations/en`, {
+      method: "PUT",
+      body: [
+        { entity: "hotspot", entityId: id, field: "questions.0.question", value: "One?" },
+        { entity: "hotspot", entityId: id, field: "questions.1.options.0.text", value: "True" },
+      ],
+    });
+    const res = await call(`/api/v1/projects/${projectId}/compile`, { method: "POST", body: {} });
+    const { tour } = (await res.json()) as {
+      tour: { scenes: { id: string; hotspots: { id: string; questions?: { question: unknown; options: { text: unknown }[] }[] }[] }[] };
+    };
+    const hs = tour.scenes.find((s) => s.id === sceneA)!.hotspots.find((h) => h.id === id)!;
+    expect(hs.questions![0]!.question).toMatchObject({ es: "¿Uno?", en: "One?" });
+    expect(hs.questions![1]!.options[0]!.text).toMatchObject({ es: "Verdadero", en: "True" });
+    expect(hs.questions![1]!.question).toBe("¿Dos?");
+    // El resto de pruebas cuenta las preguntas del tour publicado
+    expect((await call(`/api/v1/projects/${projectId}/hotspots/${id}`, { method: "DELETE" })).status).toBeLessThan(300);
+  });
+
   it("gestiona traducciones con export XLIFF", async () => {
     const put = await call(`/api/v1/projects/${projectId}/translations/en`, {
       method: "PUT",

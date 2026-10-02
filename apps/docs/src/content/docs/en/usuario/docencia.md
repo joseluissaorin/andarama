@@ -27,16 +27,23 @@ self-hosted install, templates only appear if the operator has set them up.
 
 ## Quizzes
 
-- Each **quiz** hotspot is **one question**: prompt, type (single choice,
-  multiple choice or true/false), options, feedback, points and attempts (0 =
-  unlimited). A full quiz is several questions spread across a scene or the
-  whole tour (the **Add another question** button places the next one right
-  beside it); the final report adds them all up.
+- Each **quiz** hotspot holds **one or more questions**: prompt, type (single
+  choice, multiple choice or true/false), options, feedback and points for
+  each, plus the marker's attempts (0 = unlimited). The **Add question**
+  button adds another one to the same marker; each question can be collapsed,
+  duplicated, moved up or down, or deleted. Visitors answer them one at a time
+  ("Question 2 of 5") and see how many they got right at the end. You can also
+  spread markers across a scene or the whole tour: the final report adds up
+  every question.
 - The **gate** (**Gate (cannot advance without correct answer)**) keeps the
-  visitor in the scene until they answer correctly. Exits look dimmed, and
-  clicking one opens the question with the prompt "Answer correctly to move
-  on". A wrong answer, or running out of attempts, never opens the gate. If a
-  scene has several gated questions, students have to get all of them right.
+  visitor in the scene until they pass the marker's quiz: every question
+  right or, if a **Pass mark (%)** is set, that share of its points. Exits
+  look dimmed, and clicking one opens the quiz with the prompt "Answer
+  correctly to move on". A wrong answer never opens the gate while attempts
+  remain; with limited attempts, using them all up on every question of the
+  marker does let the student leave, though those questions count as wrong in
+  the grade. If a scene has several gated markers, students have to pass all
+  of them.
 - Under **Tour settings › Quizzes**:
   - **Passing score (%)**.
   - **Final report**: once every question in the tour is answered, a summary
