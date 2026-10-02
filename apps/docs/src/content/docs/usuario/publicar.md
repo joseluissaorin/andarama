@@ -30,9 +30,27 @@ Opciones de visibilidad (§protección de acceso):
 
 Además: fecha de publicación programada y fecha de expiración.
 
-Tras publicar obtienes: URL pública con **deep links** (`#s=escena&y=120&p=-5&f=70`), **código QR**, **código de embebido** responsive y metadatos Open Graph con imagen de la vista inicial.
+Tras publicar obtienes: URL pública con **deep links** (`#s=escena&y=120&p=-5&f=70&v=1`), **código QR**, **código de embebido** responsive y metadatos Open Graph con imagen de la vista inicial.
 
-El código de embebido y el web component se explican en [Embeber un tour](/docs/usuario/embeber/), y los pasos para el aula virtual en [Insertar en Moodle](/docs/usuario/moodle/). Si el recorrido lleva o no la insignia «Hecho con Andarama» depende del plan con el que se publica: véase [La insignia](/docs/usuario/insignia/).
+### Enlaces a una escena y a una vista
+
+Mientras alguien mira el recorrido, el visor va escribiendo en la dirección la
+escena y la orientación. Eso sirve para recargar sin perder la escena, pero
+**no** para fijar la vista: al recargar, se entra con la vista por defecto de la
+escena, la que se ajustó en el editor con «Usar vista actual».
+
+La orientación de un enlace solo se aplica cuando lleva el marcador `v=1`, y
+ese marcador lo pone el botón **Compartir** del visor. Así, quien comparte un
+enlace desde el visor enseña justo lo que está mirando, y una recarga
+cualquiera no pisa la vista que decidiste en el editor.
+
+| El enlace lleva… | Se abre en… |
+|---|---|
+| Nada | La escena inicial, con su vista por defecto |
+| `#s=aula` | La escena `aula`, con su vista por defecto |
+| `#s=aula&y=120&p=-5&f=70&v=1` | La escena `aula`, mirando a esa orientación |
+
+El código de embebido y el web component se explican en [Embeber un tour](/docs/usuario/embeber/), y los pasos para el aula virtual en [Insertar en Moodle](/docs/usuario/moodle/). El diálogo **Compartir** del editor enlaza también esa guía de Moodle. Si el recorrido lleva o no la insignia «Hecho con Andarama» depende del plan con el que se publica: véase [La insignia](/docs/usuario/insignia/).
 
 ### La galería pública de andarama.com
 

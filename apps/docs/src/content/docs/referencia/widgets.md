@@ -1,6 +1,6 @@
 ---
 title: Referencia de widgets (hotspots)
-description: Los 17 tipos de hotspot del visor con todos sus campos y comportamiento.
+description: Los 18 tipos de hotspot del visor con todos sus campos y comportamiento.
 ---
 
 Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, siempre o nunca), **texto alternativo** (obligatorio para publicar sin avisos), **posición** (arrastrable en el editor o en grados), **icono** (elegible de la biblioteca, con tamaño, color, fondo circular y pulso), **escala por distancia** y **condiciones de visibilidad** (idioma, variables de estado, ventana temporal en escenas de vídeo).
@@ -9,9 +9,9 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 
 | Tipo | Qué hace | Campos propios |
 |---|---|---|
-| **Navegación** | Salta a otra escena | Escena destino, modo de entrada (fija/relativa/mirar atrás), transición propia, variante flecha de suelo, icono que aclara el destino (puerta, escaleras, exterior…) |
+| **Navegación** | Salta a otra escena | Escena destino, orientación de llegada (vista por defecto, seguir el camino, esta vista, mirar atrás, seguir mirando igual), transición propia, variante flecha de suelo, icono que aclara el destino (puerta, escaleras, exterior…) |
 | **Enlace** | Abre una URL, teléfono o email | URL, tipo (`url`/`tel`/`mailto`), pestaña nueva |
-| **Estado** | Muta variables del tour | Acciones (`set` con valor, `inc`, `dec`, `toggle`) y salto de escena opcional. Véase [Variables, contador y polígono](/docs/usuario/variables/) |
+| **Acción (variables)** (`state`) | Muta variables del tour; no se ve nada | Cambios (Poner a, Sumar, Restar, Alternar; en el formato, `set`, `inc`, `dec`, `toggle`) y salto de escena opcional. Véase [Variables, acción y polígono](/docs/usuario/variables/) |
 | **Polígono** | Zona activa dibujada sobre el panorama | Contorno redibujable, relleno/borde/opacidad/relleno al pasar, acción (ir a escena, abrir URL, activar otro hotspot). El visor admite también cambiar variables (`setVars`), pero el editor todavía no lo ofrece |
 
 ## Contenido
@@ -39,6 +39,7 @@ Todos los hotspots comparten: **etiqueta** (con visibilidad al pasar el ratón, 
 | Tipo | Qué hace | Campos propios |
 |---|---|---|
 | **Pregunta (quiz)** | Una pregunta por marcador: única/múltiple/verdadero-falso con puntuación, intentos, feedback y compuerta (retiene en la escena hasta acertar) | Ver la [guía de docencia](/docs/usuario/docencia/) |
+| **Tesoro** | Objeto escondido que se cuenta al encontrarlo | Texto al encontrarlo, pista, compuerta (no salir de la escena sin encontrarlo). Ver la [guía de docencia](/docs/usuario/docencia/#búsqueda-del-tesoro) |
 | **Formulario** | Campos configurables con anti-spam Turnstile | Título, mensaje de éxito, texto del botón, destino (API, webhook, email) |
 | **Comparador** | Antes/después de dos imágenes con deslizador, o **vista dividida de dos escenas sincronizadas** | Modo, imágenes o escenas, etiquetas |
 
@@ -69,7 +70,7 @@ contenido se abren en un panel inmersivo dibujado por el propio motor:
 | Tipo | Dentro de las gafas |
 |---|---|
 | Navegación | Teletransporte a la escena destino sin salir de la sesión |
-| Enlace, estado, polígono | Ejecutan su acción directamente |
+| Enlace, acción (variables), polígono | Ejecutan su acción directamente |
 | Texto, tooltip | Panel con el texto y desplazamiento |
 | Imagen | Panel con la imagen ajustada y su pie |
 | Galería | Panel con anterior/siguiente y contador |

@@ -22,24 +22,43 @@ organization:
 
 | Role | Can |
 |---|---|
-| Administrator | Everything: members, quotas, all projects |
-| Editor | Create, edit and publish their own projects and shared ones |
-| Collaborator | Edit shared projects (but not publish) |
-| Reader | View drafts |
+| Administrator | Everything, including the team's people and the organization's settings |
+| Editor | Create, edit and publish any tour in the organization |
+| Collaborator | Edit only the tours they create or that are shared with them, without publishing |
+| Reader | View the organization's tours without changing them |
 
-To invite people and split up the work, see
+People and their roles are managed on the **Team** page in the sidebar; to let
+someone work on a single tour, use the **People** button in the editor.
+Teamwork is included in every plan. See
 [Working as a team](/docs/en/usuario/equipo/).
 
 ## Build your first tour
 
 1. In **Projects**, click **New tour** and give it a title (you can also pick a
-   folder or a template).
+   folder or a template). On andarama.com, the **Start from a template** block
+   offers sample tours by sector, including the **Education** group: an escape
+   room, a graded quiz and a treasure hunt (see
+   [Teaching](/docs/en/usuario/docencia/#start-from-a-template)).
 2. Upload equirectangular panoramas (2:1) in the **Media library**, or straight
    from the editor.
 3. Add scenes by picking a panorama for each one.
 4. Place hotspots by clicking on the panorama.
 5. Click **Publish**. You get a public URL (`/t/your-slug`), a QR code and an
    embed code. See [Publish and share](/docs/en/usuario/publicar/).
+
+## What's new, problems and version
+
+At the bottom of the Studio sidebar there are three small things worth
+knowing about:
+
+- **What's new**: the latest changes, with dates. A dot tells you when there
+  are entries you have not read yet.
+- **Report a problem**: a form to tell us what happened, with an optional
+  screenshot (PNG, JPEG, WebP or GIF, up to 5 MB). The address, project, scene,
+  browser and Studio version are attached automatically, so you do not need to
+  explain them.
+- **The Studio version**, in small print. If you write in for help, quote it:
+  it says exactly which version you have in front of you.
 
 ## Install the Studio as an app
 

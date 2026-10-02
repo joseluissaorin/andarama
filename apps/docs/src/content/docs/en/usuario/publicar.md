@@ -34,8 +34,26 @@ Visibility options:
 You can also schedule a publish date and set an expiry date.
 
 After publishing you get a public URL with **deep links**
-(`#s=scene&y=120&p=-5&f=70`), a **QR code**, a responsive **embed code** and
+(`#s=scene&y=120&p=-5&f=70&v=1`), a **QR code**, a responsive **embed code** and
 Open Graph metadata with an image of the starting view.
+
+### Links to a scene and to a view
+
+While someone looks around the tour, the viewer keeps writing the scene and the
+orientation into the address bar. That lets a reload keep the scene, but it
+does **not** pin the view: after a reload, the scene opens with its default
+view, the one you set in the editor with "Use current view".
+
+The orientation in a link is only applied when it carries the `v=1` marker,
+which is what the viewer's **Share** button adds. That way, sharing a link from
+the viewer shows exactly what you are looking at, and an ordinary reload never
+overrides the view you chose in the editor.
+
+| The link carries… | It opens at… |
+|---|---|
+| Nothing | The start scene, with its default view |
+| `#s=hall` | The `hall` scene, with its default view |
+| `#s=hall&y=120&p=-5&f=70&v=1` | The `hall` scene, facing that orientation |
 
 The embed code and the web component are covered in
 [Embed a tour](/docs/en/usuario/embeber/), and the steps for your LMS in

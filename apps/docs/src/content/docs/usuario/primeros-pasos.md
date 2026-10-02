@@ -1,5 +1,6 @@
 ---
 title: Primeros pasos
+description: Crear una cuenta, los roles del equipo, el primer tour, la barra lateral del Studio, los idiomas y los atajos.
 ---
 
 ## Crear una cuenta
@@ -12,20 +13,37 @@ Cada cuenta pertenece a una o varias **organizaciones**. Los roles por organizac
 
 | Rol | Puede |
 |---|---|
-| Administrador | Todo: miembros, cuotas, todos los proyectos |
-| Editor | Crear, editar y publicar sus proyectos y los compartidos |
-| Colaborador | Editar proyectos compartidos (sin publicar) |
-| Lector | Ver borradores |
+| Administrador | Todo, incluidas las personas del equipo y la configuración de la organización |
+| Editor | Crear, editar y publicar cualquier recorrido de la organización |
+| Colaborador | Editar solo los recorridos que crea o que le comparten, sin publicar |
+| Lector | Ver los recorridos de la organización sin poder cambiarlos |
 
-Para invitar a otras personas y repartir el trabajo, véase [Trabajar en equipo](/docs/usuario/equipo/).
+Las personas y sus roles se gestionan en la página **Equipo** de la barra
+lateral; para dejar a alguien trabajar en un único recorrido está el botón
+**Personas** del editor. El trabajo en equipo está en todos los planes. Véase
+[Trabajar en equipo](/docs/usuario/equipo/).
 
 ## Crear el primer tour
 
-1. En **Proyectos**, pulsa **Nuevo tour** y ponle título (opcionalmente carpeta o plantilla).
+1. En **Proyectos**, pulsa **Nuevo tour** y ponle título (opcionalmente carpeta o plantilla). En andarama.com, el bloque **Empieza con una plantilla** ofrece recorridos de muestra por sector, entre ellos los del grupo **Educación**: un escape room, un quiz evaluable y una búsqueda del tesoro (véase [Docencia](/docs/usuario/docencia/#empezar-con-una-plantilla)).
 2. Sube panoramas equirectangulares (2:1) en **Biblioteca de medios** o directamente desde el editor.
 3. Añade escenas eligiendo cada panorama.
 4. Coloca hotspots haciendo clic sobre el panorama.
 5. Pulsa **Publicar**: obtendrás una URL pública `/t/tu-slug`, código QR y código de embebido. Véase [Publicar y compartir](/docs/usuario/publicar/).
+
+## Novedades, problemas y versión
+
+Al pie de la barra lateral del Studio hay tres cosas pequeñas que conviene
+conocer:
+
+- **Novedades**: lo último que ha cambiado, fechado. Un punto avisa cuando hay
+  entradas que todavía no has leído.
+- **Informar de un problema**: un formulario para contar qué ha pasado, con
+  una captura de pantalla opcional (PNG, JPEG, WebP o GIF de hasta 5 MB). Se
+  adjuntan solos la dirección, el proyecto, la escena, el navegador y la
+  versión del Studio, así que no hace falta explicarlos.
+- **La versión** del Studio, en letra pequeña. Si escribes para pedir ayuda,
+  cítala: dice exactamente qué versión tienes delante.
 
 ## Instalar el Studio como aplicación
 

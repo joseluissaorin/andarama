@@ -1,25 +1,47 @@
 ---
 title: Cómo hacer un escape room
-description: Paso a paso para montar un escape room en un recorrido 360 con variables, contadores, condiciones, tesoros y quiz con compuerta, con un ejemplo de tres salas.
+description: "La plantilla «Escape room: la bodega del castillo» y el paso a paso para montar uno propio con variables, acciones, condiciones, tesoros y quiz con compuerta, con un ejemplo de tres salas."
 ---
 
 Un escape room en Andarama es un recorrido en el que no se puede salir de cada
-sala sin resolver algo. No hay una plantilla de escape room dentro del
-producto: se construye a mano con piezas que ya existen, y con ellas sale un
-juego completo.
+sala sin resolver algo. Hay dos maneras de empezar: copiar la **plantilla**
+que ya viene montada y cambiarla a tu gusto, o construirlo a mano con las
+piezas que se explican en esta página.
+
+## La plantilla «La bodega del castillo»
+
+En andarama.com, al pulsar **Nuevo tour**, el bloque **Empieza con una
+plantilla** ofrece, en el grupo **Educación**, la plantilla **«Escape room: la bodega del castillo»**: un juego de cinco salas
+sobre fotografías con licencia CC0. Te has quedado encerrado en las bodegas de
+un castillo y hay que buscar la llave, encontrar tres tesoros escondidos y
+responder a las preguntas del salón para salir al aire libre. Lleva:
+
+- una variable, `llave`, que abre el paso al sótano;
+- tres tesoros con pista;
+- dos preguntas con compuerta en el salón y una última al aire libre;
+- nota mínima, diploma y pantalla final.
+
+La plantilla se copia a tu cuenta (cuenta como un recorrido de tu cuota) y se
+edita como cualquier otro: cambia los textos, las preguntas o las fotos y
+publícalo. Abrirla en el editor es además la forma más rápida de ver cómo
+encajan las piezas de esta página. En una instalación propia, las plantillas
+aparecen solo si el operador las ha configurado (véase
+[Planes, Clerk y uso razonable](/docs/admin/planes/#tour-de-ejemplo-y-plantillas-por-sector)).
+
+## Las piezas
 
 | Pieza | Qué aporta al juego | Dónde se explica |
 |---|---|---|
 | **Quiz con compuerta** | No se sale de la sala sin acertar la pregunta | [Docencia](/docs/usuario/docencia/) |
 | **Tesoro** | Objetos escondidos que hay que encontrar | [Docencia](/docs/usuario/docencia/) |
-| **Contador/estado** | Cambia variables al pulsarlo: coger una llave, sumar un punto | [Variables, contador y polígono](/docs/usuario/variables/) |
-| **Condiciones** | Un hotspot aparece o desaparece según las variables: la puerta que solo se ve con la llave | [Variables, contador y polígono](/docs/usuario/variables/) |
+| **Acción (variables)** | Cambia variables al pulsarlo: coger una llave, sumar un punto | [Variables, acción y polígono](/docs/usuario/variables/) |
+| **Condiciones** | Un hotspot aparece o desaparece según las variables: la puerta que solo se ve con la llave | [Variables, acción y polígono](/docs/usuario/variables/) |
 | **Informe y certificado** | Nota final, nota mínima y certificado en PDF | Esta página, paso 6 |
 
 El alumnado no necesita cuenta: juega con el enlace del recorrido, embebido en
 el aula virtual o desde un paquete exportado.
 
-## El ejemplo: tres salas
+## El ejemplo: tres salas, a mano
 
 Vamos a montar «La biblioteca cerrada», con tres escenas:
 
@@ -47,43 +69,36 @@ Si el JSON tiene un error, el campo no se guarda: revisa las comillas y las
 comas. Las variables viven solo durante la visita; al recargar la página,
 vuelven a estos valores.
 
-## Paso 2: la llave (contador/estado)
+## Paso 2: la llave (acción)
 
-En la sala de lectura, añade un hotspot **Contador / estado** donde quieras
+En la sala de lectura, añade un hotspot **Acción (variables)** donde quieras
 esconder la llave (dentro de un cajón, sobre una estantería). Cámbiale el icono
 por una llave en **Estilo**.
 
-En **Contenido**, pulsa **Añadir opción** para crear una acción:
+En **Contenido**, pulsa **Añadir un cambio** y rellena la fila:
 
 | Variable | Operación | Valor |
 |---|---|---|
-| `llave` | `set` | `true` |
+| `llave` | Poner a | `true` |
 
-Para que la llave desaparezca al cogerla, en su pestaña **Condiciones**, campo
-**Condiciones de variables**, escribe:
+El resumen de arriba dirá «Al pulsar: llave = verdadero».
 
-```json
-[{"var": "llave", "op": "falsy"}]
-```
-
-Es decir: la llave solo se ve mientras `llave` sea falsa.
+Para que la llave desaparezca al cogerla, en su pestaña **Condiciones**, bloque
+**Condiciones de variables**, pulsa **Añadir condición** y elige `llave` ·
+**es falsa**. Es decir: la llave solo se ve mientras `llave` sea falsa.
 
 ## Paso 3: la puerta que solo se abre con la llave
 
 Selecciona el paso de navegación de la sala de lectura al archivo y, en su
-pestaña **Condiciones**, escribe:
-
-```json
-[{"var": "llave", "op": "truthy"}]
-```
+pestaña **Condiciones**, añade la condición `llave` · **es verdadera**.
 
 La puerta no se ve hasta que el visitante coge la llave; en ese momento aparece,
 sin recargar nada. Si prefieres que la puerta esté siempre a la vista pero no
 lleve a ningún sitio, pon dos hotspots en el mismo punto: uno de texto («Está
-cerrada con llave») con la condición `falsy` y el de navegación con la
-condición `truthy`.
+cerrada con llave») con la condición **es falsa** y el de navegación con la
+condición **es verdadera**.
 
-## Paso 4: los documentos del archivo (tesoros y contador)
+## Paso 4: los documentos del archivo (tesoros y acciones)
 
 En el archivo, esconde tres hotspots **Tesoro**. Con poner uno ya hay búsqueda
 del tesoro: el visor lleva la cuenta en un contador arriba y cada tesoro
@@ -100,15 +115,14 @@ dónde está el objeto; y con **Compuerta (no salir de la escena sin
 encontrarlo)**, nadie sale de la sala sin haberlo encontrado.
 
 Si además quieres contar las pistas de una sala en una variable (por ejemplo,
-para que una puerta aparezca con dos de tres), usa contadores/estado con la
-operación `inc` en lugar de tesoros, y en la puerta una condición numérica:
+para que una puerta aparezca con dos de tres), usa acciones con la operación
+**Sumar** en lugar de tesoros, y en la puerta una condición numérica:
+`pistas` · `≥` · `2`.
 
-```json
-[{"var": "pistas", "op": "gte", "value": 2}]
-```
-
-Cada contador que sume debería ocultarse a sí mismo al pulsarlo, igual que la
-llave, para que no se pueda sumar dos veces en el mismo sitio.
+Cada acción que sume debería ocultarse a sí misma al pulsarla, igual que la
+llave, para que no se pueda sumar dos veces en el mismo sitio: añade a cada
+una un segundo cambio con una variable propia (por ejemplo `doc1` · Poner a ·
+`true`) y, en sus **Condiciones**, `doc1` · **es falsa**.
 
 ## Paso 5: la pregunta con compuerta
 
@@ -122,7 +136,7 @@ pasos se ven apagados y, al pulsarlos, se abre la pregunta con el aviso
 «Responde correctamente para poder avanzar». Fallar o agotar los intentos no
 abre la compuerta, y si pones varias preguntas con compuerta en la misma sala,
 hay que acertarlas todas.
-La compuerta frena cualquier salida, también la de un contador o un polígono
+La compuerta frena cualquier salida, también la de una acción o un polígono
 que lleve a otra escena.
 
 En la sala de salida, pon la última pregunta, también con compuerta si hay
@@ -167,8 +181,8 @@ completado y la puntuación frente a la nota mínima. Los pasos están en
 - **Las variables no se ven en pantalla** ni se guardan entre visitas: si el
   alumno recarga la página, empieza de cero.
 - **No hay cuenta atrás** ni temporizador de juego.
-- **Las condiciones y las variables se escriben en JSON.** No hay todavía un
-  editor visual.
+- **Las variables iniciales se declaran en JSON**, en Ajustes del tour. Las
+  acciones y las condiciones ya se configuran con filas, sin escribir JSON.
 :::
 
 Para ideas de enigmas y de cómo encajarlos en una clase, mira el artículo
