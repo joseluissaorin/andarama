@@ -176,7 +176,21 @@ export async function compileProject(db: Db, projectId: string, opts: CompileOpt
 
   /** Aplica traducciones con rutas anidadas ("items.0.title") a un objeto. */
   const applyNestedTranslations = (obj: Record<string, unknown>, entity: string, entityId: string): void => {
-    const trs = trByEntity.get(`${entity}:${entityId}`) ?? [];
+    let trs = trByEntity.get(`${entity}:${entityId}`) ?? [];
+    // Un quiz de una pregunta que el editor pasó a `questions` conserva el id
+    // del hotspot en questions[0]; sus traducciones siguen guardadas con las
+    // rutas de antes («question», «options.0.text»...) y se llevan allí.
+    const qs = obj.questions;
+    if (Array.isArray(qs) && (qs[0] as { id?: unknown } | undefined)?.id === entityId && obj.question == null) {
+      const LEGACY = /^(question|feedbackCorrect|feedbackWrong|options\.\d+\.text)$/;
+      const explicit = new Set(trs.map((t) => `${t.lang}:${t.field}`));
+      trs = trs.flatMap((t) => {
+        if (!LEGACY.test(t.field)) return [t];
+        const field = `questions.0.${t.field}`;
+        // Si ya hay traducción con la ruta nueva, manda esa
+        return explicit.has(`${t.lang}:${field}`) ? [] : [{ ...t, field }];
+      });
+    }
     for (const t of trs) {
       const path = t.field.split(".");
       let target: Record<string, unknown> | unknown[] = obj;

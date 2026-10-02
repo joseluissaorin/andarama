@@ -272,6 +272,46 @@ describe("flujo critico", () => {
     expect((await call(`/api/v1/projects/${projectId}/hotspots/${id}`, { method: "DELETE" })).status).toBeLessThan(300);
   });
 
+  it("un quiz de una pregunta pasado a varias conserva las traducciones guardadas con las rutas de antes", async () => {
+    const id = "quizMigr-0001";
+    const creado = await call(`/api/v1/projects/${projectId}/scenes/${sceneA}/hotspots`, {
+      method: "POST",
+      body: {
+        id,
+        type: "quiz",
+        position: { yaw: 0.3, pitch: 0 },
+        // Así lo deja el editor: la pregunta heredada en questions[0] con el id del hotspot
+        content: {
+          questions: [
+            { id, question: "¿Uno?", kind: "single", options: [{ id: "a", text: "Sí", correct: true }, { id: "b", text: "No" }], feedbackCorrect: "Bien" },
+            { id: "p2", question: "¿Dos?", kind: "boolean", options: [{ id: "v", text: "Verdadero", correct: true }, { id: "f", text: "Falso" }] },
+          ],
+        },
+      },
+    });
+    expect(creado.status).toBe(201);
+    await call(`/api/v1/projects/${projectId}/translations/en`, {
+      method: "PUT",
+      body: [
+        { entity: "hotspot", entityId: id, field: "question", value: "One?" },
+        { entity: "hotspot", entityId: id, field: "options.0.text", value: "Yes" },
+        { entity: "hotspot", entityId: id, field: "feedbackCorrect", value: "Old" },
+        { entity: "hotspot", entityId: id, field: "questions.0.feedbackCorrect", value: "Well done" },
+      ],
+    });
+    const res = await call(`/api/v1/projects/${projectId}/compile`, { method: "POST", body: {} });
+    const { tour } = (await res.json()) as {
+      tour: { scenes: { id: string; hotspots: { id: string; question?: unknown; questions?: { question: unknown; feedbackCorrect?: unknown; options: { text: unknown }[] }[] }[] }[] };
+    };
+    const hs = tour.scenes.find((s) => s.id === sceneA)!.hotspots.find((h) => h.id === id)!;
+    expect(hs.questions![0]!.question).toMatchObject({ es: "¿Uno?", en: "One?" });
+    expect(hs.questions![0]!.options[0]!.text).toMatchObject({ es: "Sí", en: "Yes" });
+    // La ruta nueva gana a la antigua
+    expect(hs.questions![0]!.feedbackCorrect).toMatchObject({ es: "Bien", en: "Well done" });
+    expect(hs.question).toBeUndefined();
+    expect((await call(`/api/v1/projects/${projectId}/hotspots/${id}`, { method: "DELETE" })).status).toBeLessThan(300);
+  });
+
   it("gestiona traducciones con export XLIFF", async () => {
     const put = await call(`/api/v1/projects/${projectId}/translations/en`, {
       method: "PUT",
