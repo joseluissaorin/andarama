@@ -17,7 +17,7 @@ import type {
 import { resolveUrl, TourViewer } from "@andarama/viewer";
 import { el, trapFocus } from "./dom.js";
 import { renderMarkdown } from "./markdown.js";
-import { createIconSvg } from "@andarama/viewer";
+import { createIconSvg, LABEL_EXPAND_EVENT, type LabelExpandDetail } from "@andarama/viewer";
 import type { Translator } from "./i18n.js";
 import { parseVideoRef } from "./video.js";
 import { embedFileName, embedSource } from "./embed.js";
@@ -42,24 +42,72 @@ export class PanelHost {
   private backdrop: HTMLElement | null = null;
   private releaseFocus: (() => void) | null = null;
   private lastFocus: HTMLElement | null = null;
+  private bubbleCleanup: (() => void) | null = null;
+  private bubbleId: string | null = null;
+  /** Hotspot del panel modal abierto. */
+  private modalId: string | null = null;
+  /** Último hotspot avisado a onPanelChange. */
+  private notifiedId: string | null = null;
 
-  constructor(private ctx: Omit<PanelContext, "onClose">) {}
+  /**
+   * Avisa al abrir o cerrar el panel de un hotspot (modal o burbuja de
+   * tooltip; no la del texto entero de una etiqueta). La visita guiada lo usa
+   * para abrir lo mismo a quienes siguen al guía.
+   */
+  onPanelChange: ((hotspotId: string | null) => void) | null = null;
+
+  constructor(private ctx: Omit<PanelContext, "onClose">) {
+    // Una etiqueta cortada pide su texto entero: la misma burbuja desplazable
+    // que los tooltips, anclada al marcador
+    ctx.container.addEventListener(LABEL_EXPAND_EVENT, (e) => {
+      const d = (e as CustomEvent<LabelExpandDetail>).detail;
+      if (d != null) this.showBubble(`label:${d.hotspotId}`, d.text, d.anchor, false);
+    });
+  }
 
   get isOpen(): boolean {
     return this.backdrop != null;
   }
 
+  /** Hotspot cuyo panel (o burbuja de tooltip) está abierto. */
+  get openHotspotId(): string | null {
+    if (this.modalId != null) return this.modalId;
+    return this.bubbleId != null && !this.bubbleId.startsWith("label:") ? this.bubbleId : null;
+  }
+
+  private syncPanelChange(): void {
+    const id = this.openHotspotId;
+    if (id === this.notifiedId) return;
+    this.notifiedId = id;
+    this.onPanelChange?.(id);
+  }
+
   close(): void {
+    this.closeModal();
+    this.syncPanelChange();
+  }
+
+  private closeModal(): void {
     this.releaseFocus?.();
     this.releaseFocus = null;
     this.backdrop?.remove();
     this.backdrop = null;
+    this.modalId = null;
     this.lastFocus?.focus();
     this.lastFocus = null;
   }
 
   open(hotspot: Hotspot, anchor: HTMLElement | null): void {
-    this.close();
+    // Sin avisar del cierre: se avisa una vez, de lo que queda abierto
+    this.closeModal();
+    try {
+      this.openInner(hotspot, anchor);
+    } finally {
+      this.syncPanelChange();
+    }
+  }
+
+  private openInner(hotspot: Hotspot, anchor: HTMLElement | null): void {
     // Un tooltip es una burbuja anclada al marcador, no un modal.
     if (hotspot.type === "tooltip" && anchor != null) {
       this.openTooltip(hotspot, anchor);
@@ -98,22 +146,38 @@ export class PanelHost {
       if (e.target === this.backdrop) this.close();
     });
     this.ctx.container.appendChild(this.backdrop);
+    this.modalId = hotspot.id;
     this.releaseFocus = trapFocus(this.backdrop, () => this.close());
     closeBtn.focus();
     content.onMounted?.();
   }
 
+  /** Cierra la burbuja abierta (tooltip o texto entero de una etiqueta). */
+  closeBubble(): void {
+    this.bubbleCleanup?.();
+    this.bubbleCleanup = null;
+    this.bubbleId = null;
+    this.syncPanelChange();
+  }
+
   /** Burbuja de tooltip pegada al marcador; se cierra sola al mover la vista. */
   private openTooltip(hotspot: Hotspot, anchor: HTMLElement): void {
     const text = this.ctx.viewer.text((hotspot as { text?: unknown }).text as never) || this.ctx.viewer.text(hotspot.label);
+    this.showBubble(hotspot.id, text, anchor, (hotspot as { permanent?: boolean }).permanent === true);
+  }
+
+  /**
+   * Burbuja anclada con un texto: la de los tooltips y la del texto entero de
+   * una etiqueta cortada. Pulsar otra vez lo mismo la cierra.
+   */
+  private showBubble(id: string, text: string, anchor: HTMLElement, permanent: boolean): void {
     if (text === "") return;
-    const existing = this.ctx.container.querySelector(`.anda-tooltip-bubble[data-for="${hotspot.id}"]`);
-    if (existing != null) {
-      existing.remove();
-      return;
-    }
-    this.ctx.container.querySelectorAll(".anda-tooltip-bubble").forEach((b) => b.remove());
-    const bubble = el("div", { className: "anda-tooltip-bubble", role: "status", "data-for": hotspot.id, text });
+    const repetida = this.bubbleId === id;
+    // Quitar la anterior con su limpieza: antes se borraba el nodo y sus
+    // escuchas de viewChange seguían vivas
+    this.closeBubble();
+    if (repetida) return;
+    const bubble = el("div", { className: "anda-tooltip-bubble", role: "status", "data-for": id, text });
     this.ctx.container.appendChild(bubble);
     // La burbuja se mide con el visor, no con la pantalla: si el texto no
     // cabe encima del marcador se abre debajo, y si tampoco, se desplaza por
@@ -146,8 +210,15 @@ export class PanelHost {
       offScene();
       if (timer != null) clearTimeout(timer);
       bubble.remove();
+      if (this.bubbleCleanup === cleanup) {
+        this.bubbleCleanup = null;
+        this.bubbleId = null;
+        this.syncPanelChange();
+      }
     };
-    if ((hotspot as { permanent?: boolean }).permanent !== true) {
+    this.bubbleCleanup = cleanup;
+    this.bubbleId = id;
+    if (!permanent) {
       // Tiempo de lectura según la longitud; leer o desplazar lo alarga
       const lectura = Math.min(30000, 6000 + text.length * 45);
       const armar = (): void => {

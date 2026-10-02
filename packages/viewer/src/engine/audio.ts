@@ -2,7 +2,8 @@ import type { AudioTrack, NarrationTrack, SceneAudio, SpatialAudioSource } from 
 
 /**
  * Motor de audio del visor sobre Web Audio API:
- * - musica global del tour con ducking automatico durante narraciones
+ * - musica global del tour con ducking automatico durante narraciones y que
+ *   cede (fundido a silencio) en las escenas con sonido propio
  * - ambiente por escena con fundido cruzado
  * - narracion por escena (con bloqueo de navegacion opcional)
  * - fuentes espaciales/posicionales con PannerNode HRTF cuyo paneo sigue la vista
@@ -21,6 +22,12 @@ export class AudioEngine {
   private unlocked = false;
   private crossfadeSec = 1;
   private narrationBlocking = false;
+  /** Volumen de la pista global sin graph de Web Audio (respaldo). */
+  private globalBaseVolume = 0.35;
+  private globalRouted = false;
+  /** Nivel por narración (1 o 0,15) y por escena con sonido propio (1 o 0). */
+  private duckLevel = 1;
+  private yieldLevel = 1;
 
   onNarrationBlockChange: ((blocked: boolean) => void) | null = null;
 
@@ -116,13 +123,43 @@ export class AudioEngine {
       this.globalEl = null;
     }
     if (track == null) return;
-    this.globalEl = this.createMediaElement(this.trackUrl(track), track.loop ?? true, track.volume ?? 0.35, this.globalGain);
+    // El contexto se crea antes de pasar el nodo: si no, globalGain aún era
+    // null en la primera llamada, la música no pasaba por el graph y ni el
+    // ducking ni los fundidos (el volumen de un <audio> no se puede cambiar
+    // en iOS) le llegaban.
+    this.ensureCtx();
+    this.globalBaseVolume = track.volume ?? 0.35;
+    this.globalRouted = this.globalGain != null;
+    this.globalEl = this.createMediaElement(this.trackUrl(track), track.loop ?? true, this.globalBaseVolume, this.globalGain);
+    // Arranca ya al nivel que toca (la escena inicial puede tener sonido propio)
+    this.applyGlobalLevel(0);
     void this.globalEl.play().catch(() => {});
+  }
+
+  /** Nivel de la música global: narración y escena con sonido propio. */
+  private applyGlobalLevel(seconds: number): void {
+    const level = globalMusicLevel(this.duckLevel, this.yieldLevel);
+    if (this.globalRouted && this.globalGain != null && this.ctx != null) {
+      const g = this.globalGain.gain;
+      if (seconds <= 0) {
+        g.cancelScheduledValues(this.ctx.currentTime);
+        g.value = level;
+      } else {
+        // Constante de tiempo: a las 3τ ya está al 95 %
+        g.setTargetAtTime(level, this.ctx.currentTime, seconds / 3);
+      }
+    } else if (this.globalEl != null) {
+      if (seconds <= 0) this.globalEl.volume = this.globalBaseVolume * level;
+      else fadeTo(this.globalEl, this.globalBaseVolume * level, seconds);
+    }
   }
 
   /** Cambia el ambiente con fundido cruzado. */
   setSceneAudio(audio: SceneAudio | undefined): void {
     this.crossfadeSec = audio?.crossfade ?? 1;
+    // La música del tour cede a la de la escena y vuelve al salir de ella
+    this.yieldLevel = sceneReplacesGlobal(audio) ? 0 : 1;
+    this.applyGlobalLevel(this.crossfadeSec);
     const old = this.ambientEl;
     if (old != null) {
       fadeOutAndStop(old, this.crossfadeSec);
@@ -179,8 +216,8 @@ export class AudioEngine {
   }
 
   private duck(level: number): void {
-    const t = this.ctx?.currentTime ?? 0;
-    this.globalGain?.gain.setTargetAtTime(level, t, 0.25);
+    this.duckLevel = level;
+    this.applyGlobalLevel(0.75);
     if (this.ambientEl != null) fadeTo(this.ambientEl, level * 0.5, 0.4);
   }
 
@@ -295,6 +332,21 @@ export class AudioEngine {
     void this.ctx?.close().catch(() => {});
     this.ctx = null;
   }
+}
+
+/**
+ * ¿Calla esta escena la música global? Por defecto sí cuando tiene sonido
+ * propio (ambiente o fuentes espaciales); `replaceGlobal` lo fuerza en los
+ * dos sentidos.
+ */
+export function sceneReplacesGlobal(audio: SceneAudio | undefined): boolean {
+  if (audio?.replaceGlobal != null) return audio.replaceGlobal;
+  return audio?.ambient != null || (audio?.spatial?.length ?? 0) > 0;
+}
+
+/** Nivel final de la música global (0..1). */
+export function globalMusicLevel(duck: number, yieldLevel: number): number {
+  return Math.max(0, Math.min(1, duck * yieldLevel));
 }
 
 function fadeTo(el: HTMLAudioElement, target: number, seconds: number): void {

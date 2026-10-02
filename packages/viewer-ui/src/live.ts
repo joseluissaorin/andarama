@@ -3,17 +3,37 @@ import { createIconSvg } from "@andarama/viewer";
 import { el } from "./dom.js";
 import type { Translator } from "./i18n.js";
 
+/** Lo que la visita necesita del host de paneles (PanelHost). */
+export interface LivePanels {
+  onPanelChange: ((hotspotId: string | null) => void) | null;
+  readonly openHotspotId: string | null;
+  close(): void;
+  closeBubble(): void;
+}
+
 /**
  * Cliente de tours guiados en vivo: un guia controla escena y orientacion
  * de N asistentes via WebSocket (Durable Object en Cloudflare, ws integrado
  * en self-host). Los asistentes pueden "soltarse" y volver a sincronizar.
- * Incluye puntero del guia y chat de texto. El audio se asume en una
+ * Incluye puntero del guia, los paneles que abre el guia (quien le sigue ve
+ * el mismo texto, imagen, video o PDF, y se le cierra cuando el guia lo
+ * cierra) y chat de texto. El audio se asume en una
  * videollamada externa en paralelo (Meet/Teams), documentado en la guia.
  */
 
 type LiveMessage =
   | { type: "hello"; role: "guide" | "attendee"; name?: string; key?: string }
-  | { type: "state"; scene: string; yaw: number; pitch: number; fov: number; participants: number; pointer?: { yaw: number; pitch: number } | null }
+  | {
+      type: "state";
+      scene: string;
+      yaw: number;
+      pitch: number;
+      fov: number;
+      participants: number;
+      pointer?: { yaw: number; pitch: number } | null;
+      panel?: string | null;
+    }
+  | { type: "panel"; hotspot: string | null }
   | { type: "view"; scene: string; yaw: number; pitch: number; fov: number }
   | { type: "pointer"; pointer: { yaw: number; pitch: number } | null }
   | { type: "chat"; from?: string; text: string }
@@ -40,12 +60,17 @@ export class LiveClient {
   private followBtn: HTMLButtonElement | null = null;
   private unsubs: (() => void)[] = [];
   private closedByUser = false;
+  /** Último panel del guía (lo que hay que tener abierto al seguirle). */
+  private guidePanel: string | null = null;
+  /** Panel que se abrió por seguir al guía (el único que se cierra solo). */
+  private syncedPanel: string | null = null;
 
   constructor(
     private viewer: TourViewer,
     private t: Translator,
     private container: HTMLElement,
     private opts: LiveOptions,
+    private panels: LivePanels | null = null,
   ) {}
 
   connect(): void {
@@ -54,6 +79,7 @@ export class LiveClient {
       this.send({ type: "hello", role: this.opts.role, name: this.opts.name, key: this.opts.guideKey });
       this.mountUi();
       if (this.opts.role === "guide") this.startBroadcast();
+      this.startPanelSync();
     });
     this.ws.addEventListener("message", (e) => {
       try {
@@ -86,9 +112,13 @@ export class LiveClient {
           this.participants = msg.participants;
           this.updateHead();
           this.updatePointer(msg.pointer ?? null);
+          if (msg.panel !== undefined) this.setGuidePanel(msg.panel);
         }
         break;
       }
+      case "panel":
+        this.setGuidePanel(msg.hotspot);
+        break;
       case "pointer":
         this.updatePointer(msg.pointer);
         break;
@@ -104,6 +134,66 @@ export class LiveClient {
         break;
       default:
         break;
+    }
+  }
+
+  private setGuidePanel(hotspot: string | null): void {
+    if (this.opts.role !== "attendee") return;
+    this.guidePanel = typeof hotspot === "string" && hotspot !== "" ? hotspot : null;
+    if (this.following) this.applyGuidePanel();
+  }
+
+  /**
+   * Deja abierto lo mismo que el guía. Quien se ha soltado no recibe nada
+   * (lo recibe al volver a seguirle). Solo se cierra lo que se abrió por
+   * seguirle: un panel que el asistente abrió por su cuenta no se le quita.
+   */
+  private applyGuidePanel(): void {
+    const panels = this.panels;
+    if (panels == null) return;
+    const want = this.guidePanel;
+    const open = panels.openHotspotId;
+    if (want == null) {
+      if (this.syncedPanel != null && open === this.syncedPanel) {
+        panels.close();
+        panels.closeBubble();
+      }
+      this.syncedPanel = null;
+      return;
+    }
+    if (open === want) {
+      this.syncedPanel = want;
+      return;
+    }
+    // El hotspot es de la escena del guía: si aún se está cargando, se abre
+    // al llegar (sceneChange)
+    if (!this.hotspotInCurrentScene(want)) return;
+    this.syncedPanel = want;
+    this.viewer.openHotspot(want);
+  }
+
+  private hotspotInCurrentScene(id: string): boolean {
+    const sceneId = this.viewer.currentSceneId();
+    const scene = this.viewer.tour.scenes.find((s) => s.id === sceneId);
+    return scene?.hotspots.some((h) => h.id === id) ?? false;
+  }
+
+  private startPanelSync(): void {
+    const panels = this.panels;
+    if (panels == null) return;
+    if (this.opts.role === "guide") {
+      panels.onPanelChange = (hotspot) => this.send({ type: "panel", hotspot });
+      // Lo que ya estuviera abierto al conectar
+      if (panels.openHotspotId != null) this.send({ type: "panel", hotspot: panels.openHotspotId });
+      this.unsubs.push(() => {
+        panels.onPanelChange = null;
+      });
+    } else {
+      this.unsubs.push(
+        this.viewer.on("sceneChange", () => {
+          if (this.following && this.guidePanel != null) this.applyGuidePanel();
+        }),
+      );
     }
   }
 
@@ -165,9 +255,15 @@ export class LiveClient {
       this.followBtn.addEventListener("click", () => {
         this.following = !this.following;
         this.followBtn!.textContent = this.following ? this.t("live_free") : this.t("live_follow");
+        // Al volver a seguir, se abre (o cierra) lo que tenga el guía
+        if (this.following) this.applyGuidePanel();
       });
       this.panel.insertBefore(this.followBtn, inputRow);
-      const onInteract = (): void => {
+      const onInteract = (e: PointerEvent): void => {
+        // Leer o desplazar el panel que abrió el guía, escribir en el chat o
+        // cerrar una burbuja no es soltarse: solo mover la panorámica o
+        // usar los mandos del visor
+        if (shouldKeepFollowing(e.target)) return;
         if (this.following) {
           this.following = false;
           this.followBtn!.textContent = this.t("live_follow");
@@ -240,4 +336,12 @@ export class LiveClient {
     this.panel?.remove();
     this.pointerEl?.remove();
   }
+}
+
+/** Zonas donde pulsar no suelta al asistente del guía. */
+export const LIVE_KEEP_FOLLOWING_SELECTOR = ".anda-panel-backdrop, .anda-tooltip-bubble, .anda-live";
+
+export function shouldKeepFollowing(target: EventTarget | null): boolean {
+  const node = target as { closest?: (sel: string) => unknown } | null;
+  return node?.closest?.(LIVE_KEEP_FOLLOWING_SELECTOR) != null;
 }

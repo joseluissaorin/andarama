@@ -4,7 +4,8 @@
  *
  * Dos tipos de sala:
  *  - LiveTourRoom: visita guiada (§2.15). Un guia controla escena y vista de
- *    N asistentes; puntero del guia; chat de texto; codigos efimeros.
+ *    N asistentes; puntero del guia; paneles que abre el guia; chat de
+ *    texto; codigos efimeros.
  *  - ProjectPresenceRoom: presencia y bloqueo blando por escena en el
  *    Studio (§3.5) + difusion de comentarios/cambios.
  */
@@ -24,6 +25,8 @@ export class LiveTourRoom {
   private participants = new Map<string, LiveParticipant>();
   private state: { scene: string; yaw: number; pitch: number; fov: number } | null = null;
   private pointer: { yaw: number; pitch: number } | null = null;
+  /** Hotspot cuyo panel tiene abierto el guia (null: ninguno). */
+  private panel: string | null = null;
   /** Clave que autoriza el rol de guia. */
   constructor(private guideKey: string) {}
 
@@ -41,6 +44,7 @@ export class LiveTourRoom {
         ...this.state,
         participants: this.participants.size,
         pointer: this.pointer,
+        panel: this.panel,
       });
     } else {
       this.sendTo(socket, { type: "participants", count: this.participants.size });
@@ -78,7 +82,7 @@ export class LiveTourRoom {
           fov: Number(msg.fov ?? 1.2),
         };
         this.broadcast(
-          { type: "state", ...this.state, participants: this.participants.size, pointer: this.pointer },
+          { type: "state", ...this.state, participants: this.participants.size, pointer: this.pointer, panel: this.panel },
           id,
         );
         return;
@@ -88,6 +92,14 @@ export class LiveTourRoom {
         const p = msg.pointer as { yaw: number; pitch: number } | null;
         this.pointer = p != null ? { yaw: Number(p.yaw), pitch: Number(p.pitch) } : null;
         this.broadcast({ type: "pointer", pointer: this.pointer }, id);
+        return;
+      }
+      case "panel": {
+        // El guia abre (id del hotspot) o cierra (null) un panel; los
+        // asistentes que le siguen lo abren o cierran igual
+        if (participant.role !== "guide") return;
+        this.panel = typeof msg.hotspot === "string" && msg.hotspot !== "" ? msg.hotspot.slice(0, 128) : null;
+        this.broadcast({ type: "panel", hotspot: this.panel }, id);
         return;
       }
       case "chat": {

@@ -201,6 +201,27 @@ describe("flujo critico", () => {
     expect(tour.scenes.find((s) => s.id === sceneA)?.category).toBe("Planta baja");
   });
 
+  it("el compilador pasa el texto de la insignia y la cesión de la música global", async () => {
+    await call(`/api/v1/projects/${projectId}`, {
+      method: "PATCH",
+      body: { settings: { ui: { badgeText: "Un recorrido del Museo" }, globalAudio: { url: "https://example.com/musica.mp3" } } },
+    });
+    await call(`/api/v1/projects/${projectId}/scenes/${sceneB}`, {
+      method: "PATCH",
+      body: { audio: { ambient: { url: "https://example.com/aula.mp3" }, replaceGlobal: false } },
+    });
+    const res = await call(`/api/v1/projects/${projectId}/compile`, { method: "POST", body: {} });
+    const { tour } = (await res.json()) as {
+      tour: { ui?: { badgeText?: string }; globalAudio?: { url: string }; scenes: { id: string; audio?: { replaceGlobal?: boolean } }[] };
+    };
+    expect(tour.ui?.badgeText).toBe("Un recorrido del Museo");
+    expect(tour.globalAudio?.url).toBe("https://example.com/musica.mp3");
+    expect(tour.scenes.find((s) => s.id === sceneB)?.audio?.replaceGlobal).toBe(false);
+    // Se deja como estaba para el resto de pruebas
+    await call(`/api/v1/projects/${projectId}`, { method: "PATCH", body: { settings: { ui: {}, globalAudio: null } } });
+    await call(`/api/v1/projects/${projectId}/scenes/${sceneB}`, { method: "PATCH", body: { audio: null } });
+  });
+
   it("el título del área se traduce y arrastra la categoría", async () => {
     await call(`/api/v1/projects/${projectId}/translations/en`, {
       method: "PUT",

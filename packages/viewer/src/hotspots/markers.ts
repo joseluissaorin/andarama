@@ -1,6 +1,7 @@
 import type { Hotspot, PolygonHotspot, Scene } from "@andarama/schema";
 import { resolveL10n } from "@andarama/schema";
 import { createIconSvg, DEFAULT_ICON_BY_TYPE, sanitizeSvg } from "./icons.js";
+import { isLabelTruncated, LABEL_EXPAND_EVENT, shouldExpandLabel, type LabelExpandDetail } from "./labels.js";
 import { evalConditions, type VariableStore } from "../engine/state.js";
 import { resolveUrl } from "../engine/sources.js";
 import { anglesToViewCoords, viewCoordsToAngles } from "../engine/flatCoords.js";
@@ -298,12 +299,21 @@ export class SceneMarkers {
       label.className = "anda-hotspot__label";
       if ((hotspot.labelVisibility ?? "hover") === "hover") label.classList.add("anda-hotspot__label--hover");
       label.textContent = labelText;
+      // Cortada a unas líneas: pulsarla (ratón o dedo) abre el texto entero
+      // en la burbuja desplazable de la skin en vez de activar el marcador.
+      label.addEventListener("click", (e) => {
+        const truncated = isLabelTruncated(label);
+        if (!shouldExpandLabel({ type: hotspot.type, editable: this.callbacks.editable === true, truncated })) return;
+        e.stopPropagation();
+        const detail: LabelExpandDetail = { hotspotId: hotspot.id, text: labelText, anchor: el };
+        label.dispatchEvent(new CustomEvent(LABEL_EXPAND_EVENT, { bubbles: true, detail }));
+      });
       el.appendChild(label);
     }
     const tooltipText = resolveL10n(hotspot.tooltip, this.callbacks.lang(), this.callbacks.defaultLang);
     if (tooltipText !== "") el.title = tooltipText;
     // La etiqueta se corta a tres líneas con puntos suspensivos: el texto
-    // entero queda al pasar el ratón (y en la burbuja, si es una etiqueta flotante)
+    // entero queda al pasar el ratón y, pulsando la etiqueta, en la burbuja
     else if (labelText.length > 60 && hotspot.labelVisibility !== "never") el.title = labelText;
 
     el.addEventListener("click", (e) => {

@@ -99,9 +99,19 @@ export const VIEWER_CSS = `
   border: 1px solid rgba(255,255,255,.16); color: #fff; padding: 5px 13px; border-radius: 14px;
   font-size: 12.5px; font-weight: 600; letter-spacing: .01em; line-height: 1.3; text-align: center;
   width: max-content; max-width: min(260px, 42vw); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3;
-  line-clamp: 3; -webkit-box-orient: vertical; text-overflow: ellipsis; overflow-wrap: anywhere; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-.anda-hotspot__label--hover { opacity: 0; transform: translateX(-50%) translateY(-3px); transition: opacity .18s ease, transform .18s ease; }
-.anda-hotspot:hover .anda-hotspot__label--hover, .anda-hotspot:focus-visible .anda-hotspot__label--hover { opacity: 1; transform: translateX(-50%); }
+  line-clamp: 3; -webkit-box-orient: vertical; text-overflow: ellipsis; overflow-wrap: anywhere; pointer-events: auto; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,.5); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+/* Pulsar una etiqueta cortada abre el texto entero en la burbuja (markers.ts);
+   oculta no recoge el puntero para no ensanchar la zona del marcador. */
+.anda-hotspot__label--hover { opacity: 0; transform: translateX(-50%) translateY(-3px); transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none; }
+.anda-hotspot:hover .anda-hotspot__label--hover, .anda-hotspot:focus-visible .anda-hotspot__label--hover { opacity: 1; transform: translateX(-50%);
+  pointer-events: auto; }
+/* Pantallas táctiles: no hay «al pasar el ratón» y la etiqueta no se veía
+   nunca. Se muestra siempre, en una sola línea para no llenar la panorámica;
+   tocarla abre el texto entero. */
+@media (hover: none) {
+  .anda-hotspot__label--hover { opacity: 1; transform: translateX(-50%); pointer-events: auto; -webkit-line-clamp: 1; line-clamp: 1; }
+}
 .anda-hotspot--pulse .anda-hotspot__icon--chip::after { content: ""; position: absolute; inset: -7px; border-radius: 50%;
   border: 2px solid rgba(255,255,255,.8); animation: u3pulse 2.2s ease-out infinite; }
 @keyframes u3pulse { 0% { transform: scale(.75); opacity: .9; } 100% { transform: scale(1.55); opacity: 0; } }

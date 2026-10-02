@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildDeepLink, parseDeepLink } from "./deeplink";
 import { resolveStartView } from "./startView";
 
 /**
@@ -39,5 +40,27 @@ describe("resolveStartView", () => {
     const v = resolveStartView(tour, { sceneId: "c" });
     expect(typeof v.yaw).toBe("number");
     expect(typeof v.fov).toBe("number");
+  });
+
+  it("al recargar con el hash vivo manda la vista inicial de la escena, no la del hash", () => {
+    // Lo que escribe el visor mientras se mira alrededor: escena y vista, sin marcador
+    const link = parseDeepLink("https://andarama.com/t/x#s=b&y=90.0&p=10.0&f=60.0");
+    expect(link.sceneId).toBe("b");
+    expect(link.view).toBeNull();
+    expect(resolveStartView(tour, link)).toEqual({ yaw: -2, pitch: 0.2, fov: 1.3 });
+  });
+
+  it("un enlace compartido (v=1) conserva la vista con la que se compartió", () => {
+    const href = buildDeepLink("https://andarama.com/t/x", "b", { yaw: Math.PI / 2, pitch: 0, fov: 1 }, null);
+    expect(href).toContain("v=1");
+    const v = resolveStartView(tour, parseDeepLink(href));
+    expect(v.yaw).toBeCloseTo(Math.PI / 2, 2);
+    expect(v.pitch).toBeCloseTo(0, 5);
+    expect(v.fov).toBeCloseTo(1, 2);
+  });
+
+  it("v=1 sin ángulos no inventa vista", () => {
+    const link = parseDeepLink("https://andarama.com/t/x#s=a&v=1");
+    expect(resolveStartView(tour, link)).toEqual({ yaw: 1.2, pitch: -0.1, fov: 1.1 });
   });
 });
