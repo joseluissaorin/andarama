@@ -272,7 +272,6 @@
     "planes": {
       "casa": {
         "nombre": "En tu casa",
-        "cifra": "0 €",
         "cuando": "para siempre",
         "items": [
           "Un ejecutable para macOS, Windows y Linux: doble clic y listo",
