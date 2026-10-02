@@ -127,6 +127,35 @@ export function marzipanoToVr(view: { yaw: number; pitch: number }): { yaw: numb
   return { yaw: view.yaw, pitch: -view.pitch };
 }
 
+/**
+ * Giro de la panorámica al llegar a una escena en VR.
+ *
+ * En gafas no se puede girar la cabeza del visitante: para que entre mirando
+ * la vista de llegada configurada en el paso, se gira el mundo. El desfase es
+ * «yaw de llegada − yaw actual de la cabeza», y un punto de la panorámica con
+ * yaw ψ se ve en el mundo con yaw ψ − desfase (`panoToWorldYaw`). El pitch no
+ * se toca: en un visor, forzar la inclinación marea.
+ */
+export function arrivalYawOffset(arrivalYaw: number, headYaw: number): number {
+  return angleDiff(arrivalYaw, headYaw);
+}
+
+/** Yaw en el mundo de un punto de la panorámica, con el desfase de la escena. */
+export function panoToWorldYaw(panoYaw: number, offset: number): number {
+  return panoYaw - offset;
+}
+
+/**
+ * Matriz de modelo: giro `offset` alrededor de la vertical y luego traslación
+ * y escala uniforme. Con ella, la esfera del entorno gira lo mismo que
+ * `panoToWorldYaw` mueve los hotspots (Ry lleva el yaw ψ a ψ − offset).
+ */
+export function matTranslateYawScale(p: Vec3, offset: number, scale: number): Float32Array {
+  const c = Math.cos(offset) * scale;
+  const s = Math.sin(offset) * scale;
+  return new Float32Array([c, 0, -s, 0, 0, scale, 0, 0, s, 0, c, 0, p[0], p[1], p[2], 1]);
+}
+
 /** Yaw y pitch (convenio VR) de una dirección unitaria; inversa de `dirFromYawPitch`. */
 export function yawPitchFromDir(dir: Vec3): { yaw: number; pitch: number } {
   return { yaw: Math.atan2(dir[0], -dir[2]), pitch: Math.asin(Math.max(-1, Math.min(1, dir[1]))) };
