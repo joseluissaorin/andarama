@@ -55,8 +55,17 @@ export function mediaRoutes(): Hono<AppEnv> {
       .where(and(eq(media.orgId, orgId), isNull(media.deletedAt)));
     if (kind != null && kind !== "") rows = rows.filter((m) => m.kind === kind);
     if (folder != null) rows = rows.filter((m) => (m.folder ?? "") === folder);
-    if (projectId != null && projectId !== "") {
-      rows = projectId === "none" ? rows.filter((m) => m.projectId == null) : rows.filter((m) => m.projectId === projectId);
+    if (projectId === "none") {
+      rows = rows.filter((m) => m.projectId == null);
+    } else if (projectId != null && projectId !== "") {
+      // Un medio sin tour asignado que ya es escena de este tour también es
+      // «de este tour»: si no, la pestaña salía vacía con el tour lleno.
+      const inScenes = new Set(
+        (await db.select({ mediaId: scenes.mediaId }).from(scenes).where(eq(scenes.projectId, projectId)))
+          .map((s) => s.mediaId)
+          .filter((id): id is string => id != null),
+      );
+      rows = rows.filter((m) => m.projectId === projectId || (m.projectId == null && inScenes.has(m.id)));
     }
     if (search != null && search !== "") rows = rows.filter((m) => m.filename.toLowerCase().includes(search));
     rows.sort(order === "name" ? (a, b) => a.filename.localeCompare(b.filename, "es") : (a, b) => b.createdAt - a.createdAt);
