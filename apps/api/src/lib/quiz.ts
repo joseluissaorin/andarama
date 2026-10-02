@@ -1,10 +1,12 @@
+import { isQuizAnswerCorrect, quizQuestionPoints, quizQuestions } from "@andarama/schema";
 import type { FormHotspot, Hotspot, QuizHotspot, Tour } from "@andarama/schema";
 import type { PlatformRuntime } from "@andarama/adapters";
 
 /**
  * Nota del quiz calculada por el servidor.
  *
- * El navegador manda, por pregunta, las opciones que marcó (`selected`). La
+ * El navegador manda, por pregunta (`hotspotId` y, en los marcadores con
+ * varias preguntas, `questionId`), las opciones que marcó (`selected`). La
  * nota sale de comparar eso con las opciones correctas del tour publicado:
  * lo que diga el navegador de `score`, `maxScore`, `correct` o `points` no
  * cuenta, porque cualquiera puede escribir un 10 en la consola.
@@ -15,7 +17,7 @@ export interface ScoredQuiz {
   passed: boolean | null;
   answered: number;
   total: number;
-  detail: { hotspotId: string; sceneId: string; correct: boolean; points: number; selected: string[] }[];
+  detail: { hotspotId: string; questionId?: string; sceneId: string; correct: boolean; points: number; selected: string[] }[];
 }
 
 export function quizHotspots(tour: Tour): { hotspot: QuizHotspot; sceneId: string }[] {
@@ -30,35 +32,57 @@ function selectedOf(entry: Record<string, unknown> | undefined): string[] | null
   return sel.filter((v): v is string => typeof v === "string").slice(0, 50);
 }
 
+/**
+ * Clave de una respuesta: hotspot + pregunta. Las respuestas sin `questionId`
+ * (visores anteriores a las preguntas múltiples) son de la pregunta heredada,
+ * que lleva el id del propio hotspot.
+ */
+function claveRespuesta(hotspotId: string, questionId: string | undefined): string {
+  return `${hotspotId}\u0000${questionId ?? hotspotId}`;
+}
+
 export function scoreQuiz(tour: Tour, rawDetail: readonly Record<string, unknown>[]): ScoredQuiz {
-  const porId = new Map<string, Record<string, unknown>>();
+  const porClave = new Map<string, Record<string, unknown>>();
   for (const d of rawDetail) {
-    if (typeof d.hotspotId === "string" && !porId.has(d.hotspotId)) porId.set(d.hotspotId, d);
+    if (typeof d.hotspotId !== "string") continue;
+    const clave = claveRespuesta(d.hotspotId, typeof d.questionId === "string" ? d.questionId : undefined);
+    if (!porClave.has(clave)) porClave.set(clave, d);
   }
   let score = 0;
   let maxScore = 0;
   let answered = 0;
+  let total = 0;
   const detail: ScoredQuiz["detail"] = [];
-  const preguntas = quizHotspots(tour);
-  for (const { hotspot, sceneId } of preguntas) {
-    const puntos = Math.max(0, Math.floor(hotspot.points ?? 1));
-    maxScore += puntos;
-    const entrada = porId.get(hotspot.id);
-    if (entrada == null) continue;
-    answered++;
-    const elegidas = selectedOf(entrada) ?? [];
-    const correctas = new Set(hotspot.options.filter((o) => o.correct === true).map((o) => o.id));
-    const acierto =
-      correctas.size > 0 && elegidas.length === correctas.size && new Set(elegidas).size === correctas.size && elegidas.every((id) => correctas.has(id));
-    const obtenidos = acierto ? puntos : 0;
-    score += obtenidos;
-    detail.push({ hotspotId: hotspot.id, sceneId, correct: acierto, points: obtenidos, selected: elegidas });
+  // Cada pregunta cuenta por separado: un marcador con cinco preguntas aporta
+  // cinco al total y la suma de sus puntos al máximo.
+  for (const { hotspot, sceneId } of quizHotspots(tour)) {
+    const multi = Array.isArray(hotspot.questions) && hotspot.questions.length > 0;
+    for (const pregunta of quizQuestions(hotspot)) {
+      total++;
+      const puntos = quizQuestionPoints(pregunta);
+      maxScore += puntos;
+      const entrada = porClave.get(claveRespuesta(hotspot.id, pregunta.id));
+      if (entrada == null) continue;
+      answered++;
+      const elegidas = selectedOf(entrada) ?? [];
+      const acierto = isQuizAnswerCorrect(pregunta, elegidas);
+      const obtenidos = acierto ? puntos : 0;
+      score += obtenidos;
+      detail.push({
+        hotspotId: hotspot.id,
+        ...(multi ? { questionId: pregunta.id } : {}),
+        sceneId,
+        correct: acierto,
+        points: obtenidos,
+        selected: elegidas,
+      });
+    }
   }
   score = Math.min(score, maxScore);
   const passing = tour.quiz?.passingScore;
   const passed =
-    answered < preguntas.length || passing == null ? null : maxScore > 0 ? (score / maxScore) * 100 >= passing : true;
-  return { score, maxScore, passed, answered, total: preguntas.length, detail };
+    answered < total || passing == null ? null : maxScore > 0 ? (score / maxScore) * 100 >= passing : true;
+  return { score, maxScore, passed, answered, total, detail };
 }
 
 /** El tour.json de la versión publicada ahora mismo (null si no hay). */

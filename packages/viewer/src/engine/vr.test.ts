@@ -182,6 +182,87 @@ describe("VR: compuertas", () => {
   });
 });
 
+describe("VR: quiz con varias preguntas", () => {
+  it("enseña las preguntas de una en una y cada respuesta lleva su pregunta", () => {
+    const quiz = hotspot("qm", "quiz", {
+      hotspot: {
+        id: "qm",
+        type: "quiz",
+        yaw: 0,
+        pitch: 0,
+        attempts: 1,
+        questions: [
+          { id: "p1", question: "Uno", kind: "single", options: [{ id: "a", text: "A", correct: true }, { id: "b", text: "B" }] },
+          { id: "p2", question: "Dos", kind: "single", points: 2, options: [{ id: "c", text: "C" }, { id: "d", text: "D", correct: true }] },
+        ],
+      } as unknown as Hotspot,
+    });
+    const m = montar([quiz]);
+    const respuestas: unknown[][] = [];
+    (m.vr as unknown as { callbacks: VrCallbacks }).callbacks.onQuizAnswer = (...args) => {
+      respuestas.push(args);
+    };
+    type ConPanel = Interno & {
+      activateZone(zone: { id: string }, u: number): void;
+      panelState: { index: number; answered: boolean; selected: Set<string> };
+    };
+    const i = interno(m.vr) as ConPanel;
+    i.activateHotspot(quiz);
+    // Sin comprobar todas, el «›» de la última no lleva al resumen
+    i.activateZone({ id: "opt:a" }, 0);
+    i.activateZone({ id: "check" }, 0);
+    i.activateZone({ id: "next" }, 0);
+    expect(i.panelState).toMatchObject({ index: 1, answered: false });
+    i.activateZone({ id: "next" }, 0);
+    expect(i.panelState.index).toBe(1);
+    i.activateZone({ id: "opt:c" }, 0);
+    i.activateZone({ id: "check" }, 0);
+    expect(respuestas).toEqual([
+      ["qm", true, 1, ["a"], "p1"],
+      ["qm", false, 2, ["c"], "p2"],
+    ]);
+    // Volver atrás enseña la respuesta comprobada
+    i.activateZone({ id: "prev" }, 0);
+    expect(i.panelState.answered).toBe(true);
+    expect([...i.panelState.selected]).toEqual(["a"]);
+    // Con las dos comprobadas, la última lleva al resumen
+    i.activateZone({ id: "next" }, 0);
+    i.activateZone({ id: "next" }, 0);
+    expect(i.panelState.index).toBe(2);
+  });
+
+  it("con intentos ilimitados, fallar deja volver a probar y solo llega el acierto", () => {
+    const quiz = hotspot("q1", "quiz", {
+      hotspot: {
+        id: "q1",
+        type: "quiz",
+        yaw: 0,
+        pitch: 0,
+        question: "¿?",
+        kind: "single",
+        options: [{ id: "a", text: "A", correct: true }, { id: "b", text: "B" }],
+      } as unknown as Hotspot,
+    });
+    const m = montar([quiz]);
+    const respuestas: unknown[][] = [];
+    (m.vr as unknown as { callbacks: VrCallbacks }).callbacks.onQuizAnswer = (...args) => {
+      respuestas.push(args);
+    };
+    const i = interno(m.vr) as Interno & {
+      activateZone(zone: { id: string }, u: number): void;
+      panelState: { answered: boolean; wrongHint: boolean };
+    };
+    i.activateHotspot(quiz);
+    i.activateZone({ id: "opt:b" }, 0);
+    i.activateZone({ id: "check" }, 0);
+    expect(i.panelState).toMatchObject({ answered: false, wrongHint: true });
+    expect(respuestas).toEqual([]);
+    i.activateZone({ id: "opt:a" }, 0);
+    i.activateZone({ id: "check" }, 0);
+    expect(respuestas).toEqual([["q1", true, 1, ["a"], "q1"]]);
+  });
+});
+
 describe("Android con cartón: mirada tolerante al temblor", () => {
   it("mover la cabeza sin salir del hotspot no reinicia la permanencia", () => {
     const dwell = new GazeDwell(1500);

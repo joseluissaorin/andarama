@@ -42,6 +42,26 @@ describe("resultado del quiz", () => {
     expect(quizSignature(estado({ score: 2 }))).not.toBe(a);
   });
 
+  it("con varias preguntas en un marcador, cada una viaja con su questionId", () => {
+    const multi = estado({
+      score: 1,
+      maxScore: 3,
+      total: 3,
+      answered: 2,
+      detail: [
+        { hotspotId: "qm", questionId: "p1", sceneId: "s", correct: true, points: 1, selected: ["a"] },
+        { hotspotId: "qm", questionId: "p2", sceneId: "s", correct: false, points: 0, selected: ["a"] },
+      ],
+    });
+    const p = buildQuizPayload(multi, { sessionId: "s", ltiLaunchId: "abcdef0123456789" });
+    expect(p.detail.map((d) => d.questionId)).toEqual(["p1", "p2"]);
+    expect(p.maxScore).toBe(3);
+    expect(quizComplete(multi)).toBe(false);
+    // Dos preguntas del mismo marcador con la misma selección no se confunden
+    const cambiada = estado({ ...multi, detail: [{ ...multi.detail[0]!, questionId: "p2" }, { ...multi.detail[1]!, questionId: "p1" }] });
+    expect(quizSignature(cambiada)).not.toBe(quizSignature(multi));
+  });
+
   it("lee ?lti= y ?name= del lanzamiento y descarta basura", () => {
     expect(launchParams("?lti=0123456789abcdef&name=Ana%20P%C3%A9rez")).toEqual({
       ltiLaunchId: "0123456789abcdef",

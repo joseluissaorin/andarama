@@ -411,6 +411,28 @@
         "height": { "type": "number" }
       }
     },
+    "quizOption": {
+      "type": "object",
+      "required": ["id", "text"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "text": { "$ref": "#/$defs/l10n" },
+        "correct": { "type": "boolean" }
+      }
+    },
+    "quizQuestion": {
+      "type": "object",
+      "required": ["id", "question", "kind", "options"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "question": { "$ref": "#/$defs/l10n" },
+        "kind": { "enum": ["single", "multiple", "boolean"] },
+        "options": { "type": "array", "items": { "$ref": "#/$defs/quizOption" } },
+        "feedbackCorrect": { "$ref": "#/$defs/l10n" },
+        "feedbackWrong": { "$ref": "#/$defs/l10n" },
+        "points": { "type": "number", "minimum": 0 }
+      }
+    },
     "hotspotStyle": {
       "type": "object",
       "properties": {
@@ -564,7 +586,21 @@
         },
         {
           "if": { "properties": { "type": { "const": "quiz" } } },
-          "then": { "required": ["question", "kind", "options"] }
+          "then": {
+            "properties": {
+              "kind": { "enum": ["single", "multiple", "boolean"] },
+              "options": { "type": "array", "items": { "$ref": "#/$defs/quizOption" } },
+              "questions": { "type": "array", "items": { "$ref": "#/$defs/quizQuestion" } },
+              "points": { "type": "number", "minimum": 0 },
+              "passScore": { "type": "number", "minimum": 0, "maximum": 100 },
+              "attempts": { "type": "integer", "minimum": 0 },
+              "gate": { "type": "boolean" }
+            },
+            "anyOf": [
+              { "required": ["questions"], "properties": { "questions": { "minItems": 1 } } },
+              { "required": ["question", "kind", "options"] }
+            ]
+          }
         },
         {
           "if": { "properties": { "type": { "const": "polygon" } } },

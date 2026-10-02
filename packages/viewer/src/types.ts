@@ -53,7 +53,12 @@ export interface QuizStateEvent {
   answered: number;
   total: number;
   passed: boolean | null;
-  detail: { hotspotId: string; sceneId: string; correct: boolean; points: number; selected?: string[] }[];
+  /**
+   * Una entrada por pregunta respondida. `questionId` solo viene en los
+   * marcadores con varias preguntas (`questions`); en los de una sola, la
+   * pregunta es el propio marcador.
+   */
+  detail: { hotspotId: string; questionId?: string; sceneId: string; correct: boolean; points: number; selected?: string[] }[];
 }
 
 export type ViewerEventMap = {

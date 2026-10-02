@@ -119,9 +119,11 @@ acertar)**.
 
 Con la compuerta, nadie sale de esa escena hasta acertar la pregunta: los
 pasos se ven apagados y, al pulsarlos, se abre la pregunta con el aviso
-«Responde correctamente para poder avanzar». Fallar o agotar los intentos no
-abre la compuerta, y si pones varias preguntas con compuerta en la misma sala,
-hay que acertarlas todas.
+«Responde correctamente para poder avanzar». Fallar no abre la compuerta
+mientras queden intentos (con intentos ilimitados, hay que acertar); si los
+intentos son limitados y se agotan, la compuerta se abre y la pregunta cuenta
+como fallada. Si pones varias preguntas con compuerta en la misma sala, hay
+que superarlas todas.
 La compuerta frena cualquier salida, también la de un contador o un polígono
 que lleve a otra escena.
 

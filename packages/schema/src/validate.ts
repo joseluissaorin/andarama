@@ -290,12 +290,29 @@ function validateHotspotContent(
       }
       break;
     case "quiz": {
-      if (!Array.isArray(hs.options) || hs.options.length < 2)
-        err("quiz-few-options", `${hp}.options`, "Quiz con menos de 2 opciones");
-      const correct = (hs.options ?? []).filter((o) => o.correct).length;
-      if (correct === 0) err("quiz-no-correct", `${hp}.options`, "Quiz sin opcion correcta");
-      if (hs.kind === "single" && correct > 1)
-        err("quiz-multi-correct", `${hp}.options`, "Quiz de opcion unica con varias correctas");
+      // Forma heredada (una pregunta suelta) o varias en `questions`
+      const multi = Array.isArray(hs.questions) && hs.questions.length > 0;
+      if (hs.questions != null && !Array.isArray(hs.questions))
+        err("quiz-bad-questions", `${hp}.questions`, "Las preguntas del quiz deben ser una lista");
+      const preguntas = multi
+        ? hs.questions!.map((q, k) => ({ q, qp: `${hp}.questions[${k}]` }))
+        : [{ q: { id: hs.id, kind: hs.kind, options: hs.options }, qp: hp }];
+      const vistos = new Set<string>();
+      for (const { q, qp } of preguntas) {
+        if (multi) {
+          if (typeof q.id !== "string" || q.id === "") err("quiz-question-no-id", qp, "Pregunta sin id");
+          else if (vistos.has(q.id)) err("quiz-dup-question-id", `${qp}.id`, `ID de pregunta duplicado: ${q.id}`);
+          else vistos.add(q.id);
+        }
+        if (!Array.isArray(q.options) || q.options.length < 2)
+          err("quiz-few-options", `${qp}.options`, "Quiz con menos de 2 opciones");
+        const correct = (Array.isArray(q.options) ? q.options : []).filter((o) => o.correct).length;
+        if (correct === 0) err("quiz-no-correct", `${qp}.options`, "Quiz sin opcion correcta");
+        if (q.kind === "single" && correct > 1)
+          err("quiz-multi-correct", `${qp}.options`, "Quiz de opcion unica con varias correctas");
+      }
+      if (hs.passScore != null && (!isFiniteNumber(hs.passScore) || hs.passScore < 0 || hs.passScore > 100))
+        err("quiz-bad-pass-score", `${hp}.passScore`, "La nota mínima debe ser un porcentaje entre 0 y 100");
       break;
     }
     case "polygon":

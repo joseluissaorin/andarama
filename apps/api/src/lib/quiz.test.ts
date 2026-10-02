@@ -60,3 +60,57 @@ describe("nota del quiz en el servidor", () => {
     expect(scoreQuiz(tour(80), [{ hotspotId: "q1", selected: ["a"] }, { hotspotId: "q2", selected: [] }]).passed).toBe(false);
   });
 });
+
+describe("nota del quiz con varias preguntas en un marcador", () => {
+  function tourMulti(passingScore?: number): Tour {
+    const t = tour(passingScore);
+    t.scenes[0]!.hotspots.push({
+      id: "qm",
+      type: "quiz",
+      yaw: 0,
+      pitch: 0,
+      questions: [
+        { id: "p1", question: "Uno", kind: "single", options: [{ id: "a", text: "A", correct: true }, { id: "b", text: "B" }] },
+        { id: "p2", question: "Dos", kind: "boolean", points: 3, options: [{ id: "v", text: "V", correct: true }, { id: "f", text: "F" }] },
+      ],
+    } as never);
+    return t;
+  }
+
+  it("cada pregunta cuenta en el total y sus puntos en el máximo (LTI y CSV usan esta nota)", () => {
+    const r = scoreQuiz(tourMulti(), [
+      { hotspotId: "q1", selected: ["a"] },
+      { hotspotId: "q2", selected: ["x", "y"] },
+      { hotspotId: "qm", questionId: "p1", selected: ["a"] },
+      { hotspotId: "qm", questionId: "p2", selected: ["v"] },
+    ]);
+    expect(r).toMatchObject({ score: 7, maxScore: 7, answered: 4, total: 4 });
+    expect(r.detail.filter((d) => d.hotspotId === "qm").map((d) => d.questionId)).toEqual(["p1", "p2"]);
+  });
+
+  it("acierto parcial: solo suman las preguntas acertadas", () => {
+    const r = scoreQuiz(tourMulti(), [
+      { hotspotId: "qm", questionId: "p1", selected: ["b"] },
+      { hotspotId: "qm", questionId: "p2", selected: ["v"] },
+    ]);
+    expect(r).toMatchObject({ score: 3, maxScore: 7, answered: 2, total: 4, passed: null });
+  });
+
+  it("sin questionId no se puntúa una pregunta de un marcador con varias", () => {
+    const r = scoreQuiz(tourMulti(), [{ hotspotId: "qm", selected: ["a"] }]);
+    expect(r.answered).toBe(0);
+    expect(r.score).toBe(0);
+  });
+
+  it("el aprobado del tour sale del porcentaje sobre todas las preguntas", () => {
+    const todas = [
+      { hotspotId: "q1", selected: ["a"] },
+      { hotspotId: "q2", selected: [] },
+      { hotspotId: "qm", questionId: "p1", selected: ["a"] },
+      { hotspotId: "qm", questionId: "p2", selected: ["v"] },
+    ];
+    // 6 de 7 = 85,7 %
+    expect(scoreQuiz(tourMulti(80), todas).passed).toBe(true);
+    expect(scoreQuiz(tourMulti(90), todas).passed).toBe(false);
+  });
+});
