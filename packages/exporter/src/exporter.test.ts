@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Tour } from "@andarama/schema";
 import {
+  AssetReadError,
   buildZip,
   filterTourLangs,
   limitTourResolution,
@@ -15,7 +16,9 @@ import {
   runExport,
   stripDownloads,
   ZipWriter,
+  withRetry,
   type AssetProvider,
+  type ExportProgress,
 } from "./index.js";
 
 function sampleTour(): Tour {
@@ -192,6 +195,121 @@ describe("runExport", () => {
     expect(listing).toContain("tiles/m1/1/f/0/0.webp");
     expect(listing).not.toContain("tiles/m1/2/f/0/0.webp");
     expect(listing).not.toContain("tiles/m1/3/f/0/0.webp");
+  });
+});
+
+describe("lecturas que fallan", () => {
+  const noWait = { sleep: async () => {} };
+
+  it("reintenta los 5xx con espera creciente y azar, y se rinde tras 4 reintentos", async () => {
+    const waits: number[] = [];
+    let calls = 0;
+    const fail = (): Promise<never> => {
+      calls++;
+      return Promise.reject(new AssetReadError("caído", 500));
+    };
+    await expect(
+      withRetry(fail, { sleep: async (ms) => void waits.push(ms), random: () => 1, baseDelayMs: 100, maxDelayMs: 1000 }),
+    ).rejects.toThrow("caído");
+    expect(calls).toBe(5);
+    expect(waits).toEqual([100, 200, 400, 800]);
+    // Con el azar a cero la espera es la mitad del tope
+    const halves: number[] = [];
+    await withRetry(fail, { sleep: async (ms) => void halves.push(ms), random: () => 0, baseDelayMs: 100, maxDelayMs: 300 }).catch(() => {});
+    expect(halves).toEqual([50, 100, 150, 150]);
+  });
+
+  it("no reintenta un 404 y sí un 429 o un fallo de red", async () => {
+    let calls = 0;
+    await expect(withRetry(() => (calls++, Promise.reject(new AssetReadError("no está", 404))), noWait)).rejects.toThrow();
+    expect(calls).toBe(1);
+    let n = 0;
+    const flaky = (): Promise<string> => {
+      n++;
+      if (n === 1) return Promise.reject(new AssetReadError("despacio", 429));
+      if (n === 2) return Promise.reject(new TypeError("Failed to fetch"));
+      return Promise.resolve("ok");
+    };
+    expect(await withRetry(flaky, noWait)).toBe("ok");
+    expect(n).toBe(3);
+  });
+
+  it("con un 5 % de errores 500 y un 404 permanente, termina el ZIP y anota lo que falta en LEEME.md", async () => {
+    const paths = Array.from({ length: 400 }, (_, i) => `tiles/m1/2/f/${Math.floor(i / 20)}/${i % 20}.webp`);
+    const lost = "tiles/m1/2/f/7/3.webp";
+    // Estas tres fallan más veces que los reintentos de una lectura: se
+    // apartan y se recuperan en la segunda vuelta
+    const stubborn = new Set(["tiles/m1/2/f/1/1.webp", "tiles/m1/2/f/9/9.webp", "tiles/m1/2/f/19/0.webp"]);
+    const attempts = new Map<string, number>();
+    let seed = 42;
+    const random = (): number => {
+      seed = (seed * 1103515245 + 12345) % 2 ** 31;
+      return seed / 2 ** 31;
+    };
+    const provider: AssetProvider = {
+      list: async () => paths,
+      read: async (path) => {
+        const n = (attempts.get(path) ?? 0) + 1;
+        attempts.set(path, n);
+        if (path === lost) throw new AssetReadError(`No se pudo leer ${path} (404)`, 404);
+        if (stubborn.has(path) && n <= 5) throw new AssetReadError(`No se pudo leer ${path} (500)`, 500);
+        if (random() < 0.05) throw new AssetReadError(`No se pudo leer ${path} (500)`, 500);
+        return new Uint8Array([1, 2, 3, 4]);
+      },
+    };
+    const chunks: Uint8Array[] = [];
+    const writer = new ZipWriter((c) => {
+      chunks.push(c);
+    });
+    const progress: ExportProgress[] = [];
+    const tour = sampleTour();
+    tour.scenes[0]!.hotspots = [];
+    const result = await runExport(
+      tour,
+      [{ path: "viewer.js", data: new TextEncoder().encode("// visor") }],
+      provider,
+      { retry: noWait, concurrency: 10 },
+      writer,
+      (p) => progress.push(p),
+    );
+    expect(result.missing).toEqual([lost]);
+    // Hubo errores pasajeros de verdad, y todos se reintentaron
+    expect([...attempts.values()].filter((n) => n > 1).length).toBeGreaterThan(10);
+    expect(progress.some((p) => p.phase === "retry")).toBe(true);
+    const last = progress.filter((p) => p.phase === "assets").at(-1)!;
+    expect(last.done).toBe(400);
+    expect(progress.filter((p) => p.phase === "retry").at(-1)!.bytes).toBe(399 * 4);
+
+    const dir = mkdtempSync(join(tmpdir(), "anda-export-"));
+    const zipPath = join(dir, "export.zip");
+    writeFileSync(zipPath, Buffer.concat(chunks));
+    expect(execFileSync("unzip", ["-t", zipPath]).toString()).toContain("No errors detected");
+    const listing = execFileSync("unzip", ["-l", zipPath]).toString();
+    for (const path of stubborn) expect(listing).toContain(path);
+    expect(listing).not.toContain(lost);
+    const leeme = execFileSync("unzip", ["-p", zipPath, "LEEME.md"]).toString();
+    expect(leeme).toContain("## Ficheros que faltan");
+    expect(leeme).toContain(`\`${lost}\` (error 404)`);
+    expect(leeme).toContain("un fichero");
+  });
+
+  it("sin errores, LEEME.md no lleva el apartado de ficheros que faltan", async () => {
+    const chunks: Uint8Array[] = [];
+    const tour = sampleTour();
+    const result = await runExport(
+      tour,
+      [{ path: "viewer.js", data: new TextEncoder().encode("// visor") }],
+      { list: async () => ["media/foto.jpg"], read: async () => new Uint8Array([1]) },
+      {},
+      new ZipWriter((c) => {
+        chunks.push(c);
+      }),
+    );
+    expect(result.missing).toEqual([]);
+    const dir = mkdtempSync(join(tmpdir(), "anda-export-"));
+    const zipPath = join(dir, "export.zip");
+    writeFileSync(zipPath, Buffer.concat(chunks));
+    expect(execFileSync("unzip", ["-p", zipPath, "LEEME.md"]).toString()).not.toContain("Ficheros que faltan");
   });
 });
 

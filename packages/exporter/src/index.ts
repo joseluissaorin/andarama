@@ -41,10 +41,12 @@ export interface ExportOptions {
   /** Modo kiosko: autopilot + reinicio por inactividad. */
   kiosk?: boolean;
   /**
-   * Lecturas de assets en paralelo (por defecto 6). Antes se pedían de una en
+   * Lecturas de assets en paralelo (por defecto 10). Antes se pedían de una en
    * una y una escena teselada tiene miles de teselas: el ZIP tardaba minutos.
    */
   concurrency?: number;
+  /** Reintentos de cada lectura fallida (por defecto 4, con espera creciente). */
+  retry?: RetryOptions;
 }
 
 export interface AssetFile {
@@ -60,9 +62,76 @@ export interface AssetProvider {
 }
 
 export interface ExportProgress {
-  phase: "assets" | "viewer" | "finalize";
+  /** "retry": segunda vuelta para los ficheros que fallaron en la primera. */
+  phase: "assets" | "retry" | "viewer" | "finalize";
   done: number;
   total: number;
+  /** Bytes de assets descargados hasta ahora. */
+  bytes?: number;
+  /** Ficheros apartados por error, pendientes de la segunda vuelta. */
+  skipped?: number;
+}
+
+/** Resultado del export; `missing` son los ficheros que no se pudieron leer. */
+export interface ExportResult {
+  files: number;
+  bytes: number;
+  missing: string[];
+}
+
+/** Lectura fallida de un asset, con el estado HTTP si lo hubo (null: red). */
+export class AssetReadError extends Error {
+  readonly status: number | null;
+  constructor(message: string, status: number | null) {
+    super(message);
+    this.name = "AssetReadError";
+    this.status = status;
+  }
+}
+
+export interface RetryOptions {
+  /** Reintentos tras el primer intento (por defecto 4). */
+  retries?: number;
+  /** Espera base en ms; se dobla en cada reintento (por defecto 500). */
+  baseDelayMs?: number;
+  /** Tope de la espera en ms (por defecto 8000). */
+  maxDelayMs?: number;
+  /** Para las pruebas: espera y azar sustituibles. */
+  sleep?: (ms: number) => Promise<void>;
+  random?: () => number;
+}
+
+/**
+ * ¿Merece la pena reintentar? Sí con errores del servidor (5xx), límites de
+ * ritmo (429), tiempos agotados (408) y fallos de red; no con un 404 o un 403,
+ * que van a responder lo mismo.
+ */
+export function isRetryableReadError(err: unknown): boolean {
+  if (err instanceof AssetReadError) {
+    return err.status == null || err.status >= 500 || err.status === 429 || err.status === 408;
+  }
+  return true;
+}
+
+/**
+ * Repite `fn` con espera exponencial y azar (la mitad fija, la otra mitad
+ * aleatoria) para que las lecturas en paralelo no reintenten a la vez.
+ */
+export async function withRetry<T>(fn: () => Promise<T>, opts: RetryOptions = {}): Promise<T> {
+  const retries = opts.retries ?? 4;
+  const base = opts.baseDelayMs ?? 500;
+  const max = opts.maxDelayMs ?? 8000;
+  const sleep = opts.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  const random = opts.random ?? Math.random;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt >= retries || !isRetryableReadError(err)) throw err;
+      const ceiling = Math.min(max, base * 2 ** attempt);
+      await sleep(ceiling / 2 + random() * (ceiling / 2));
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -154,13 +223,13 @@ function shouldSkipTile(path: string, skippedLevelFor: Map<string, number>): boo
  * cuello de botella del export; el orden se conserva para que el paquete
  * salga siempre igual. La memoria queda acotada a `concurrency` lecturas.
  */
-export async function readAhead<T>(
+export async function readAhead<T, R = Uint8Array>(
   items: T[],
   concurrency: number,
-  read: (item: T) => Promise<Uint8Array>,
-  consume: (item: T, data: Uint8Array) => Promise<void>,
+  read: (item: T) => Promise<R>,
+  consume: (item: T, data: R) => Promise<void>,
 ): Promise<void> {
-  const inflight = new Map<number, Promise<Uint8Array>>();
+  const inflight = new Map<number, Promise<R>>();
   let launched = 0;
   const width = Math.max(1, Math.floor(concurrency));
   for (let consumed = 0; consumed < items.length; consumed++) {
@@ -247,7 +316,7 @@ export async function runExport(
   options: ExportOptions,
   writer: ZipWriter,
   onProgress?: (p: ExportProgress) => void,
-): Promise<{ files: number; bytes: number }> {
+): Promise<ExportResult> {
   let tour = structuredClone(tourInput);
   if (options.langs != null && options.langs.length > 0) tour = filterTourLangs(tour, options.langs);
   if (options.includeDownloads === false) tour = stripDownloads(tour);
@@ -272,7 +341,39 @@ export async function runExport(
     await writer.addFile(path, data);
     packageFiles.push(path);
   };
-  const concurrency = options.concurrency ?? 6;
+  const concurrency = options.concurrency ?? 10;
+  // Un fichero que falla no tumba el paquete: se reintenta, se aparta, se le
+  // da una segunda vuelta al final y, si sigue sin leerse, se anota en LEEME.md
+  const missing = new Map<string, string>();
+  let assetBytes = 0;
+  const readAssets = async (paths: string[], consume: (path: string, data: Uint8Array) => Promise<void>): Promise<void> => {
+    const attempt = (path: string): Promise<Uint8Array | AssetReadError> =>
+      withRetry(() => assets.read(path), options.retry).catch((err: unknown) =>
+        err instanceof AssetReadError ? err : new AssetReadError(String(err instanceof Error ? err.message : err), null),
+      );
+    const skipped: string[] = [];
+    let done = 0;
+    await readAhead(paths, concurrency, attempt, async (path, data) => {
+      if (data instanceof AssetReadError) skipped.push(path);
+      else {
+        assetBytes += data.byteLength;
+        await consume(path, data);
+      }
+      onProgress?.({ phase: "assets", done: ++done, total: paths.length, bytes: assetBytes, skipped: skipped.length });
+    });
+    if (skipped.length === 0) return;
+    done = 0;
+    // Segunda vuelta más despacio: lo que falló suele ser un pico del servidor
+    await readAhead(skipped, Math.min(2, concurrency), attempt, async (path, data) => {
+      if (data instanceof AssetReadError) missing.set(path, data.status != null ? `error ${data.status}` : "error de red");
+      else {
+        assetBytes += data.byteLength;
+        await consume(path, data);
+      }
+      onProgress?.({ phase: "retry", done: ++done, total: skipped.length, bytes: assetBytes, skipped: missing.size });
+    });
+  };
+  const readme = (): Uint8Array => enc.encode(renderReadme(title) + renderMissingFiles(missing));
   const scormJs = options.scorm != null ? renderScormAdapter(options.scorm, tour.quiz?.passingScore ?? null) : null;
 
   if (options.singleFile === true) {
@@ -283,10 +384,8 @@ export async function runExport(
       (path) => !shouldSkipTile(path, skippedLevelFor) && !/\/\d+\/[fblrud]\/\d+\/\d+\.(webp|jpg|avif)$/.test(path),
     );
     const dataUris = new Map<string, string>();
-    let done = 0;
-    await readAhead(assetPaths, concurrency, (path) => assets.read(path), async (path, data) => {
+    await readAssets(assetPaths, async (path, data) => {
       dataUris.set(path, `data:${guessMime(path)};base64,${toBase64(data)}`);
-      onProgress?.({ phase: "assets", done: ++done, total: assetPaths.length });
     });
     const tourJson = JSON.stringify(tour);
     const rewritten = tourJson.replace(/"((?:media|tiles|assets)\/[^"]+)"/g, (match, path: string) => {
@@ -312,7 +411,7 @@ export async function runExport(
       inlineScormJs: scormJs ?? undefined,
     });
     await add("index.html", enc.encode(html));
-    await add("LEEME.md", enc.encode(renderReadme(title)));
+    await add("LEEME.md", readme());
   } else {
     // Paquete estandar
     let done = 0;
@@ -330,11 +429,7 @@ export async function runExport(
     // Los PDF y las imágenes se mantienen aunque no haya descargas: el
     // visitante los ve dentro del recorrido; solo se retira el botón.
     const assetPaths = (await assets.list()).filter((path) => !shouldSkipTile(path, skippedLevelFor));
-    done = 0;
-    await readAhead(assetPaths, concurrency, (path) => assets.read(path), async (path, data) => {
-      await add(path, data);
-      onProgress?.({ phase: "assets", done: ++done, total: assetPaths.length });
-    });
+    await readAssets(assetPaths, (path, data) => add(path, data));
     const accessibleHtml = renderAccessibleHtml(tour, lang);
     const html = renderIndexHtml({
       title,
@@ -353,7 +448,7 @@ export async function runExport(
     // Paquete listo para un alojamiento estático básico: tipos MIME de
     // Apache e instrucciones de publicación (incluido el HTTPS que exige VR).
     await add(".htaccess", enc.encode(renderHtaccess()));
-    await add("LEEME.md", enc.encode(renderReadme(title)));
+    await add("LEEME.md", readme());
   }
 
   onProgress?.({ phase: "finalize", done: 0, total: 1 });
@@ -382,7 +477,28 @@ export async function runExport(
 
   await writer.close();
   onProgress?.({ phase: "finalize", done: 1, total: 1 });
-  return { files: writer.fileCount, bytes: writer.bytesWritten };
+  return { files: writer.fileCount, bytes: writer.bytesWritten, missing: [...missing.keys()].sort() };
+}
+
+/** Apartado de LEEME.md con los ficheros que no entraron en el paquete. */
+export function renderMissingFiles(missing: Map<string, string>): string {
+  if (missing.size === 0) return "";
+  const list = [...missing.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([path, reason]) => `- \`${path}\` (${reason})`)
+    .join("\n");
+  return `
+## Ficheros que faltan
+
+Al generar este paquete no se pudieron descargar ${missing.size === 1 ? "un fichero" : `${missing.size} ficheros`}, ni
+siquiera tras varios reintentos. El recorrido funciona, pero donde se usan se
+verá un hueco: una tesela en negro, o una imagen o un audio que no cargan.
+Vuelve a exportar el tour para completarlo. Si el fallo se repite con los
+mismos ficheros, es probable que falten en el almacenamiento y haya que volver
+a subir el medio correspondiente desde el Studio.
+
+${list}
+`;
 }
 
 function hashCode(s: string): number {

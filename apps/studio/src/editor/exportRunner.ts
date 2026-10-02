@@ -1,4 +1,4 @@
-import type { ExportProgress } from "@andarama/exporter";
+import type { ExportProgress, ExportResult } from "@andarama/exporter";
 import { runExportJob, type ExportJob } from "./exportJob";
 
 /**
@@ -82,7 +82,7 @@ export function runExportInWorker(
     onChunk: (chunk: Uint8Array) => void;
     onProgress: (p: ExportProgress) => void;
   },
-): Promise<{ files: number; bytes: number }> {
+): Promise<ExportResult> {
   let worker: Worker;
   try {
     worker = new Worker(new URL("./exportWorker.ts", import.meta.url), { type: "module" });
@@ -91,7 +91,7 @@ export function runExportInWorker(
   }
   return new Promise((resolve, reject) => {
     worker.addEventListener("message", (e: MessageEvent) => {
-      const msg = e.data as { type: string; id?: number; data?: Uint8Array; p?: ExportProgress; result?: { files: number; bytes: number }; message?: string };
+      const msg = e.data as { type: string; id?: number; data?: Uint8Array; p?: ExportProgress; result?: ExportResult; message?: string };
       switch (msg.type) {
         case "headers":
           void hooks.getHeaders().then((headers) => worker.postMessage({ type: "headers", id: msg.id, headers }));

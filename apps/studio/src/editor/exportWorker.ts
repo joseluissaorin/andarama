@@ -20,17 +20,24 @@ const ctx = self as unknown as {
 let nextId = 0;
 const waiting = new Map<number, (headers: Record<string, string>) => void>();
 let cached: { headers: Record<string, string>; at: number } | null = null;
+let pending: Promise<Record<string, string>> | null = null;
 
-/** El token se pide al hilo principal y se reutiliza unos segundos. */
+/**
+ * El token se pide al hilo principal y se reutiliza unos segundos. Las
+ * lecturas en paralelo que lo piden a la vez comparten la misma petición.
+ */
 async function getHeaders(): Promise<Record<string, string>> {
   if (cached != null && Date.now() - cached.at < 20_000) return cached.headers;
-  const id = nextId++;
-  const headers = await new Promise<Record<string, string>>((resolve) => {
+  pending ??= new Promise<Record<string, string>>((resolve) => {
+    const id = nextId++;
     waiting.set(id, resolve);
     ctx.postMessage({ type: "headers", id });
+  }).then((headers) => {
+    cached = { headers, at: Date.now() };
+    pending = null;
+    return headers;
   });
-  cached = { headers, at: Date.now() };
-  return headers;
+  return pending;
 }
 
 ctx.addEventListener("message", (e: MessageEvent) => {
