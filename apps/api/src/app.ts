@@ -7,7 +7,7 @@ import { checkCsrf, resolveAuth } from "./lib/session.js";
 import { newToken } from "./lib/util.js";
 import { authRoutes } from "./routes/auth.js";
 import { orgRoutes } from "./routes/orgs.js";
-import { projectRoutes } from "./routes/projects.js";
+import { exportBlobRoutes, projectRoutes } from "./routes/projects.js";
 import { contentRoutes } from "./routes/content.js";
 import { directUploadRoutes, mediaRoutes } from "./routes/media.js";
 import { translationRoutes } from "./routes/translations.js";
@@ -126,6 +126,8 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
 
   // Subida directa pass-through (firmada HMAC; sin sesion ni CSRF)
   app.route("/", directUploadRoutes());
+  // Ficheros del export ZIP con vale firmado (sin sesión por fichero)
+  app.route("/", exportBlobRoutes());
 
   // Autenticacion + CSRF en /api
   app.use("/api/*", async (c, next) => {

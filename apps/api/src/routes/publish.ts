@@ -12,6 +12,7 @@ import { audit } from "../lib/helpers.js";
 import { assertTourQuota } from "../lib/quota.js";
 import { orgHas, requireActivePlan, requireOrgCapability } from "../lib/capabilities.js";
 import { compileProject } from "../compiler.js";
+import { exportScope, PREVIEW_MAP_TTL_SECONDS, signExportToken } from "../lib/export-token.js";
 import { hmacSign } from "@andarama/adapters";
 
 /**
@@ -609,14 +610,18 @@ export function publishRoutes(): Hono<AppEnv> {
         cursor = page.cursor;
       }
     }
-    await runtime.kv.put(
-      `preview-map:${access.project.id}`,
-      JSON.stringify({ assets: compiled.assets, prefixes: compiled.prefixes }),
-      { ttlSeconds: 3600 },
-    );
+    const map = { assets: compiled.assets, prefixes: compiled.prefixes };
+    try {
+      await runtime.kv.put(`preview-map:${access.project.id}`, JSON.stringify(map), { ttlSeconds: PREVIEW_MAP_TTL_SECONDS });
+    } catch (err) {
+      console.warn("[export] no se pudo guardar el mapa de assets:", err);
+    }
+    // Vale para descargar los ficheros sin pasar por sesión ni D1 en cada uno
+    const token = await signExportToken(c.get("config").secret, access.project.id, exportScope(map));
     return c.json({
       tour: compiled.tour,
       assets: assetPaths,
+      token,
       warnings: compiled.issues.filter((i) => i.severity === "warning"),
     });
   });

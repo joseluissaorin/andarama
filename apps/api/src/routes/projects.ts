@@ -19,6 +19,7 @@ import { resolveNewTourSettings, type OrgDefaults, type UserPrefs } from "../lib
 import { galleryInfo } from "./publish.js";
 import { compileProject } from "../compiler.js";
 import { embedResponse } from "../lib/embed.js";
+import { PREVIEW_MAP_TTL_SECONDS, verifyExportToken } from "../lib/export-token.js";
 import { orgPlanActive, requireActivePlan } from "../lib/capabilities.js";
 import { cloneProjectContent, isOperatorTemplate, listSectorTemplates, templateOrgIds } from "../lib/templates.js";
 
@@ -334,12 +335,17 @@ export function projectRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const access = await projectAccess(db, c.req.param("projectId"), auth.user);
     const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
-    // Cachear el mapa de assets para el servido de preview
-    await c.get("runtime").kv.put(
-      `preview-map:${access.project.id}`,
-      JSON.stringify({ assets: compiled.assets, prefixes: compiled.prefixes }),
-      { ttlSeconds: 3600 },
-    );
+    // Cachear el mapa de assets para el servido de preview. KV admite una
+    // escritura por segundo y clave: si se pasa, la vista previa recompila.
+    try {
+      await c.get("runtime").kv.put(
+        `preview-map:${access.project.id}`,
+        JSON.stringify({ assets: compiled.assets, prefixes: compiled.prefixes }),
+        { ttlSeconds: PREVIEW_MAP_TTL_SECONDS },
+      );
+    } catch (err) {
+      console.warn("[preview] no se pudo guardar el mapa de assets:", err);
+    }
     return c.json({ tour: compiled.tour, issues: compiled.issues });
   });
 
@@ -366,7 +372,13 @@ export function projectRoutes(): Hono<AppEnv> {
     if (map == null) {
       const compiled = await compileProject(db, access.project.id, { sharedOrgIds: await templateOrgIds(db, c.get("config")) });
       map = { assets: compiled.assets, prefixes: compiled.prefixes };
-      await runtime.kv.put(`preview-map:${access.project.id}`, JSON.stringify(map), { ttlSeconds: 3600 });
+      // Con el mapa caducado, varias teselas en paralelo lo reescriben a la
+      // vez y KV responde 429: el fichero se sirve igual aunque no se guarde.
+      try {
+        await runtime.kv.put(`preview-map:${access.project.id}`, JSON.stringify(map), { ttlSeconds: PREVIEW_MAP_TTL_SECONDS });
+      } catch (err) {
+        console.warn("[preview] no se pudo guardar el mapa de assets:", err);
+      }
     }
     const key = resolveAssetKey(rel, map);
     if (key == null) throw notFound("Asset no incluido en el tour");
@@ -380,6 +392,31 @@ export function projectRoutes(): Hono<AppEnv> {
     });
   });
 
+  return r;
+}
+
+/**
+ * Descarga de ficheros del export ZIP con el vale firmado de POST /export:
+ * sin sesión, sin D1 y sin KV por fichero. Se monta antes de la autenticación
+ * de /api, como la subida directa.
+ */
+export function exportBlobRoutes(): Hono<AppEnv> {
+  const r = new Hono<AppEnv>();
+  r.get("/api/v1/projects/:projectId/export/blob", async (c) => {
+    const key = c.req.query("k") ?? "";
+    const token = c.req.query("t") ?? "";
+    if (!(await verifyExportToken(c.get("config").secret, token, c.req.param("projectId"), key))) {
+      throw forbidden("Vale de descarga inválido o caducado");
+    }
+    const obj = await c.get("runtime").storage.get(key);
+    if (obj == null) throw notFound("Asset no encontrado en almacenamiento");
+    return new Response(obj.body as unknown as BodyInit, {
+      headers: {
+        "content-type": obj.meta.contentType ?? guessContentType(key),
+        "cache-control": "private, max-age=3600",
+      },
+    });
+  });
   return r;
 }
 

@@ -81,6 +81,7 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/projects/{id}/versions/{n}/tour": { get: p("tour.json de una version (diff)", "publish") },
       "/projects/{id}/versions/{n}/restore": { post: p("Republicar version anterior", "publish") },
       "/projects/{id}/export": { post: p("Parámetros de export: tour compilado + lista de assets (el ZIP se arma en el navegador)", "publish") },
+      "/projects/{id}/export/blob": { get: p("Fichero del export con el vale de POST /export (?k=clave&t=vale, sin sesión)", "publish") },
       "/projects/{id}/export.andarama": { get: p("Exportar proyecto portable .andarama", "publish") },
       "/projects/import.andarama": { post: p("Importar proyecto .andarama", "publish") },
       "/gallery": { get: p("Galería pública de recorridos: listado paginado (?lang=&country=&page=), sin sesión", "public") },
