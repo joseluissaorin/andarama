@@ -142,6 +142,7 @@
   "form_gate_scene": "Invia il modulo di questa scena per proseguire",
   "form_already_sent": "Hai già inviato questo modulo. Grazie.",
   "treasure_gate_scene": "Trova il tesoro di questa scena per proseguire",
+  "nav_gate_scene": "Completa quanto in sospeso in questa scena per poter avanzare",
   "treasure_complete_all": "Hai trovato tutti i tesori!",
   "treasure_show_hint": "Mostra un indizio",
   "treasure_no_hint": "Nessun indizio qui: continua a cercare.",

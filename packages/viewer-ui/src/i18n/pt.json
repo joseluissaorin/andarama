@@ -142,6 +142,7 @@
   "form_gate_scene": "Envia o formulário desta cena para avançar",
   "form_already_sent": "Já enviaste este formulário. Obrigado.",
   "treasure_gate_scene": "Encontra o tesouro desta cena para avançar",
+  "nav_gate_scene": "Completa o que está pendente nesta cena para avançar",
   "treasure_complete_all": "Encontraste todos os tesouros!",
   "treasure_show_hint": "Ver uma pista",
   "treasure_no_hint": "Não há pistas aqui: continua a procurar.",

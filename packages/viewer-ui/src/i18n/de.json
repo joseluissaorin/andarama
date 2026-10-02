@@ -142,6 +142,7 @@
   "form_gate_scene": "Sende das Formular dieser Szene ab, um weiterzukommen",
   "form_already_sent": "Du hast dieses Formular bereits gesendet. Danke.",
   "treasure_gate_scene": "Finde den Schatz in dieser Szene, um weiterzukommen",
+  "nav_gate_scene": "Schließe die offenen Aufgaben in dieser Szene ab, um fortzufahren",
   "treasure_complete_all": "Du hast alle Schätze gefunden!",
   "treasure_show_hint": "Hinweis anzeigen",
   "treasure_no_hint": "Hier gibt es keinen Hinweis: Suche weiter.",

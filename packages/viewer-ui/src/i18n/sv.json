@@ -142,6 +142,7 @@
   "form_gate_scene": "Skicka formuläret i den här scenen för att gå vidare",
   "form_already_sent": "Du har redan skickat det här formuläret. Tack.",
   "treasure_gate_scene": "Hitta skatten i den här scenen för att gå vidare",
+  "nav_gate_scene": "Slutför det som återstår i den här scenen för att gå vidare",
   "treasure_complete_all": "Du har hittat alla skatter!",
   "treasure_show_hint": "Visa en ledtråd",
   "treasure_no_hint": "Det finns ingen ledtråd här: fortsätt leta.",

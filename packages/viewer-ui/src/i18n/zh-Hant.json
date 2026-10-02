@@ -142,6 +142,7 @@
   "form_gate_scene": "送出此場景的表單以繼續",
   "form_already_sent": "你已送出此表單，謝謝。",
   "treasure_gate_scene": "找出此場景中的寶藏以繼續",
+  "nav_gate_scene": "完成此場景中的待辦事項以繼續前進",
   "treasure_complete_all": "你已找到所有寶藏！",
   "treasure_show_hint": "查看提示",
   "treasure_no_hint": "這裡沒有提示，繼續找找看吧。",

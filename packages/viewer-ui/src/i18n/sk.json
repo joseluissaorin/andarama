@@ -142,6 +142,7 @@
   "form_gate_scene": "Odošli formulár v tejto scéne, aby si mohol pokračovať",
   "form_already_sent": "Tento formulár si už odoslal. Ďakujeme.",
   "treasure_gate_scene": "Nájdi poklad v tejto scéne, aby si mohol pokračovať",
+  "nav_gate_scene": "Dokonči všetko potrebné v tejto scéne, aby si mohol pokračovať.",
   "treasure_complete_all": "Našiel si všetky poklady!",
   "treasure_show_hint": "Zobraziť nápovedu",
   "treasure_no_hint": "Tu nie je žiadna nápoveda: hľadaj ďalej.",

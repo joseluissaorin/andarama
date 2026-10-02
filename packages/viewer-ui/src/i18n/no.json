@@ -142,6 +142,7 @@
   "form_gate_scene": "Send inn skjemaet i denne scenen for å gå videre",
   "form_already_sent": "Du har allerede sendt inn dette skjemaet. Takk.",
   "treasure_gate_scene": "Finn skatten i denne scenen for å gå videre",
+  "nav_gate_scene": "Fullfør det som gjenstår i denne scenen for å gå videre",
   "treasure_complete_all": "Du har funnet alle skattene!",
   "treasure_show_hint": "Vis et hint",
   "treasure_no_hint": "Ingen hint her: fortsett å lete.",

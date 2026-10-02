@@ -142,6 +142,7 @@
   "form_gate_scene": "提交此场景中的表单即可继续",
   "form_already_sent": "你已提交过此表单，谢谢。",
   "treasure_gate_scene": "找到此场景中的宝藏即可继续",
+  "nav_gate_scene": "完成此场景中的待处理事项即可继续",
   "treasure_complete_all": "你已找到所有宝藏！",
   "treasure_show_hint": "查看提示",
   "treasure_no_hint": "这里没有提示，继续寻找吧。",

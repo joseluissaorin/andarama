@@ -142,6 +142,7 @@
   "form_gate_scene": "Lähetä tämän näkymän lomake jatkaaksesi",
   "form_already_sent": "Olet jo lähettänyt tämän lomakkeen. Kiitos.",
   "treasure_gate_scene": "Löydä tämän näkymän aarre jatkaaksesi",
+  "nav_gate_scene": "Suorita keskeneräiset toimet tässä näkymässä päästäksesi eteenpäin",
   "treasure_complete_all": "Olet löytänyt kaikki aarteet!",
   "treasure_show_hint": "Näytä vihje",
   "treasure_no_hint": "Täällä ei ole vihjettä: jatka etsimistä.",

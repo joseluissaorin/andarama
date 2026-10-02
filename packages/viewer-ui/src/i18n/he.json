@@ -142,6 +142,7 @@
   "form_gate_scene": "שלח את הטופס בסצנה זו כדי להמשיך",
   "form_already_sent": "כבר שלחת את הטופס הזה. תודה.",
   "treasure_gate_scene": "מצא את האוצר בסצנה זו כדי להמשיך",
+  "nav_gate_scene": "השלם את מה שנותר בסצנה זו כדי להמשיך",
   "treasure_complete_all": "מצאת את כל האוצרות!",
   "treasure_show_hint": "הצג רמז",
   "treasure_no_hint": "אין כאן רמז: המשך לחפש.",

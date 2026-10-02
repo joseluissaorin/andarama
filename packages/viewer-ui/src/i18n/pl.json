@@ -142,6 +142,7 @@
   "form_gate_scene": "Wyślij formularz w tej scenie, aby przejść dalej",
   "form_already_sent": "Ten formularz został już wysłany. Dziękujemy.",
   "treasure_gate_scene": "Znajdź skarb w tej scenie, aby przejść dalej",
+  "nav_gate_scene": "Ukończ to, co pozostało w tej scenie, aby przejść dalej",
   "treasure_complete_all": "Wszystkie skarby zostały znalezione!",
   "treasure_show_hint": "Zobacz podpowiedź",
   "treasure_no_hint": "Tutaj nie ma podpowiedzi: szukaj dalej.",

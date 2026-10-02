@@ -142,6 +142,7 @@
   "form_gate_scene": "Trimite formularul din această scenă pentru a merge mai departe",
   "form_already_sent": "Ai trimis deja acest formular. Mulțumim.",
   "treasure_gate_scene": "Găsește comoara din această scenă pentru a merge mai departe",
+  "nav_gate_scene": "Finalizează ce a rămas de făcut în această scenă pentru a putea merge mai departe",
   "treasure_complete_all": "Ai găsit toate comorile!",
   "treasure_show_hint": "Vezi un indiciu",
   "treasure_no_hint": "Aici nu există niciun indiciu: continuă să cauți.",

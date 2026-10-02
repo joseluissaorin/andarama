@@ -719,8 +719,6 @@ export interface UIConfig {
   /** Marca de agua / parche de nadir con logo. */
   watermark?: { image: string; link?: string };
   nadirPatch?: { image: string; size?: number };
-  /** Texto propio de la insignia «Creado con Andarama». */
-  badgeText?: string;
   welcome?: WelcomeScreen;
   final?: FinalScreen;
   theme?: ThemeConfig;

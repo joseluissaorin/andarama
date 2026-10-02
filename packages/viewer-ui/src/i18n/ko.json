@@ -142,6 +142,7 @@
   "form_gate_scene": "계속 진행하려면 이 장면의 양식을 제출해 주세요",
   "form_already_sent": "이미 제출한 양식입니다. 감사합니다.",
   "treasure_gate_scene": "계속 진행하려면 이 장면에서 보물을 찾으세요",
+  "nav_gate_scene": "계속 진행하려면 이 장면에서 남은 작업을 완료하세요.",
   "treasure_complete_all": "모든 보물을 찾았습니다!",
   "treasure_show_hint": "힌트 보기",
   "treasure_no_hint": "힌트가 없습니다. 계속 찾아보세요.",

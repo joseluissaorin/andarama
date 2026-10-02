@@ -146,7 +146,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "cs": {
     "scenes": "fc2bec7ca714",
@@ -295,7 +296,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "da": {
     "scenes": "fc2bec7ca714",
@@ -444,7 +446,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "de": {
     "help_drag": "065a596a3851",
@@ -593,7 +596,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "el": {
     "scenes": "fc2bec7ca714",
@@ -742,7 +746,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "fi": {
     "scenes": "fc2bec7ca714",
@@ -891,7 +896,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "fil": {
     "scenes": "fc2bec7ca714",
@@ -1040,7 +1046,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "fr": {
     "scenes": "fc2bec7ca714",
@@ -1189,7 +1196,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "he": {
     "scenes": "fc2bec7ca714",
@@ -1338,7 +1346,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "hr": {
     "scenes": "fc2bec7ca714",
@@ -1487,7 +1496,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "hu": {
     "scenes": "fc2bec7ca714",
@@ -1636,7 +1646,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "id": {
     "scenes": "fc2bec7ca714",
@@ -1785,7 +1796,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "it": {
     "scenes": "fc2bec7ca714",
@@ -1934,7 +1946,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "ja": {
     "scenes": "fc2bec7ca714",
@@ -2083,7 +2096,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "ko": {
     "scenes": "fc2bec7ca714",
@@ -2232,7 +2246,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "ms": {
     "scenes": "fc2bec7ca714",
@@ -2381,7 +2396,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "nl": {
     "scenes": "fc2bec7ca714",
@@ -2530,7 +2546,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "no": {
     "scenes": "fc2bec7ca714",
@@ -2679,7 +2696,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "pl": {
     "scenes": "fc2bec7ca714",
@@ -2828,7 +2846,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "pt": {
     "scenes": "fc2bec7ca714",
@@ -2977,7 +2996,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "ro": {
     "scenes": "fc2bec7ca714",
@@ -3126,7 +3146,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "ru": {
     "scenes": "fc2bec7ca714",
@@ -3275,7 +3296,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "sk": {
     "scenes": "fc2bec7ca714",
@@ -3424,7 +3446,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "sv": {
     "scenes": "fc2bec7ca714",
@@ -3573,7 +3596,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "th": {
     "scenes": "fc2bec7ca714",
@@ -3722,7 +3746,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "tr": {
     "scenes": "fc2bec7ca714",
@@ -3871,7 +3896,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "uk": {
     "scenes": "fc2bec7ca714",
@@ -4020,7 +4046,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "vi": {
     "scenes": "fc2bec7ca714",
@@ -4169,7 +4196,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "zh-Hans": {
     "scenes": "fc2bec7ca714",
@@ -4318,7 +4346,8 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   },
   "zh-Hant": {
     "scenes": "fc2bec7ca714",
@@ -4467,6 +4496,7 @@
     "treasure_complete_all": "0d677e628dd3",
     "treasure_show_hint": "741d709d2989",
     "treasure_no_hint": "ef51f5b8726b",
-    "treasure_none_here": "d859f3bd5998"
+    "treasure_none_here": "d859f3bd5998",
+    "nav_gate_scene": "0d1ab11753fb"
   }
 }

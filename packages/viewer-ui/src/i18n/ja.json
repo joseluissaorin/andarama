@@ -142,6 +142,7 @@
   "form_gate_scene": "先へ進むにはこのシーンのフォームを送信してください",
   "form_already_sent": "このフォームはすでに送信済みです。ありがとうございます。",
   "treasure_gate_scene": "先へ進むにはこのシーンの宝を見つけてください",
+  "nav_gate_scene": "先に進むには、このシーンの未完了項目を完了してください。",
   "treasure_complete_all": "すべての宝を見つけました！",
   "treasure_show_hint": "ヒントを見る",
   "treasure_no_hint": "ヒントはありません。探し続けてください。",
