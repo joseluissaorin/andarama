@@ -262,8 +262,10 @@ export interface ConnectionEntry {
    * - `lookBack`: se entra mirando la puerta por la que se ha venido.
    * - `relative`: mantiene el rumbo que llevaba el visitante. Con el norte de
    *   cada escena calibrado en el plano, mantiene el rumbo **real**.
+   * - `initial`: la vista por defecto de la escena de destino (`initialView`),
+   *   la misma que sin `entry`. Es la de los pasos nuevos del editor.
    */
-  mode: "forward" | "fixed" | "relative" | "lookBack";
+  mode: "forward" | "fixed" | "relative" | "lookBack" | "initial";
   yaw?: number;
   pitch?: number;
   fov?: number;

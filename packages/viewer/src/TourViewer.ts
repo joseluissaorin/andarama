@@ -668,6 +668,9 @@ export class TourViewer {
     };
     const clampPitch = (p: number): number => Math.max(-0.4, Math.min(0.4, p));
     switch (entry.mode) {
+      case "initial":
+        // La vista por defecto de la escena, la que el autor ajusta en ella
+        return { ...initial, fov: entry.fov ?? initial.fov };
       case "fixed":
         return {
           yaw: entry.yaw ?? initial.yaw,

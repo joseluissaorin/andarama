@@ -38,15 +38,16 @@ function paso(id: string, from: string, to: string, yaw: number, entry?: Record<
   };
 }
 
-/** Cadena 1 - 2 - 3 con sus pasos de ida y vuelta. */
+/** Cadena 1 - 2 - 3 con sus pasos de ida y vuelta, en «seguir el camino». */
 function cadena(): EditorSnapshot {
+  const f = { mode: "forward" };
   return {
     scenes: [scene("s1", "Entrada", { yaw: 0.2, pitch: 0, fov: 1.2 }), scene("s2", "Salón"), scene("s3", "Cocina")],
     hotspots: [
-      paso("h12", "s1", "s2", 0.5),
-      paso("h21", "s2", "s1", 2.0),
-      paso("h23", "s2", "s3", -1.2),
-      paso("h32", "s3", "s2", 1.4),
+      paso("h12", "s1", "s2", 0.5, f),
+      paso("h21", "s2", "s1", 2.0, f),
+      paso("h23", "s2", "s3", -1.2, f),
+      paso("h32", "s3", "s2", 1.4, f),
     ],
     settings: { startScene: "s1" },
   };
@@ -72,8 +73,18 @@ describe("llegadas de una escena", () => {
     expect(arrivalsOf(draft, "s2").map((a) => a.kind)).toEqual(["start"]);
   });
 
-  it("el modo por defecto de un paso sin entrada es seguir el camino", () => {
-    expect(arrivalsOf(cadena(), "s2")[1]!.mode).toBe("forward");
+  it("un paso sin entrada usa la vista por defecto de la escena, como el visor", () => {
+    const draft = cadena();
+    draft.scenes[1] = scene("s2", "Salón", { yaw: 1.3, pitch: -0.2, fov: 1 });
+    draft.hotspots[0] = paso("h12", "s1", "s2", 0.5);
+    const llegada = arrivalsOf(draft, "s2")[1]!;
+    expect(llegada.mode).toBe("initial");
+    expect(arrivalNeedsReturn(draft, "s2", llegada)).toBe(false);
+    expect(resolveArrivalView(draft, "s2", llegada)).toEqual({ yaw: 1.3, pitch: -0.2, fov: 1 });
+  });
+
+  it("los pasos que ya tenían un modo lo conservan", () => {
+    expect(arrivalsOf(cadena(), "s2").slice(1).map((a) => a.mode)).toEqual(["forward", "forward"]);
   });
 });
 
