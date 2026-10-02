@@ -266,7 +266,7 @@
     "ver_todo": "Precios, prueba y preguntas de facturación",
     "formato": { "usd": "{n} $", "eur": "{n} €" },
     "periodo": { "month": "al mes", "year": "al año", "once": "una sola vez", "o_anual": "o {precio} al año", "por_docente": "por docente" },
-    "todo": "Todo el editor, la RV y la exportación",
+    "todo": "Todo el editor, la RV, la exportación y el trabajo en equipo",
     "recorridos": { "uno": "1 recorrido", "varios": "Hasta {n} recorridos" },
     "medios": "{n} GB de medios",
     "planes": {
@@ -296,7 +296,6 @@
         "items": [
           "SCORM y LTI 1.3: la nota vuelve a tu campus",
           "Marca blanca y dominio propio",
-          "Equipo con varias personas editando",
           "Factura en euros bajo pedido para instituciones"
         ],
         "cta": "Empezar"
@@ -327,7 +326,7 @@
           "Analítica sin cookies: tiempo por escena y hacia dónde mira cada grupo"
         ]
       },
-      "cta": { "titulo": "El plan Formación", "texto": "100 recorridos, 200 GB, SCORM, marca blanca, dominio propio y equipo. 99 $ al mes o 990 $ al año con tarjeta, o factura en euros bajo pedido para instituciones. Prueba de 14 días sin tarjeta.", "boton": "Empezar con Formación", "secundario": "Ver todos los planes" },
+      "cta": { "titulo": "El plan Formación", "texto": "100 recorridos, 200 GB, SCORM, LTI 1.3, marca blanca y dominio propio; el trabajo en equipo va incluido, como en todos los planes. 99 $ al mes o 990 $ al año con tarjeta, o factura en euros bajo pedido para instituciones. Prueba de 14 días sin tarjeta.", "boton": "Empezar con Formación", "secundario": "Ver todos los planes" },
       "precio_visible": "99 $ al mes o 990 $ al año · 100 recorridos · 200 GB · factura en euros bajo pedido",
       "demo_boton": "Pide una demo de 20 minutos",
       "contacto": {
@@ -391,7 +390,7 @@
         { "titulo": "El tour es del museo: exportación libre", "texto": "Con un clic se exporta un ZIP estático y autocontenido (HTML, visor, <code>tour.json</code>, teselas y medios) que funciona en cualquier servidor sin Andarama detrás. También como HTML único, como PWA que se ve sin conexión o en modo quiosco para la pantalla del vestíbulo, con autopilot y reinicio por inactividad. El formato está documentado: si el museo deja de usar Andarama, se lleva la visita entera." },
         { "titulo": "Ficha propia en andarama.com/explorar/", "texto": "Un tour público de la instancia alojada puede pedir su página en <a href=\"{explorar}\">la galería pública</a>: título con el nombre del lugar, descripción, país y coordenadas, datos estructurados de lugar y entrada en el sitemap. Una URL que los buscadores encuentran por el nombre del museo y que lleva a su web. El índice se filtra por país." },
         { "titulo": "RGPD y código abierto", "texto": "La analítica de visitantes no usa cookies ni guarda direcciones IP: da visitas, tiempo por sala y hacia dónde mira la gente sin rastrear a nadie. El programa es de código abierto bajo EUPL-1.2, la licencia de la Comisión Europea: se puede leer, auditar e instalar en la infraestructura del museo o de la administración de la que depende." },
-        { "titulo": "Instancia propia con soporte o plan Formación", "texto": "Dos caminos. El <a href=\"{formacion}\">plan Formación</a> alojado en andarama.com: hasta 100 recorridos, 200 GB, sin insignia, dominio propio, equipo y factura en euros bajo pedido con los datos fiscales de la institución. O la misma aplicación desplegada en la Cloudflare o el Docker del museo, con soporte, actualizaciones y acompañamiento al personal. Las condiciones para instituciones están en <a href=\"{universidades}\">la página de universidades</a>." }
+        { "titulo": "Instancia propia con soporte o plan Formación", "texto": "Dos caminos. El <a href=\"{formacion}\">plan Formación</a> alojado en andarama.com: hasta 100 recorridos, 200 GB, sin insignia, dominio propio y factura en euros bajo pedido con los datos fiscales de la institución. O la misma aplicación desplegada en la Cloudflare o el Docker del museo, con soporte, actualizaciones y acompañamiento al personal. Las condiciones para instituciones están en <a href=\"{universidades}\">la página de universidades</a>." }
       ],
       "faq": {
         "titulo": "Preguntas frecuentes sobre la visita virtual de un museo",
@@ -770,7 +769,7 @@
       "street_view": "Publicar en Street View",
       "verificado": "Precios comprobados en septiembre de 2026 en la web de cada producto.",
       "no_verificado": "Los datos marcados con * no se han podido verificar y merecen revisión.",
-      "andarama_desde": "0 € en tu servidor; alojado desde 2 $ al mes",
+      "andarama_desde": "0 $ en tu servidor; alojado desde 2 $ al mes",
       "andarama_cuotas": "Sin cuotas en tu servidor; de 1 a 1000 recorridos alojado",
       "sin_datos": "sin datos"
     },

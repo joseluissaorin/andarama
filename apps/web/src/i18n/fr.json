@@ -266,7 +266,7 @@
     "ver_todo": "Tarifs, essai et questions de facturation",
     "formato": { "usd": "{n} $", "eur": "{n} €" },
     "periodo": { "month": "par mois", "year": "par an", "once": "une seule fois", "o_anual": "ou {precio} par an", "por_docente": "par enseignant" },
-    "todo": "Tout l’éditeur, la RV et l’export",
+    "todo": "Tout l’éditeur, la RV, l’export et le travail en équipe",
     "recorridos": { "uno": "1 visite", "varios": "Jusqu’à {n} visites" },
     "medios": "{n} Go de médias",
     "planes": {
@@ -296,7 +296,6 @@
         "items": [
           "SCORM et LTI 1.3 : la note revient à ton campus",
           "Marque blanche et domaine à toi",
-          "Équipe avec plusieurs personnes qui éditent",
           "Facture en euros sur demande pour les institutions"
         ],
         "cta": "Commencer"
@@ -327,7 +326,7 @@
           "Statistiques sans cookies : temps par scène et directions du regard de chaque groupe"
         ]
       },
-      "cta": { "titulo": "Le plan Formación", "texto": "100 visites, 200 Go, SCORM, marque blanche, domaine à toi et équipe. 99 $ par mois ou 990 $ par an par carte, ou facture en euros sur demande pour les institutions. Essai de 14 jours sans carte bancaire.", "boton": "Commencer avec Formación", "secundario": "Voir tous les plans" },
+      "cta": { "titulo": "Le plan Formación", "texto": "100 visites, 200 Go, SCORM, LTI 1.3, marque blanche et domaine à toi ; le travail en équipe est inclus, comme dans tous les plans. 99 $ par mois ou 990 $ par an par carte, ou facture en euros sur demande pour les institutions. Essai de 14 jours sans carte bancaire.", "boton": "Commencer avec Formación", "secundario": "Voir tous les plans" },
       "precio_visible": "99 $ par mois ou 990 $ par an · 100 visites · 200 Go · facture en euros sur demande",
       "demo_boton": "Demande une démo de 20 minutes",
       "contacto": {
@@ -391,7 +390,7 @@
         { "titulo": "La visite appartient au musée : export libre", "texto": "Un clic exporte un ZIP statique et autonome (HTML, visionneuse, <code>tour.json</code>, tuiles et médias) qui fonctionne sur n’importe quel serveur, sans Andarama derrière. Aussi en HTML unique, en PWA consultable hors ligne ou en mode kiosque pour l’écran du hall, avec autopilote et retour au début après inactivité. Le format est documenté : si le musée cesse d’utiliser Andarama, il emporte la visite entière." },
         { "titulo": "Une fiche à soi sur andarama.com/explorar/", "texto": "Une visite publique de l’instance hébergée peut demander sa page dans <a href=\"{explorar}\">la galerie publique</a> : titre avec le nom du lieu, description, pays et coordonnées, données structurées de lieu et entrée dans le sitemap. Une URL que les moteurs de recherche trouvent par le nom du musée et qui mène à son site. L’index se filtre par pays." },
         { "titulo": "RGPD et open source", "texto": "Les statistiques des visiteurs n’utilisent pas de cookies et n’enregistrent pas les adresses IP : elles donnent les visites, le temps par salle et les directions du regard sans pister personne. Le programme est open source sous EUPL-1.2, la licence de la Commission européenne : on peut le lire, l’auditer et l’installer sur l’infrastructure du musée ou de l’administration dont il dépend." },
-        { "titulo": "Instance dédiée avec assistance, ou plan Formación", "texto": "Deux voies. Le <a href=\"{formacion}\">plan Formación</a> hébergé sur andarama.com : jusqu’à 100 visites, 200 Go, sans badge, domaine à soi, équipe et facture en euros sur demande aux coordonnées fiscales de l’institution. Ou la même application déployée sur le Cloudflare ou le Docker du musée, avec assistance, mises à jour et accompagnement du personnel. Les conditions pour les institutions sont sur <a href=\"{universidades}\">la page des universités</a>." }
+        { "titulo": "Instance dédiée avec assistance, ou plan Formación", "texto": "Deux voies. Le <a href=\"{formacion}\">plan Formación</a> hébergé sur andarama.com : jusqu’à 100 visites, 200 Go, sans badge, domaine à soi et facture en euros sur demande aux coordonnées fiscales de l’institution. Ou la même application déployée sur le Cloudflare ou le Docker du musée, avec assistance, mises à jour et accompagnement du personnel. Les conditions pour les institutions sont sur <a href=\"{universidades}\">la page des universités</a>." }
       ],
       "faq": {
         "titulo": "Questions fréquentes sur la visite virtuelle d’un musée",
@@ -770,7 +769,7 @@
       "street_view": "Publier sur Street View",
       "verificado": "Prix vérifiés en septembre 2026 sur le site de chaque produit.",
       "no_verificado": "Les données marquées d’un * n’ont pas pu être vérifiées et méritent d’être revues.",
-      "andarama_desde": "0 € sur ton serveur ; hébergé dès 2 $ par mois",
+      "andarama_desde": "0 $ sur ton serveur ; hébergé dès 2 $ par mois",
       "andarama_cuotas": "Sans quotas sur ton serveur ; de 1 à 1000 visites en version hébergée",
       "sin_datos": "pas de données"
     },

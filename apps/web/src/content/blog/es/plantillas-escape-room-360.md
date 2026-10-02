@@ -29,7 +29,7 @@ Si nunca has hecho uno, empieza por la guía general de [escape room digital par
 
 **Salas (fotos).** El claustro, la sala capitular, el scriptorium y el archivo. Sirven panoramas libres de Wikimedia Commons de cualquier monasterio.
 
-**Objetos.** Tres sellos de cera escondidos como tesoros por las salas, una llave del archivo en el scriptorium (hotspot contador/estado) y un pergamino con la cronología incompleta (hotspot de imagen).
+**Objetos.** Tres sellos de cera escondidos como tesoros por las salas, una llave del archivo en el scriptorium (hotspot de acción) y un pergamino con la cronología incompleta (hotspot de imagen).
 
 **Enigmas.**
 - En la sala capitular, ordenar cuatro hechos de la Reconquista: quiz con compuerta.
@@ -87,7 +87,7 @@ En **Ajustes del tour**, en **Variables iniciales**, escribe las variables del j
 
 ### 3. El objeto que cambia la variable
 
-Coloca un hotspot **Contador / estado** donde esté el objeto (la llave en el escritorio, las gafas en el perchero). Añade una acción: `set` pone la variable a un valor (`llave` a verdadero), `inc` y `dec` suman o restan (útil para contar piezas) y `toggle` alterna entre verdadero y falso. Si quieres, el mismo hotspot puede llevar a otra escena al pulsarlo.
+Coloca un hotspot **Acción (variables)** donde esté el objeto (la llave en el escritorio, las gafas en el perchero). Añade un cambio: **Poner a** da a la variable un valor (`llave` a verdadero), **Sumar** y **Restar** suman o restan (útil para contar piezas) y **Alternar** cambia entre verdadero y falso. Si quieres, el mismo hotspot puede llevar a otra escena al pulsarlo.
 
 ### 4. La puerta condicionada
 

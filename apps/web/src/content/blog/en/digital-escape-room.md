@@ -37,7 +37,7 @@ Technically, an escape room is a handful of variables that change value, plus th
 |---|---|---|
 | Hidden object | **Treasure** | You place it in the scene and the viewer keeps count of how many have been found. It shows up as a gem; to truly hide it, change the icon or remove the round background |
 | Lock | **Gated quiz** | A question that keeps the player in the scene until they get it right: links to other scenes look dimmed, and clicking them opens the question |
-| Switch | **Counter/state** | Changes a tour variable (opens a door, turns on a light, adds a point) |
+| Switch | **Action (variables)** | Changes a tour variable (opens a door, turns on a light, adds a point) |
 | Door that opens | **Visibility conditions** | Any hotspot can be set to appear only when a variable has a certain value |
 
 That covers almost everything: "once you find all three pieces of the map, the passage to the crypt appears"; "the safe only opens if you answer the question correctly"; "flip the switch, the lamp turns on and the code written on the wall becomes visible".
@@ -62,7 +62,7 @@ For every locked door, add a **Quiz** hotspot with the gate turned on. The quest
 
 ### 5. Add switches and conditional doors
 
-A **Counter/state** hotspot lets you create actions that change variables (`set`, `inc`, `dec`, `toggle`). Then, in the **Conditions** of any other hotspot, you make it appear only when the variable has the right value. The classic example: three map pieces hidden as state hotspots (each one adds one to a `pieces` variable and hides itself with its own condition); when `pieces` reaches 3, the link to the final room appears. The treasures from step 3 keep their own count and don't touch variables: they are for collecting, not for opening doors.
+An **Action (variables)** hotspot lets you create changes to variables (set a value, add, subtract or toggle). Then, in the **Conditions** of any other hotspot, you make it appear only when the variable has the right value. The classic example: three map pieces hidden as action hotspots (each one adds one to a `pieces` variable and hides itself with its own condition); when `pieces` reaches 3, the link to the final room appears. The treasures from step 3 keep their own count and don't touch variables: they are for collecting, not for opening doors.
 
 ### 6. Scatter the clues
 

@@ -34,7 +34,7 @@ Un escape room es, técnicamente, un puñado de variables que cambian de valor y
 |---|---|---|
 | Objeto escondido | **Tesoro** | Se coloca en la escena y el visor lleva la cuenta de los encontrados. Se ve como una gema; para esconderlo de verdad se cambia el icono o se quita el fondo circular |
 | Candado | **Quiz con compuerta** | Una pregunta que retiene al jugador en la escena hasta que acierta: los pasos a otras escenas se ven apagados y, al pulsarlos, se abre la pregunta |
-| Interruptor | **Contador/estado** | Cambia una variable del tour (abre una puerta, enciende la luz, suma una pista) |
+| Interruptor | **Acción (variables)** | Cambia una variable del tour (abre una puerta, enciende la luz, suma una pista) |
 | Puerta que se abre | **Condiciones de visibilidad** | Cualquier hotspot puede aparecer solo cuando una variable tiene cierto valor |
 
 Con eso se construye casi todo: «cuando hayas encontrado las tres piezas del mapa, aparece el paso a la cripta»; «la caja fuerte solo se abre si respondes bien a la pregunta»; «al pulsar el interruptor se enciende la lámpara y se ve el código escrito en la pared».
@@ -59,7 +59,7 @@ Para cada puerta cerrada, un hotspot de **Quiz** con la compuerta activada: la p
 
 ### 5. Añade interruptores y puertas condicionadas
 
-Con un hotspot de **Contador/estado** puedes crear acciones que cambien variables (`set`, `inc`, `dec`, `toggle`) y, en las **Condiciones** de cualquier otro hotspot, hacer que aparezca solo cuando la variable vale lo que toca. Ejemplo clásico: tres piezas del mapa escondidas como hotspots de estado (cada una suma uno a la variable `piezas` y se oculta a sí misma con su propia condición); cuando `piezas` llega a 3, aparece el paso a la sala final. Los tesoros del paso anterior llevan su propio contador y no tocan variables: sirven para el coleccionismo, no para abrir puertas.
+Con un hotspot de **Acción (variables)** puedes crear cambios de variables (poner a un valor, sumar, restar o alternar) y, en las **Condiciones** de cualquier otro hotspot, hacer que aparezca solo cuando la variable vale lo que toca. Ejemplo clásico: tres piezas del mapa escondidas como hotspots de acción (cada una suma uno a la variable `piezas` y se oculta a sí misma con su propia condición); cuando `piezas` llega a 3, aparece el paso a la sala final. Los tesoros del paso anterior llevan su propio contador y no tocan variables: sirven para el coleccionismo, no para abrir puertas.
 
 ### 6. Reparte las pistas
 

@@ -34,7 +34,7 @@ Cada idea indica **el guion** (la historia que se cuenta a la clase), **los cand
 ### 2. La central que se apaga (Física y Tecnología, 4.º ESO y Bachillerato)
 
 **Guion.** Un apagón en cadena. Cada sala es una parte de la instalación (cuadro eléctrico, sala de máquinas, taller) y hay que restablecer los circuitos en orden.
-**Candados.** Calcular la resistencia equivalente del esquema pegado en la pared; elegir el fusible correcto por intensidad; interpretar una gráfica de consumo. Un hotspot de **Contador/estado** enciende «la luz» de cada sala al acertar.
+**Candados.** Calcular la resistencia equivalente del esquema pegado en la pared; elegir el fusible correcto por intensidad; interpretar una gráfica de consumo. Un hotspot de **Acción (variables)** enciende «la luz» de cada sala al acertar.
 **Fotos.** El taller y el cuarto de instalaciones del centro. Si no hay acceso, panorámicas de un museo de la técnica.
 
 ### 3. El brote en el hospital de campaña (Biología, 3.º ESO y 1.º Bachillerato)
@@ -111,7 +111,7 @@ Cada idea indica **el guion** (la historia que se cuenta a la clase), **los cand
 |---|---|---|
 | Tesoro | Objetos escondidos, con contador | Hotspot Tesoro |
 | Quiz con compuerta | Candado que retiene en la escena | Hotspot Quiz, opción compuerta |
-| Contador/estado y condiciones | Puertas que aparecen, luces que se encienden | Hotspot Contador/estado y pestaña Condiciones de cualquier hotspot |
+| Acción (variables) y condiciones | Puertas que aparecen, luces que se encienden | Hotspot Acción (variables) y pestaña Condiciones de cualquier hotspot |
 | Texto, imagen, audio, vídeo, PDF | Pistas | Hotspots de contenido |
 | Certificado PDF | El «habéis escapado» | Ajustes del tour |
 | Enlace o código QR | Entrar sin cuentas | Publicar |

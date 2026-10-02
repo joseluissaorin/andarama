@@ -1,6 +1,6 @@
 ---
 title: "How to put a 360 tour in Moodle (SCORM, iframe and LTI)"
-description: "How to add a 360 virtual tour to Moodle or Canvas: embedded on a page with no grade, or as a SCORM package with a grade. Or through LTI 1.3, with the grade going straight to the gradebook."
+description: "How to add a 360 tour to Moodle or Canvas: embedded in a page with no grade, or graded through a SCORM package or LTI 1.3, straight to the gradebook."
 lang: en
 slug: 360-tour-in-moodle
 cluster: docencia
