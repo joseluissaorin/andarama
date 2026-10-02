@@ -8,6 +8,7 @@
       "\"Use current view\" really sets the start view: reloading the tour no longer restores the position stored in the browser address.",
       "New links arrive at the destination scene's default view, and the arrivals panel says which view each link uses.",
       "In virtual reality you arrive facing the right way, quiz, form and treasure gates also block the way, and on Android gaze activates hotspots even if the phone moves a little.",
+      "One quiz can now hold several questions: they are answered one at a time, with a summary at the end, an optional pass mark and the full score sent through SCORM and LTI. If attempts are limited and run out, the gate opens and the question counts as wrong.",
       "Property sections start collapsed and remember how you left them.",
       "A visible \"Mute\" button in scenes with sound.",
       "A \"Floor plan\" button in the scene list, with the steps to build a plan with points that lead to each scene.",

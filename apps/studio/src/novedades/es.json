@@ -8,6 +8,7 @@
       "«Usar vista actual» fija de verdad la vista de inicio: al recargar el recorrido ya no manda la posición guardada en la dirección del navegador.",
       "Los pasos nuevos llegan a la vista por defecto de la escena de destino, y el panel de llegadas dice qué vista usa cada uno.",
       "En realidad virtual se llega mirando hacia donde toca, las compuertas de quiz, formulario y tesoro también bloquean el paso, y en Android la mirada fija activa los hotspots aunque el móvil se mueva un poco.",
+      "Un mismo quiz puede tener varias preguntas: se responden de una en una, con un resumen al final, nota mínima opcional y la nota completa en SCORM y LTI. Si los intentos son limitados y se agotan, la compuerta deja pasar y la pregunta cuenta como fallada.",
       "Las secciones de propiedades salen plegadas y recuerdan cómo las dejaste.",
       "Botón «Silenciar» a la vista en las escenas con sonido.",
       "Botón «Plano del recorrido» en la lista de escenas, con los pasos para crear el plano con puntos que llevan a cada escena.",
