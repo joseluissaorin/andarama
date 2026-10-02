@@ -167,6 +167,14 @@ export interface SceneAudio {
   spatial?: SpatialAudioSource[];
   /** Fundido cruzado del ambiente al cambiar de escena (s). */
   crossfade?: number;
+  /**
+   * La música de fondo del tour (`Tour.globalAudio`) se funde a silencio
+   * mientras se está en esta escena y vuelve al salir. Si no se indica, cede
+   * cuando la escena tiene sonido propio (ambiente o fuentes espaciales);
+   * `false` mantiene la música sonando junto al sonido de la escena, y `true`
+   * la calla aunque la escena no tenga sonido propio.
+   */
+  replaceGlobal?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -714,6 +722,12 @@ export interface UIConfig {
   theme?: ThemeConfig;
   /** Modo accesible lineal disponible. */
   accessibleMode?: boolean;
+  /**
+   * Texto propio de la insignia «Hecho con Andarama» (sigue enlazando a
+   * andarama.com). Solo se ve en planes sin marca blanca, que son los únicos
+   * que muestran la insignia.
+   */
+  badgeText?: string;
 }
 
 /**
@@ -838,7 +852,10 @@ export interface Tour {
   variables?: Record<string, string | number | boolean>;
   quiz?: QuizConfig;
   treasureHunt?: TreasureHuntConfig;
-  /** Musica de fondo global con ducking en narraciones. */
+  /**
+   * Música de fondo de todo el tour: baja durante las narraciones y se funde a
+   * silencio en las escenas con sonido propio (ver `SceneAudio.replaceGlobal`).
+   */
   globalAudio?: AudioTrack;
   analytics?: AnalyticsConfig;
 }

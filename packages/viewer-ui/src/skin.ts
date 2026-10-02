@@ -5,6 +5,7 @@ import { createTranslator, ensureUiLang, type Translator } from "./i18n.js";
 import { registerUiIcons } from "./icons.js";
 import { el, iconButton, mountScreen, toast } from "./dom.js";
 import { PanelHost } from "./panels.js";
+import { badgeLabel } from "./badge.js";
 import {
   buildCompass,
   buildMapPanel,
@@ -202,10 +203,12 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // y sigue el tema. En pantalla completa va dentro del contenedor, así que
   // también se ve.
   if (options.badge != null && !options.editMode) {
+    // El texto lo puede cambiar el autor (ui.badgeText); el enlace no
+    const texto = badgeLabel(tour.ui?.badgeText, t("made_with_andarama"));
     const badge = el(
       "a",
-      { className: "anda-badge", href: options.badge.url, target: "_blank", rel: "noopener", "aria-label": t("made_with_andarama") },
-      t("made_with_andarama"),
+      { className: "anda-badge", href: options.badge.url, target: "_blank", rel: "noopener", "aria-label": texto },
+      texto,
     );
     container.appendChild(badge);
   }
