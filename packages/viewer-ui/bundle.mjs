@@ -12,8 +12,14 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
+import { buildVersion } from "../../tooling/build-version.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
+// Versión del visor: window.Andarama.version y data-version del contenedor
+const define = {
+  "process.env.NODE_ENV": '"production"',
+  __ANDARAMA_VERSION__: JSON.stringify(buildVersion(here)),
+};
 const outdir = join(here, "dist/bundle");
 const require = createRequire(import.meta.url);
 
@@ -32,7 +38,7 @@ const result = await build({
   target: ["es2020"],
   metafile: true,
   logLevel: "warning",
-  define: { "process.env.NODE_ENV": '"production"' },
+  define,
 });
 
 // Bundle sin trocear para el export «HTML único»: un index.html abierto con
@@ -49,7 +55,7 @@ await build({
   sourcemap: false,
   target: ["es2020"],
   logLevel: "warning",
-  define: { "process.env.NODE_ENV": '"production"' },
+  define,
 });
 
 // Assets adicionales autocontenidos

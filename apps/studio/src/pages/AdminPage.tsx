@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Activity, Copy, Download, ExternalLink, Globe, Plus, RefreshCcw, Send, Ticket, Trash2, Upload, UserPlus } from "lucide-react";
 import { Badge, Button, Dialog, Field, Input, Select, Spinner, Switch, Tabs, TabList, TabTrigger, Textarea, useToast } from "@andarama/ui";
-import { api, ApiRequestError } from "../api";
+import { api, apiBlob, ApiRequestError } from "../api";
 import { useT } from "../i18n";
 import { Cabecera } from "../components/Cabecera";
 import { LtiRegistrations } from "../components/LtiRegistrations";
@@ -28,6 +28,7 @@ export function AdminPage(): React.ReactNode {
           <TabTrigger value="lti">LTI</TabTrigger>
           <TabTrigger value="coupons">{t("coupons")}</TabTrigger>
           <TabTrigger value="demos">Demos</TabTrigger>
+          <TabTrigger value="feedback">{t("admin_feedback")}</TabTrigger>
           <TabTrigger value="backup">{t("backup")}</TabTrigger>
         </TabList>
         <div className="mt-5">
@@ -66,6 +67,9 @@ export function AdminPage(): React.ReactNode {
           </Tabs.Content>
           <Tabs.Content value="demos">
             <DemosPanel />
+          </Tabs.Content>
+          <Tabs.Content value="feedback">
+            <FeedbackPanel />
           </Tabs.Content>
           <Tabs.Content value="backup">
             <BackupPanel />
@@ -969,6 +973,87 @@ function DemosPanel(): React.ReactNode {
             {d.page != null && <span className="font-mono text-[var(--anda-text-dim)]">{d.page}</span>}
           </div>
           <p className="mt-2 whitespace-pre-wrap text-[var(--anda-text-dim)]">{d.message}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Informes de problemas enviados desde el Studio
+// ---------------------------------------------------------------------------
+
+interface FeedbackRow {
+  id: string;
+  userId: string | null;
+  userName: string | null;
+  userEmail: string | null;
+  description: string;
+  context: Record<string, unknown>;
+  hasImage: boolean;
+  notifiedAt: number | null;
+  createdAt: number;
+}
+
+/**
+ * Informes de «Informar de un problema». La captura se pide con la sesión
+ * (no es un enlace público) y se abre en una pestaña nueva. Las etiquetas del
+ * contexto son las claves técnicas, como en la pestaña Demos.
+ */
+function FeedbackPanel(): React.ReactNode {
+  const t = useT();
+  const toast = useToast();
+  const q = useQuery({ queryKey: ["admin-feedback"], queryFn: () => api<FeedbackRow[]>("/admin/feedback") });
+  if (q.isLoading) return <Spinner />;
+  const rows = q.data ?? [];
+  if (rows.length === 0) return <p className="text-sm text-[var(--anda-text-dim)]">{t("no_results")}</p>;
+  const verCaptura = async (id: string): Promise<void> => {
+    // La pestaña se abre ya, dentro del clic, para que el navegador no la bloquee
+    const ventana = window.open("", "_blank");
+    try {
+      const blob = await apiBlob(`/admin/feedback/${encodeURIComponent(id)}/image`);
+      const url = URL.createObjectURL(blob);
+      if (ventana != null) ventana.location.href = url;
+      else window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      ventana?.close();
+      toast.push(String(err instanceof Error ? err.message : err), "error");
+    }
+  };
+  return (
+    <div className="space-y-3">
+      {rows.map((f) => (
+        <article key={f.id} className="rounded-lg border border-[var(--anda-border)] p-3 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <strong>{f.userName ?? "?"}</strong>
+            {f.userEmail != null && (
+              <a className="underline" href={`mailto:${f.userEmail}`}>
+                {f.userEmail}
+              </a>
+            )}
+            <span className="ml-auto text-xs text-[var(--anda-text-dim)]">{new Date(f.createdAt).toLocaleString()}</span>
+          </div>
+          <p className="mt-2 whitespace-pre-wrap">{f.description}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+            {typeof f.context.version === "string" && <Badge>{f.context.version}</Badge>}
+            <Badge>{f.notifiedAt != null ? `${t("email")} ✓` : `${t("email")} ✗`}</Badge>
+            {f.hasImage && (
+              <Button size="sm" variant="outline" onClick={() => void verCaptura(f.id)}>
+                <ExternalLink className="h-3.5 w-3.5" /> {t("admin_feedback_image")}
+              </Button>
+            )}
+          </div>
+          <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 break-all font-mono text-xs text-[var(--anda-text-dim)]">
+            {Object.entries(f.context)
+              .filter(([k, v]) => k !== "version" && v != null && v !== "")
+              .map(([k, v]) => (
+                <div key={k} className="contents">
+                  <dt>{k}</dt>
+                  <dd>{String(v)}</dd>
+                </div>
+              ))}
+          </dl>
         </article>
       ))}
     </div>

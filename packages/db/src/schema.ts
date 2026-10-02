@@ -164,6 +164,28 @@ export const demoRequests = sqliteTable(
   (t) => [index("demo_requests_created_idx").on(t.createdAt)],
 );
 
+/**
+ * «Informar de un problema» desde el Studio. El contexto (dirección,
+ * proyecto, escena, navegador, ventana, versión del Studio) va en JSON; la
+ * captura opcional, en el almacenamiento bajo `feedback/<id>.<ext>`.
+ */
+export const feedbackReports = sqliteTable(
+  "feedback_reports",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+    description: text("description").notNull(),
+    /** JSON con url, projectId, sceneId, userAgent, viewport y version. */
+    contextJson: text("context_json"),
+    imageKey: text("image_key"),
+    imageMime: text("image_mime"),
+    /** Cuándo salió el aviso por correo; null si no hay correo configurado. */
+    notifiedAt: integer("notified_at"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("feedback_reports_created_idx").on(t.createdAt)],
+);
+
 // ---------------------------------------------------------------------------
 // Organizaciones y pertenencia
 // ---------------------------------------------------------------------------

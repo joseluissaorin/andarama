@@ -32,16 +32,23 @@ interface StandaloneConfig {
 declare global {
   interface Window {
     Andarama_CONFIG?: StandaloneConfig;
-    Andarama?: { mount: typeof mountViewer; instance?: ReturnType<typeof mountViewer> };
+    Andarama?: { mount: typeof mountViewer; version: string; instance?: ReturnType<typeof mountViewer> };
   }
 }
 
-window.Andarama = { mount: mountViewer };
+/** «<versión>+<sha corto> · <fecha>», inyectada por bundle.mjs (esbuild `define`). */
+declare const __ANDARAMA_VERSION__: string | undefined;
+const VERSION = typeof __ANDARAMA_VERSION__ === "string" ? __ANDARAMA_VERSION__ : "dev";
+
+// La versión no se ve en el visor: queda en window.Andarama.version y en el
+// atributo data-version del contenedor, para quien informa de un problema.
+window.Andarama = { mount: mountViewer, version: VERSION };
 
 
 async function boot(): Promise<void> {
   const container = document.getElementById("andarama");
   if (container == null) return;
+  container.dataset.version = VERSION;
   const cfg: StandaloneConfig = window.Andarama_CONFIG ?? {};
   const tourUrl = cfg.tourUrl ?? container.dataset.tour;
   let tour = cfg.tour;

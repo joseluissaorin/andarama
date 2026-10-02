@@ -25,6 +25,7 @@ import { billingRoutes } from "./routes/billing.js";
 import { clerkWebhookRoutes } from "./routes/clerk-webhooks.js";
 import { conversionsRoutes, demoPublicRoutes } from "./routes/demo.js";
 import { trialEmailRoutes } from "./routes/trial-emails.js";
+import { feedbackRoutes } from "./routes/feedback.js";
 import { galleryApiRoutes, galleryPageRoutes } from "./routes/gallery.js";
 import { onboardingRoutes } from "./routes/onboarding.js";
 import { createClerkVerifier, type ClerkVerifier } from "./lib/clerk.js";
@@ -161,6 +162,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/", formRoutes());
   api.route("/", demoPublicRoutes());
   api.route("/", trialEmailRoutes());
+  api.route("/", feedbackRoutes());
   api.get("/openapi.json", (c) => c.json(openApiSpec(c.get("config").publicUrl)));
   api.get("/health", (c) => c.json({ ok: true, platform: opts.runtime.platform }));
   /** Lo que el Studio necesita saber antes de tener sesión: qué puerta usa la instancia. */
@@ -259,6 +261,10 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
       ...(typeof body.editorLang === "string" ? { editorLang: body.editorLang } : {}),
       ...(typeof body.defaultLang === "string" ? { defaultLang: body.defaultLang } : {}),
       ...(typeof body.entryMode === "string" ? { entryMode: body.entryMode } : {}),
+      // Fecha (AAAA-MM-DD) de la última entrada de «Novedades» que ha visto
+      ...(typeof body.novedadesVistas === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.novedadesVistas)
+        ? { novedadesVistas: body.novedadesVistas }
+        : {}),
     };
     await db.update(users).set({ prefsJson: JSON.stringify(prefs), updatedAt: Date.now() }).where(eq(users.id, auth.user.id));
     return c.json({ ok: true, prefs });

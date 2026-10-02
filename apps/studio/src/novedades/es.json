@@ -1,0 +1,21 @@
+[
+  {
+    "fecha": "2026-10-02",
+    "titulo": "Mejoras de la beta",
+    "items": [
+      "La exportación en ZIP es más fiable: reintenta lo que falla y avisa de los ficheros que no ha podido incluir.",
+      "En realidad virtual se respeta la vista de llegada de cada escena y las compuertas también funcionan.",
+      "La vista inicial de una escena ya no la pisa la dirección del navegador.",
+      "Las propiedades aparecen plegadas, para que el panel se recorra mejor.",
+      "El botón Silenciar está siempre a la vista.",
+      "Acceso directo al Plano.",
+      "Equipo aparece en la barra lateral y cada proyecto se puede compartir con personas concretas.",
+      "Música para todo el recorrido.",
+      "Logotipo propio en cada recorrido.",
+      "Se puede cambiar el texto de la insignia.",
+      "Las etiquetas se leen bien en el móvil.",
+      "La visita guiada abre los mismos paneles que al pulsar cada hotspot.",
+      "Nuevo hotspot «Acción (variables)» con un editor visual de condiciones."
+    ]
+  }
+]

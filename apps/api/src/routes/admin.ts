@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { desc, eq, isNull, sql } from "drizzle-orm";
-import { auditLog, coupons, demoRequests, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@andarama/db";
+import { auditLog, coupons, demoRequests, feedbackReports, jobs, media, orgMembers, orgs, projects, publications, users, webhooks } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
 import { hmacSign } from "@andarama/adapters";
@@ -299,6 +299,42 @@ export function adminRoutes(): Hono<AppEnv> {
         };
       }),
     );
+  });
+
+  /** Informes de problemas enviados desde el Studio, del más reciente al más antiguo. */
+  r.get("/feedback", async (c) => {
+    const db = c.get("db");
+    const rows = await db
+      .select({ report: feedbackReports, userName: users.name, userEmail: users.email })
+      .from(feedbackReports)
+      .leftJoin(users, eq(feedbackReports.userId, users.id))
+      .orderBy(desc(feedbackReports.createdAt))
+      .limit(500);
+    return c.json(
+      rows.map(({ report: f, userName, userEmail }) => ({
+        id: f.id,
+        userId: f.userId,
+        userName,
+        userEmail,
+        description: f.description,
+        context: parseJson<Record<string, unknown>>(f.contextJson, {}),
+        hasImage: f.imageKey != null,
+        notifiedAt: f.notifiedAt,
+        createdAt: f.createdAt,
+      })),
+    );
+  });
+
+  /** La captura adjunta a un informe (solo administradores: puede llevar datos de otros). */
+  r.get("/feedback/:id/image", async (c) => {
+    const db = c.get("db");
+    const [f] = await db.select().from(feedbackReports).where(eq(feedbackReports.id, c.req.param("id"))).limit(1);
+    if (f?.imageKey == null) throw notFound("El informe no tiene captura");
+    const obj = await c.get("runtime").storage.get(f.imageKey);
+    if (obj == null) throw notFound("Captura no encontrada en almacenamiento");
+    return new Response(obj.body as unknown as BodyInit, {
+      headers: { "content-type": f.imageMime ?? "application/octet-stream", "cache-control": "private, no-store" },
+    });
   });
 
   /** Tanda nueva: devuelve los códigos en claro, que es cuando se reparten. */

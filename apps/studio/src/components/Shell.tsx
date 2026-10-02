@@ -10,6 +10,7 @@ import { LangPicker } from "./LangPicker";
 import { getClerk, isClerkMode } from "../clerk";
 import { peekPlanIntent } from "../intent";
 import { TrialBanner } from "./TrialBanner";
+import { AyudaBeta } from "./AyudaBeta";
 import logoAndarama from "../brand/logo-andarama.svg";
 import andaCriatura from "../brand/anda-criatura.svg";
 
@@ -137,6 +138,7 @@ export function Shell(): React.ReactNode {
             <NavItem to="/admin" icon={<ShieldCheck className="h-4 w-4" />} label={t("admin")} />
           )}
         </nav>
+        <AyudaBeta />
         {/* Instalarla como una aplicación de escritorio o de iPad. El aviso de
             versión nueva vive en UpdateBanner, visible en todas las pantallas. */}
         {!pwa.installed && (pwa.installable || pwa.iosManual) && (
