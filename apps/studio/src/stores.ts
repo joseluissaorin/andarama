@@ -15,6 +15,8 @@ export interface UserPrefs {
   defaultLang?: string;
   /** Modo de entrada preferido al crear pasos de navegación. */
   entryMode?: string;
+  /** Fecha (AAAA-MM-DD) de la última entrada de «Novedades» que ha visto. */
+  novedadesVistas?: string;
 }
 
 /** Capacidades que un plan enciende en la instancia alojada (misma lista que la API). */

@@ -12,6 +12,7 @@ import { ToastProvider, UiTextProvider } from "@andarama/ui";
 import { useT } from "./i18n";
 import "./index.css";
 import { Shell } from "./components/Shell";
+import { InformeProblemaDialog } from "./components/InformeProblema";
 import { setupPwa } from "./pwa";
 import { AuthPage } from "./pages/AuthPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
@@ -40,6 +41,8 @@ const rootRoute = createRootRoute({
     <ToastProvider>
       <UiTexts>
         <Outlet />
+        {/* «Informar de un problema»: en la raíz, para que sirva también en el editor */}
+        <InformeProblemaDialog />
       </UiTexts>
     </ToastProvider>
   ),

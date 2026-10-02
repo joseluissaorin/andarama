@@ -1,0 +1,21 @@
+[
+  {
+    "fecha": "2026-10-02",
+    "titulo": "Beta improvements",
+    "items": [
+      "ZIP export is more reliable: it retries what fails and tells you which files it could not include.",
+      "In virtual reality each scene's arrival view is respected, and gates work there too.",
+      "The browser address no longer overrides a scene's initial view.",
+      "Properties start collapsed, so the panel is easier to scan.",
+      "The Mute button is always visible.",
+      "Direct access to the Floor plan.",
+      "Team is in the sidebar, and each project can be shared with specific people.",
+      "Music for the whole tour.",
+      "A logo of its own for each tour.",
+      "The badge text can be changed.",
+      "Labels are readable on mobile.",
+      "The guided tour opens the same panels as clicking each hotspot.",
+      "New “Action (variables)” hotspot with a visual condition editor."
+    ]
+  }
+]
