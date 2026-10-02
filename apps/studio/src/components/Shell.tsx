@@ -1,6 +1,6 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { CreditCard, Download, FolderKanban, Image, Languages, LogOut, Menu, RefreshCw, ShieldCheck, Share, UserCircle, Building2, X } from "lucide-react";
+import { CreditCard, Download, FolderKanban, Image, Languages, LogOut, Menu, ShieldCheck, Share, UserCircle, Users, Building2, X } from "lucide-react";
 import { Button, Dialog, Select, Tooltip } from "@andarama/ui";
 import { useAuth } from "../stores";
 import { useT } from "../i18n";
@@ -124,6 +124,7 @@ export function Shell(): React.ReactNode {
           <NavItem to="/" icon={<FolderKanban className="h-4 w-4" />} label={t("projects")} />
           <NavItem to="/media" icon={<Image className="h-4 w-4" />} label={t("media_library")} />
           <NavItem to="/org" icon={<Building2 className="h-4 w-4" />} label={t("org_defaults")} />
+          <NavItem to="/team" icon={<Users className="h-4 w-4" />} label={t("team")} />
           <NavItem to="/account" icon={<UserCircle className="h-4 w-4" />} label={me.user.name} />
           {isClerkMode() && (
             <NavItem
@@ -136,18 +137,8 @@ export function Shell(): React.ReactNode {
             <NavItem to="/admin" icon={<ShieldCheck className="h-4 w-4" />} label={t("admin")} />
           )}
         </nav>
-        {/* Instalarla y avisar de una versión nueva: lo que espera cualquiera
-            de una aplicación de escritorio o de iPad. */}
-        {pwa.updateReady && (
-          <button
-            type="button"
-            onClick={pwa.applyUpdate}
-            className="mx-3 mb-2 flex items-center gap-2 rounded-xl bg-[var(--anda-primary-soft)] px-3 py-2 text-left text-[12.5px] font-medium text-[var(--anda-primary-ink)]"
-          >
-            <RefreshCw className="h-4 w-4 shrink-0" />
-            {t("update_ready")}
-          </button>
-        )}
+        {/* Instalarla como una aplicación de escritorio o de iPad. El aviso de
+            versión nueva vive en UpdateBanner, visible en todas las pantallas. */}
         {!pwa.installed && (pwa.installable || pwa.iosManual) && (
           <button
             type="button"

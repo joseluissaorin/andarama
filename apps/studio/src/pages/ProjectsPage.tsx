@@ -75,7 +75,10 @@ interface SectorTemplate {
 }
 
 /** Sectores con nombre traducido; cualquier otro se muestra con su título. */
-const SECTORES = new Set(["escape_room", "prl", "museo", "campus", "inmobiliaria"]);
+const SECTORES = new Set(["escape_room", "quiz", "tesoro", "prl", "museo", "campus", "inmobiliaria"]);
+
+/** Sectores que van juntos bajo «Educación», en este orden. */
+const SECTORES_EDUCACION = ["escape_room", "quiz", "tesoro"];
 
 export function ProjectsPage(): React.ReactNode {
   const t = useT();
@@ -409,8 +412,13 @@ export function ProjectsPage(): React.ReactNode {
             <fieldset>
               <legend className="mb-1 text-[13px] font-semibold">{t("sector_templates")}</legend>
               <p className="mb-2 text-[12.5px] text-[var(--anda-text-dim)]">{t("sector_templates_hint")}</p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="radiogroup" aria-label={t("sector_templates")}>
-                {[{ id: "", key: "", title: t("sector_blank"), coverMediaId: null }, ...(sectorTemplates.data ?? [])].map((tpl) => {
+              {(() => {
+                const todas = sectorTemplates.data ?? [];
+                const educacion = todas
+                  .filter((tpl) => SECTORES_EDUCACION.includes(tpl.key))
+                  .sort((a, b) => SECTORES_EDUCACION.indexOf(a.key) - SECTORES_EDUCACION.indexOf(b.key));
+                const resto = todas.filter((tpl) => !SECTORES_EDUCACION.includes(tpl.key));
+                const tarjeta = (tpl: SectorTemplate): React.ReactNode => {
                   const elegida = fromTemplate === tpl.id;
                   const nombre = tpl.id === "" ? tpl.title : SECTORES.has(tpl.key) ? t(`template_sector_${tpl.key}`) : tpl.title;
                   return (
@@ -436,8 +444,23 @@ export function ProjectsPage(): React.ReactNode {
                       )}
                     </button>
                   );
-                })}
-              </div>
+                };
+                return (
+                  <div role="radiogroup" aria-label={t("sector_templates")} className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {[{ id: "", key: "", title: t("sector_blank"), coverMediaId: null }, ...resto].map(tarjeta)}
+                    </div>
+                    {educacion.length > 0 && (
+                      <div role="group" aria-labelledby="np-grupo-educacion">
+                        <p id="np-grupo-educacion" className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[var(--anda-text-dim)]">
+                          {t("template_group_education")}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{educacion.map(tarjeta)}</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </fieldset>
           )}
           <Field label={t("title")} htmlFor="np-title">

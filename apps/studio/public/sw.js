@@ -16,14 +16,20 @@ const CACHE = `anda-studio-${VERSION}`;
 const SHELL = "/studio/index.html";
 
 self.addEventListener("install", (event) => {
-  // Sin skipWaiting: la versión nueva espera a que se cierren las pestañas
-  // abiertas o a que el usuario acepte. Cambiar el código debajo de una sesión
-  // de edición en marcha es la forma más tonta de perder trabajo.
+  // La versión nueva toma el mando en cuanto se instala. Antes esperaba a que
+  // se cerraran todas las pestañas, y en el móvil eso no pasa nunca: el
+  // Studio instalado se quedaba semanas con el código viejo. El trabajo en
+  // curso no corre peligro: la página que ya está abierta sigue con su código
+  // hasta que recarga, y la app solo recarga sola cuando no hay nada sin
+  // guardar (o avisa para que se recargue a mano). Ver src/pwa.ts.
   event.waitUntil(
-    caches.open(CACHE).then((cache) =>
-      // Uno a uno: si un fichero falla, no se cae la instalación entera
-      Promise.all(PRECACHE.map((url) => cache.add(new Request(url, { cache: "reload" })).catch(() => undefined))),
-    ),
+    caches
+      .open(CACHE)
+      .then((cache) =>
+        // Uno a uno: si un fichero falla, no se cae la instalación entera
+        Promise.all(PRECACHE.map((url) => cache.add(new Request(url, { cache: "reload" })).catch(() => undefined))),
+      )
+      .then(() => self.skipWaiting()),
   );
 });
 

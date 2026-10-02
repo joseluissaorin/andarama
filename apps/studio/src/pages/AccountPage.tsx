@@ -1,8 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import QRCode from "qrcode";
 import { KeyRound, Languages, Plus, ShieldCheck, Trash2, Users } from "lucide-react";
-import { Badge, Button, Dialog, Field, Input, Select, useToast } from "@andarama/ui";
+import { Button, Dialog, Field, Input, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { getClerk, isClerkMode } from "../clerk";
 import { useAuth } from "../stores";
@@ -14,29 +15,18 @@ export function AccountPage(): React.ReactNode {
   const t = useT();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { me, currentOrgId, refresh } = useAuth();
+  const { me, refresh } = useAuth();
   const [totpSetup, setTotpSetup] = useState<{ secret: string; uri: string; qr: string } | null>(null);
   const [totpCode, setTotpCode] = useState("");
   const [tokenDialog, setTokenDialog] = useState(false);
   const [tokenName, setTokenName] = useState("");
   const [tokenScopes, setTokenScopes] = useState<string[]>(["projects:read"]);
   const [createdToken, setCreatedToken] = useState<string | null>(null);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("editor");
 
   const tokens = useQuery({
     queryKey: ["tokens"],
     queryFn: () => api<{ id: string; name: string; scopes: string[]; lastUsedAt: number | null }[]>("/tokens"),
   });
-  const members = useQuery({
-    queryKey: ["members", currentOrgId],
-    queryFn: () =>
-      api<{ members: { userId: string; role: string; name: string; email: string }[]; invites: { id: string; email: string; role: string }[] }>(
-        `/orgs/${currentOrgId}/members`,
-      ),
-    enabled: currentOrgId != null,
-  });
-
   const startTotp = async (): Promise<void> => {
     const res = await api<{ secret: string; uri: string }>("/auth/totp/setup", { method: "POST", body: {} });
     const qr = await QRCode.toDataURL(res.uri, { width: 220 });
@@ -60,25 +50,6 @@ export function AccountPage(): React.ReactNode {
     setCreatedToken(res.token);
     setTokenName("");
     void queryClient.invalidateQueries({ queryKey: ["tokens"] });
-  };
-
-  const invite = async (): Promise<void> => {
-    try {
-      const res = await api<{ inviteUrl?: string }>(`/orgs/${currentOrgId}/members`, {
-        method: "POST",
-        body: { email: inviteEmail, role: inviteRole },
-      });
-      setInviteEmail("");
-      void queryClient.invalidateQueries({ queryKey: ["members"] });
-      if (res.inviteUrl != null) {
-        await navigator.clipboard.writeText(res.inviteUrl).catch(() => {});
-        toast.push(`${t("copied")}: ${res.inviteUrl}`, "ok");
-      } else {
-        toast.push(t("saved"), "ok");
-      }
-    } catch (err) {
-      toast.push(String(err instanceof Error ? err.message : err), "error");
-    }
   };
 
   const SCOPES = ["projects:read", "projects:write", "media:read", "media:write", "publish", "orgs:write", "admin"];
@@ -139,48 +110,13 @@ export function AccountPage(): React.ReactNode {
       </section>
       )}
 
-      <section className="anda-bloque p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-[15px] font-semibold">
-            <Users className="h-4 w-4" /> {t("members")}
-          </h2>
-        </div>
-        <div className="mb-4 space-y-2">
-          {(members.data?.members ?? []).map((m) => (
-            <div key={m.userId} className="flex items-center gap-3 text-sm">
-              <span className="flex-1 truncate">
-                {m.name} <span className="text-[var(--anda-text-dim)]">({m.email})</span>
-              </span>
-              <Badge>{t(`role_${m.role}`)}</Badge>
-            </div>
-          ))}
-          {(members.data?.invites ?? []).map((i) => (
-            <div key={i.id} className="flex items-center gap-3 text-sm text-[var(--anda-text-dim)]">
-              <span className="flex-1 truncate">{i.email}</span>
-              <Badge tone="warn">{t("invite")}</Badge>
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Input
-            type="email"
-            placeholder={t("email")}
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            className="max-w-60"
-            aria-label={t("email")}
-          />
-          <Select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)} className="max-w-44" aria-label={t("role")}>
-            {["admin", "editor", "collaborator", "reader"].map((r) => (
-              <option key={r} value={r}>
-                {t(`role_${r}`)}
-              </option>
-            ))}
-          </Select>
-          <Button onClick={() => void invite()} disabled={inviteEmail === ""}>
-            {t("invite")}
-          </Button>
-        </div>
+      {/* El equipo tiene su propia página (Equipo, en la barra lateral) */}
+      <section className="anda-bloque flex flex-wrap items-center gap-3 p-5">
+        <Users className="h-4 w-4" aria-hidden="true" />
+        <p className="flex-1 text-[13.5px]">{t("team_moved_hint")}</p>
+        <Link to="/team" className="text-[13.5px] font-semibold text-[var(--anda-primary-ink)] hover:underline">
+          {t("team")}
+        </Link>
       </section>
 
       <section className="anda-bloque p-5">
