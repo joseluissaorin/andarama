@@ -1,21 +1,26 @@
 [
   {
     "fecha": "2026-10-02",
-    "titulo": "Beta improvements",
+    "titulo": "What the teaching team asked for",
     "items": [
-      "ZIP export is more reliable: it retries what fails and tells you which files it could not include.",
-      "In virtual reality each scene's arrival view is respected, and gates work there too.",
-      "The browser address no longer overrides a scene's initial view.",
-      "Properties start collapsed, so the panel is easier to scan.",
-      "The Mute button is always visible.",
-      "Direct access to the Floor plan.",
-      "Team is in the sidebar, and each project can be shared with specific people.",
-      "Music for the whole tour.",
-      "A logo of its own for each tour.",
-      "The badge text can be changed.",
-      "Labels are readable on mobile.",
-      "The guided tour opens the same panels as clicking each hotspot.",
-      "New “Action (variables)” hotspot with a visual condition editor."
+      "ZIP export no longer stops halfway: failed files are retried, and if one still can't be fetched the ZIP is created anyway and lists it in LEEME.md. It is also faster.",
+      "Export and Share now explain which option to choose, with a link to the Moodle guide.",
+      "\"Use current view\" really sets the start view: reloading the tour no longer restores the position stored in the browser address.",
+      "New links arrive at the destination scene's default view, and the arrivals panel says which view each link uses.",
+      "In virtual reality you arrive facing the right way, quiz, form and treasure gates also block the way, and on Android gaze activates hotspots even if the phone moves a little.",
+      "Property sections start collapsed and remember how you left them.",
+      "A visible \"Mute\" button in scenes with sound.",
+      "A \"Floor plan\" button in the scene list, with the steps to build a plan with points that lead to each scene.",
+      "Renaming a scene, also from the graph, offers to rename its photo too.",
+      "New \"Team\" section in the sidebar and a \"People\" button in the editor to share a tour. Teamwork is available on every plan.",
+      "In Tour settings: background music for the whole tour (it stops when a scene has its own sound), your own logo, watermark and nadir patch, and badge text.",
+      "The \"Counter / state\" hotspot is now called \"Action (variables)\", summarises what it does and has a conditions editor without JSON.",
+      "\"How do I do it?\" links to the documentation in quiz, treasure, action, polygon and form.",
+      "Long labels can be read in full by tapping them, on phones too.",
+      "In a guided visit, when the guide opens a text, an image or a quiz, it also opens for everyone following.",
+      "New templates in the Education group: \"Graded quiz: trees and seasons\" and \"Treasure hunt: machines and trades\".",
+      "An \"Unpublished changes\" notice next to Publish, and Studio updates itself when a new version is out.",
+      "This what's new panel, the \"Report a problem\" button and the version number in the sidebar."
     ]
   }
 ]

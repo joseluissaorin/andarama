@@ -1,21 +1,26 @@
 [
   {
     "fecha": "2026-10-02",
-    "titulo": "Mejoras de la beta",
+    "titulo": "Lo que pidió el equipo docente",
     "items": [
-      "La exportación en ZIP es más fiable: reintenta lo que falla y avisa de los ficheros que no ha podido incluir.",
-      "En realidad virtual se respeta la vista de llegada de cada escena y las compuertas también funcionan.",
-      "La vista inicial de una escena ya no la pisa la dirección del navegador.",
-      "Las propiedades aparecen plegadas, para que el panel se recorra mejor.",
-      "El botón Silenciar está siempre a la vista.",
-      "Acceso directo al Plano.",
-      "Equipo aparece en la barra lateral y cada proyecto se puede compartir con personas concretas.",
-      "Música para todo el recorrido.",
-      "Logotipo propio en cada recorrido.",
-      "Se puede cambiar el texto de la insignia.",
-      "Las etiquetas se leen bien en el móvil.",
-      "La visita guiada abre los mismos paneles que al pulsar cada hotspot.",
-      "Nuevo hotspot «Acción (variables)» con un editor visual de condiciones."
+      "Exportar en ZIP ya no se corta: si un fichero falla, lo reintenta, y si aun así no llega, el ZIP se genera igual y lo apunta en LEEME.md. También va más rápido.",
+      "Exportar y Compartir explican qué opción elegir, con un enlace a la guía de Moodle.",
+      "«Usar vista actual» fija de verdad la vista de inicio: al recargar el recorrido ya no manda la posición guardada en la dirección del navegador.",
+      "Los pasos nuevos llegan a la vista por defecto de la escena de destino, y el panel de llegadas dice qué vista usa cada uno.",
+      "En realidad virtual se llega mirando hacia donde toca, las compuertas de quiz, formulario y tesoro también bloquean el paso, y en Android la mirada fija activa los hotspots aunque el móvil se mueva un poco.",
+      "Las secciones de propiedades salen plegadas y recuerdan cómo las dejaste.",
+      "Botón «Silenciar» a la vista en las escenas con sonido.",
+      "Botón «Plano del recorrido» en la lista de escenas, con los pasos para crear el plano con puntos que llevan a cada escena.",
+      "Al cambiar el nombre de una escena, también desde el grafo, se ofrece cambiar el de su foto.",
+      "Nueva sección «Equipo» en la barra lateral y botón «Personas» en el editor para compartir un recorrido. El trabajo en equipo está en todos los planes.",
+      "En Ajustes del recorrido: música para todo el recorrido (calla cuando una escena tiene su propio sonido), logotipo, marca de agua y parche del nadir propios, y texto de la insignia.",
+      "El hotspot «Contador / estado» ahora se llama «Acción (variables)», resume lo que hace y tiene un editor de condiciones sin JSON.",
+      "Enlaces «¿Cómo se hace?» a la documentación en quiz, tesoro, acción, polígono y formulario.",
+      "Las etiquetas largas se leen enteras al tocarlas, también en el móvil.",
+      "En la visita guiada, cuando el guía abre un texto, una imagen o un quiz, se abre también a quien le sigue.",
+      "Plantillas nuevas en el grupo Educación: «Quiz evaluable: los árboles y las estaciones» y «Búsqueda del tesoro: máquinas y oficios».",
+      "Aviso de «Cambios sin publicar» junto al botón Publicar, y el Studio se actualiza solo cuando hay una versión nueva.",
+      "Este panel de novedades, el botón «Informar de un problema» y el número de versión en la barra lateral."
     ]
   }
 ]
