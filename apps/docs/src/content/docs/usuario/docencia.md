@@ -8,6 +8,24 @@ nota, objetos que encontrar, puertas que se abren al resolver algo. El
 alumnado no necesita cuenta: juega con el enlace, embebido en el aula virtual
 o desde un paquete exportado.
 
+## Empezar con una plantilla
+
+En andarama.com, al pulsar **Nuevo tour**, el bloque **Empieza con una
+plantilla** ofrece recorridos de muestra por sector. Las del grupo
+**Educación** son recorridos completos, listos para copiar y adaptar:
+
+| Plantilla | Qué trae |
+|---|---|
+| **Escape room: la bodega del castillo** | Cinco salas, una llave (variable), tres tesoros con pista, preguntas con compuerta, nota mínima y diploma. Véase [Cómo hacer un escape room](/docs/usuario/escape-room/) |
+| **Quiz evaluable: los árboles y las estaciones** | Ciencias de la Naturaleza (Primaria y primer ciclo de ESO): cinco lugares, ocho preguntas de un punto sobre lo que se ve, la primera con compuerta, nota mínima del 60 %, informe final y certificado |
+| **Búsqueda del tesoro: máquinas y oficios** | Tecnología (Primaria y ESO) o preparación de una salida: cuatro lugares, once tesoros con pista, el contador «Encontrados N de M», mensaje final y un tesoro con compuerta en la primera escena |
+
+Las fotografías tienen licencia CC0 y cada plantilla explica su mecánica dentro
+del propio recorrido. Se copian a tu cuenta (cuentan como un recorrido de tu
+cuota) y se editan como cualquier otro: cambia las preguntas y conserva la
+mecánica. En una instalación propia, las plantillas aparecen solo si el
+operador las ha configurado.
+
 ## Quiz
 
 - Cada hotspot de **quiz** es **una pregunta**: enunciado, tipo (única,
@@ -59,13 +77,13 @@ muestra su pista. Los formularios tienen la misma opción.
 
 ## Variables y escape room
 
-Los hotspots de **contador/estado** cambian variables del recorrido, y las
-**condiciones** de cualquier hotspot las leen: puertas que se abren al
+Los hotspots de **Acción (variables)** (antes «Contador / estado») cambian
+variables del recorrido, y las **condiciones** de cualquier hotspot las leen: puertas que se abren al
 encontrar una llave, rutas que dependen de lo que se ha hecho, cambio de día a
 noche. Con eso, los tesoros y el quiz con compuerta se construye un escape
 room completo.
 
-- [Variables, contador y polígono](/docs/usuario/variables/): cómo funcionan,
+- [Variables, acción y polígono](/docs/usuario/variables/): cómo funcionan,
   con el ejemplo de la puerta con llave.
 - [Cómo hacer un escape room](/docs/usuario/escape-room/): paso a paso, con un
   ejemplo de tres salas.
@@ -85,8 +103,8 @@ reporta:
   puntuación mínima configurada.
 
 En andarama.com, el paquete SCORM es del plan Formación; en una instalación
-propia está siempre disponible. No funciona combinado con «HTML único». Las
-opciones de exportación están en [Exportar](/docs/usuario/exportar/), y los
+propia está siempre disponible. Se puede combinar con «HTML único»: el
+adaptador SCORM va dentro del mismo fichero. Las opciones de exportación están en [Exportar](/docs/usuario/exportar/), y los
 pasos en Moodle en [Insertar en Moodle](/docs/usuario/moodle/).
 
 ## LTI 1.3

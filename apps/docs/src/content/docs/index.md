@@ -23,7 +23,7 @@ Las tres primeras son gratis y son el mismo programa: el plan gratuito de Andara
 - Panoramas multirresolución (tiles) hasta 32K, panoramas parciales, cubemaps y gigapixel 2D.
 - Vídeo 360 (MP4/WebM/HLS, mono y estéreo) con hotspots sincronizados por línea de tiempo.
 - Audio ambiente, narración (con bloqueo de navegación), audio espacial HRTF y música global con ducking.
-- 17 tipos de hotspot: navegación, texto Markdown, imagen con zoom profundo, galería, vídeo, YouTube/Vimeo/PeerTube, audio, PDF, modelo 3D (con AR), web, formulario con Turnstile, comparador (imágenes o panoramas), quiz, polígono, etiqueta, enlace y contador/estado.
+- 18 tipos de hotspot: navegación, texto Markdown, imagen con zoom profundo, galería, vídeo, YouTube/Vimeo/PeerTube, audio, PDF, modelo 3D (con AR), web, formulario con Turnstile, comparador (imágenes o panoramas), quiz, tesoro, polígono, etiqueta, enlace y acción (variables).
 - Planos de planta con radar de orientación multi-planta y mapa geográfico OSM/Leaflet.
 - Modo VR con gafas (WebXR con manos de 25 articulaciones y mandos) y modo cartón con selección por mirada; giroscopio con retículo, deep links y proyecciones little planet/fisheye/panini/arquitectónica.
 - Editor con paleta buscable de hotspots, panel por pestañas, grafo donde cada arista **es** un hotspot de navegación y modo de recorridos guiados.

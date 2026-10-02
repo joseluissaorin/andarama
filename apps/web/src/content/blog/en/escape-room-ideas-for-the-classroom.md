@@ -37,7 +37,7 @@ Each idea lists **the story** (what you tell the class), **the locks** (the puzz
 ### 2. The blackout (Physics and engineering, grades 10-12)
 
 **Story.** A cascading power outage. Each room is part of the building's systems (electrical panel, mechanical room, shop) and circuits must be restored in order.
-**Locks.** Calculate the equivalent resistance of the diagram taped to the wall; choose the right fuse for the current; read an energy-use graph. A **Counter/state** hotspot "turns on the lights" in each room after a correct answer.
+**Locks.** Calculate the equivalent resistance of the diagram taped to the wall; choose the right fuse for the current; read an energy-use graph. An **Action (variables)** hotspot "turns on the lights" in each room after a correct answer.
 **Photos.** The school shop and mechanical room. If you can't get in, panoramas from a science and technology museum.
 
 ### 3. Outbreak at the field hospital (Biology, grades 9-11)
@@ -114,7 +114,7 @@ Each idea lists **the story** (what you tell the class), **the locks** (the puzz
 |---|---|---|
 | Treasure | Hidden objects, with a counter | Treasure hotspot |
 | Gated quiz | A lock that keeps players in the scene | Quiz hotspot, gate option |
-| Counter/state and conditions | Doors that appear, lights that turn on | Counter/state hotspot and the Conditions tab of any hotspot |
+| Action (variables) and conditions | Doors that appear, lights that turn on | Action (variables) hotspot and the Conditions tab of any hotspot |
 | Text, image, audio, video, PDF | Clues | Content hotspots |
 | PDF certificate | The "you escaped" moment | Tour Settings |
 | Link or QR code | Join without accounts | Publish |

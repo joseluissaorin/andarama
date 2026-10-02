@@ -69,7 +69,7 @@ like this:
 | Audio | Panel with transport controls and the transcript, if there is one |
 | Quiz | Tappable options, answer check and explanation; the score counts exactly as outside VR |
 | Comparison | Divider you drag with a pinch |
-| Link, state, polygon | Run their action directly (variable change, zone activation) |
+| Link, action (variables), polygon | Run their action directly (variable change, zone activation) |
 | PDF, web, form, embedded video, 3D model | Show a card with the title and address, plus an **Open after VR** button: when the session ends, the viewer opens that content in a tab |
 
 The last four are kept out of the headset on purpose: a PDF, a form with
@@ -162,8 +162,28 @@ Holding your gaze on something already triggered does not repeat it: you have
 to look away and come back. The ring also resets if you change targets or if
 your head moves more than about six degrees, so a shaky hand does not ruin it.
 
-It works with all seventeen hotspot types, not just navigation, and the
+It works with all eighteen hotspot types, not just navigation, and the
 duration is the tour's gaze dwell time setting.
+
+## Arrivals and gates inside the headset
+
+The headset follows the same rules as the flat viewer:
+
+- **Arrival view.** When you jump from one scene to another inside the
+  session, the panorama turns so you arrive facing where that step's arrival
+  orientation says. Only the horizontal turn is adjusted: your head decides
+  the tilt. When you enter VR from the flat viewer, you also start facing
+  where you were looking.
+- **Gates.** If the scene has a pending gated question, treasure or form, the
+  step does not open: a floating notice inside the scene explains why and, if
+  it is a question, opens it so you can answer. An escape room works the same
+  in a headset as on screen.
+
+On Chrome for Android, gaze selection is forgiving: the ring is measured
+against the marker you are looking at, with a small margin, so a slight head
+tremor does not reset it while your gaze stays on the marker. Gaze is also no
+longer switched off because the browser reports an input source that is not a
+real controller: only a controller, hands or a real tap turn it off.
 
 ## When embedding a tour
 

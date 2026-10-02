@@ -31,9 +31,16 @@ otro no hasta que se republiquen.
 
 ## ¿Se puede cambiar el texto?
 
-Todavía no: el texto y el enlace son fijos. Con un plan de marca blanca
-desaparece del todo; en esos planes también se puede servir el recorrido con
-[dominio propio](/docs/despliegue/dominios/).
+Sí. En **Ajustes del tour › Componentes de interfaz**, el campo **Texto de la
+insignia** sustituye «Hecho con Andarama» por lo que escribas (hasta 80
+caracteres). El enlace no cambia: sigue llevando a andarama.com. Si lo dejas
+vacío, sale el texto de serie, traducido al idioma del visitante. Como el
+resto de ajustes, se aplica al **volver a publicar**. Más detalles en
+[Logotipo, marca de agua y parche de nadir](/docs/usuario/marca/#el-texto-de-la-insignia).
+
+Para que la insignia desaparezca del todo hace falta un plan con marca blanca
+(Excursión, Formación o De por vida); en esos planes también se puede servir el
+recorrido con [dominio propio](/docs/despliegue/dominios/).
 
 Los detalles técnicos (cómo se guarda en la publicación y a dónde enlaza) están
 en [Planes, Clerk y uso razonable](/docs/admin/planes/#la-insignia-hecho-con-andarama).

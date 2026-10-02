@@ -62,7 +62,7 @@ Three ways, and you can combine them:
 
 - The hunt's own **completion message**: the notice the viewer shows for a few seconds when the last treasure is found. It's the minimum and it goes by quickly, so pair it with one of the other two.
 - A final **quiz** that can only be answered with what students learned from the treasures, with the PDF **certificate** turned on in the tour settings.
-- A treasure chest that appears: instead of treasures, hide **Counter/state** hotspots disguised as objects, each adding one to a variable, and a final hotspot with a **visibility condition** that shows up when the variable reaches the total. It's the escape room mechanic, and you lose the automatic counter, so it's only worth it with older students.
+- A treasure chest that appears: instead of treasures, hide **Action (variables)** hotspots disguised as objects, each adding one to a variable, and a final hotspot with a **visibility condition** that shows up when the variable reaches the total. It's the escape room mechanic, and you lose the automatic counter, so it's only worth it with older students.
 
 ### 6. Preview, publish and share
 

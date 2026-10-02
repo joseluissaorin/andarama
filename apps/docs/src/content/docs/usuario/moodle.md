@@ -79,8 +79,9 @@ En Andarama:
    Sin ella, el paquete manda la puntuación pero no si se ha aprobado.
 2. Pulsa **Exportar**, elige **Paquete SCORM** y la versión: **2004** en
    cualquier Moodle actual (1.2 solo para plataformas antiguas).
-3. Deja **HTML único** desactivado: con él, el paquete no comunica nada al
-   aula virtual.
+3. Si quieres, activa además **HTML único**: el adaptador SCORM va dentro del
+   mismo fichero y el aula virtual recibe igual la finalización y la nota. No
+   está disponible si alguna escena está teselada.
 4. Genera el ZIP.
 
 En Moodle 4.x:

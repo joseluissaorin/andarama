@@ -266,7 +266,7 @@
     "ver_todo": "Preise, Testphase und Fragen zur Abrechnung",
     "formato": { "usd": "{n} $", "eur": "{n} €" },
     "periodo": { "month": "im Monat", "year": "im Jahr", "once": "einmalig", "o_anual": "oder {precio} im Jahr", "por_docente": "je Lehrkraft" },
-    "todo": "Der ganze Editor, VR und Export",
+    "todo": "Der ganze Editor, VR, Export und Teamarbeit",
     "recorridos": { "uno": "1 Rundgang", "varios": "Bis zu {n} Rundgänge" },
     "medios": "{n} GB Medien",
     "planes": {
@@ -296,7 +296,6 @@
         "items": [
           "SCORM und LTI 1.3: Die Note geht zurück an deinen Campus",
           "White Label und eigene Domain",
-          "Team mit mehreren Bearbeitenden",
           "Rechnung in Euro auf Anfrage für Institutionen"
         ],
         "cta": "Loslegen"
@@ -327,7 +326,7 @@
           "Analytik ohne Cookies: Zeit je Szene und wohin jede Gruppe schaut"
         ]
       },
-      "cta": { "titulo": "Der Plan Formación", "texto": "100 Rundgänge, 200 GB, SCORM, White Label, eigene Domain und Team. 99 $ im Monat oder 990 $ im Jahr per Karte, oder Rechnung in Euro auf Anfrage für Institutionen. 14 Tage testen, ohne Kreditkarte.", "boton": "Mit Formación loslegen", "secundario": "Alle Pläne ansehen" },
+      "cta": { "titulo": "Der Plan Formación", "texto": "100 Rundgänge, 200 GB, SCORM, LTI 1.3, White Label und eigene Domain; Teamarbeit ist wie in allen Plänen inklusive. 99 $ im Monat oder 990 $ im Jahr per Karte, oder Rechnung in Euro auf Anfrage für Institutionen. 14 Tage testen, ohne Kreditkarte.", "boton": "Mit Formación loslegen", "secundario": "Alle Pläne ansehen" },
       "precio_visible": "99 $ im Monat oder 990 $ im Jahr · 100 Rundgänge · 200 GB · Rechnung in Euro auf Anfrage",
       "demo_boton": "20-minütige Demo anfragen",
       "contacto": {
@@ -391,7 +390,7 @@
         { "titulo": "Der Rundgang gehört dem Museum: freier Export", "texto": "Ein Klick exportiert ein statisches, in sich geschlossenes ZIP (HTML, Viewer, <code>tour.json</code>, Kacheln und Medien), das auf jedem Server läuft, ganz ohne Andarama dahinter. Auch als einzelne HTML-Datei, als PWA zum Ansehen ohne Internet oder im Kiosk-Modus für den Bildschirm im Foyer, mit Autopilot und Neustart nach Inaktivität. Das Format ist dokumentiert: Wenn das Museum Andarama nicht mehr nutzt, nimmt es den ganzen Rundgang mit." },
         { "titulo": "Eigene Seite auf andarama.com/explorar/", "texto": "Ein öffentlicher Rundgang auf der gehosteten Instanz kann seine eigene Seite in <a href=\"{explorar}\">der öffentlichen Galerie</a> beantragen: Titel mit dem Namen des Ortes, Beschreibung, Land und Koordinaten, strukturierte Ortsdaten und ein Eintrag in der Sitemap. Eine URL, die Suchmaschinen über den Namen des Museums finden und die auf seine Website führt. Der Index lässt sich nach Land filtern." },
         { "titulo": "DSGVO und Open Source", "texto": "Die Besucheranalytik nutzt keine Cookies und speichert keine IP-Adressen: Sie zeigt Besuche, Zeit je Saal und wohin die Leute schauen, ohne jemanden zu tracken. Das Programm ist Open Source unter EUPL-1.2, der Lizenz der Europäischen Kommission: Es lässt sich lesen, prüfen und auf der Infrastruktur des Museums oder seines Trägers installieren." },
-        { "titulo": "Eigene Instanz mit Support oder Plan Formación", "texto": "Zwei Wege. Der gehostete <a href=\"{formacion}\">Plan Formación</a> auf andarama.com: bis zu 100 Rundgänge, 200 GB, ohne Badge, eigene Domain, Team und Rechnung in Euro auf Anfrage mit den Steuerdaten der Institution. Oder dieselbe Anwendung, ausgerollt auf dem Cloudflare oder Docker des Museums, mit Support, Updates und Begleitung des Personals. Die Bedingungen für Institutionen stehen auf <a href=\"{universidades}\">der Seite für Hochschulen</a>." }
+        { "titulo": "Eigene Instanz mit Support oder Plan Formación", "texto": "Zwei Wege. Der gehostete <a href=\"{formacion}\">Plan Formación</a> auf andarama.com: bis zu 100 Rundgänge, 200 GB, ohne Badge, eigene Domain und Rechnung in Euro auf Anfrage mit den Steuerdaten der Institution. Oder dieselbe Anwendung, ausgerollt auf dem Cloudflare oder Docker des Museums, mit Support, Updates und Begleitung des Personals. Die Bedingungen für Institutionen stehen auf <a href=\"{universidades}\">der Seite für Hochschulen</a>." }
       ],
       "faq": {
         "titulo": "Häufige Fragen zum virtuellen Museumsrundgang",
@@ -770,7 +769,7 @@
       "street_view": "Auf Street View veröffentlichen",
       "verificado": "Preise im September 2026 auf der Website des jeweiligen Produkts geprüft.",
       "no_verificado": "Mit * markierte Angaben konnten nicht geprüft werden und verdienen einen zweiten Blick.",
-      "andarama_desde": "0 € auf deinem Server; gehostet ab 2 $ im Monat",
+      "andarama_desde": "0 $ auf deinem Server; gehostet ab 2 $ im Monat",
       "andarama_cuotas": "Keine Kontingente auf deinem Server; 1 bis 1000 Rundgänge gehostet",
       "sin_datos": "keine Angaben"
     },

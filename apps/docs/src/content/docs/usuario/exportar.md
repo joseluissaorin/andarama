@@ -10,13 +10,39 @@ sin conexión o un paquete SCORM para el aula virtual. La exportación está en
 todos los planes de andarama.com y, por supuesto, en cualquier instalación
 propia.
 
-Se abre con el botón **Exportar** del editor. Todo el trabajo lo hace tu
-navegador en segundo plano, sin congelar el editor: las fotos y teselas se
-descargan de seis en seis y se guardan sin recomprimir (ya vienen comprimidas),
-y solo se comprimen los ficheros de texto. En Chrome y Edge se pide primero
+Se abre con el botón **Exportar** del editor. Arriba del diálogo, el recuadro
+**¿Qué opción elijo?** lo resume en tres líneas:
+
+- **Servidor propio**: ZIP estándar.
+- **Un solo fichero para enviar**: HTML único (hasta unos 100 MB, sin escenas
+  en teselas).
+- **Moodle con nota**: SCORM o [LTI 1.3](/docs/usuario/moodle/#5-lti-13).
+
+Todo el trabajo lo hace tu navegador en segundo plano, sin congelar el editor:
+las fotos y teselas se descargan de diez en diez y se guardan sin recomprimir
+(ya vienen comprimidas), y solo se comprimen los ficheros de texto. El progreso
+dice cuántos ficheros lleva y cuántos megas. En Chrome y Edge se pide primero
 dónde guardar el ZIP y se escribe directamente en ese fichero mientras se
 genera; en los demás navegadores se descarga al terminar. Con muchas escenas
 teseladas puede tardar algunos minutos, porque hay que descargar cada tesela.
+
+### Si falla la red a mitad
+
+Un recorrido grande son miles de ficheros, y alguno puede fallar por un corte
+de red o porque el servidor está ocupado. La exportación no se detiene por
+eso:
+
+1. Cada fichero que falla se **reintenta** hasta cuatro veces, esperando un
+   poco más cada vez.
+2. Si sigue fallando, se aparta y se le da **una segunda vuelta al final**.
+3. Si ni así se recupera, el paquete se genera igual y el fichero queda
+   **anotado en `LEEME.md`**, dentro del ZIP, en el apartado «Ficheros que
+   faltan». El diálogo lo avisa: «N ficheros omitidos». Vuelve a exportar
+   para completarlo.
+
+Los ficheros se piden con un **enlace de descarga firmado**, válido durante
+seis horas, que el servidor entrega al empezar la exportación: así una
+exportación larga no depende de que la sesión siga abierta.
 
 ## El paquete estándar (ZIP)
 
@@ -32,7 +58,8 @@ desde el sistema de ficheros tanto los módulos JavaScript como los panoramas.
 Para verlo en local, `python3 -m http.server` en la carpeta y abrir
 `http://localhost:8000`.
 
-El ZIP incluye además un `LEEME.md` con las instrucciones de subida y un
+El ZIP incluye además un `LEEME.md` con las instrucciones de subida (y, si
+algo no se pudo descargar, la lista de lo que falta) y un
 `.htaccess` con los tipos MIME (`.webp`, `.avif`, `.glb`, `.webmanifest`) y las
 cabeceras de caché que necesitan los alojamientos compartidos con Apache. Funciona
 igual dentro de un subdirectorio (`https://midominio.es/tours/mi-tour/`): todas
@@ -144,5 +171,5 @@ Cloudflare Pages o Netlify, gratuitos. Véase la
 | Subirlo a la web del centro o a un hosting | Paquete estándar |
 | Mandarlo por correo o abrirlo sin servidor | HTML único (si no hay escenas teseladas y pesa menos de unos 100 MB) |
 | Una pantalla de museo o feria sin wifi | Paquete estándar con service worker y modo kiosco |
-| La nota en el libro de calificaciones de Moodle | Paquete SCORM |
+| La nota en el libro de calificaciones de Moodle | Paquete SCORM, o [LTI 1.3](/docs/usuario/moodle/#5-lti-13) sin exportar nada |
 | Saber cuántas visitas tiene fuera de Andarama | Endpoint de analítica propio |

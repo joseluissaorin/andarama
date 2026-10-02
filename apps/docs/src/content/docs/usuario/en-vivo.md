@@ -17,10 +17,26 @@ Los asistentes no necesitan cuenta en Andarama.
      compartas: quien lo tenga puede mover la vista de todos.
    - **Enlace para asistentes**: el que se reparte.
 3. Todo lo que hagas en el enlace de guía (cambiar de escena, girar la vista,
-   hacer zoom) se replica en los asistentes. Con `Alt + clic` marcas un
-   **puntero** visible para todos. Hay **chat de texto** integrado.
+   hacer zoom, **abrir o cerrar un panel**) se replica en los asistentes. Con
+   `Alt + clic` marcas un **puntero** visible para todos. Hay **chat de texto**
+   integrado.
 4. Cada asistente puede pulsar **Explorar libremente** para soltarse y mirar
    por su cuenta, y **Seguir al guía** para volver a tu vista.
+
+## Los paneles se abren a la vez
+
+Cuando el guía pulsa un hotspot con contenido (un texto, una imagen, una
+galería, un vídeo, un quiz), el mismo panel se abre en la pantalla de quien le
+sigue; y cuando el guía lo cierra, se les cierra también. Así todo el grupo lee
+la misma cartela al mismo tiempo, sin tener que buscarla.
+
+- Leer el panel, desplazarse por él, cerrar una burbuja o escribir en el chat
+  **no** suelta al asistente del guía.
+- Quien se ha soltado para explorar no recibe los paneles; al pulsar **Seguir
+  al guía**, se le abre el que el guía tenga abierto en ese momento.
+- Quien entra tarde a la sala ve también el panel que el guía tenga abierto.
+- Al seguir al guía solo se cierra lo que se abrió por seguirle: si un
+  asistente abre algo por su cuenta, el guía no se lo cierra.
 
 La sala es efímera: cuando el guía se va, se cierra y los asistentes ven «La
 visita guiada ha terminado».
@@ -41,13 +57,16 @@ montaje es este:
    pantalla.
 
 Cada alumno puede soltarse para explorar y volver a seguirte con un botón. Con
-`Alt + clic` señalas un punto que ven todos, y el chat de texto de Andarama
-sirve para preguntas rápidas sin interrumpir la reunión.
+`Alt + clic` señalas un punto que ven todos, al abrir un panel se les abre a
+ellos, y el chat de texto de Andarama sirve para preguntas rápidas sin
+interrumpir la reunión.
 
 :::note[Lo que no se sincroniza]
-La apertura de hotspots (un texto, una imagen, un vídeo) y el audio del
-recorrido no se replican: si quieres que todos lean un panel, pídeles que lo
-abran. Por eso hace falta la videollamada para la voz.
+El audio no viaja por la sala: ni tu voz ni el sonido del recorrido (música,
+ambientes, narraciones), que cada asistente oye, o no, en su propio
+navegador. Por eso hace falta la videollamada para la voz. Tampoco se
+sincroniza lo que se hace dentro de un panel, como las respuestas de un quiz:
+cada asistente contesta por su cuenta.
 :::
 
 ¿Por qué no compartir pantalla y ya? Porque así cada participante mueve su

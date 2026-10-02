@@ -59,7 +59,7 @@ Tres maneras, y se pueden combinar:
 
 - El **mensaje al completar** de la propia búsqueda: el aviso que el visor enseña unos segundos al encontrar el último tesoro. Es lo mínimo y pasa rápido, así que conviene acompañarlo de una de las otras dos.
 - Un **quiz** final que solo se puede responder con lo aprendido en los tesoros, con el **certificado** en PDF activado en Ajustes del tour.
-- Un cofre que aparece: en lugar de tesoros, se esconden hotspots de **Contador/estado** disfrazados de objeto, cada uno suma uno a una variable, y un hotspot final con **condición de visibilidad** se muestra cuando la variable llega al total. Es la mecánica del [escape room](/blog/escape-room-digital/), y pierde el contador automático, así que solo compensa con los mayores.
+- Un cofre que aparece: en lugar de tesoros, se esconden hotspots de **Acción (variables)** disfrazados de objeto, cada uno suma uno a una variable, y un hotspot final con **condición de visibilidad** se muestra cuando la variable llega al total. Es la mecánica del [escape room](/blog/escape-room-digital/), y pierde el contador automático, así que solo compensa con los mayores.
 
 ### 6. Prueba, publica y comparte
 

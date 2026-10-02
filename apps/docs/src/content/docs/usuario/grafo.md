@@ -74,6 +74,11 @@ pulsar dentro del panorama, y al revés.
 
 ## Modo Plano
 
+Al modo Plano se llega también con el botón **Plano del recorrido** de la lista
+de escenas. Si el recorrido aún no tiene plano, el lienzo enseña los tres pasos
+(subir la imagen, colocar las escenas y publicar) y el botón **Añadir plano**.
+Lo que ve el visitante está en [Plano del recorrido](/docs/usuario/plano/).
+
 - El plano se encuadra entero al entrar.
 - Las escenas que aún no están colocadas salen en una lista abajo a la
   izquierda: **arrástralas al plano** para colocarlas.

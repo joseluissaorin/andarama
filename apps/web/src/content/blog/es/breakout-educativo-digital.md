@@ -62,11 +62,11 @@ Genially tiene plantillas de breakout y escape room muy trabajadas, con animacio
 Andarama es nuestro, y lo proponemos para un caso concreto: cuando el breakout ocurre **en un lugar**. El laboratorio del centro, un museo, un yacimiento, la casa natal de un autor. El alumnado mira a su alrededor, busca y pulsa, y los candados están repartidos por el espacio. Las piezas son estas:
 
 - **Quiz con compuerta**: una pregunta que no deja salir de la escena hasta acertarla. Es el candado más directo.
-- **Variables y condiciones**: un hotspot de contador/estado cambia una variable (por ejemplo, `llave` pasa a verdadero) y otro hotspot, una puerta o un cofre, solo aparece cuando esa variable tiene el valor que toca.
+- **Variables y condiciones**: un hotspot de **Acción (variables)** cambia una variable (por ejemplo, `llave` pasa a verdadero) y otro hotspot, una puerta o un cofre, solo aparece cuando esa variable tiene el valor que toca.
 - **Tesoros**: objetos escondidos en las fotos que el visor va contando («3 de 5 encontrados»).
 - **Nota y certificado**: en Ajustes del tour se fija la puntuación mínima, el visor muestra un informe final con los aciertos y puede emitir un certificado de finalización en PDF.
 
-No hay un breakout ya hecho que se clone con un botón: se monta con esas piezas, y con las fotos listas lleva entre veinte y treinta minutos. En [plantillas de escape room 360 para clase](/blog/plantillas-escape-room-360/) dejamos cuatro guiones completos para copiar, y la [guía de escape room de la documentación](https://docs.andarama.com/usuario/escape-room/) explica cada ajuste.
+En andarama.com, al crear un recorrido, el grupo **Educación** de las plantillas incluye un escape room ya montado, «La bodega del castillo», que se copia a tu cuenta y se cambia a tu gusto. Para uno propio, se monta con esas piezas, y con las fotos listas lleva entre veinte y treinta minutos. En [plantillas de escape room 360 para clase](/blog/plantillas-escape-room-360/) dejamos cuatro guiones completos para copiar, y la [guía de escape room de la documentación](https://docs.andarama.com/usuario/escape-room/) explica cada ajuste.
 
 Al terminar, el informe se ve en la pantalla de cada grupo, que puede descargar el certificado, y el resultado llega a la analítica del recorrido, desde donde lo descargas en CSV (con el nombre del grupo si lo pides al enviar). No hay código de clase ni un panel de progreso por grupos. Si el centro necesita que la nota llegue al libro de calificaciones de su plataforma, la vía es el paquete SCORM, disponible en el plan Formación y en la instalación propia.
 

@@ -57,10 +57,14 @@ El esquema está **versionado**: `@andarama/schema` incluye migradores automáti
 - **`connections` ya no existe.** El grafo se deriva íntegramente de los
   hotspots de navegación. Los `tour.json` antiguos que la traigan se siguen
   cargando: el visor simplemente la ignora.
-- **`entry.mode` admite `forward`** (nuevo): se entra de espaldas a la puerta
-  por la que se ha venido y se sigue de frente, calculado a partir del paso de
-  vuelta. Es el valor por defecto de los pasos nuevos. Un visor antiguo que no
-  lo conozca cae en la vista inicial de la escena.
+- **`entry.mode` admite `initial`** (nuevo): se entra con la vista por
+  defecto de la escena de destino (`scene.initialView`). Es el valor de los
+  pasos nuevos creados desde el grafo o arrastrando una escena; un paso sin
+  `entry` se comporta igual. Los pasos que ya existían conservan su modo.
+- **`entry.mode` admite `forward`**: se entra de espaldas a la puerta por la
+  que se ha venido y se sigue de frente, calculado a partir del paso de
+  vuelta. Un visor antiguo que no lo conozca cae en la vista inicial de la
+  escena.
 - **`entry.mode: "relative"` conserva el rumbo real** cuando las dos escenas
   tienen `map.north` calibrado, en vez del ángulo crudo.
 - **`floorplans` se compila desde las áreas del borrador.** En el editor, la
@@ -82,3 +86,20 @@ El esquema está **versionado**: `@andarama/schema` incluye migradores automáti
   `hotspots` admite `all`, `navigationOnly` o `custom`; con `custom`, `types`
   lista las excepciones. La navegación está siempre disponible.
   `dwellSeconds` es la permanencia del retículo de mirada.
+- **`globalAudio`** (nuevo): música de fondo de todo el recorrido, con
+  `url` y `volume` (de 0 a 1). Baja durante las narraciones y se funde a
+  silencio en las escenas con sonido propio.
+- **`scene.audio.replaceGlobal`** (nuevo): sin indicar, la música de fondo
+  cede cuando la escena tiene ambiente o fuentes espaciales; `false` la
+  mantiene sonando y `true` la calla aunque la escena no tenga sonido.
+- **`ui.logo`**, **`ui.watermark`** y **`ui.nadirPatch`**: logotipo junto al
+  título, marca de agua en una esquina y parche de nadir (`image` y `size`)
+  propios del recorrido.
+- **`ui.badgeText`** (nuevo): texto propio de la insignia «Hecho con
+  Andarama», recortado a 80 caracteres. Solo se ve en los planes que muestran
+  la insignia, y sigue enlazando a andarama.com.
+- **Vista en el enlace**: el visor escribe `#s=escena&y=…&p=…&f=…` en la
+  dirección mientras se mira alrededor, pero solo aplica la orientación del
+  hash si lleva además `v=1`, que es lo que añade el botón de compartir. Sin
+  ese marcador, el hash solo elige la escena y se entra con su vista de
+  llegada.

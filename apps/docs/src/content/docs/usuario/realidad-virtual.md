@@ -27,6 +27,12 @@ botón abre una sesión WebXR. Como esa sesión no tiene mandos ni manos, Andara
 se comporta igual que en el modo cartón: punto en el centro, anillo de
 permanencia y el botón del visor como atajo.
 
+En esa sesión de Android la mirada es tolerante: el anillo se mide contra el
+marcador al que se mira, con un pequeño margen, y no se reinicia por un leve
+temblor de la cabeza mientras la mirada siga sobre él. Tampoco se apaga la
+mirada porque el navegador anuncie una fuente de entrada que no es un mando de
+verdad: solo la desactivan un mando, las manos o una pulsación real.
+
 ## Las manos
 
 Andarama usa el módulo de seguimiento de manos de WebXR. Cuando las gafas lo
@@ -73,7 +79,7 @@ visitante, y se comporta así:
 | Audio | Panel con transporte y transcripción, si la hay |
 | Quiz | Opciones pulsables, comprobación y respuesta razonada; la puntuación cuenta igual que fuera de VR |
 | Comparador | Divisor arrastrable con la pinza |
-| Enlace, estado, polígono | Ejecutan su acción directamente (cambio de variable, activación de la zona) |
+| Enlace, acción (variables), polígono | Ejecutan su acción directamente (cambio de variable, activación de la zona) |
 | PDF, web, formulario, vídeo embebido, modelo 3D | Muestran una tarjeta con el título y la dirección, y un botón **Abrir al salir de VR**: al terminar la sesión el visor abre ese contenido en una pestaña |
 
 Los cuatro últimos no se meten dentro de las gafas a propósito: un PDF, un
@@ -171,8 +177,23 @@ vista y volver. Y el anillo se reinicia si se cambia de objetivo o si la cabeza
 se mueve más de unos seis grados, de modo que un pulso de la mano no lo
 estropea.
 
-Funciona con los diecisiete tipos de hotspot, no solo con la navegación, y la
+Funciona con los dieciocho tipos de hotspot, no solo con la navegación, y la
 duración es la «permanencia de la mirada» de los ajustes del tour.
+
+## Llegadas y compuertas dentro de las gafas
+
+Las gafas siguen las mismas reglas que el visor plano:
+
+- **Vista de llegada.** Al saltar de una escena a otra dentro de la sesión, el
+  panorama se gira para que entres mirando a donde dice la
+  [orientación de llegada](/docs/usuario/escenas/#cómo-se-llega-a-una-escena)
+  de ese paso. Solo se ajusta el giro horizontal: la inclinación la decide tu
+  cabeza. Al entrar en realidad virtual desde el visor plano, también empiezas
+  mirando a donde mirabas.
+- **Compuertas.** Si en la escena hay una pregunta, un tesoro o un formulario
+  con compuerta pendiente, el paso no se abre: aparece un aviso flotante dentro
+  de la escena que explica el motivo y, si es una pregunta, se abre para
+  responderla. Un escape room funciona igual con gafas que en la pantalla.
 
 ## Al embeber un tour
 

@@ -8,6 +8,23 @@ to find, doors that open once students solve something. Students do not need
 an account. They play from the link, embedded in your LMS (Moodle, Canvas,
 Google Classroom as a link) or from an exported package.
 
+## Start from a template
+
+On andarama.com, when you click **New tour**, the **Start from a template**
+block offers sample tours by sector. The ones in the **Education** group are
+complete tours, ready to copy and adapt. Their content is in Spanish:
+
+| Template | What it includes |
+|---|---|
+| **Escape room: la bodega del castillo** (the castle cellar) | Five rooms, a key (variable), three treasures with hints, gated questions, a passing score and a diploma |
+| **Quiz evaluable: los árboles y las estaciones** (trees and seasons) | Natural science for primary and lower secondary: five places, eight one-point questions about what can be seen, the first one gated, a 60 % passing score, final report and certificate |
+| **Búsqueda del tesoro: máquinas y oficios** (machines and trades) | Technology, or preparing a field trip: four places, eleven treasures with hints, a counter of treasures found, a completion message and a gated treasure in the first scene |
+
+The photos are CC0, and each template explains its mechanics inside the tour.
+They are copied to your account (each counts as one tour in your quota) and
+edited like any other tour: change the questions, keep the mechanics. On a
+self-hosted install, templates only appear if the operator has set them up.
+
 ## Quizzes
 
 - Each **quiz** hotspot is **one question**: prompt, type (single choice,
@@ -61,12 +78,13 @@ found; trying to leave shows its hint). Forms have the same option.
 
 ## Variables and escape rooms
 
-**Counter / state** hotspots change the tour's variables, and the
+**Action (variables)** hotspots (formerly "Counter / state") change the
+tour's variables, and the
 **conditions** on any hotspot read them: doors that open once you find a key,
 paths that depend on what you did, switching from day to night. Combine that
 with treasures and gated quizzes and you have a full escape room.
 
-- [Variables, counter and polygon](/docs/en/usuario/variables/): how they
+- [Variables, actions and polygons](/docs/en/usuario/variables/): how they
   work, with a locked-door example.
 - [How to make an escape room](/docs/en/usuario/escape-room/): step by step,
   with a three-room example.
@@ -86,8 +104,8 @@ reports:
   passing score you set.
 
 On andarama.com, SCORM export is part of the Formación plan; on a self-hosted
-install it is always available. It does not work combined with "Single HTML
-file". Export options are covered in
+install it is always available. It can be combined with "Single HTML file":
+the SCORM adapter goes inside the same file. Export options are covered in
 [Export](/docs/en/usuario/exportar/), and the Moodle steps in
 [Add to Moodle](/docs/en/usuario/moodle/).
 

@@ -1,6 +1,6 @@
 ---
 title: "Cómo meter un recorrido 360 en Moodle (SCORM, iframe y LTI)"
-description: "Cómo poner un tour 360 en Moodle: incrustado en una página, sin nota, o como paquete SCORM con nota. O por LTI 1.3, con la nota directa al libro de calificaciones."
+description: "Cómo poner un tour 360 en Moodle: incrustado en una página, sin nota, o con nota por SCORM o por LTI 1.3, que la lleva directa al libro de calificaciones."
 lang: es
 slug: recorrido-360-moodle
 cluster: docencia

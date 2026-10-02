@@ -16,7 +16,7 @@ Andarama es de código abierto bajo EUPL-1.2. **El plan gratuito es montárselo 
 | **Formación** | 99 $ al mes o 990 $ al año | hasta 100 | 200 GB | SCORM, LTI 1.3, sin insignia, dominio propio |
 | **De por vida** | 1000 $, una sola vez | hasta 1000 | 200 GB | Sin insignia, dominio propio |
 
-El quiz con nota, el certificado, la búsqueda del tesoro y lo necesario para montar un escape room (compuertas, variables y condiciones) están en **todos** los planes, igual que la exportación ZIP, HTML único y PWA.
+El quiz con nota, el certificado, la búsqueda del tesoro y lo necesario para montar un escape room (compuertas, variables y condiciones) están en **todos** los planes, igual que el **trabajo en equipo** (invitar a personas con su rol y compartir un recorrido con el botón Personas) y la exportación ZIP, HTML único y PWA.
 
 Los slugs que el servidor entiende (y que hay que usar tal cual en Clerk) son `andar`, `aula`, `paseo`, `excursion`, `formacion` y `vitalicio`. El precio mensual y el anual de un mismo plan comparten slug: para el servidor son el mismo plan.
 
@@ -41,12 +41,12 @@ Además de la cuota, cada plan enciende unas capacidades. En el self-host todas 
 
 | Capacidad | Qué es | Planes |
 |---|---|---|
-| `classroom` | Reservada para el código de clase, que todavía no existe; hoy no activa nada | Aula |
+| `classroom` | Etiqueta del plan Aula reservada para un futuro código de clase. No activa ni limita nada: el quiz, la búsqueda del tesoro y el escape room están en todos los planes | Aula (sin efecto) |
 | `scorm` | Exportar el recorrido como paquete SCORM 1.2 o 2004 | Formación |
 | `lti` | Lanzarlo desde Moodle u otro LMS por LTI 1.3, con Deep Linking y la nota de vuelta al libro de calificaciones | Formación |
 | `whiteLabel` | Sin la insignia «Hecho con Andarama» | Excursión, Formación, De por vida |
 | `customDomain` | Servir el recorrido bajo un dominio propio (CNAME) | Excursión, Formación, De por vida |
-| `team` | Reservada para limitar el equipo por plan; hoy nada la comprueba y todos los planes pueden invitar | Formación |
+| `team` | Etiqueta heredada. No limita nada: el trabajo en equipo está en todos los planes y nada la comprueba | Formación (sin efecto) |
 | `invoice` | Factura con datos fiscales | Formación |
 
 Dónde se aplican hoy:
@@ -55,13 +55,16 @@ Dónde se aplican hoy:
 - **LTI**: el launch de Resource Link comprueba el plan de quien responde del recorrido; sin la capacidad, Moodle recibe un `403`.
 - **SCORM**: el paquete se arma en el navegador con lo que devuelve `POST /projects/:id/export`, así que el control está en el Studio: sin la capacidad, el selector de SCORM del diálogo de exportación aparece desactivado con su explicación. Si algún día hiciera falta cerrarlo en el servidor, el sitio es ese mismo endpoint (bastaría un parámetro `scorm` y `requireOrgCapability`).
 - **LTI**, además, se comprueba al dar de alta la plataforma y al abrir el selector de Deep Linking. Los pasos están en [Insertar en Moodle](/docs/usuario/moodle/#5-lti-13).
-- **`classroom`, `team` e `invoice`**: la capacidad está definida y el Studio la enseña en la página Plan, pero nada la consulta todavía. No hay código de clase; las invitaciones funcionan en todos los planes; la factura con datos fiscales no es automática.
+- **`classroom` y `team`**: están definidas, pero nada las consulta y la página **Plan** del Studio ya no las enseña, porque lo que nombran (aula y equipo) está en todos los planes. No hay código de clase; las invitaciones y el botón Personas funcionan en todos los planes.
+- **`invoice`**: la página Plan la enseña, pero la factura con datos fiscales no es automática: se pide por correo.
 
 La lista de capacidades del usuario viene en `GET /api/v1/me` (`billing.capabilities`) y en `GET /api/v1/billing/me`. En el self-host el valor es `null`: todo permitido.
 
 ## La insignia «Hecho con Andarama»
 
 Los recorridos publicados por cuentas sin `whiteLabel` (Andar, Aula, Paseo y la prueba) llevan un enlace pequeño «Hecho con Andarama» sobre los controles de la esquina inferior derecha del visor. Es un enlace accesible con su etiqueta, sigue el tema del recorrido, no tapa el panorama y se ve también en pantalla completa. Lleva a `https://andarama.com/?utm_source=insignia&utm_medium=tour&utm_campaign=hecho-con`, así que se sabe cuántas visitas trae.
+
+El autor puede cambiar el texto (no el enlace) en **Ajustes del tour › Componentes de interfaz › Texto de la insignia**, que se guarda como `ui.badgeText` y se recorta a 80 caracteres.
 
 Se decide **al publicar**, no al servir: el puntero `current.json` de la publicación lleva `badge: true`, porque el servido de `/t/{slug}` no toca la base de datos. Cambiar de plan y republicar la quita. Los paquetes exportados no la llevan, y el self-host no la pone nunca. La explicación para usuarios está en [La insignia «Hecho con Andarama»](/docs/usuario/insignia/).
 
@@ -135,7 +138,7 @@ No hace falta para el self-host, pero cualquiera puede repetir el montaje:
 | `CLERK_JWT_KEY` | Opcional. Clave pública PEM para verificar sin red |
 | `CLERK_AUTHORIZED_PARTIES` | Opcional. Orígenes admitidos separados por comas; por defecto, la URL pública y su subdominio `app.` |
 | `SAMPLE_PROJECT_ID` | Opcional. Id del proyecto que se clona como tour de ejemplo a cada cuenta nueva |
-| `TEMPLATE_PROJECTS` | Opcional. Plantillas por sector de «Nuevo proyecto»: `sector:id` separados por comas (sectores con nombre: `escape_room`, `prl`, `museo`, `campus`, `inmobiliaria`) |
+| `TEMPLATE_PROJECTS` | Opcional. Plantillas por sector de «Nuevo proyecto»: `sector:id` separados por comas (sectores con nombre: `escape_room`, `quiz`, `tesoro`, `prl`, `museo`, `campus`, `inmobiliaria`) |
 | `CLERK_WEBHOOK_SECRET` | Opcional. Secreto de firma (`whsec_...`) del webhook de Clerk: supresión de cuentas y fecha del primer pago. Véase [Webhook de Clerk](/docs/despliegue/cloudflare/#webhook-de-clerk) |
 | `ADMIN_EMAILS` | Recomendada. Administradores de la instancia, separados por comas. Con Clerk y sin esta lista nadie administra la instancia |
 
@@ -149,7 +152,7 @@ Con las dos primeras variables definidas la instancia pasa a modo Clerk; sin ell
 El primer minuto de una cuenta nueva no debería ser una pantalla vacía. El operador guarda en una organización propia («Plantillas») unos cuantos recorridos terminados y los señala con dos variables:
 
 - `SAMPLE_PROJECT_ID`: al dar de alta a alguien (con Clerk), se le clona ese recorrido en su organización. Queda marcado como ejemplo (`is_sample`), lleva la insignia «Ejemplo» en el tablero, se abre solo la primera vez y **no cuenta en la cuota**.
-- `TEMPLATE_PROJECTS`: la lista de plantillas que «Nuevo proyecto» ofrece por sector, por ejemplo `escape_room:abc,prl:def,museo:ghi,campus:jkl,inmobiliaria:mno`. Un id sin sector también vale; se muestra con su título. Un proyecto hecho desde una plantilla sí cuenta en la cuota.
+- `TEMPLATE_PROJECTS`: la lista de plantillas que «Nuevo proyecto» ofrece por sector, por ejemplo `escape_room:abc,quiz:pqr,tesoro:stu,prl:def,museo:ghi,campus:jkl,inmobiliaria:mno`. Los sectores `escape_room`, `quiz` y `tesoro` salen juntos bajo el grupo **Educación**. Un id sin sector también vale; se muestra con su título. Un proyecto hecho desde una plantilla sí cuenta en la cuota.
 
 En los dos casos **los medios no se copian**: las escenas clonadas siguen apuntando a los panoramas de la organización Plantillas, así que cualquier cuenta puede leerlos (nunca modificarlos ni borrarlos). Por eso no conviene borrar medios de esa organización mientras haya clones que los usen. Si una variable falta o el proyecto ya no existe, no pasa nada: ni ejemplo ni sección de plantillas.
 
