@@ -1,5 +1,14 @@
 import type { Tour } from "@andarama/schema";
-import { runExport, ZipWriter, type AssetProvider, type ExportOptions, type ExportProgress } from "@andarama/exporter";
+import {
+  AssetReadError,
+  runExport,
+  withRetry,
+  ZipWriter,
+  type AssetProvider,
+  type ExportOptions,
+  type ExportProgress,
+  type ExportResult,
+} from "@andarama/exporter";
 
 /**
  * El trabajo de exportar, sin nada de la interfaz: lo ejecuta el Web Worker
@@ -10,7 +19,13 @@ import { runExport, ZipWriter, type AssetProvider, type ExportOptions, type Expo
 export interface ExportJob {
   projectId: string;
   tour: Tour;
-  assets: string[];
+  /** Ruta dentro del paquete y clave de almacenamiento de cada asset. */
+  assets: { rel: string; key: string }[];
+  /**
+   * Vale firmado de POST /export: cada fichero se descarga sin sesión ni
+   * consultas por fichero. Sin él (API anterior) se usa la vista previa.
+   */
+  token?: string;
   options: ExportOptions;
 }
 
@@ -22,7 +37,18 @@ export interface ExportJobHooks {
   onProgress: (p: ExportProgress) => void;
 }
 
-export async function runExportJob(job: ExportJob, hooks: ExportJobHooks): Promise<{ files: number; bytes: number }> {
+async function fetchBytes(url: string, label: string, init?: RequestInit): Promise<Uint8Array> {
+  let res: Response;
+  try {
+    res = await fetch(url, init);
+  } catch (err) {
+    throw new AssetReadError(`No se pudo leer ${label} (${err instanceof Error ? err.message : String(err)})`, null);
+  }
+  if (!res.ok) throw new AssetReadError(`No se pudo leer ${label} (${res.status})`, res.status);
+  return new Uint8Array(await res.arrayBuffer());
+}
+
+export async function runExportJob(job: ExportJob, hooks: ExportJobHooks): Promise<ExportResult> {
   // Ficheros del visor. Los sourcemaps no se publican: ahorran ~1,5 MB.
   const viewerList = await fetch("/viewer/files.json").then((r) => (r.ok ? (r.json() as Promise<string[]>) : []));
   const viewerFiles = await Promise.all(
@@ -30,18 +56,22 @@ export async function runExportJob(job: ExportJob, hooks: ExportJobHooks): Promi
       .filter((path) => !path.endsWith(".map"))
       .map(async (path) => ({
         path,
-        data: new Uint8Array(await (await fetch(`/viewer/${path}`)).arrayBuffer()),
+        data: await withRetry(() => fetchBytes(`/viewer/${path}`, `viewer/${path}`)),
       })),
   );
+  const keys = new Map(job.assets.map((a) => [a.rel, a.key]));
   const provider: AssetProvider = {
-    list: async () => job.assets,
+    list: async () => job.assets.map((a) => a.rel),
     read: async (rel) => {
-      const res = await fetch(`/api/v1/projects/${job.projectId}/preview/${rel}`, {
+      const key = keys.get(rel);
+      if (job.token != null && key != null) {
+        const q = new URLSearchParams({ k: key, t: job.token });
+        return fetchBytes(`/api/v1/projects/${job.projectId}/export/blob?${q.toString()}`, rel, { credentials: "omit" });
+      }
+      return fetchBytes(`/api/v1/projects/${job.projectId}/preview/${rel}`, rel, {
         credentials: "same-origin",
         headers: await hooks.getHeaders(),
       });
-      if (!res.ok) throw new Error(`No se pudo leer ${rel} (${res.status})`);
-      return new Uint8Array(await res.arrayBuffer());
     },
   };
   const writer = new ZipWriter(hooks.onChunk);

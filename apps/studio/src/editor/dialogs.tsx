@@ -517,6 +517,9 @@ function mensajeGaleria(t: (key: string, vars?: Record<string, string | number>)
 // Compartir: enlace + embed + QR (§2.12)
 // ---------------------------------------------------------------------------
 
+/** Guía de las cinco maneras de llevar un recorrido a Moodle (solo en español). */
+const DOCS_MOODLE = "https://docs.andarama.com/usuario/moodle/";
+
 export function ShareDialog({ open, onClose, project }: { open: boolean; onClose: () => void; project: ProjectInfo }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -587,6 +590,9 @@ export function ShareDialog({ open, onClose, project }: { open: boolean; onClose
         <details className="rounded-xl bg-[var(--anda-surface-2)] px-4 py-3 text-[13px]">
           <summary className="cursor-pointer font-medium">{t("share_moodle_title")}</summary>
           <p className="mt-2 whitespace-pre-line leading-relaxed text-[var(--anda-text-dim)]">{t("help_moodle")}</p>
+          <a href={DOCS_MOODLE} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block font-medium text-[var(--anda-primary-ink)] hover:underline">
+            {t("share_moodle_guide")}
+          </a>
         </details>
         {qr != null && (
           <Field label={t("qr_code")} help={t("help_qr")}>
@@ -636,6 +642,10 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
   const me = useAuth((s) => s.me);
   const scormPermitido = canUse(me, "scorm");
 
+  const lang = useI18nStore((s) => s.lang);
+  const fmtMb = (bytes: number): string =>
+    (bytes / 1024 / 1024).toLocaleString(lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
   const doExport = async (): Promise<void> => {
     const fileName = `${project.slug}${scorm !== "" ? "-scorm" : ""}.zip`;
     // Primero el destino: el diálogo de guardar necesita el gesto del clic.
@@ -646,7 +656,7 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
     setProgress(t("export_progress"));
     const inicio = Date.now();
     try {
-      const { tour, assets } = await api<{ tour: Tour; assets: { rel: string; key: string }[] }>(
+      const { tour, assets, token } = await api<{ tour: Tour; assets: { rel: string; key: string }[]; token?: string }>(
         `/projects/${project.id}/export`,
         { method: "POST", body: {} },
       );
@@ -656,7 +666,8 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
         {
           projectId: project.id,
           tour,
-          assets: assets.map((a) => a.rel),
+          assets,
+          token,
           options: {
             langs,
             maxLevels: maxLevels !== "" ? parseInt(maxLevels, 10) : null,
@@ -674,10 +685,12 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
           onProgress: (p) =>
             setProgress(
               p.phase === "assets"
-                ? t("export_phase_assets", { done: p.done, total: p.total })
-                : p.phase === "viewer"
-                  ? t("export_phase_viewer")
-                  : t("export_phase_finalize"),
+                ? t("export_phase_assets_mb", { done: p.done, total: p.total, mb: fmtMb(p.bytes ?? 0) })
+                : p.phase === "retry"
+                  ? t("export_phase_retry", { done: p.done, total: p.total })
+                  : p.phase === "viewer"
+                    ? t("export_phase_viewer")
+                    : t("export_phase_finalize"),
             ),
         },
       );
@@ -685,11 +698,18 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
       setProgress(
         t("export_done_detail", {
           files: result.files,
-          mb: (result.bytes / 1024 / 1024).toFixed(1),
+          mb: fmtMb(result.bytes),
           s: Math.max(1, Math.round((Date.now() - inicio) / 1000)),
         }),
       );
-      toast.push(t("export_done"), "ok");
+      // Los ficheros que no se pudieron leer no tumban el paquete: van
+      // anotados en LEEME.md y aquí se avisa sin dar el export por fallido
+      if (result.missing.length > 0) {
+        toast.push(
+          result.missing.length === 1 ? t("export_missing_one") : t("export_missing", { n: result.missing.length }),
+          "info",
+        );
+      } else toast.push(t("export_done"), "ok");
     } catch (err) {
       await sink.abort();
       setProgress(null);
@@ -711,6 +731,10 @@ export function ExportDialog({ open, onClose, project }: { open: boolean; onClos
       }
     >
       <div className="space-y-4">
+        <div className="rounded-lg bg-[var(--anda-surface-2)] p-3 text-xs">
+          <p className="font-medium">{t("export_choose_title")}</p>
+          <p className="mt-1 whitespace-pre-line leading-relaxed text-[var(--anda-text-dim)]">{t("export_choose_body")}</p>
+        </div>
         <Field label={t("export_langs")}>
           <div className="flex flex-wrap gap-3">
             {allLangs.map((lang) => (
