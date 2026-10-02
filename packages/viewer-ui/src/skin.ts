@@ -944,7 +944,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   // ------- Sala en vivo -------
   let live: LiveClient | null = null;
   if (options.live != null) {
-    live = new LiveClient(viewer, t, container, options.live);
+    live = new LiveClient(viewer, t, container, options.live, panelHost);
     live.connect();
   }
 

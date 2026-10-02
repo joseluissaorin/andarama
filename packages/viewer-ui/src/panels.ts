@@ -44,6 +44,17 @@ export class PanelHost {
   private lastFocus: HTMLElement | null = null;
   private bubbleCleanup: (() => void) | null = null;
   private bubbleId: string | null = null;
+  /** Hotspot del panel modal abierto. */
+  private modalId: string | null = null;
+  /** Último hotspot avisado a onPanelChange. */
+  private notifiedId: string | null = null;
+
+  /**
+   * Avisa al abrir o cerrar el panel de un hotspot (modal o burbuja de
+   * tooltip; no la del texto entero de una etiqueta). La visita guiada lo usa
+   * para abrir lo mismo a quienes siguen al guía.
+   */
+  onPanelChange: ((hotspotId: string | null) => void) | null = null;
 
   constructor(private ctx: Omit<PanelContext, "onClose">) {
     // Una etiqueta cortada pide su texto entero: la misma burbuja desplazable
@@ -58,17 +69,45 @@ export class PanelHost {
     return this.backdrop != null;
   }
 
+  /** Hotspot cuyo panel (o burbuja de tooltip) está abierto. */
+  get openHotspotId(): string | null {
+    if (this.modalId != null) return this.modalId;
+    return this.bubbleId != null && !this.bubbleId.startsWith("label:") ? this.bubbleId : null;
+  }
+
+  private syncPanelChange(): void {
+    const id = this.openHotspotId;
+    if (id === this.notifiedId) return;
+    this.notifiedId = id;
+    this.onPanelChange?.(id);
+  }
+
   close(): void {
+    this.closeModal();
+    this.syncPanelChange();
+  }
+
+  private closeModal(): void {
     this.releaseFocus?.();
     this.releaseFocus = null;
     this.backdrop?.remove();
     this.backdrop = null;
+    this.modalId = null;
     this.lastFocus?.focus();
     this.lastFocus = null;
   }
 
   open(hotspot: Hotspot, anchor: HTMLElement | null): void {
-    this.close();
+    // Sin avisar del cierre: se avisa una vez, de lo que queda abierto
+    this.closeModal();
+    try {
+      this.openInner(hotspot, anchor);
+    } finally {
+      this.syncPanelChange();
+    }
+  }
+
+  private openInner(hotspot: Hotspot, anchor: HTMLElement | null): void {
     // Un tooltip es una burbuja anclada al marcador, no un modal.
     if (hotspot.type === "tooltip" && anchor != null) {
       this.openTooltip(hotspot, anchor);
@@ -107,6 +146,7 @@ export class PanelHost {
       if (e.target === this.backdrop) this.close();
     });
     this.ctx.container.appendChild(this.backdrop);
+    this.modalId = hotspot.id;
     this.releaseFocus = trapFocus(this.backdrop, () => this.close());
     closeBtn.focus();
     content.onMounted?.();
@@ -117,6 +157,7 @@ export class PanelHost {
     this.bubbleCleanup?.();
     this.bubbleCleanup = null;
     this.bubbleId = null;
+    this.syncPanelChange();
   }
 
   /** Burbuja de tooltip pegada al marcador; se cierra sola al mover la vista. */
@@ -172,6 +213,7 @@ export class PanelHost {
       if (this.bubbleCleanup === cleanup) {
         this.bubbleCleanup = null;
         this.bubbleId = null;
+        this.syncPanelChange();
       }
     };
     this.bubbleCleanup = cleanup;
