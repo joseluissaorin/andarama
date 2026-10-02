@@ -409,7 +409,18 @@ export function EditorPage(): React.ReactNode {
         {/* Escenas y grafo comparten el panel de biblioteca: es donde se
             arrastran los panoramas para convertirlos en escenas. */}
         <div className="min-h-0 flex-1">
-        {tab === "scenes" && <ScenesView project={project} canEdit={canEdit} locks={presence.locks} myConnId={connIdRef.current} />}
+        {tab === "scenes" && (
+          <ScenesView
+            project={project}
+            canEdit={canEdit}
+            locks={presence.locks}
+            myConnId={connIdRef.current}
+            onOpenFloorplan={() => {
+              setGraphMode("plan");
+              setTab("graph");
+            }}
+          />
+        )}
         {tab === "graph" && (
           <GraphView
             canEdit={canEdit}

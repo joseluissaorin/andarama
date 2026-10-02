@@ -8,6 +8,7 @@ import {
   GripVertical,
   Image as ImageIcon,
   Lock,
+  Map as MapIcon,
   Play,
   Plus,
   Search,
@@ -16,7 +17,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { Badge, Button, Dialog, EmptyState, Field, Input, Tooltip, useToast } from "@andarama/ui";
+import { Badge, Button, Dialog, EmptyState, Field, HelpTip, Input, Tooltip, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
 import { mountViewer, type MountedSkin } from "@andarama/viewer-ui";
 import { api } from "../api";
@@ -25,19 +26,22 @@ import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
 import { MediaPicker } from "./MediaPicker";
 import { Criatura } from "../components/Criatura";
-import { hasMediaDrag, readMediaDrag, scenesFromMedia } from "../media/drag";
-import { arrivalsOf, resolveArrivalView } from "./arrivals";
+import { hasMediaDrag, readMediaDrag, sceneTypeForMedia, scenesFromMedia } from "../media/drag";
+import { DEFAULT_ENTRY_MODE, arrivalsOf, resolveArrivalView } from "./arrivals";
 import { PropertiesPanel } from "./PropertiesPanel";
+import { areasOf } from "./areas";
 import { HotspotPalette } from "./HotspotPalette";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
 
 /** Vista principal: lista de escenas + previsualización WYSIWYG + propiedades. */
-export function ScenesView({ project, canEdit, locks, myConnId }: {
+export function ScenesView({ project, canEdit, locks, myConnId, onOpenFloorplan }: {
   project: ProjectInfo;
   canEdit: boolean;
   locks: Record<string, { connectionId: string; name: string }>;
   myConnId: string | null;
+  /** Abre el grafo directamente en modo Plano. */
+  onOpenFloorplan?: () => void;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -58,6 +62,7 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
     : scenes.filter((s) => s.title.toLowerCase().includes(filter.trim().toLowerCase()));
 
   const [mediaOver, setMediaOver] = useState(false);
+  const hasPlan = areasOf(snapshot).some((a) => a.plan != null);
   const [panelWidth, setPanelWidth] = useState(readPanelWidth);
   const panelWidthRef = useRef(panelWidth);
   panelWidthRef.current = panelWidth;
@@ -65,7 +70,9 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
   const addScene = (): void => {
     if (newTitle.trim() === "") return;
     const id = clientId();
-    const type = newMedia?.kind === "video" ? "video" : "image";
+    // Misma detección que al arrastrar: una foto que no es 2:1 es una escena
+    // plana, no un panorama estirado sobre la esfera
+    const type = newMedia != null ? sceneTypeForMedia(newMedia) : "image";
     editor.apply((draft) => {
       draft.scenes.push({
         id,
@@ -165,7 +172,12 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
         }}
       >
         <div className="flex items-center justify-between px-3 py-2.5">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("scenes")}</h2>
+          <h2 className="flex items-center gap-1.5 text-[13px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">
+            {t("scenes")}
+            <span className="normal-case tracking-normal">
+              <HelpTip text={t("help_scene_list")} label={t("scenes")} />
+            </span>
+          </h2>
           {canEdit && (
             <Button size="sm" variant="ghost" onClick={() => setAddOpen(true)} aria-label={t("add_scene")}>
               <Plus className="h-4 w-4" />
@@ -280,6 +292,16 @@ export function ScenesView({ project, canEdit, locks, myConnId }: {
             <p className="p-3 text-[13px] text-[var(--anda-text-dim)]">{t("no_results")}</p>
           )}
         </div>
+        {/* El plano con puntos (el minimapa del visor) existía, pero vivía en
+            un modo del grafo que nadie encontraba. Aquí está a la vista. */}
+        {onOpenFloorplan != null && (
+          <div className="border-t border-[var(--anda-border)] p-2">
+            <Button size="sm" variant="outline" className="w-full justify-start" onClick={onOpenFloorplan}>
+              <MapIcon className="h-4 w-4" /> {t("floorplan_entry")}
+              {hasPlan && <Badge tone="ok">{t("floorplan_entry_ready")}</Badge>}
+            </Button>
+          </div>
+        )}
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -445,6 +467,37 @@ function writeEditorMuted(value: boolean): void {
   }
 }
 
+const MUTE_HINT_KEY = "andarama:editor-mute-hint";
+function readMuteHintSeen(): boolean {
+  try {
+    return localStorage.getItem(MUTE_HINT_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+function writeMuteHintSeen(): void {
+  try {
+    localStorage.setItem(MUTE_HINT_KEY, "1");
+  } catch {
+    // sin almacenamiento: se volverá a enseñar, no pasa nada
+  }
+}
+
+/**
+ * ¿Suena algo en esta escena? Ambiente o narración propios, música general
+ * del tour, vídeo 360 o un hotspot de audio.
+ */
+export function sceneHasAudio(snapshot: { scenes: { id: string; type: string; audioJson: string | null }[]; hotspots: { sceneId: string; type: string }[]; settings: Record<string, unknown> } | null, sceneId: string): boolean {
+  if (snapshot == null) return false;
+  const scene = snapshot.scenes.find((s) => s.id === sceneId);
+  if (scene == null) return false;
+  const audio = readJson<{ ambient?: { url?: string }; narration?: { url?: string } }>(scene.audioJson, {});
+  if (audio.ambient?.url != null || audio.narration?.url != null) return true;
+  if (snapshot.settings.globalAudio != null) return true;
+  if (scene.type === "video") return true;
+  return snapshot.hotspots.some((h) => h.sceneId === sceneId && h.type === "audio");
+}
+
 /** Vista actual del visor embebido (para "usar vista actual"). */
 let lastView: { yaw: number; pitch: number; fov: number } = { yaw: 0, pitch: 0, fov: 1.2 };
 export function getCurrentEditorView(): { yaw: number; pitch: number; fov: number } {
@@ -532,7 +585,8 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
             contentJson: JSON.stringify({
               target,
               label: draft.scenes.find((sc) => sc.id === target)?.title ?? "",
-              entry: { mode: "relative" },
+              // Se llega con la vista por defecto del destino, como en el grafo
+              entry: { mode: DEFAULT_ENTRY_MODE },
             }),
             conditionsJson: null,
             sort: draft.hotspots.filter((h) => h.sceneId === sceneId).length,
@@ -734,6 +788,18 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
   }, [saving, dirty]);
 
   const scene = editor.snapshot?.scenes.find((s) => s.id === sceneId) ?? null;
+  const hasAudio = sceneHasAudio(editor.snapshot, sceneId);
+
+  // La primera vez que suena una escena en el editor se señala el botón de
+  // silenciar. Una sola vez por navegador.
+  const [muteHint, setMuteHint] = useState(false);
+  useEffect(() => {
+    if (!hasAudio || readMuteHintSeen()) return;
+    writeMuteHintSeen();
+    setMuteHint(true);
+    const id = setTimeout(() => setMuteHint(false), 12_000);
+    return () => clearTimeout(id);
+  }, [hasAudio]);
 
   return (
     <>
@@ -762,22 +828,40 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
             <Plus className="h-4 w-4" /> {t("add_hotspot_button")}
           </Button>
         )}
-        <Tooltip content={muted ? t("editor_unmute") : t("editor_mute")}>
-          <Button
-            size="icon"
-            variant="ghost"
-            aria-label={muted ? t("editor_unmute") : t("editor_mute")}
-            aria-pressed={muted}
-            onClick={() => {
-              const next = !muted;
-              setMuted(next);
-              writeEditorMuted(next);
-              skinRef.current?.viewer.audioEngine().setMuted(next, false);
-            }}
-          >
-            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </Button>
-        </Tooltip>
+        {/* Con sonido en la escena, el botón lleva texto y se ve: como icono
+            fantasma nadie lo encontraba y el ambiente sonaba sin parar. */}
+        <div className="relative">
+          <Tooltip content={muted ? t("editor_unmute") : t("editor_mute")}>
+            <Button
+              size={hasAudio ? "sm" : "icon"}
+              variant={hasAudio ? (muted ? "secondary" : "outline") : "ghost"}
+              aria-label={muted ? t("editor_unmute") : t("editor_mute")}
+              aria-pressed={muted}
+              onClick={() => {
+                const next = !muted;
+                setMuted(next);
+                writeEditorMuted(next);
+                setMuteHint(false);
+                skinRef.current?.viewer.audioEngine().setMuted(next, false);
+              }}
+            >
+              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              {hasAudio && <span>{muted ? t("editor_unmute_short") : t("editor_mute_short")}</span>}
+            </Button>
+          </Tooltip>
+          {muteHint && (
+            <div
+              role="status"
+              className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-3 text-[12.5px] leading-snug shadow-[var(--anda-shadow-lg)]"
+            >
+              <span aria-hidden className="absolute -top-1.5 right-6 h-3 w-3 rotate-45 border-l border-t border-[var(--anda-border)] bg-[var(--anda-surface)]" />
+              <p>{t("editor_mute_hint")}</p>
+              <Button size="sm" variant="ghost" className="mt-1.5" onClick={() => setMuteHint(false)}>
+                {t("got_it")}
+              </Button>
+            </div>
+          )}
+        </div>
         {canEdit && (
           <Tooltip content={t("use_current_view_hint")}>
             <Button
