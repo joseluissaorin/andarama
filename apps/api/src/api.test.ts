@@ -15,8 +15,9 @@ import {
   migrateSqlite,
 } from "@andarama/adapters/node";
 import type { PlatformRuntime } from "@andarama/adapters";
+import { media } from "@andarama/db";
 import { createApp } from "./app.js";
-import type { AppEnv } from "./lib/context.js";
+import type { AppEnv, Db } from "./lib/context.js";
 
 /**
  * Tests de integracion de la API completa: la misma app Hono que corre en
@@ -692,5 +693,39 @@ describe("flujo critico", () => {
     expect(blocked.status).toBe(403);
     const audit = await call("/api/v1/admin/audit");
     expect(audit.status).toBe(401); // sesion borrada
+  });
+});
+
+// Va al final: crea un tour más y los tests de arriba cuentan los tours de la organización
+describe("biblioteca de medios", () => {
+  it("«Este tour» en la biblioteca incluye los medios que ya son escenas del tour", async () => {
+    // El bloque anterior acaba borrando la sesión
+    await call("/api/v1/auth/login", { method: "POST", body: { email: "admin@test.ull", password: "password-larga-1" } });
+    const me = (await (await call("/api/v1/me")).json()) as { user: { id: string } };
+    const res = await call("/api/v1/projects", { method: "POST", body: { orgId, title: "Biblioteca" } });
+    const tour = ((await res.json()) as { id: string }).id;
+    const row = (id: string, projectId: string | null) => ({
+      id,
+      orgId,
+      projectId,
+      kind: "panorama",
+      filename: `${id}.jpg`,
+      mime: "image/jpeg",
+      bytes: 4,
+      r2Key: `test/${id}`,
+      status: "ready",
+      createdBy: me.user.id,
+      createdAt: Date.now(),
+    });
+    await (testRuntime.db as Db).insert(media).values([row("m-asignado", tour), row("m-escena", null), row("m-suelto", null)]);
+    await call(`/api/v1/projects/${tour}/scenes`, {
+      method: "POST",
+      body: { title: "Patio", mediaId: "m-escena", sourceJson: { kind: "equirect", url: "media:m-escena" } },
+    });
+    const lista = (await (await call(`/api/v1/media?org=${orgId}&project=${tour}`)).json()) as { id: string }[];
+    expect(lista.map((m) => m.id).sort()).toEqual(["m-asignado", "m-escena"]);
+    // «Sin tour» sigue siendo lo que no tiene tour asignado
+    const sueltos = (await (await call(`/api/v1/media?org=${orgId}&project=none`)).json()) as { id: string }[];
+    expect(sueltos.map((m) => m.id)).toContain("m-suelto");
   });
 });

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { useEditor } from "./stores";
 
 /**
  * Aplicación instalable.
@@ -6,6 +7,12 @@ import { create } from "zustand";
  * Dos cosas que la gente espera de una app de escritorio o de iPad: que se
  * pueda instalar y que avise cuando hay una versión nueva en vez de cambiar el
  * código por debajo mientras se edita.
+ *
+ * El service worker nuevo toma el mando en cuanto se instala (skipWaiting):
+ * antes esperaba a que se cerraran todas las pestañas y en el móvil eso no
+ * pasa nunca. La página abierta sigue con su código hasta recargar; recarga
+ * sola solo cuando es seguro (no hay nada sin guardar y la pestaña no está a
+ * la vista) y, si no, enseña el aviso «Hay una versión nueva».
  */
 
 interface InstallPromptEvent extends Event {
@@ -20,14 +27,34 @@ interface PwaState {
   installed: boolean;
   /** Safari de iPad y iPhone: se instala a mano desde Compartir. */
   iosManual: boolean;
-  /** Hay una versión nueva esperando a que se recargue. */
+  /** Hay una versión nueva mandando: falta recargar para usarla. */
   updateReady: boolean;
   install: () => Promise<"accepted" | "dismissed" | "unavailable">;
   applyUpdate: () => void;
 }
 
 let deferredPrompt: InstallPromptEvent | null = null;
-let waitingWorker: ServiceWorker | null = null;
+
+/** ¿Hay cambios del editor sin guardar (o guardándose)? */
+function hayCambiosSinGuardar(): boolean {
+  const { dirty, saving } = useEditor.getState();
+  return dirty || saving === "saving";
+}
+
+/** Espera (con tope) a que el autoguardado termine antes de recargar. */
+async function esperarGuardado(maxMs = 8000): Promise<void> {
+  const fin = Date.now() + maxMs;
+  while (hayCambiosSinGuardar() && Date.now() < fin) {
+    await new Promise((r) => setTimeout(r, 200));
+  }
+}
+
+let recargando = false;
+function recargar(): void {
+  if (recargando) return;
+  recargando = true;
+  location.reload();
+}
 
 export const usePwa = create<PwaState>((set) => ({
   installable: false,
@@ -43,16 +70,10 @@ export const usePwa = create<PwaState>((set) => ({
     return outcome;
   },
   applyUpdate: () => {
-    if (waitingWorker == null) return;
-    // Solo a partir de aquí vale recargar: la primera instalación también
-    // cambia de controlador y recargar entonces te tira la página en la cara
-    // nada más entrar.
-    esperandoRecarga = true;
-    waitingWorker.postMessage({ type: "skipWaiting" });
+    // Lo pendiente se guarda antes: recargar a mitad de un guardado lo perdería
+    void esperarGuardado().then(recargar);
   },
 }));
-
-let esperandoRecarga = false;
 
 /** ¿Se está ejecutando ya como aplicación instalada? */
 export function isStandalone(): boolean {
@@ -91,35 +112,41 @@ export function setupPwa(): void {
     // En app.andarama.com el Studio vive en la raíz y el ámbito es "/";
     // en /studio (workers.dev, self-host) se queda en su carpeta.
     const enRaiz = !location.pathname.startsWith("/studio");
+    // Solo cuenta como actualización si ya había una versión mandando: la
+    // primera instalación también cambia de controlador y recargar entonces
+    // te tira la página en la cara nada más entrar.
+    const habiaControlador = navigator.serviceWorker.controller != null;
     void navigator.serviceWorker
       .register("/studio/sw.js", { scope: enRaiz ? "/" : "/studio/" })
       .then((registration) => {
-        const track = (worker: ServiceWorker | null): void => {
-          if (worker == null) return;
-          worker.addEventListener("statechange", () => {
-            // Solo es «actualización» si ya había una versión mandando
-            if (worker.state === "installed" && navigator.serviceWorker.controller != null) {
-              waitingWorker = worker;
-              usePwa.setState({ updateReady: true });
-            }
-          });
+        // Una versión vieja del service worker (sin skipWaiting) que se quedó
+        // esperando: se le pide que tome el mando ya.
+        registration.waiting?.postMessage({ type: "skipWaiting" });
+        // Una pestaña abierta días (el Studio instalado en el móvil) no vuelve
+        // a navegar y el navegador no busca versiones: se le pregunta al volver
+        // a la app y cada media hora.
+        const buscar = (): void => {
+          void registration.update().catch(() => undefined);
         };
-        if (registration.waiting != null && navigator.serviceWorker.controller != null) {
-          waitingWorker = registration.waiting;
-          usePwa.setState({ updateReady: true });
-        }
-        track(registration.installing);
-        registration.addEventListener("updatefound", () => track(registration.installing));
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") buscar();
+        });
+        setInterval(buscar, 30 * 60 * 1000);
       })
       .catch(() => {
         // sin service worker se sigue funcionando igual, solo que sin instalar
       });
 
-    let recargando = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (!esperandoRecarga || recargando) return;
-      recargando = true;
-      location.reload();
+      if (!habiaControlador) return;
+      usePwa.setState({ updateReady: true });
+      // Seguro: la pestaña no está a la vista y no hay nada sin guardar
+      if (document.visibilityState === "hidden" && !hayCambiosSinGuardar()) recargar();
+    });
+    // Con el aviso puesto, al irse a otra app se recarga en silencio si se
+    // puede: al volver ya está la versión nueva.
+    document.addEventListener("visibilitychange", () => {
+      if (usePwa.getState().updateReady && document.visibilityState === "hidden" && !hayCambiosSinGuardar()) recargar();
     });
   });
 }

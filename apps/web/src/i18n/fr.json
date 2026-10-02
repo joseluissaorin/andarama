@@ -272,7 +272,6 @@
     "planes": {
       "casa": {
         "nombre": "Chez toi",
-        "cifra": "0 €",
         "cuando": "pour toujours",
         "items": [
           "Un exécutable pour macOS, Windows et Linux : double clic et c’est parti",

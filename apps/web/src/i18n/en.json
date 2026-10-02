@@ -272,7 +272,6 @@
     "planes": {
       "casa": {
         "nombre": "At your place",
-        "cifra": "€0",
         "cuando": "forever",
         "items": [
           "An executable for macOS, Windows and Linux: double click and done",

@@ -5,7 +5,9 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  Navigate,
   Outlet,
+  redirect,
   RouterProvider,
 } from "@tanstack/react-router";
 import { ToastProvider, UiTextProvider } from "@andarama/ui";
@@ -13,12 +15,15 @@ import { useT } from "./i18n";
 import "./index.css";
 import { Shell } from "./components/Shell";
 import { setupPwa } from "./pwa";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { AuthPage } from "./pages/AuthPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { OrgDefaultsPage } from "./pages/OrgDefaultsPage";
 import { MediaPage } from "./pages/MediaPage";
 import { AccountPage } from "./pages/AccountPage";
 import { AdminPage } from "./pages/AdminPage";
+import { TeamPage } from "./pages/TeamPage";
+import { useAuth } from "./stores";
 import { PlanPage } from "./pages/PlanPage";
 import { AndaClerkProvider, isClerkMode, loadInstanceConfig } from "./clerk";
 import { captureAttributionFromBrowser } from "./attribution";
@@ -40,6 +45,7 @@ const rootRoute = createRootRoute({
     <ToastProvider>
       <UiTexts>
         <Outlet />
+        <UpdateBanner />
       </UiTexts>
     </ToastProvider>
   ),
@@ -75,10 +81,34 @@ const accountRoute = createRoute({
   component: AccountPage,
 });
 
+const teamRoute = createRoute({
+  getParentRoute: () => shellRoute,
+  path: "/team",
+  component: TeamPage,
+});
+
+const isInstanceAdmin = (): boolean => useAuth.getState().me?.user?.roleGlobal === "admin";
+
+/**
+ * La administración de la instancia, solo para quien la administra. La API ya
+ * lo exige; esto evita enseñar una página rota a quien llega por URL. Si la
+ * sesión aún no se ha cargado (entrada directa), decide el propio componente
+ * en cuanto la Shell la tiene.
+ */
+function AdminGuard(): React.ReactNode {
+  const roleGlobal = useAuth((s) => s.me?.user?.roleGlobal);
+  if (roleGlobal !== "admin") return <Navigate to="/" />;
+  return <AdminPage />;
+}
+
 const adminRoute = createRoute({
   getParentRoute: () => shellRoute,
   path: "/admin",
-  component: AdminPage,
+  beforeLoad: () => {
+    const { loaded, me } = useAuth.getState();
+    if (loaded && me?.user != null && !isInstanceAdmin()) throw redirect({ to: "/" });
+  },
+  component: AdminGuard,
 });
 
 const planRoute = createRoute({
@@ -123,7 +153,7 @@ const inviteRoute = createRoute({
 });
 
 const routeTree = rootRoute.addChildren([
-  shellRoute.addChildren([projectsRoute, mediaRoute, accountRoute, adminRoute, orgDefaultsRoute, planRoute]),
+  shellRoute.addChildren([projectsRoute, mediaRoute, accountRoute, teamRoute, adminRoute, orgDefaultsRoute, planRoute]),
   editorRoute,
   loginRoute,
   registerRoute,

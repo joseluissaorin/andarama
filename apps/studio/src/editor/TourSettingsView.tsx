@@ -31,6 +31,9 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
 
   const [cssHelp, setCssHelp] = useState(false);
   const [socialPicker, setSocialPicker] = useState(false);
+  /** Qué selector de medios está abierto en Marca y música (null = ninguno). */
+  const [assetPicker, setAssetPicker] = useState<"logo" | "watermark" | "nadirPatch" | "globalAudio" | null>(null);
+  const globalAudio = (settings.globalAudio as Record<string, any> | undefined) ?? undefined;
   const kits = useQuery({
     queryKey: ["org-defaults-kits", _project.orgId],
     queryFn: () => api<{ brandKits?: BrandKit[] }>(`/orgs/${_project.orgId}/defaults`),
@@ -234,6 +237,83 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             </div>
           </Field>
         </div>
+        {/* Logotipo, marca de agua y parche de nadir de este tour. Aplicar una
+            marca los copia; lo que se elige aquí manda sobre ella. */}
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Field label={t("tour_logo")} help={t("tour_logo_help")}>
+            <AssetSlot
+              value={ui.logo?.image}
+              canEdit={canEdit}
+              onPick={() => setAssetPicker("logo")}
+              onClear={() => patchUi({ logo: undefined })}
+            />
+            {ui.logo?.image != null && (
+              <Input
+                aria-label={t("tour_logo_link")}
+                placeholder={t("tour_logo_link")}
+                className="mt-1.5"
+                value={String(ui.logo.link ?? "")}
+                disabled={!canEdit}
+                onChange={(e) => patchUi({ logo: { ...ui.logo, link: e.target.value || undefined } })}
+              />
+            )}
+          </Field>
+          <Field label={t("tour_watermark")} help={t("tour_watermark_help")}>
+            <AssetSlot
+              value={ui.watermark?.image}
+              canEdit={canEdit}
+              onPick={() => setAssetPicker("watermark")}
+              onClear={() => patchUi({ watermark: undefined })}
+            />
+            {ui.watermark?.image != null && (
+              <Input
+                aria-label={t("tour_logo_link")}
+                placeholder={t("tour_logo_link")}
+                className="mt-1.5"
+                value={String(ui.watermark.link ?? "")}
+                disabled={!canEdit}
+                onChange={(e) => patchUi({ watermark: { ...ui.watermark, link: e.target.value || undefined } })}
+              />
+            )}
+          </Field>
+          <Field label={t("tour_nadir_patch")} help={t("tour_nadir_patch_help")}>
+            <AssetSlot
+              value={ui.nadirPatch?.image}
+              round
+              canEdit={canEdit}
+              onPick={() => setAssetPicker("nadirPatch")}
+              onClear={() => patchUi({ nadirPatch: undefined })}
+            />
+            {ui.nadirPatch?.image != null && (
+              <div className="mt-1.5 flex items-center gap-2">
+                <input
+                  type="range"
+                  min={80}
+                  max={480}
+                  step={10}
+                  aria-label={t("tour_nadir_size")}
+                  value={Number(ui.nadirPatch.size ?? 220)}
+                  disabled={!canEdit}
+                  className="h-1.5 flex-1 accent-[var(--anda-primary)]"
+                  onChange={(e) => patchUi({ nadirPatch: { ...ui.nadirPatch, size: Number(e.target.value) } })}
+                />
+                <span className="w-12 text-right text-xs tabular-nums">{Number(ui.nadirPatch.size ?? 220)} px</span>
+              </div>
+            )}
+          </Field>
+        </div>
+        <div className="mt-4">
+          <Field label={t("tour_badge_text")} htmlFor="ui-badge" help={t("tour_badge_text_help")}>
+            <Input
+              id="ui-badge"
+              className="max-w-md"
+              placeholder={t("tour_badge_text_placeholder")}
+              value={String(ui.badgeText ?? "")}
+              disabled={!canEdit}
+              onChange={(e) => patchUi({ badgeText: e.target.value === "" ? undefined : e.target.value })}
+            />
+          </Field>
+        </div>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label={t("theme")} htmlFor="th-base">
             <Select id="th-base" value={theme.base === "ull" ? "anda" : String(theme.base ?? "anda")} disabled={!canEdit} onChange={(e) => patchTheme({ base: e.target.value })}>
@@ -308,6 +388,68 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
       </section>
 
       <CssGuideDialog open={cssHelp} onClose={() => setCssHelp(false)} />
+
+      {/* Música de fondo de todo el tour (settings.globalAudio) */}
+      <section className="anda-bloque p-5">
+        <h2 className="mb-1 text-[15px] font-semibold">{t("global_audio")}</h2>
+        <p className="mb-4 text-xs text-[var(--anda-text-dim)]">{t("global_audio_intro")}</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label={t("global_audio_track")} help={t("global_audio_help")}>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setAssetPicker("globalAudio")}>
+                {globalAudio?.url != null ? t("change") : t("select_media")}
+              </Button>
+              {globalAudio?.url != null && (
+                <>
+                  <audio controls preload="none" src={mediaUrl(String(globalAudio.url))} className="h-8 max-w-full" />
+                  <Button size="sm" variant="ghost" disabled={!canEdit} onClick={() => patch((s) => { delete s.globalAudio; })}>
+                    {t("delete")}
+                  </Button>
+                </>
+              )}
+            </div>
+          </Field>
+          {globalAudio?.url != null && (
+            <Field label={t("volume")} htmlFor="ga-volume">
+              <div className="flex items-center gap-3">
+                <input
+                  id="ga-volume"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={Number(globalAudio.volume ?? 0.5)}
+                  disabled={!canEdit}
+                  className="h-1.5 max-w-64 flex-1 accent-[var(--anda-primary)]"
+                  onChange={(e) => patch((s) => { s.globalAudio = { ...(s.globalAudio as object), volume: Number(e.target.value) }; })}
+                />
+                <span className="w-10 text-right text-sm tabular-nums">{Math.round(Number(globalAudio.volume ?? 0.5) * 100)} %</span>
+              </div>
+            </Field>
+          )}
+        </div>
+        <p className="mt-3 text-xs text-[var(--anda-text-dim)]">{t("global_audio_scene_note")}</p>
+      </section>
+
+      <MediaPicker
+        open={assetPicker != null}
+        onClose={() => setAssetPicker(null)}
+        kind={assetPicker === "globalAudio" ? "audio" : "image"}
+        projectId={_project.id}
+        onSelect={(item) => {
+          const ref = `media:${item.id}`;
+          if (assetPicker === "globalAudio") {
+            patch((s) => {
+              s.globalAudio = { volume: 0.5, ...(s.globalAudio as object), url: ref, loop: true };
+            });
+          } else if (assetPicker === "nadirPatch") {
+            patchUi({ nadirPatch: { ...ui.nadirPatch, image: ref } });
+          } else if (assetPicker != null) {
+            patchUi({ [assetPicker]: { ...ui[assetPicker], image: ref } });
+          }
+          setAssetPicker(null);
+        }}
+      />
 
       {/* Cómo se ve el enlace del tour al pegarlo en un chat o una red */}
       <section className="anda-bloque p-5">
@@ -648,3 +790,39 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
   );
 }
 
+/** Una referencia media:<id> convertida en URL servible para la vista previa. */
+function mediaUrl(ref: string): string {
+  const m = /^media:([A-Za-z0-9_-]+)$/.exec(ref);
+  return m != null ? `/api/v1/media/${m[1]}/file` : ref;
+}
+
+/** Hueco de imagen: miniatura, Elegir/Cambiar y Quitar. */
+function AssetSlot({ value, canEdit, onPick, onClear, round }: {
+  value: string | undefined;
+  canEdit: boolean;
+  onPick: () => void;
+  onClear: () => void;
+  round?: boolean;
+}): React.ReactNode {
+  const t = useT();
+  const has = value != null && value !== "";
+  return (
+    <div className="flex items-center gap-2">
+      {has && (
+        <img
+          src={mediaUrl(value)}
+          alt=""
+          className={`h-9 w-9 shrink-0 border border-[var(--anda-border)] bg-white object-contain ${round === true ? "rounded-full" : "rounded-lg"}`}
+        />
+      )}
+      <Button size="sm" variant="outline" disabled={!canEdit} onClick={onPick}>
+        {has ? t("change") : t("choose")}
+      </Button>
+      {has && (
+        <Button size="sm" variant="ghost" disabled={!canEdit} onClick={onClear}>
+          {t("delete")}
+        </Button>
+      )}
+    </div>
+  );
+}

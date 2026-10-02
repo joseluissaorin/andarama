@@ -148,8 +148,10 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
   });
 
   // Al subir desde la biblioteca con un tour seleccionado, lo subido entra en
-  // ese tour: si no, hay que ir a asignarlo a mano cada vez.
-  const assignAfterUpload = fullPage && project !== "" && project !== "none" ? project : null;
+  // ese tour: si no, hay que ir a asignarlo a mano cada vez. En el selector
+  // del editor, lo subido es siempre del tour abierto (mire la pestaña que
+  // mire): si no, «Este tour» salía vacío aunque se acabara de subir algo.
+  const assignAfterUpload = fullPage ? (project !== "" && project !== "none" ? project : null) : (tourId ?? null);
 
   // Los planetas del hover se calculan en tiempo ocioso: al pasar el ratón ya
   // están hechos y aparecen en el mismo fotograma.

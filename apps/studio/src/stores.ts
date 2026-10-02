@@ -182,7 +182,11 @@ interface EditorState {
   redo: () => void;
   select: (sceneId: string | null, hotspotId?: string | null) => void;
   setSaving: (s: EditorState["saving"]) => void;
-  markClean: () => void;
+  /**
+   * Marca el tour como guardado solo si `saved` sigue siendo el vigente. Si
+   * se editó mientras volaba la petición, queda sucio y devuelve false.
+   */
+  markSaved: (saved: EditorSnapshot) => boolean;
 }
 
 const clone = <T>(v: T): T => structuredClone(v);
@@ -244,5 +248,9 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
   select: (sceneId, hotspotId = null) => set({ selectedSceneId: sceneId, selectedHotspotId: hotspotId ?? null }),
   setSaving: (saving) => set({ saving }),
-  markClean: () => set({ dirty: false }),
+  markSaved: (saved) => {
+    if (get().snapshot !== saved) return false;
+    set({ dirty: false });
+    return true;
+  },
 }));

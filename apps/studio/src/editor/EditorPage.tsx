@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   BarChart3,
@@ -17,16 +17,19 @@ import {
   Share2,
   Undo2,
   UploadCloud,
+  Users,
 } from "lucide-react";
 import { Badge, Button, Input, Spinner, Tooltip, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useAuth, useEditor, type EditorSnapshot } from "../stores";
 import { useT } from "../i18n";
 import { loadSnapshot, syncSnapshot } from "./editorApi";
+import { createAutosaver } from "./autosave";
 import { ScenesView } from "./ScenesView";
 import { GRAPH_MODES, GraphView, type GraphMode } from "./GraphView";
 import { PreviewView } from "./PreviewView";
 import { MediaDock } from "./MediaDock";
+import { PickerTourContext } from "./MediaPicker";
 import { TranslationsView } from "./TranslationsView";
 import { TourSettingsView } from "./TourSettingsView";
 import { AnalyticsView } from "./AnalyticsView";
@@ -35,6 +38,7 @@ import { VersionsView } from "./VersionsView";
 import { ExportDialog, LiveDialog, PublishDialog, ShareDialog } from "./dialogs";
 import type { GalleryInfo } from "./gallery";
 import { CommandPalette } from "./CommandPalette";
+import { PeopleDialog } from "./PeopleDialog";
 import { CriaturaCameo } from "../components/Criatura";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -51,7 +55,9 @@ export interface ProjectInfo {
   planLocked?: boolean;
   /** Tour de ejemplo clonado al dar de alta. */
   isSample?: boolean;
-  publication: { slug: string; visibility: string; hasPassword: boolean; kiosk?: boolean; gallery?: GalleryInfo | null } | null;
+  /** Último guardado del tour (cualquier cambio de contenido lo mueve). */
+  updatedAt?: number;
+  publication: { slug: string; visibility: string; hasPassword: boolean; kiosk?: boolean; publishedAt?: number; gallery?: GalleryInfo | null } | null;
 }
 
 type EditorTab = "scenes" | "graph" | "preview" | "translations" | "settings" | "analytics" | "comments" | "versions";
@@ -82,7 +88,7 @@ export function EditorPage(): React.ReactNode {
     const raw = entryParams.current.get("mode");
     return raw != null && GRAPH_MODES.includes(raw as GraphMode) ? (raw as GraphMode) : "scenes";
   });
-  const [dialog, setDialog] = useState<"publish" | "export" | "share" | "live" | null>(null);
+  const [dialog, setDialog] = useState<"publish" | "export" | "share" | "live" | "people" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   /** Título en edición (null = no se está renombrando). */
   const [renaming, setRenaming] = useState<string | null>(null);
@@ -92,6 +98,10 @@ export function EditorPage(): React.ReactNode {
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const connIdRef = useRef<string | null>(null);
+  /** Hay cambios guardados que el recorrido publicado todavía no tiene. */
+  const [unpublished, setUnpublished] = useState(false);
+  /** Se ha guardado algo en esta visita (la pista solo sale tras editar). */
+  const savedSinceLoad = useRef(false);
   const queryClient = useQueryClient();
 
   // Añadir un punto o una escena cuenta en los primeros pasos: se vuelve a
@@ -107,7 +117,11 @@ export function EditorPage(): React.ReactNode {
       .then(({ snapshot, project: p }) => {
         syncedRef.current = structuredClone(snapshot);
         editor.load(projectId, snapshot);
-        setProject(p as unknown as ProjectInfo);
+        const info = p as unknown as ProjectInfo;
+        setProject(info);
+        // Publicar también mueve updatedAt un instante después: se deja margen
+        const publishedAt = info.publication?.publishedAt;
+        setUnpublished(publishedAt != null && info.updatedAt != null && info.updatedAt > publishedAt + 2000);
         // La escena sí necesita el tour cargado para saber si existe
         const urlScene = entryParams.current.get("scene");
         if (urlScene != null && snapshot.scenes.some((s) => s.id === urlScene)) {
@@ -133,51 +147,61 @@ export function EditorPage(): React.ReactNode {
     history.replaceState(null, "", `${location.pathname}${qs === "" ? "" : `?${qs}`}`);
   }, [tab, graphMode, editor.selectedSceneId]);
 
-  // Autosave con indicador (§3.5). Un solo guardado a la vez: publicar
-  // fuerza uno y no debe cruzarse con el del temporizador.
-  const syncing = useRef<Promise<void> | null>(null);
+  // Autosave con indicador (§3.5). Un solo guardado a la vez, y solo se da
+  // por guardado si nadie editó mientras volaba la petición (autosave.ts).
+  const autosaver = useMemo(
+    () =>
+      createAutosaver<EditorSnapshot>({
+        store: {
+          current: () => {
+            const s = useEditor.getState();
+            return { snapshot: s.snapshot, dirty: s.dirty };
+          },
+          markSaved: (saved) => useEditor.getState().markSaved(saved),
+          setSaving: (status) => useEditor.getState().setSaving(status),
+        },
+        base: () => syncedRef.current,
+        setBase: (saved) => {
+          syncedRef.current = saved;
+        },
+        save: (base, target) => syncSnapshot(projectId, base, target),
+        clone: (s) => structuredClone(s),
+        onSaved: () => {
+          lastSyncError.current = null;
+          // Con la sala aún conectando, send lanzaría y el guardado (que sí se
+          // hizo) contaría como fallido
+          if (wsRef.current?.readyState === WebSocket.OPEN) wsRef.current.send(JSON.stringify({ type: "changed" }));
+          savedSinceLoad.current = true;
+          setUnpublished(true);
+        },
+        onError: (err) => {
+          console.error(err);
+          // Un guardado que falla en silencio es lo peor que puede pasar: se
+          // sigue editando sobre nada y al publicar faltan cosas. Se avisa una
+          // vez por error distinto para no llenar la pantalla en cada reintento.
+          const message = String(err instanceof Error ? err.message : err);
+          if (lastSyncError.current !== message) {
+            lastSyncError.current = message;
+            toast.push(t("save_failed", { error: message }), "error");
+          }
+        },
+      }),
+    [projectId],
+  );
   const doSync = useCallback(async (): Promise<void> => {
-    while (syncing.current != null) await syncing.current.catch(() => {});
-    const run = runSync();
-    syncing.current = run;
-    try {
-      await run;
-    } finally {
-      syncing.current = null;
-    }
-  }, [projectId]);
+    if (syncTimer.current != null) clearTimeout(syncTimer.current);
+    await autosaver.sync();
+  }, [autosaver]);
 
-  /** Publicar compila desde la base de datos: antes hay que guardar lo pendiente. */
+  /** Publicar compila desde la base de datos: antes hay que guardar todo lo pendiente. */
   const flushSync = useCallback(async (): Promise<void> => {
     if (syncTimer.current != null) clearTimeout(syncTimer.current);
-    await doSync();
-    if (useEditor.getState().saving === "error") throw new Error(t("save_failed_short"));
-  }, [doSync]);
-
-  const runSync = async (): Promise<void> => {
-    const state = useEditor.getState();
-    if (!state.dirty || state.snapshot == null || syncedRef.current == null) return;
-    state.setSaving("saving");
-    const target = structuredClone(state.snapshot);
     try {
-      await syncSnapshot(projectId, syncedRef.current, target);
-      syncedRef.current = target;
-      state.setSaving("saved");
-      state.markClean();
-      wsRef.current?.send(JSON.stringify({ type: "changed" }));
-    } catch (err) {
-      state.setSaving("error");
-      console.error(err);
-      // Un guardado que falla en silencio es lo peor que puede pasar: se
-      // sigue editando sobre nada y al publicar faltan cosas. Se avisa una
-      // vez por error distinto para no llenar la pantalla en cada reintento.
-      const message = String(err instanceof Error ? err.message : err);
-      if (lastSyncError.current !== message) {
-        lastSyncError.current = message;
-        toast.push(t("save_failed", { error: message }), "error");
-      }
+      await autosaver.flush();
+    } catch {
+      throw new Error(t("save_failed_short"));
     }
-  };
+  }, [autosaver]);
 
   useEffect(() => {
     if (!editor.dirty) return;
@@ -187,6 +211,40 @@ export function EditorPage(): React.ReactNode {
       if (syncTimer.current != null) clearTimeout(syncTimer.current);
     };
   }, [editor.dirty, editor.snapshot, doSync]);
+
+  // Al ocultar la pestaña, cerrarla o salir del editor se guarda en el acto:
+  // en el móvil la página puede morir sin volver a ver la luz, y esperar al
+  // temporizador perdía el último cambio.
+  useEffect(() => {
+    const flushNow = (): void => {
+      if (useEditor.getState().dirty) void doSync();
+    };
+    const onVisibility = (): void => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
+    window.addEventListener("pagehide", flushNow);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flushNow);
+      document.removeEventListener("visibilitychange", onVisibility);
+      // Desmontar (volver a la lista, cambiar de tour) también guarda
+      flushNow();
+    };
+  }, [doSync]);
+
+  // Cambios guardados que aún no están en el recorrido publicado: una pista
+  // discreta una sola vez por sesión y tour, y una marca fija junto a Publicar.
+  useEffect(() => {
+    if (!unpublished || !savedSinceLoad.current || project?.publication == null) return;
+    const key = `andarama:republish-hint:${projectId}`;
+    try {
+      if (sessionStorage.getItem(key) != null) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // Sin sessionStorage (modo privado estricto): se avisa igual una vez
+    }
+    toast.push(t("republish_hint"), "info");
+  }, [unpublished, project?.publication, projectId]);
 
   // Presencia y bloqueo blando (§3.5)
   useEffect(() => {
@@ -293,6 +351,7 @@ export function EditorPage(): React.ReactNode {
   ];
 
   return (
+    <PickerTourContext.Provider value={project.id}>
     <div className="flex h-full flex-col bg-[var(--anda-bg)]">
       <header className="anda-barra flex items-center gap-2 px-3 py-2">
         <Tooltip content={t("projects")}>
@@ -361,6 +420,18 @@ export function EditorPage(): React.ReactNode {
             <Badge tone="ok">{t("published")}</Badge>
           </a>
         )}
+        {project.publication != null && unpublished && (
+          <Tooltip content={t("republish_hint")}>
+            <span tabIndex={0} aria-label={`${t("unpublished_changes")}. ${t("republish_hint")}`}>
+              <Badge tone="warn">{t("unpublished_changes")}</Badge>
+            </span>
+          </Tooltip>
+        )}
+        <Tooltip content={t("people_title")}>
+          <Button variant="ghost" size="icon" aria-label={t("people")} onClick={() => setDialog("people")}>
+            <Users className="h-4 w-4" />
+          </Button>
+        </Tooltip>
         <Tooltip content={t("live_tour")}>
           <Button variant="ghost" size="icon" aria-label={t("live_tour")} onClick={() => setDialog("live")}>
             <Radio className="h-4 w-4" />
@@ -449,10 +520,14 @@ export function EditorPage(): React.ReactNode {
         onClose={() => setDialog(null)}
         project={project}
         beforePublish={flushSync}
-        onPublished={(pub) => setProject((p) => (p != null ? { ...p, publication: pub } : p))}
+        onPublished={(pub) => {
+          setUnpublished(false);
+          setProject((p) => (p != null ? { ...p, publication: pub } : p));
+        }}
       />
       <ExportDialog open={dialog === "export"} onClose={() => setDialog(null)} project={project} />
       <ShareDialog open={dialog === "share"} onClose={() => setDialog(null)} project={project} />
+      <PeopleDialog open={dialog === "people"} onClose={() => setDialog(null)} project={project} />
       <LiveDialog open={dialog === "live"} onClose={() => setDialog(null)} project={project} />
       <CommandPalette
         open={paletteOpen}
@@ -475,5 +550,6 @@ export function EditorPage(): React.ReactNode {
           está de paso. */}
       <CriaturaCameo />
     </div>
+    </PickerTourContext.Provider>
   );
 }

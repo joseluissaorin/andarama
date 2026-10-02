@@ -21,7 +21,7 @@ export type PlanCardKind = "casa" | PlanSlug;
 export interface PlanCard {
   kind: PlanCardKind;
   name: string;
-  /** La cifra grande («20 $», «42 $», «0 €»). */
+  /** La cifra grande («20 $», «42 $», «0 $»). */
   figure: string;
   /** Cuándo se paga («al mes», «al año por docente», «para siempre»). */
   when: string;
@@ -85,7 +85,9 @@ export function tarjetaCasa(lang: Lang): PlanCard {
   return {
     kind: "casa",
     name: t(lang, "precios.planes.casa.nombre"),
-    figure: t(lang, "precios.planes.casa.cifra"),
+    // Con el mismo formato que los planes alojados: un «0 €» junto a precios
+    // en dólares parecía otra moneda (y otra cosa)
+    figure: usd(lang, 0),
     when: t(lang, "precios.planes.casa.cuando"),
     items: tv<string[]>(lang, "precios.planes.casa.items") ?? [],
     href: CASA_URL,

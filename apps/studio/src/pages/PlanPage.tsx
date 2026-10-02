@@ -25,8 +25,12 @@ interface BillingMe {
   instanceAdmin: boolean;
 }
 
-/** Las capacidades que se explican en la página, en el orden en que se cuentan. */
-const CAPABILITIES = ["classroom", "scorm", "lti", "whiteLabel", "customDomain", "team", "invoice"] as const;
+/**
+ * Las capacidades que se explican en la página, en el orden en que se cuentan.
+ * Ni el aula (quiz, búsqueda del tesoro, escape room) ni el equipo aparecen:
+ * están en todos los planes, y listarlos como «no incluido» era mentira.
+ */
+const CAPABILITIES = ["scorm", "lti", "whiteLabel", "customDomain", "invoice"] as const;
 
 const DOCS_SELF_HOST = "https://docs.andarama.com/despliegue/docker/";
 
@@ -122,6 +126,7 @@ function PlanPageClerk(): React.ReactNode {
                     </li>
                   );
                 })}
+                <li className="sm:col-span-2 text-[var(--anda-text-dim)]">{t("plan_cap_all_plans")}</li>
               </ul>
             )}
           </div>

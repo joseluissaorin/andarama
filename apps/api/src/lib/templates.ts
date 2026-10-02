@@ -19,7 +19,8 @@ import { newId, nowMs, parseJson, slugify } from "./util.js";
  *   ejemplo (`is_sample`) y no cuenta en la cuota.
  * - `TEMPLATE_PROJECTS`: la lista de plantillas por sector que se ofrecen en
  *   «Nuevo proyecto», como `sector:id` separados por comas
- *   (`escape_room:abc,prl:def,museo:ghi,campus:jkl,inmobiliaria:mno`). Un id
+ *   (`escape_room:abc,quiz:pqr,tesoro:stu,prl:def,museo:ghi,campus:jkl,inmobiliaria:mno`;
+ *   escape_room, quiz y tesoro salen juntos bajo «Educación»). Un id
  *   sin sector también vale; entonces se muestra con su título.
  *
  * En los dos casos los medios **no se copian**: las escenas clonadas siguen
@@ -35,7 +36,7 @@ export interface TemplatesConfig {
 }
 
 /** Sectores con nombre propio en el Studio; cualquier otro se muestra con el título del proyecto. */
-export const TEMPLATE_SECTORS = ["escape_room", "prl", "museo", "campus", "inmobiliaria"] as const;
+export const TEMPLATE_SECTORS = ["escape_room", "quiz", "tesoro", "prl", "museo", "campus", "inmobiliaria"] as const;
 
 /** Lee las dos variables de entorno; sin ninguna de las dos, undefined. */
 export function parseTemplatesConfig(sample: string | undefined, list: string | undefined): TemplatesConfig | undefined {
