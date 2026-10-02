@@ -107,7 +107,7 @@
     // organización Plantillas) y plantillas por sector de «Nuevo proyecto».
     // Se montan con tooling/commons/montar-plantilla.mjs
     "SAMPLE_PROJECT_ID": "JmWrojmkNIUeGg6yFkaPS",
-    "TEMPLATE_PROJECTS": "escape_room:JmWrojmkNIUeGg6yFkaPS,prl:QZwjBybkA5Z2W08o8oYJ9,museo:vugKlB7H0QjQU5cirtv4H,campus:LPFmvklgb2ZYr4FJQTCHF"
+    "TEMPLATE_PROJECTS": "escape_room:JmWrojmkNIUeGg6yFkaPS,prl:QZwjBybkA5Z2W08o8oYJ9,museo:vugKlB7H0QjQU5cirtv4H,campus:LPFmvklgb2ZYr4FJQTCHF,quiz:MU8RkSOZGCJ41oChAq4HS,tesoro:mmqVSVybzFEExoBt9uKH4"
   },
 
   "observability": {
