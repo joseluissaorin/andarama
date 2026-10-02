@@ -140,15 +140,42 @@ export class XrRenderer {
     return tex;
   }
 
+  /**
+   * Sube una imagen a la textura. Devuelve false si falla, ya sea por
+   * excepción (lienzo contaminado, imagen sin decodificar) o por un error de
+   * GL. En Meta Quest una panorámica más grande que `MAX_TEXTURE_SIZE` fallaba
+   * en silencio: la textura quedaba con la escena anterior y solo cambiaban
+   * los hotspots.
+   */
   upload(texture: WebGLTexture, source: TexImageSource): boolean {
     const gl = this.gl;
+    // Errores pendientes de antes: no son de esta subida
+    for (let i = 0; i < 8 && gl.getError() !== gl.NO_ERROR; i++) {
+      // vaciar la cola (acotado: un contexto perdido no debe colgar el bucle)
+    }
     gl.bindTexture(gl.TEXTURE_2D, texture);
     try {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
-      return true;
-    } catch {
+    } catch (error) {
+      console.warn("[andarama] no se pudo subir la textura VR", error);
       return false;
     }
+    const error = gl.getError();
+    if (error !== gl.NO_ERROR) {
+      console.warn(`[andarama] error de GL ${error} al subir la textura VR`);
+      return false;
+    }
+    return true;
+  }
+
+  /** Lado máximo de textura que se usará: el del dispositivo, sin pasar de 8192. */
+  maxTextureSize(): number {
+    const reported = Number(this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE)) || 4096;
+    return Math.min(reported, MAX_ENV_TEXTURE);
+  }
+
+  deleteTexture(texture: WebGLTexture | null): void {
+    if (texture != null) this.gl.deleteTexture(texture);
   }
 
   /** Matriz de modelo de un billboard centrado en `center` y orientado al usuario. */
@@ -184,6 +211,52 @@ export class XrRenderer {
 }
 
 export { matIdentity };
+
+/** Tope del entorno aunque el dispositivo admita más: memoria de vídeo del Quest. */
+export const MAX_ENV_TEXTURE = 8192;
+
+/**
+ * Tamaño al que hay que reducir una imagen para que quepa en una textura de
+ * lado `maxSize`, conservando la proporción. Si ya cabe, se devuelve tal cual.
+ */
+export function fitTextureSize(width: number, height: number, maxSize: number): { width: number; height: number; scaled: boolean } {
+  const limit = Math.max(1, Math.floor(maxSize));
+  if (width <= limit && height <= limit) return { width, height, scaled: false };
+  const k = limit / Math.max(width, height);
+  return {
+    width: Math.max(1, Math.min(limit, Math.floor(width * k))),
+    height: Math.max(1, Math.min(limit, Math.floor(height * k))),
+    scaled: true,
+  };
+}
+
+/** Dimensiones naturales de cualquier fuente de textura. */
+export function sourceSize(source: TexImageSource): { width: number; height: number } {
+  const s = source as { naturalWidth?: number; naturalHeight?: number; videoWidth?: number; videoHeight?: number; width?: number; height?: number };
+  return {
+    width: s.naturalWidth || s.videoWidth || s.width || 0,
+    height: s.naturalHeight || s.videoHeight || s.height || 0,
+  };
+}
+
+/**
+ * Reduce una imagen estática con un lienzo si no cabe en `maxSize`. Los
+ * vídeos se dejan como están: se suben en cada fotograma y no pasan de 8K.
+ */
+export function downscaleForTexture(source: TexImageSource, maxSize: number): TexImageSource {
+  if (typeof HTMLVideoElement !== "undefined" && source instanceof HTMLVideoElement) return source;
+  const { width, height } = sourceSize(source);
+  if (width === 0 || height === 0) return source;
+  const fit = fitTextureSize(width, height, maxSize);
+  if (!fit.scaled) return source;
+  const canvas = document.createElement("canvas");
+  canvas.width = fit.width;
+  canvas.height = fit.height;
+  const ctx = canvas.getContext("2d");
+  if (ctx == null) return source;
+  ctx.drawImage(source as CanvasImageSource, 0, 0, fit.width, fit.height);
+  return canvas;
+}
 
 function toF32(m: Float32Array | number[]): Float32Array {
   return m instanceof Float32Array ? m : new Float32Array(m);

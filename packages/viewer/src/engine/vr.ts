@@ -1,7 +1,7 @@
 import type { Hotspot } from "@andarama/schema";
-import { XrRenderer } from "./xr/render.js";
+import { XrRenderer, downscaleForTexture } from "./xr/render.js";
 import { XrInput, isTrackedPointer, type XrPointer } from "./xr/input.js";
-import { GazeDwell } from "./xr/gaze.js";
+import { GazeDwell, gazeHitRadius } from "./xr/gaze.js";
 import { SceneTransition } from "./xr/transition.js";
 import { cameraQuaternion, rotateAroundWorldY, screenAngle, viewMatrixFromQuat, yawPitchFromQuat, type Quat } from "./xr/orientation.js";
 import { DeviceOrientationControlMethod } from "./gyro.js";
@@ -16,10 +16,13 @@ import {
   type PanelZone,
 } from "./xr/panel.js";
 import {
+  arrivalYawOffset,
   dirFromYawPitch,
   matForward,
   matPosition,
   matTranslateScale,
+  matTranslateYawScale,
+  panoToWorldYaw,
   perspective,
   raySphere,
   rayRect,
@@ -77,12 +80,36 @@ export interface VrEnvironment {
   stereo: "mono" | "tb" | "sbs";
   /** true si es vídeo (retexturizar cada fotograma). */
   dynamic: boolean;
+  /**
+   * Imagen de respaldo (la vista previa de la escena) si la panorámica no se
+   * puede subir a la GPU. Sin ella, un fallo dejaba la escena anterior.
+   */
+  fallback?: () => Promise<TexImageSource | null>;
+}
+
+/** Por qué no se puede salir de la escena desde VR (compuerta pendiente). */
+export interface VrNavigationBlock {
+  /** Texto ya traducido que se enseña dentro de las gafas. */
+  message: string;
+  /** Hotspot que retiene: si es una pregunta, se abre su panel. */
+  hotspotId?: string;
+  reason?: string;
 }
 
 export interface VrCallbacks {
   getEnvironment(): Promise<VrEnvironment>;
   getHotspots(): VrHotspot[];
-  onNavigate(target: string): Promise<void>;
+  /**
+   * Salto de escena. Recibe el hotspot de navegación pulsado para que el
+   * destino aplique su vista de llegada (`entry`), como en el visor plano.
+   */
+  onNavigate(target: string, hotspot?: Hotspot): Promise<void>;
+  /**
+   * Compuertas pendientes en la escena actual. El salto en VR se hace sin
+   * pasar por los bloqueos de `goTo` (lleva `force`), así que se consultan
+   * aquí antes de saltar. null si se puede salir.
+   */
+  navigationBlock?(): VrNavigationBlock | null;
   /** Hotspots que actúan sin panel: enlace, estado, polígono. */
   onDirectAction(hotspot: VrHotspot): void;
   onQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[]): void;
@@ -103,9 +130,11 @@ const PANEL_DISTANCE = 1.6;
 const PANEL_WIDTH_M = 1.6;
 const PANEL_HEIGHT_M = (PANEL_WIDTH_M * PANEL_HEIGHT) / PANEL_WIDTH;
 const TOUCH_DISTANCE = 0.045;
-/** Margen de cabeza (radianes) que no rompe la permanencia de la mirada. */
-const GAZE_TOLERANCE = 0.1;
 const DEFAULT_DWELL_MS = 1500;
+/** Duración del aviso flotante (compuerta pendiente). */
+const NOTICE_MS = 3200;
+const NOTICE_DISTANCE = 2.4;
+const NOTICE_WIDTH_M = 1.5;
 
 /** El tamaño del marcador se respeta, pero acotado: en gafas un cartel enorme molesta. */
 function clampScale(scale: number | undefined): number {
@@ -142,13 +171,27 @@ export class VRManager {
   private exitButton: HTMLButtonElement | null = null;
   /** Cambio de escena con fundido, al ritmo del bucle de la sesión. */
   private transition = new SceneTransition<VrEnvironment>({
-    navigate: (target) => this.callbacks.onNavigate(target),
+    navigate: (target) => this.callbacks.onNavigate(target, this.navHotspot),
     load: () => this.callbacks.getEnvironment(),
     apply: (env) => this.applyEnvironment(env),
     onError: (error) => console.warn("[andarama] no se pudo cambiar de escena en VR", error),
   });
   /** Opacidad del velo negro del fundido en el fotograma actual. */
   private fade = 0;
+  /** Hotspot de navegación del salto en curso (para la vista de llegada). */
+  private navHotspot: Hotspot | undefined;
+  /**
+   * Giro de la panorámica respecto al mundo (xr/math.ts, `arrivalYawOffset`):
+   * un punto con yaw ψ se ve con yaw ψ − desfase. Se recalcula cada vez que
+   * se aplica una escena para que el visitante mire la vista de llegada.
+   */
+  private sceneYawOffset = 0;
+  /** Yaw de la panorámica que debe quedar delante en el próximo fotograma. */
+  private pendingArrivalYaw: number | null = null;
+  /** Aviso flotante (por ejemplo, una compuerta pendiente). */
+  private notice: { text: string; until: number | null; dir: Vec3; tex: WebGLTexture | null; aspect: number } | null = null;
+  /** Hora del fotograma actual (bucle XR o de la ventana). */
+  private frameTime = 0;
 
   // Panel abierto
   private openHotspot: VrHotspot | null = null;
@@ -164,11 +207,14 @@ export class VRManager {
   private hover = new Map<string, PointerTarget>();
   private images = new Map<string, HTMLImageElement>();
   private headPosition: Vec3 = [0, 0, 0];
-  private dwell = new GazeDwell(DEFAULT_DWELL_MS, GAZE_TOLERANCE);
+  private dwell = new GazeDwell(DEFAULT_DWELL_MS);
   private xrForward: Vec3 | null = null;
   /** Lo que hay bajo la mirada en XR, se use o no la selección por mirada. */
   private xrGazeTarget: PointerTarget = null;
-  /** La sesión ha tenido mandos o manos: entonces no se acciona por mirada. */
+  /**
+   * La sesión ha tenido mandos o manos de verdad (con `gamepad` o `hand`, o
+   * con un `select` real): entonces no se acciona por mirada.
+   */
   private trackedPointerSeen = false;
   /** Orientación completa del móvil en cartón: conserva el balanceo. */
   private cardboardQuat: Quat | null = null;
@@ -242,7 +288,7 @@ export class VRManager {
     const gl = this.canvas.getContext("webgl", { xrCompatible, antialias: true } as WebGLContextAttributes) as WebGLRenderingContext;
     this.gl = gl;
     this.renderer = new XrRenderer(gl);
-    this.envTex = this.renderer.createTexture();
+    this.envTex = null;
     this.panelCanvas = document.createElement("canvas");
     this.panelTex = this.renderer.createTexture();
     return gl;
@@ -250,21 +296,54 @@ export class VRManager {
 
   async refreshEnvironment(): Promise<void> {
     if (this.renderer == null) return;
-    this.env = await this.callbacks.getEnvironment();
-    this.uploadEnv();
-    this.iconTex.clear();
+    this.applyEnvironment(await this.callbacks.getEnvironment());
     this.closePanel();
   }
 
+  /**
+   * Escena nueva: textura nueva (se borra la anterior), reducida al tamaño
+   * que admite la GPU, y desfase de yaw pendiente para mirar la vista de
+   * llegada en cuanto se conozca la orientación de la cabeza.
+   */
   private applyEnvironment(env: VrEnvironment): void {
     this.env = env;
-    this.uploadEnv();
     this.iconTex.clear();
+    this.pendingArrivalYaw = this.callbacks.getViewYawPitch().yaw;
+    const r = this.renderer;
+    if (r == null) return;
+    r.deleteTexture(this.envTex);
+    this.envTex = r.createTexture();
+    const source = env.dynamic ? env.element : downscaleForTexture(env.element, r.maxTextureSize());
+    if (r.upload(this.envTex, source)) return;
+    console.warn("[andarama] la panorámica no cabe en la GPU; se usa la vista previa");
+    void env
+      .fallback?.()
+      .then((preview) => {
+        if (preview == null || this.env !== env || this.renderer !== r || this.envTex == null) return;
+        r.upload(this.envTex, downscaleForTexture(preview, r.maxTextureSize()));
+      })
+      .catch((error: unknown) => console.warn("[andarama] tampoco se pudo cargar la vista previa", error));
   }
 
+  /** Vídeo: se retexturiza cada fotograma sobre la textura de la escena. */
   private uploadEnv(): void {
     if (this.renderer == null || this.env == null || this.envTex == null) return;
     this.renderer.upload(this.envTex, this.env.element as TexImageSource);
+  }
+
+  /**
+   * Fija el desfase de yaw en el primer fotograma tras aplicar una escena:
+   * la vista de llegada queda justo donde mira ahora la cabeza.
+   */
+  private resolveArrival(headYaw: number): void {
+    if (this.pendingArrivalYaw == null) return;
+    this.sceneYawOffset = arrivalYawOffset(this.pendingArrivalYaw, headYaw);
+    this.pendingArrivalYaw = null;
+  }
+
+  /** Desfase actual de la panorámica (radianes); útil en pruebas. */
+  get yawOffset(): number {
+    return this.sceneYawOffset;
   }
 
   // -----------------------------------------------------------------------
@@ -297,17 +376,19 @@ export class VRManager {
     const onFrame = (time: number, frame: any): void => {
       if (this.xrSession == null) return;
       session.requestAnimationFrame(onFrame);
+      this.frameTime = time;
       this.fade = this.transition.frame(time);
       const pose = frame.getViewerPose(this.refSpace);
       if (pose == null) return;
       this.headPosition = matPosition(pose.transform.matrix);
       this.xrForward = matForward(pose.transform.matrix);
+      this.resolveArrival(yawPitchFromDir(this.xrForward).yaw);
 
       // La mirada (Android con cartón) no es un puntero con rayo: dibujarla
       // como tal era la «flecha» lila que no accionaba nada.
       const all = this.input.read(frame, this.refSpace, session);
       const pointers = all.filter((p) => isTrackedPointer(p));
-      if (pointers.length > 0) this.trackedPointerSeen = true;
+      if (pointers.some((p) => p.physical)) this.trackedPointerSeen = true;
       this.updateInteraction(pointers);
       this.updateXrGaze(time);
       this.refreshPanelTexture();
@@ -339,6 +420,8 @@ export class VRManager {
 
   private onSelect(event: any): void {
     const source = event.inputSource;
+    // Un `select` real desde un rayo propio demuestra que hay mando o mano.
+    if (isTrackedPointer(source)) this.trackedPointerSeen = true;
     const target = this.targetForSource(source);
     // Tocar la pantalla o el botón del visor acciona lo mirado al instante; el
     // anillo se vacía para que la permanencia no lo repita a continuación.
@@ -365,15 +448,14 @@ export class VRManager {
     const forward = this.xrForward;
     if (forward == null) return;
     const ray: Ray = { origin: this.headPosition, direction: forward };
-    const target = this.pickPanel(ray) ?? this.pickHotspot(ray);
+    const target = this.pickGaze(ray);
     this.xrGazeTarget = target;
     if (!this.gazeSelectActive()) {
       this.dwell.reset();
       return;
     }
     if (target != null) this.hover.set("gaze", target);
-    const { yaw, pitch } = yawPitchFromDir(forward);
-    if (this.dwell.update(targetKey(target), yaw, pitch, now)) this.activate(target);
+    if (this.dwell.update(targetKey(target), now)) this.activate(target);
   }
 
   private keyForSource(source: any): string {
@@ -517,7 +599,11 @@ export class VRManager {
         this.canvas.height = h;
       }
       const now = performance.now();
+      this.frameTime = now;
       this.fade = this.transition.frame(now);
+      // En cartón el rumbo del móvil al entrar ya se descuenta (headingOffset);
+      // tras cada salto se gira además la panorámica para mirar la llegada.
+      this.resolveArrival(this.cardboardYawPitch.yaw);
       if (this.env?.dynamic === true) this.uploadEnv();
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -527,10 +613,10 @@ export class VRManager {
       // El panel se elige con el rayo de la mirada: con un punto fijo delante
       // de la cabeza no se alcanzaba, y sin poder mirar el aspa el panel no
       // había forma de cerrarlo en cardboard.
-      const target = this.pickPanel(gaze) ?? this.pickHotspot(gaze);
+      const target = this.pickGaze(gaze);
       this.hover.clear();
       if (target != null) this.hover.set("gaze", target);
-      if (this.dwell.update(targetKey(target), yaw, pitch, now)) this.activate(target);
+      if (this.dwell.update(targetKey(target), now)) this.activate(target);
       this.refreshPanelTexture();
       const proj = perspective(1.05, w / 2 / h, 0.05, 120);
       // Con el cuaternión se conserva la inclinación de la cabeza; sin él, al
@@ -574,14 +660,24 @@ export class VRManager {
     }
   }
 
-  private pickHotspot(ray: Ray): PointerTarget {
+  /**
+   * Lo que hay bajo la mirada. El hotspot que ya acumula permanencia conserva
+   * la mirada con un radio algo mayor (histéresis, xr/gaze.ts): el temblor de
+   * un móvil sujeto a mano no debe vaciar el anillo.
+   */
+  private pickGaze(ray: Ray): PointerTarget {
+    return this.pickPanel(ray) ?? this.pickHotspot(ray, this.dwell.current);
+  }
+
+  private pickHotspot(ray: Ray, stickyId: string | null = null): PointerTarget {
     // Durante el fundido de un salto los hotspots ya son los de la escena
     // nueva y la panorámica aún la vieja: no se apuntan ni se dibujan.
     if (this.transition.hideHotspots) return null;
     let best: PointerTarget = null;
     for (const hs of this.callbacks.getHotspots()) {
       const center = this.hotspotCenter(hs);
-      const distance = raySphere(ray, center, HOTSPOT_HIT_RADIUS * clampScale(hs.scale));
+      const radius = gazeHitRadius(HOTSPOT_HIT_RADIUS * clampScale(hs.scale), hs.id === stickyId);
+      const distance = raySphere(ray, center, radius);
       if (distance == null) continue;
       if (best == null || distance < best.distance) best = { kind: "hotspot", hotspot: hs, distance };
     }
@@ -622,7 +718,8 @@ export class VRManager {
   }
 
   private hotspotCenter(hs: VrHotspot): Vec3 {
-    const dir = dirFromYawPitch(hs.yaw, hs.pitch);
+    // Los hotspots giran con la panorámica: mismo desfase que la esfera.
+    const dir = dirFromYawPitch(panoToWorldYaw(hs.yaw, this.sceneYawOffset), hs.pitch);
     return vecAdd(this.headPosition, vecScale(dir, HOTSPOT_RADIUS));
   }
 
@@ -637,7 +734,7 @@ export class VRManager {
 
   private activateHotspot(hs: VrHotspot): void {
     if (hs.type === "navigation" && hs.target != null) {
-      this.navigate(hs.target);
+      this.navigate(hs.target, hs.hotspot);
       return;
     }
     if (hs.type === "link" || hs.type === "state" || hs.type === "polygon") {
@@ -827,12 +924,14 @@ export class VRManager {
       uvScale = [0.5, 1];
       uvOffset = eyeIndex === 0 ? [0, 0] : [0.5, 0];
     }
-    r.draw(r.envSphere, matTranslateScale(this.headPosition, 1), {
-      texture: this.envTex,
-      uvOffset,
-      uvScale,
-      depthTest: false,
-    });
+    if (this.envTex != null) {
+      r.draw(r.envSphere, matTranslateYawScale(this.headPosition, this.sceneYawOffset, 1), {
+        texture: this.envTex,
+        uvOffset,
+        uvScale,
+        depthTest: false,
+      });
+    }
 
     // Hotspots
     const hovered = new Set<string>();
@@ -898,6 +997,8 @@ export class VRManager {
         }
       }
     }
+
+    this.drawNotice();
 
     // Retículo de la selección por mirada (cartón, y WebXR sin mandos), con
     // el anillo que se va dibujando. Se pone a la distancia de lo mirado —y
@@ -1064,11 +1165,83 @@ export class VRManager {
    * textura nueva se sube en un fotograma del propio bucle inmersivo
    * (xr/transition.ts).
    */
-  private navigate(target: string): void {
+  private navigate(target: string, hotspot?: Hotspot): void {
     if (this.transition.busy) return;
+    // Compuertas: el visor plano no deja salir con una pregunta, un
+    // formulario o un tesoro pendientes, y en gafas tampoco. Se dice por qué
+    // dentro de la escena y, si es una pregunta, se abre para contestarla.
+    const block = this.callbacks.navigationBlock?.() ?? null;
+    if (block != null) {
+      this.dwell.reset();
+      this.showNotice(block.message);
+      if (block.reason === "quiz" && block.hotspotId != null) {
+        const gate = this.callbacks.getHotspots().find((h) => h.id === block.hotspotId);
+        if (gate != null) this.openPanel(gate);
+      }
+      return;
+    }
     this.closePanel();
     this.dwell.reset();
+    this.clearNotice();
+    this.navHotspot = hotspot;
     void this.transition.request(target);
+  }
+
+  // -----------------------------------------------------------------------
+  // Aviso flotante
+  // -----------------------------------------------------------------------
+
+  /**
+   * Muestra un aviso breve dentro de la escena, delante de la mirada. Los
+   * avisos del visor plano (toasts del DOM) no se ven con las gafas puestas.
+   */
+  showNotice(text: string): void {
+    if (text === "") return;
+    this.clearNotice();
+    this.notice = { text, until: null, dir: this.headForward(), tex: null, aspect: 4 };
+  }
+
+  /** Texto del aviso visible, si lo hay. */
+  get noticeText(): string | null {
+    return this.notice?.text ?? null;
+  }
+
+  private clearNotice(): void {
+    if (this.notice?.tex != null) this.renderer?.deleteTexture(this.notice.tex);
+    this.notice = null;
+  }
+
+  private drawNotice(): void {
+    const notice = this.notice;
+    const r = this.renderer;
+    if (notice == null || r == null) return;
+    if (notice.until == null) notice.until = this.frameTime + NOTICE_MS;
+    if (this.frameTime > notice.until) {
+      this.clearNotice();
+      return;
+    }
+    if (notice.tex == null) {
+      const canvas = document.createElement("canvas");
+      notice.aspect = drawNoticeCanvas(canvas, notice.text);
+      notice.tex = r.createTexture();
+      r.upload(notice.tex, canvas);
+    }
+    const alpha = Math.min(1, (notice.until - this.frameTime) / 400);
+    // Con un panel abierto (la pregunta que retiene), encima de él; si no, un
+    // poco por debajo de la mirada para no tapar el retículo ni el hotspot.
+    const width = this.panelAnchor != null ? PANEL_WIDTH_M * 0.9 : NOTICE_WIDTH_M;
+    const height = width / notice.aspect;
+    const center =
+      this.panelAnchor != null
+        ? vecAdd(this.panelAnchor.center, [0, PANEL_HEIGHT_M / 2 + height / 2 + 0.06, 0])
+        : vecAdd(vecAdd(this.headPosition, vecScale(notice.dir, NOTICE_DISTANCE)), [0, -0.32, 0]);
+    const model = r.billboardMatrix(center, this.headPosition, 1);
+    const scaled = new Float32Array(model);
+    for (let i = 0; i < 3; i++) {
+      scaled[i] = model[i]! * width;
+      scaled[4 + i] = model[4 + i]! * height;
+    }
+    r.draw(r.quad, scaled, { texture: notice.tex, color: [1, 1, 1, alpha], depthTest: false });
   }
 
   // -----------------------------------------------------------------------
@@ -1097,6 +1270,11 @@ export class VRManager {
     this.transition.reset();
     this.dwell.reset();
     this.fade = 0;
+    this.sceneYawOffset = 0;
+    this.pendingArrivalYaw = null;
+    this.navHotspot = undefined;
+    this.notice = null;
+    this.envTex = null;
     this.xrGazeTarget = null;
     this.trackedPointerSeen = false;
     this.xrForward = null;
@@ -1146,6 +1324,52 @@ function crossVec(a: Vec3, b: Vec3): Vec3 {
 
 function dot(a: Vec3, b: Vec3): number {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+/**
+ * Dibuja el aviso flotante: cápsula oscura con el texto en hasta tres líneas.
+ * Devuelve la proporción ancho/alto del lienzo.
+ */
+function drawNoticeCanvas(canvas: HTMLCanvasElement, text: string): number {
+  const W = 1024;
+  const H = 256;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+  ctx.clearRect(0, 0, W, H);
+  ctx.font = "600 48px system-ui, sans-serif";
+  const lines: string[] = [];
+  let line = "";
+  for (const word of text.split(/\s+/)) {
+    const probe = line === "" ? word : `${line} ${word}`;
+    if (ctx.measureText(probe).width > W - 120 && line !== "") {
+      lines.push(line);
+      line = word;
+    } else {
+      line = probe;
+    }
+  }
+  if (line !== "") lines.push(line);
+  const shown = lines.slice(0, 3);
+  const r = 40;
+  ctx.beginPath();
+  ctx.moveTo(r, 8);
+  ctx.arcTo(W - 8, 8, W - 8, H - 8, r);
+  ctx.arcTo(W - 8, H - 8, 8, H - 8, r);
+  ctx.arcTo(8, H - 8, 8, 8, r);
+  ctx.arcTo(8, 8, W - 8, 8, r);
+  ctx.closePath();
+  ctx.fillStyle = "rgba(12, 16, 30, 0.9)";
+  ctx.fill();
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = "#d9bcee";
+  ctx.stroke();
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const lh = shown.length > 2 ? 58 : 64;
+  shown.forEach((l, i) => ctx.fillText(l, W / 2, H / 2 + (i - (shown.length - 1) / 2) * lh));
+  return W / H;
 }
 
 /** Pictograma sencillo por tipo de hotspot (sin dependencias de iconos). */

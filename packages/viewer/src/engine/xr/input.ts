@@ -75,11 +75,30 @@ export interface XrPointer {
    * Solo el primero tiene rayo propio que dibujar.
    */
   targetRayMode: string;
+  /** Mando con botones (`gamepad`) o mano articulada: un puntero de verdad. */
+  physical: boolean;
 }
 
-/** Un puntero con rayo propio (mando o mano), no la mirada ni un toque. */
+/**
+ * Un puntero con rayo propio (mando o mano), no la mirada ni un toque. Solo
+ * cuenta si lo declara expresamente: antes, una fuente sin `targetRayMode` se
+ * tomaba por mando, y en un Android con cartón bastaba una entrada rara para
+ * apagar la selección por mirada durante toda la sesión.
+ */
 export function isTrackedPointer(source: { targetRayMode?: string } | null | undefined): boolean {
-  return (source?.targetRayMode ?? "tracked-pointer") === "tracked-pointer";
+  return source?.targetRayMode === "tracked-pointer";
+}
+
+/**
+ * Prueba de que hay mandos o manos de verdad: un `tracked-pointer` con
+ * `gamepad` o con `hand`. Solo esto (o un `select` real desde un
+ * `tracked-pointer`) apaga la selección por mirada en WebXR.
+ */
+export function isPhysicalPointer(
+  source: { targetRayMode?: string; gamepad?: unknown; hand?: unknown; physical?: boolean } | null | undefined,
+): boolean {
+  if (!isTrackedPointer(source)) return false;
+  return source?.physical === true || source?.gamepad != null || source?.hand != null;
 }
 
 interface PointerMemory {
@@ -145,7 +164,8 @@ export class XrInput {
         pinching,
         pinchStarted: pinching && !previous,
         isHand,
-        targetRayMode: String(source.targetRayMode ?? "tracked-pointer"),
+        targetRayMode: String(source.targetRayMode ?? "unknown"),
+        physical: isPhysicalPointer(source),
       });
     }
     // Limpiar memoria de punteros que ya no existen

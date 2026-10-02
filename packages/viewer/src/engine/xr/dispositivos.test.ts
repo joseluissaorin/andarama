@@ -91,45 +91,47 @@ describe("iPhone con cartón: hotspots en el mismo sitio que en el visor plano",
 
 describe("Android con Chrome: selección por mirada", () => {
   it("acciona tras la permanencia (1,5 s) y el anillo avanza mientras tanto", () => {
-    const dwell = new GazeDwell(1500, 0.1);
-    expect(dwell.update("puerta", 0, 0, 0)).toBe(false);
-    expect(dwell.update("puerta", 0, 0, 750)).toBe(false);
+    const dwell = new GazeDwell(1500);
+    expect(dwell.update("puerta", 0)).toBe(false);
+    expect(dwell.update("puerta", 750)).toBe(false);
     expect(dwell.progress).toBeCloseTo(0.5, 5);
-    expect(dwell.update("puerta", 0, 0, 1499)).toBe(false);
-    expect(dwell.update("puerta", 0, 0, 1500)).toBe(true);
+    expect(dwell.update("puerta", 1499)).toBe(false);
+    expect(dwell.update("puerta", 1500)).toBe(true);
     expect(dwell.progress).toBe(0);
   });
 
   it("no repite mientras se sigue mirando lo ya accionado; se rearma al apartar la vista", () => {
-    const dwell = new GazeDwell(1500, 0.1);
-    dwell.update("enlace", 0, 0, 0);
-    expect(dwell.update("enlace", 0, 0, 1600)).toBe(true);
-    for (let t = 1700; t < 6000; t += 100) expect(dwell.update("enlace", 0, 0, t)).toBe(false);
-    dwell.update(null, 0.5, 0, 6100);
-    dwell.update("enlace", 0, 0, 6200);
-    expect(dwell.update("enlace", 0, 0, 7700)).toBe(true);
+    const dwell = new GazeDwell(1500);
+    dwell.update("enlace", 0);
+    expect(dwell.update("enlace", 1600)).toBe(true);
+    for (let t = 1700; t < 6000; t += 100) expect(dwell.update("enlace", t)).toBe(false);
+    dwell.update(null, 6100);
+    dwell.update("enlace", 6200);
+    expect(dwell.update("enlace", 7700)).toBe(true);
   });
 
-  it("cambiar de objetivo o mover la cabeza más del margen reinicia el contador", () => {
-    const dwell = new GazeDwell(1500, 0.1);
-    dwell.update("a", 0, 0, 0);
-    dwell.update("b", 0, 0, 1000);
-    expect(dwell.update("b", 0, 0, 2000)).toBe(false);
-    expect(dwell.update("b", 0, 0, 2500)).toBe(true);
+  it("cambiar de objetivo reinicia el contador; mirar a la nada más del margen, también", () => {
+    const dwell = new GazeDwell(1500);
+    dwell.update("a", 0);
+    dwell.update("b", 1000);
+    expect(dwell.update("b", 2000)).toBe(false);
+    expect(dwell.update("b", 2500)).toBe(true);
 
-    dwell.update("c", 0, 0, 3000);
-    dwell.update("c", 0.3, 0, 4000); // giro de cabeza
-    expect(dwell.update("c", 0.3, 0, 5000)).toBe(false);
-    expect(dwell.update("c", 0.3, 0, 5500)).toBe(true);
+    dwell.update("c", 3000);
+    dwell.update(null, 3500); // la mirada se va de verdad
+    dwell.update(null, 4000);
+    dwell.update("c", 4100);
+    expect(dwell.update("c", 5000)).toBe(false);
+    expect(dwell.update("c", 5600)).toBe(true);
   });
 
   it("un toque (botón del visor) vacía el anillo y la permanencia no lo repite", () => {
-    const dwell = new GazeDwell(1500, 0.1);
-    dwell.update("panel", 0, 0, 0);
-    dwell.update("panel", 0, 0, 1000);
+    const dwell = new GazeDwell(1500);
+    dwell.update("panel", 0);
+    dwell.update("panel", 1000);
     dwell.consume("panel");
     expect(dwell.progress).toBe(0);
-    expect(dwell.update("panel", 0, 0, 3000)).toBe(false);
+    expect(dwell.update("panel", 3000)).toBe(false);
   });
 
   it("la mirada de Chrome no cuenta como mando: sin rayo ni flecha", () => {

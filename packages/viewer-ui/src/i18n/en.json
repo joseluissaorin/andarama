@@ -142,6 +142,7 @@
   "form_gate_scene": "Send the form in this scene to move on",
   "form_already_sent": "You have already sent this form. Thank you.",
   "treasure_gate_scene": "Find the treasure in this scene to move on",
+  "nav_gate_scene": "Finish what is pending in this scene to move on",
   "treasure_complete_all": "You have found all the treasures!",
   "treasure_show_hint": "Show a hint",
   "treasure_no_hint": "No hint here: keep looking.",

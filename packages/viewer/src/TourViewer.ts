@@ -126,6 +126,8 @@ export class TourViewer {
       this.emit("narrationBlock", { blocked });
     };
 
+    // El piloto automático salta con `force`: recorre el tour por su cuenta y
+    // no debe quedarse parado ante una compuerta pensada para el visitante.
     this.autopilotCtl = new Autopilot({
       goToScene: async (sceneId, opts) => {
         if (opts?.view != null) {
@@ -166,12 +168,29 @@ export class TourViewer {
     this.vr = new VRManager(this.container, {
       getEnvironment: () => this.buildVrEnvironment(),
       getHotspots: () => this.vrHotspots(),
-      onNavigate: async (target) => {
+      onNavigate: async (target, hotspot) => {
         // Dentro de las gafas no se espera a la transición de Marzipano: va
         // con el requestAnimationFrame de la ventana, que Meta Quest suspende
         // durante la sesión inmersiva, y la promesa no se resolvía nunca. El
         // fundido lo pone el propio modo VR.
-        await this.goTo(target, { force: true, transition: { kind: "cut" }, awaitRender: false });
+        // Con el hotspot pulsado, la escena destino aplica la vista de llegada
+        // del paso (sin él se caía en la vista inicial de la panorámica).
+        // `force` salta los bloqueos de goTo: las compuertas ya las ha
+        // comprobado el modo VR con `navigationBlock` antes de pedir el salto.
+        const paso = hotspot?.type === "navigation" ? (hotspot as NavigationHotspot) : undefined;
+        await this.goTo(target, {
+          fromHotspot: paso,
+          entry: paso?.entry,
+          force: true,
+          transition: { kind: "cut" },
+          awaitRender: false,
+        });
+      },
+      navigationBlock: () => {
+        if (this.gateId == null) return null;
+        const reason = this.gateReason ?? "quiz";
+        const key = reason === "form" ? "form_gate_scene" : reason === "treasure" ? "treasure_gate_scene" : "quiz_gate_scene";
+        return { message: this.options.translate?.(key) ?? key, hotspotId: this.gateId, reason };
       },
       onDirectAction: (hs) => {
         // Enlace, estado y polígono se resuelven con la lógica normal del
@@ -1394,13 +1413,22 @@ export class TourViewer {
     if (src.kind === "video" && entry.built.video != null) {
       return { element: entry.built.video, stereo: src.stereo ?? "mono", dynamic: true };
     }
+    // Vista previa de respaldo: si la panorámica no carga o no cabe en la GPU
+    // (Meta Quest), mejor la previa borrosa que la escena anterior.
+    const preview = "preview" in src && src.preview != null ? resolveUrl(this.baseUrl, src.preview) : null;
+    const fallback = preview != null ? () => loadImageAsync(preview) : undefined;
     if (src.kind === "equirect") {
-      const img = await loadImageAsync(resolveUrl(this.baseUrl, src.url));
-      return { element: img, stereo: src.stereo ?? "mono", dynamic: false };
+      // La reducción a MAX_TEXTURE_SIZE la hace el modo VR al subirla.
+      const img = await loadImageAsync(resolveUrl(this.baseUrl, src.url)).catch((error: unknown) => {
+        if (fallback == null) throw error;
+        console.warn("[andarama] no cargó la panorámica para VR; se usa la vista previa", error);
+        return fallback();
+      });
+      return { element: img, stereo: src.stereo ?? "mono", dynamic: false, fallback };
     }
     if (src.kind === "multires") {
       const canvas = await assembleEquirectFromCube(resolveUrl(this.baseUrl, src.base), src, 2048);
-      if (canvas != null) return { element: canvas, stereo: "mono", dynamic: false };
+      if (canvas != null) return { element: canvas, stereo: "mono", dynamic: false, fallback };
       if (src.preview != null) {
         const img = await loadImageAsync(resolveUrl(this.baseUrl, src.preview));
         return { element: img, stereo: "mono", dynamic: false };

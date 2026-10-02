@@ -753,8 +753,12 @@ export function mountViewer(options: SkinOptions): MountedSkin {
       // El tesoro no se abre: eso sería decir dónde está. Se da su pista.
       toast(container, t("treasure_gate_scene"));
       treasureHint?.(e.hotspotId);
-    } else {
+    } else if (e.reason === "narration") {
       toast(container, t("narration_wait"));
+    } else {
+      // Una compuerta de un tipo que esta versión no conoce: no es la
+      // narración, así que no se dice que se espere a que termine.
+      toast(container, t("nav_gate_scene"));
     }
   });
 
@@ -954,6 +958,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     if (data == null || typeof data !== "object" || typeof data.andarama !== "string") return;
     switch (data.andarama) {
       case "goTo":
+        // Con `force`: quien integra el tour (LMS, LTI) manda sobre las
+        // compuertas pensadas para el visitante.
         if (typeof data.scene === "string") void viewer.goTo(data.scene, { force: true });
         break;
       case "setView":
