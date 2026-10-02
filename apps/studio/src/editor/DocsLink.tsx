@@ -16,7 +16,7 @@ export const DOCS_PAGES = {
   escapeRoom: "usuario/escape-room/",
   polygon: "usuario/variables/#el-hotspot-polígono",
   form: "referencia/widgets/#didácticos",
-  floorplan: "usuario/grafo/#modo-plano",
+  floorplan: "usuario/plano/",
 } as const;
 
 export function docsUrl(page: keyof typeof DOCS_PAGES): string {
