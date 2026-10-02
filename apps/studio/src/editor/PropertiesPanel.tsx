@@ -16,8 +16,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { Button, Dialog, Field, HelpTip, Input, Select, Switch, Textarea, useToast } from "@andarama/ui";
-import { api } from "../api";
+import { Button, Dialog, Field, HelpTip, Input, Select, Switch, Textarea } from "@andarama/ui";
 import { parseVideoRef, renderMarkdown } from "@andarama/viewer-ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
 import { useT } from "../i18n";
@@ -25,8 +24,22 @@ import { clientId, readJson } from "./editorApi";
 import { areaOfScene, areasOf, assignScene, createArea } from "./areas";
 import { getCurrentEditorView, highlightHotspot, setEditorView, setPlacementMode } from "./ScenesView";
 import { ArrivalsPanel } from "./ArrivalsPanel";
+import { readSectionOpen, writeSectionOpen } from "./sectionState";
+import { findMediaRename, type MediaRenameOffer } from "./mediaRename";
+import { MediaRenameOfferCard } from "./MediaRenameOfferCard";
+import { DocsLink, docsUrl } from "./DocsLink";
+import {
+  CONDITION_OPS,
+  conditionsToRows,
+  opNeedsValue,
+  parseVarValue,
+  rowsToConditions,
+  summarizeStateHotspot,
+  type ConditionRow,
+} from "./stateLogic";
 import { HotspotPalette } from "./HotspotPalette";
 import { MediaPicker } from "./MediaPicker";
+import { sceneTypeForMedia } from "../media/drag";
 import { ICON_CATALOG } from "./hotspotIcons";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
@@ -85,25 +98,12 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
   const [pickerFor, setPickerFor] = useState<"panorama" | "ambient" | "narration" | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [newCategory, setNewCategory] = useState<string | null>(null);
-  const toast = useToast();
   /** Oferta de renombrar también la foto tras cambiar el título de la escena. */
-  const [renameOffer, setRenameOffer] = useState<{ mediaId: string; from: string; to: string } | null>(null);
+  const [renameOffer, setRenameOffer] = useState<MediaRenameOffer | null>(null);
   useEffect(() => setRenameOffer(null), [scene.id]);
   const offerMediaRename = async (): Promise<void> => {
-    const mediaId = scene.mediaId;
-    const title = scene.title.trim();
-    if (!canEdit || mediaId == null || title === "") return;
-    try {
-      const info = await api<{ filename: string; scenes: number }>(`/media/${mediaId}`);
-      // Una foto que usan otras escenas (de este u otro recorrido) no se toca
-      if (info.scenes > 1) return;
-      const ext = /\.[a-z0-9]+$/i.exec(info.filename)?.[0] ?? "";
-      const to = `${title.replace(/[\\/:*?"<>|]+/g, "-").slice(0, 190)}${ext}`;
-      if (to === info.filename) return;
-      setRenameOffer({ mediaId, from: info.filename, to });
-    } catch {
-      // sin permiso sobre el medio o sin red: no se ofrece nada
-    }
+    if (!canEdit) return;
+    setRenameOffer(await findMediaRename(scene.mediaId, scene.title));
   };
   // Áreas del tour: la misma cosa que agrupa el grafo, da la categoría del
   // menú de escenas y, si tiene plano, es la planta del minimapa.
@@ -134,7 +134,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
     <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
       {/* Lo primero, porque es lo que se ajusta mirando el panorama. La vista
           inicial es una llegada más: la de empezar aquí. */}
-      <Section title={t("arrivals")} hint={t("arrivals_hint")}>
+      <Section id="scene-arrivals" defaultOpen title={t("arrivals")} hint={t("arrivals_hint")}>
         <div id="panel-llegadas" />
         <ArrivalsPanel sceneId={scene.id} canEdit={canEdit} onPreview={setEditorView} getCurrentView={getCurrentEditorView} />
       </Section>
@@ -156,26 +156,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
             {/* El título de la escena y el nombre de la foto iban por separado:
                 en la biblioteca seguía saliendo «IMG_20240312_1015.jpg». */}
             {renameOffer != null && (
-              <div className="mt-1.5 rounded-lg bg-[var(--anda-surface-2)] p-2 text-[12px]" role="status">
-                <p>{t("rename_media_offer", { from: renameOffer.from, to: renameOffer.to })}</p>
-                <div className="mt-1.5 flex gap-1.5">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      const offer = renameOffer;
-                      setRenameOffer(null);
-                      void api(`/media/${offer.mediaId}`, { method: "PATCH", body: { filename: offer.to } })
-                        .then(() => toast.push(t("rename_media_done", { name: offer.to }), "ok"))
-                        .catch((err: unknown) => toast.push(String(err instanceof Error ? err.message : err), "error"));
-                    }}
-                  >
-                    {t("rename_media_yes")}
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setRenameOffer(null)}>
-                    {t("rename_media_no")}
-                  </Button>
-                </div>
-              </div>
+              <MediaRenameOfferCard offer={renameOffer} onClose={() => setRenameOffer(null)} className="mt-1.5" />
             )}
           </Field>
           <Field label={t("type")} htmlFor="sc-type">
@@ -288,7 +269,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
       </div>
 
 
-      <Section title={t("view_limits")} help={t("help_view_limits")}>
+      <Section id="scene-limits" title={t("view_limits")} help={t("help_view_limits")}>
         <div className="grid grid-cols-2 gap-2">
           {(["pitchMin", "pitchMax", "yawMin", "yawMax", "fovMin", "fovMax"] as const).map((key) => (
             <Field key={key} label={key} htmlFor={`lim-${key}`}>
@@ -310,7 +291,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         </div>
       </Section>
 
-      <Section title={t("scene_audio")} help={t("help_scene_audio")}>
+      <Section id="scene-audio" title={t("scene_audio")} help={t("help_scene_audio")}>
         <Field label={t("ambient")}>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setPickerFor("ambient")}>
@@ -350,7 +331,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         )}
       </Section>
 
-      <Section title={t("gps_coords")}>
+      <Section id="scene-gps" title={t("gps_coords")}>
         <div className="grid grid-cols-2 gap-2">
           <Field label={t("lat")} htmlFor="sc-lat">
             <Input id="sc-lat" type="number" step="0.00001" value={map.lat != null ? String(map.lat) : ""} disabled={!canEdit}
@@ -371,7 +352,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
         </div>
       </Section>
 
-      <Section title={`${t("hotspots")} (${hotspots.length})`}>
+      <Section id="scene-hotspots" title={`${t("hotspots")} (${hotspots.length})`}>
         {canEdit && (
           <Button size="sm" variant="outline" className="mb-2 w-full" onClick={() => setPaletteOpen(true)}>
             <Plus className="h-4 w-4" /> {t("add_hotspot_button")}
@@ -422,7 +403,7 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
           if (pickerFor === "panorama") {
             patchScene((s) => {
               s.mediaId = item.id;
-              if (item.kind === "video") s.type = "video";
+              s.type = sceneTypeForMedia(item);
               s.metaJson = JSON.stringify({ ...readJson(s.metaJson, {}), thumbnail: `thumb:${item.id}` });
             });
           } else if (pickerFor === "ambient" || pickerFor === "narration") {
@@ -443,7 +424,7 @@ function TimelinePanel({ scene: _scene, hotspots, canEdit }: { scene: SceneRow; 
   const t = useT();
   const editor = useEditor();
   return (
-    <Section title={t("timeline")}>
+    <Section id="scene-timeline" title={t("timeline")}>
       <p className="mb-2 text-xs text-[var(--anda-text-dim)]">{t("timeline_hint")}</p>
       {hotspots.map((h) => {
         const cond = readJson<Record<string, any>>(h.conditionsJson, {});
@@ -522,6 +503,17 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           const q = sinTildes(iconSearch.trim());
           return o.name.includes(q) || o.keywords.some((k) => sinTildes(k).includes(q));
         });
+  // Variables que ya existen en el tour: las declaradas en Ajustes y las que
+  // tocan los hotspots de acción. Se sugieren al escribir para no inventar
+  // «llave» en un sitio y «Llave» en otro.
+  const knownVars = [
+    ...new Set([
+      ...Object.keys((snapshot.settings.variables as Record<string, unknown> | undefined) ?? {}),
+      ...snapshot.hotspots
+        .filter((h) => h.type === "state")
+        .flatMap((h) => (readJson<{ actions?: { var?: string }[] }>(h.contentJson, {}).actions ?? []).map((a) => a.var ?? "")),
+    ]),
+  ].filter((v) => v.trim() !== "").sort();
   const tourHotspotSize = Number((snapshot.settings.ui as { hotspotSize?: number } | undefined)?.hotspotSize ?? 44);
   const hotspotSize = Number(style.icon?.size ?? tourHotspotSize);
   const hotspotRotation = Number(style.icon?.rotation ?? 0);
@@ -656,7 +648,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       </Field>
 
       {/* Posición: arrastrable en la vista previa y editable en grados */}
-      <Section title={t("position")}>
+      <Section id="hotspot-position" title={t("position")}>
         <p className="mb-1 text-xs text-[var(--anda-text-dim)]">{t("position_drag_hint")}</p>
         <div className="grid grid-cols-2 gap-2">
           <Field label={`${t("yaw")} (°)`} htmlFor="hs-yaw">
@@ -697,7 +689,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       </Section>
 
       {/* Contenido por tipo */}
-      <Section title={t("content")}>
+      <Section id="hotspot-content" defaultOpen title={t("content")}>
         {hotspot.type === "navigation" && (
           <>
             <Field label={t("target_scene")} htmlFor="hs-target">
@@ -715,7 +707,13 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
                 variant="outline"
                 onClick={() => {
                   editor.select(content.target as string);
-                  requestAnimationFrame(() => document.getElementById("panel-llegadas")?.scrollIntoView({ block: "center" }));
+                  requestAnimationFrame(() => {
+                    const panel = document.getElementById("panel-llegadas");
+                    // Si se dejó plegada, se abre: se viene justo a eso
+                    const details = panel?.closest("details");
+                    if (details != null && !details.open) details.open = true;
+                    panel?.scrollIntoView({ block: "center" });
+                  });
                 }}
               >
                 <ArrowUpRight className="h-4 w-4" /> {t("edit_arrival_there")}
@@ -935,6 +933,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         {hotspot.type === "form" && (
           <>
             <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("form_purpose")}</p>
+            <DocsLink page="form" />
             {text("title", t("title"))}
             {text("successMessage", t("success_message"))}
             {text("submitLabel", t("submit_label"))}
@@ -998,6 +997,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
         {hotspot.type === "quiz" && (
           <>
             <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("quiz_one_per_hotspot")}</p>
+            <DocsLink page="quiz" />
             <QuizEditor content={content} canEdit={canEdit} onChange={setContent} />
             <Button
               size="sm"
@@ -1042,6 +1042,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">
               {t("polygon_purpose")} <HelpTip text={t("help_polygon")} label={t("hotspot_polygon")} />
             </p>
+            <DocsLink page="polygon" />
             <div className="grid grid-cols-2 gap-2">
               <Field label={t("fill")} htmlFor="hs-fill">
                 <Input id="hs-fill" type="color" value={String(content.fill ?? "#0ea5e9")} disabled={!canEdit} onChange={(e) => setContent({ fill: e.target.value })} />
@@ -1149,10 +1150,35 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
           </>
         )}
         {hotspot.type === "state" && (
-          <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">{t("help_state")}</p>
-        )}
-        {hotspot.type === "state" && (
-          <StateEditor content={content} scenes={snapshot.scenes} canEdit={canEdit} onChange={setContent} />
+          <>
+            {/* Lo que hace, en una línea: con solo la lista de cambios había
+                que leer la lógica para saber qué pasaba al pulsar */}
+            <p className="rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[13px] font-medium text-[var(--anda-text)]" role="status">
+              {summarizeStateHotspot(content, (id) => snapshot.scenes.find((s) => s.id === id)?.title, {
+                prefix: t("state_summary_prefix"),
+                nothing: t("state_summary_nothing"),
+                yes: t("var_true"),
+                no: t("var_false"),
+                toggle: t("state_op_toggle").toLowerCase(),
+                goto: (name) => t("state_summary_goto", { name }),
+              })}
+            </p>
+            <p className="text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">
+              {t("hotspot_desc_state")} <HelpTip text={t("help_state")} label={t("hotspot_state")} />
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              <DocsLink page="state" />
+              <a
+                href={docsUrl("escapeRoom")}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[12px] font-medium text-[var(--anda-primary-ink)] hover:underline"
+              >
+                {t("docs_escape_room")}
+              </a>
+            </div>
+            <StateEditor content={content} scenes={snapshot.scenes} knownVars={knownVars} canEdit={canEdit} onChange={setContent} />
+          </>
         )}
         {hotspot.type === "treasure" && (
           <>
@@ -1161,6 +1187,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             <p className="rounded-lg bg-[var(--anda-primary-soft)] px-3 py-2 text-[12.5px] text-[var(--anda-text)]">
               {t("treasure_count_hint", { n: String(snapshot.hotspots.filter((h) => h.type === "treasure").length) })}
             </p>
+            <DocsLink page="treasure" />
             <Field label={t("treasure_reward")} htmlFor="hs-reward" hint={t("treasure_reward_hint")}>
               <MarkdownField id="hs-reward" rows={3} value={String(content.reward ?? "")} disabled={!canEdit}
                 onChange={(v) => setContent({ reward: v || undefined })} />
@@ -1179,7 +1206,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       )}
 
       {activeTab === "style" && (
-      <Section title={t("style")}>
+      <Section id="hotspot-style" defaultOpen title={t("style")}>
         <Field label={t("icon")}>
           {/* El icono propio manda: si hay imagen elegida se enseña con su
               miniatura; quitarla devuelve el catálogo */}
@@ -1354,7 +1381,7 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
       )}
 
       {activeTab === "conditions" && (
-      <Section title={t("conditions")} help={t("help_conditions")}>
+      <Section id="hotspot-conditions" defaultOpen title={t("conditions")} help={t("help_conditions")}>
         <Field label={t("visibility_by_lang")} htmlFor="hs-langs" hint="es, en (vacio = todos)">
           <Input
             id="hs-langs"
@@ -1371,28 +1398,21 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             }}
           />
         </Field>
-        <Field label={t("visibility_by_var")} htmlFor="hs-vars" hint='JSON: [{"var":"puerta","op":"truthy"}]'>
-          <Textarea
-            id="hs-vars"
-            rows={2}
-            defaultValue={conditions.vars != null ? JSON.stringify(conditions.vars) : ""}
-            disabled={!canEdit}
-            onBlur={(e) => {
-              patch((h) => {
-                const c = readJson<Record<string, unknown>>(h.conditionsJson, {});
-                if (e.target.value.trim() === "") delete c.vars;
-                else {
-                  try {
-                    c.vars = JSON.parse(e.target.value);
-                  } catch {
-                    return;
-                  }
-                }
-                h.conditionsJson = Object.keys(c).length > 0 ? JSON.stringify(c) : null;
-              });
-            }}
-          />
-        </Field>
+        <VarConditionsEditor
+          key={hotspot.id}
+          vars={conditions.vars}
+          knownVars={knownVars}
+          canEdit={canEdit}
+          onChange={(vars) =>
+            patch((h) => {
+              const c = readJson<Record<string, unknown>>(h.conditionsJson, {});
+              if (vars == null) delete c.vars;
+              else c.vars = vars;
+              h.conditionsJson = Object.keys(c).length > 0 ? JSON.stringify(c) : null;
+            })
+          }
+        />
+        <DocsLink page="conditions" />
       </Section>
       )}
       </div>
@@ -1589,9 +1609,30 @@ function MarkdownField({ id, value, onChange, rows, disabled, placeholder, autoF
   );
 }
 
-function Section({ title, hint, help, children }: { title: string; hint?: string; help?: string; children: React.ReactNode }): React.ReactNode {
+/**
+ * Sección plegable. Sale plegada salvo que `defaultOpen` diga otra cosa, y
+ * recuerda por `id` cómo la dejó quien edita (ver sectionState.ts).
+ */
+function Section({ id, defaultOpen = false, title, hint, help, children }: {
+  id: string;
+  defaultOpen?: boolean;
+  title: string;
+  hint?: string;
+  help?: string;
+  children: React.ReactNode;
+}): React.ReactNode {
+  const [open, setOpen] = useState(() => readSectionOpen(id, defaultOpen));
   return (
-    <details open className="group relative rounded-xl border border-[var(--anda-border)] bg-[var(--anda-bg)] shadow-sm">
+    <details
+      open={open}
+      onToggle={(e) => {
+        const next = e.currentTarget.open;
+        if (next === open) return;
+        setOpen(next);
+        writeSectionOpen(id, next);
+      }}
+      className="group relative rounded-xl border border-[var(--anda-border)] bg-[var(--anda-bg)] shadow-sm"
+    >
       <summary className="flex cursor-pointer select-none items-center justify-between rounded-xl px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wide text-[var(--anda-text-dim)] transition-colors hover:text-[var(--anda-text)]">
         <span className={help != null ? "pr-5" : undefined}>{title}</span>
         <span className="text-[10px] transition-transform group-open:rotate-180" aria-hidden>
@@ -1781,9 +1822,13 @@ function QuizEditor({ content, canEdit, onChange }: {
   );
 }
 
-function StateEditor({ content, scenes, canEdit, onChange }: {
+/** Operaciones del hotspot de acción, con nombre corriente. */
+const STATE_OPS = ["set", "inc", "dec", "toggle"] as const;
+
+function StateEditor({ content, scenes, knownVars, canEdit, onChange }: {
   content: Record<string, any>;
   scenes: SceneRow[];
+  knownVars: string[];
   canEdit: boolean;
   onChange: (patch: Record<string, unknown>) => void;
 }): React.ReactNode {
@@ -1791,27 +1836,33 @@ function StateEditor({ content, scenes, canEdit, onChange }: {
   const actions = (content.actions as { var: string; op: string; value?: unknown }[]) ?? [];
   return (
     <div className="space-y-2">
+      <p className="text-[13px] font-medium">{t("state_changes")}</p>
+      <datalist id="st-vars">
+        {knownVars.map((v) => (
+          <option key={v} value={v} />
+        ))}
+      </datalist>
       {actions.map((a, i) => (
         <div key={i} className="flex items-center gap-1.5">
-          <Input value={a.var} placeholder="variable" disabled={!canEdit} aria-label="Variable"
+          <Input value={a.var} placeholder={t("variable")} disabled={!canEdit} aria-label={t("variable")} list="st-vars"
             onChange={(e) => onChange({ actions: actions.map((x, j) => (j === i ? { ...x, var: e.target.value } : x)) })} />
-          <Select value={a.op} disabled={!canEdit} aria-label={t("operation")} className="max-w-24"
+          <Select value={a.op} disabled={!canEdit} aria-label={t("operation")} className="max-w-28"
             onChange={(e) => onChange({ actions: actions.map((x, j) => (j === i ? { ...x, op: e.target.value } : x)) })}>
-            {["set", "inc", "dec", "toggle"].map((op) => (
-              <option key={op} value={op}>{op}</option>
+            {STATE_OPS.map((op) => (
+              <option key={op} value={op}>{t(`state_op_${op}`)}</option>
             ))}
           </Select>
-          {a.op === "set" && (
+          {a.op !== "toggle" && (
             <Input
-              value={String(a.value ?? "")}
-              placeholder={t("value")}
+              value={a.value == null ? "" : String(a.value)}
+              placeholder={a.op === "set" ? t("value") : "1"}
               disabled={!canEdit}
               aria-label={t("value")}
               className="max-w-24"
               onChange={(e) => {
-                // Números y booleanos se guardan tipados; el resto, como texto.
+                // Números y verdadero/falso se guardan tipados; el resto, como texto
                 const raw = e.target.value;
-                const value = raw === "true" ? true : raw === "false" ? false : raw !== "" && !Number.isNaN(Number(raw)) ? Number(raw) : raw;
+                const value = raw === "" ? undefined : parseVarValue(raw);
                 onChange({ actions: actions.map((x, j) => (j === i ? { ...x, value } : x)) });
               }}
             />
@@ -1823,10 +1874,10 @@ function StateEditor({ content, scenes, canEdit, onChange }: {
         </div>
       ))}
       <Button size="sm" variant="outline" disabled={!canEdit}
-        onClick={() => onChange({ actions: [...actions, { var: "", op: "toggle" }] })}>
-        <Plus className="h-4 w-4" /> {t("add_option")}
+        onClick={() => onChange({ actions: [...actions, { var: "", op: "set", value: true }] })}>
+        <Plus className="h-4 w-4" /> {t("state_add_change")}
       </Button>
-      <Field label={t("target_scene")} htmlFor="st-goto" hint="Cambiar de escena tras aplicar (opcional)">
+      <Field label={t("state_then_goto")} htmlFor="st-goto" hint={t("state_then_goto_hint")}>
         <Select id="st-goto" value={String(content.thenGoto ?? "")} disabled={!canEdit} onChange={(e) => onChange({ thenGoto: e.target.value || undefined })}>
           <option value="">-</option>
           {scenes.map((s) => (
@@ -1834,6 +1885,162 @@ function StateEditor({ content, scenes, canEdit, onChange }: {
           ))}
         </Select>
       </Field>
+    </div>
+  );
+}
+
+/**
+ * Condiciones de variables, en filas: variable, operador y valor. Se cumplen
+ * todas a la vez (Y). El JSON de siempre sigue en «Avanzado» para lo que no
+ * quepa aquí; si lo guardado no se puede representar en filas, se abre ahí.
+ */
+function VarConditionsEditor({ vars, knownVars, canEdit, onChange }: {
+  vars: unknown;
+  knownVars: string[];
+  canEdit: boolean;
+  onChange: (vars: unknown[] | undefined) => void;
+}): React.ReactNode {
+  const t = useT();
+  const initialRows = conditionsToRows(vars);
+  const [rows, setRows] = useState<ConditionRow[]>(initialRows ?? []);
+  const [advanced, setAdvanced] = useState(initialRows == null);
+  const [json, setJson] = useState(vars != null ? JSON.stringify(vars) : "");
+  const [jsonError, setJsonError] = useState(false);
+
+  const commitRows = (next: ConditionRow[]): void => {
+    setRows(next);
+    const conds = rowsToConditions(next);
+    setJson(conds.length > 0 ? JSON.stringify(conds) : "");
+    onChange(conds.length > 0 ? conds : undefined);
+  };
+  const update = (i: number, patch: Partial<ConditionRow>): void => commitRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-[13px] font-medium">
+          {t("visibility_by_var")}
+          <HelpTip text={t("help_var_conditions")} label={t("visibility_by_var")} />
+        </p>
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--anda-text-dim)]">
+          <input
+            type="checkbox"
+            checked={advanced}
+            className="h-3.5 w-3.5 accent-[var(--anda-primary)]"
+            onChange={(e) => {
+              if (e.target.checked) {
+                setAdvanced(true);
+                return;
+              }
+              // Volver a las filas solo si el JSON se puede leer como filas
+              let parsed: unknown = undefined;
+              try {
+                parsed = json.trim() === "" ? undefined : JSON.parse(json);
+              } catch {
+                setJsonError(true);
+                return;
+              }
+              const back = conditionsToRows(parsed);
+              if (back == null) {
+                setJsonError(true);
+                return;
+              }
+              setJsonError(false);
+              setRows(back);
+              setAdvanced(false);
+            }}
+          />
+          {t("conditions_advanced")}
+        </label>
+      </div>
+
+      {advanced ? (
+        <>
+          <Textarea
+            id="hs-vars"
+            rows={3}
+            className="font-mono text-xs"
+            aria-label={t("conditions_advanced")}
+            value={json}
+            disabled={!canEdit}
+            onChange={(e) => {
+              setJson(e.target.value);
+              setJsonError(false);
+            }}
+            onBlur={() => {
+              if (json.trim() === "") {
+                onChange(undefined);
+                return;
+              }
+              try {
+                const parsed = JSON.parse(json) as unknown;
+                onChange(Array.isArray(parsed) ? parsed : [parsed]);
+              } catch {
+                setJsonError(true);
+              }
+            }}
+          />
+          <p className={`text-xs ${jsonError ? "text-amber-600" : "text-[var(--anda-text-dim)]"}`}>
+            {jsonError ? t("conditions_json_invalid") : 'JSON: [{"var":"puerta","op":"eq","value":true}]'}
+          </p>
+        </>
+      ) : (
+        <>
+          <datalist id="cond-vars">
+            {knownVars.map((v) => (
+              <option key={v} value={v} />
+            ))}
+          </datalist>
+          {rows.length === 0 && <p className="text-xs text-[var(--anda-text-dim)]">{t("conditions_none")}</p>}
+          {rows.map((r, i) => (
+            <div key={i}>
+              {i > 0 && <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--anda-text-dim)]">{t("conditions_and")}</p>}
+              <div className="flex items-center gap-1.5">
+                <Input
+                  value={r.var}
+                  placeholder={t("variable")}
+                  aria-label={t("variable")}
+                  list="cond-vars"
+                  disabled={!canEdit}
+                  onChange={(e) => update(i, { var: e.target.value })}
+                />
+                <Select
+                  value={r.op}
+                  aria-label={t("operator")}
+                  className="max-w-32"
+                  disabled={!canEdit}
+                  onChange={(e) => update(i, { op: e.target.value as ConditionRow["op"] })}
+                >
+                  {CONDITION_OPS.map(({ op, symbol }) => (
+                    <option key={op} value={op}>
+                      {op === "truthy" ? t("cond_truthy") : op === "falsy" ? t("cond_falsy") : symbol}
+                    </option>
+                  ))}
+                </Select>
+                {opNeedsValue(r.op) && (
+                  <Input
+                    value={r.value}
+                    placeholder={t("value")}
+                    aria-label={t("value")}
+                    className="max-w-24"
+                    disabled={!canEdit}
+                    onChange={(e) => update(i, { value: e.target.value })}
+                  />
+                )}
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" aria-label={t("delete")} disabled={!canEdit}
+                  onClick={() => commitRows(rows.filter((_, j) => j !== i))}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          ))}
+          <Button size="sm" variant="outline" disabled={!canEdit}
+            onClick={() => commitRows([...rows, { var: knownVars[0] ?? "", op: "eq", value: "true" }])}>
+            <Plus className="h-4 w-4" /> {t("conditions_add")}
+          </Button>
+          <p className="text-xs text-[var(--anda-text-dim)]">{t("conditions_values_hint")}</p>
+        </>
+      )}
     </div>
   );
 }

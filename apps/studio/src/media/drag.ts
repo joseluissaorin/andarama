@@ -41,6 +41,19 @@ export function mediaDragPayload(media: MediaItem): MediaDragItem {
   };
 }
 
+/** Tipo de escena que corresponde a un medio: vídeo 360, panorama o plana. */
+export function sceneTypeOf(item: Pick<MediaDragItem, "pano" | "video">): SceneRow["type"] {
+  return item.video ? "video" : item.pano ? "image" : "flat";
+}
+
+/**
+ * Lo mismo a partir de un medio de la biblioteca. «Nueva escena» daba por
+ * panorama cualquier imagen y una foto normal acababa estirada en una esfera.
+ */
+export function sceneTypeForMedia(media: MediaItem): SceneRow["type"] {
+  return sceneTypeOf(mediaDragPayload(media));
+}
+
 /** Lee el arrastre si es de medios; null si es cualquier otra cosa. */
 export function readMediaDrag(dataTransfer: DataTransfer): MediaDragItem[] | null {
   const raw = dataTransfer.getData(MEDIA_DRAG_TYPE);
@@ -96,7 +109,7 @@ export function scenesFromMedia(
       projectId,
       sort: draft.scenes.length,
       title: sceneTitleFromFilename(item.filename),
-      type: item.video ? "video" : item.pano ? "image" : "flat",
+      type: sceneTypeOf(item),
       mediaId: item.id,
       sourceJson: null,
       initialViewJson: null,

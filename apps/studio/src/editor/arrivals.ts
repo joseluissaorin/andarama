@@ -16,9 +16,18 @@ import { readJson } from "./editorApi";
  * ella**.
  */
 
-export type EntryMode = "forward" | "fixed" | "lookBack" | "relative";
+/**
+ * `initial` es la vista por defecto de la escena de destino. Es la de los
+ * pasos nuevos: antes se creaban en «seguir el camino» o «seguir mirando
+ * igual», y la vista que el autor ajustaba en la escena casi nunca se usaba al
+ * llegar desde otra, que era justo lo que esperaba ver.
+ */
+export type EntryMode = "initial" | "forward" | "fixed" | "lookBack" | "relative";
 
-export const ENTRY_MODES: EntryMode[] = ["forward", "fixed", "lookBack", "relative"];
+export const ENTRY_MODES: EntryMode[] = ["initial", "forward", "fixed", "lookBack", "relative"];
+
+/** Modo de los pasos nuevos, se creen desde el grafo o arrastrando una escena. */
+export const DEFAULT_ENTRY_MODE: EntryMode = "initial";
 
 export interface ArrivalView {
   yaw: number;
@@ -67,7 +76,8 @@ export function arrivalsOf(snapshot: EditorSnapshot, sceneId: string): Arrival[]
     if (h.type !== "navigation") continue;
     const content = readJson<{ target?: string; entry?: { mode?: string; yaw?: number; pitch?: number; fov?: number } }>(h.contentJson, {});
     if (content.target !== sceneId) continue;
-    const mode = (ENTRY_MODES as string[]).includes(content.entry?.mode ?? "") ? (content.entry!.mode as EntryMode) : "forward";
+    // Sin `entry` el visor usa la vista por defecto de la escena: aquí igual
+    const mode = (ENTRY_MODES as string[]).includes(content.entry?.mode ?? "") ? (content.entry!.mode as EntryMode) : "initial";
     out.push({
       id: h.id,
       kind: "step",
@@ -95,6 +105,7 @@ export function resolveArrivalView(snapshot: EditorSnapshot, sceneId: string, ar
   const base: ArrivalView = { yaw: initial.yaw ?? 0, pitch: initial.pitch ?? 0, fov: initial.fov ?? 1.2 };
   if (arrival.kind === "start") return arrival.view ?? base;
   if (arrival.mode === "fixed") return arrival.view ?? base;
+  if (arrival.mode === "initial") return base;
   const puerta = doorYaw(snapshot, sceneId, arrival);
   if (puerta == null) return base;
   if (arrival.mode === "lookBack") return { yaw: puerta, pitch: 0, fov: base.fov };
@@ -120,7 +131,7 @@ function doorYaw(snapshot: EditorSnapshot, sceneId: string, arrival: Arrival): n
 
 /** ¿Se puede calcular la vista de esta llegada, o falta el paso de vuelta? */
 export function arrivalNeedsReturn(snapshot: EditorSnapshot, sceneId: string, arrival: Arrival): boolean {
-  if (arrival.kind === "start" || arrival.mode === "fixed" || arrival.mode === "relative") return false;
+  if (arrival.kind === "start" || arrival.mode === "fixed" || arrival.mode === "relative" || arrival.mode === "initial") return false;
   return !snapshot.hotspots.some(
     (h) => h.sceneId === sceneId && h.type === "navigation" && readJson<{ target?: string }>(h.contentJson, {}).target === arrival.fromSceneId,
   );

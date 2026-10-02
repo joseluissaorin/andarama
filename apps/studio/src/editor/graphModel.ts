@@ -1,5 +1,6 @@
 import type { EditorSnapshot, HotspotRow, SceneRow } from "../stores";
 import { clientId, readJson } from "./editorApi";
+import { DEFAULT_ENTRY_MODE } from "./arrivals";
 
 /**
  * El grafo y el panorama son dos vistas del mismo dato: una arista **es** un
@@ -76,7 +77,7 @@ export function graphEdges(snapshot: EditorSnapshot): GraphEdge[] {
       to: content.target,
       label: typeof content.label === "string" ? content.label : "",
       unplaced: content.unplaced === true,
-      entryMode: content.entry?.mode ?? "relative",
+      entryMode: content.entry?.mode ?? DEFAULT_ENTRY_MODE,
       oneWay: content.oneWay === true,
     });
   }
@@ -126,10 +127,11 @@ export function createNavHotspot(
     contentJson: JSON.stringify({
       target: toScene,
       label: targetTitle,
-      // «Seguir el camino»: se entra de espaldas a la puerta y se sigue de
-      // frente, que es lo natural de un recorrido a pie. Antes era «seguir
-      // mirando igual», que depende de hacia dónde mirara el visitante.
-      entry: { mode: opts.entryMode ?? "forward" },
+      // Se entra con la vista por defecto de la escena de destino: la que el
+      // autor ajusta estando en ella. Con «seguir el camino» esa vista casi
+      // nunca se usaba al llegar desde otra escena y confundía. Se puede
+      // cambiar por paso en «Cómo se llega aquí».
+      entry: { mode: opts.entryMode ?? DEFAULT_ENTRY_MODE },
       // Marca de «aún sin colocar»: el editor lo resalta hasta que se arrastra
       // sobre el panorama. El compilador la retira al publicar.
       ...(opts.unplaced === false ? {} : { unplaced: true }),

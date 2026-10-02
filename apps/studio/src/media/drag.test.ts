@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mediaDragPayload, scenesFromMedia } from "./drag";
+import { mediaDragPayload, sceneTypeForMedia, scenesFromMedia } from "./drag";
 import type { MediaItem } from "../pages/MediaPage";
 
 const media = (over: Partial<MediaItem>): MediaItem => ({
@@ -38,5 +38,14 @@ describe("escenas desde medios arrastrados", () => {
     expect(draft.scenes).toHaveLength(1);
     expect(segunda.created).toEqual([]);
     expect(segunda.reused).toEqual(primera.created);
+  });
+});
+
+describe("«Nueva escena» elige el tipo por el medio", () => {
+  it("una foto plana sale como escena plana, no como panorama estirado", () => {
+    expect(sceneTypeForMedia(media({ width: 4000, height: 3000 }))).toBe("flat");
+    expect(sceneTypeForMedia(media({ width: 8000, height: 4000 }))).toBe("image");
+    expect(sceneTypeForMedia(media({ kind: "panorama" }))).toBe("image");
+    expect(sceneTypeForMedia(media({ kind: "video" }))).toBe("video");
   });
 });

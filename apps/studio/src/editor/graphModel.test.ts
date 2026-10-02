@@ -54,6 +54,16 @@ describe("grafo basado en hotspots", () => {
     expect(content.unplaced).toBe(true);
   });
 
+  it("el paso nuevo entra con la vista por defecto de la escena de destino", () => {
+    const draft = snapshot([scene("a"), scene("b")]);
+    createNavHotspot(draft, "a", "b");
+    const content = JSON.parse(draft.hotspots[0]!.contentJson) as { entry: { mode: string } };
+    expect(content.entry.mode).toBe("initial");
+    // Quien lo pida explícitamente conserva su modo
+    createNavHotspot(draft, "b", "a", { entryMode: "lookBack" });
+    expect((JSON.parse(draft.hotspots[1]!.contentJson) as { entry: { mode: string } }).entry.mode).toBe("lookBack");
+  });
+
   it("el hotspot nuevo aparece en una posición concreta, no en el limbo", () => {
     const draft = snapshot([scene("a"), scene("b")]);
     createNavHotspot(draft, "a", "b");

@@ -20,7 +20,7 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { Button, Dialog, Input, Select, Tooltip, useToast } from "@andarama/ui";
+import { Button, Dialog, HelpTip, Input, Select, Tooltip, useToast } from "@andarama/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import { readJson } from "./editorApi";
@@ -77,6 +77,10 @@ import { GraphHelp } from "./GraphHelp";
 import { GraphIssues } from "./GraphIssues";
 import { GraphAreas } from "./GraphAreas";
 import { MediaPicker } from "./MediaPicker";
+import { DEFAULT_ENTRY_MODE } from "./arrivals";
+import { DocsLink } from "./DocsLink";
+import { findMediaRename, type MediaRenameOffer } from "./mediaRename";
+import { MediaRenameOfferCard } from "./MediaRenameOfferCard";
 
 /**
  * Lienzo del tour.
@@ -327,6 +331,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
   hoverNodeRef.current = hoverNode;
   const [menu, setMenu] = useState<{ x: number; y: number; sceneId: string } | null>(null);
   const [renaming, setRenaming] = useState<string | null>(null);
+  const [renameOffer, setRenameOffer] = useState<MediaRenameOffer | null>(null);
   const [focusedNode, setFocusedNode] = useState<string | null>(null);
   const focusedNodeRef = useRef(focusedNode);
   focusedNodeRef.current = focusedNode;
@@ -938,7 +943,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
     let created: string | null = null;
     editor.apply((draft) => {
       created = createNavHotspot(draft, from, to);
-      if (created != null && bothWays) createNavHotspot(draft, to, from, { entryMode: "forward" });
+      if (created != null && bothWays) createNavHotspot(draft, to, from);
     });
     if (created != null) setSelectedEdges(new Set([created]));
     else toast.push(t("connect_exists"), "error");
@@ -1018,7 +1023,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
         if (edge == null) return null;
         return {
           label: t("add_return"),
-          run: () => editor.apply((draft) => createNavHotspot(draft, edge.to, edge.from, { entryMode: "forward" })),
+          run: () => editor.apply((draft) => createNavHotspot(draft, edge.to, edge.from)),
         };
       }
       if (issue.kind === "no-target" || issue.kind === "broken-target") {
@@ -1115,6 +1120,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
               </button>
             ))}
           </div>
+          <HelpTip text={t("help_graph_modes")} label={t("canvas_mode")} />
 
           {mode === "plan" && planAreas.length > 1 && (
             <Select className="max-w-44" aria-label={t("floorplan")} value={currentPlan?.id ?? ""} onChange={(e) => setPlanArea(e.target.value)}>
@@ -1161,10 +1167,13 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           <div className="flex-1" />
 
           {mode !== "autopilot" && (
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--anda-text-dim)]">
-              <input type="checkbox" checked={bothWays} onChange={(e) => setBothWays(e.target.checked)} className="h-3.5 w-3.5 accent-[var(--anda-primary)]" />
-              {t("create_return")}
-            </label>
+            <span className="flex items-center gap-1.5">
+              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-[var(--anda-text-dim)]">
+                <input type="checkbox" checked={bothWays} onChange={(e) => setBothWays(e.target.checked)} className="h-3.5 w-3.5 accent-[var(--anda-primary)]" />
+                {t("create_return")}
+              </label>
+              <HelpTip text={t("help_create_return")} label={t("create_return")} />
+            </span>
           )}
           <GraphIssues issues={issues} onFocus={focusIssue} actionFor={issueAction} />
           <Tooltip content={`${t("search")} (Ctrl+F)`}>
@@ -1256,8 +1265,21 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           )}
 
           {mode === "plan" && currentPlan == null ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--anda-bg)] text-center">
-              <p className="max-w-sm text-[13px] text-[var(--anda-text-dim)]">{t("no_plan_yet")}</p>
+            <div className="flex h-full flex-col items-center justify-center gap-3 overflow-y-auto bg-[var(--anda-bg)] p-6 text-center">
+              <h2 className="text-[17px] font-semibold">{t("floorplan_entry")}</h2>
+              <p className="max-w-md text-[13px] text-[var(--anda-text-dim)]">{t("no_plan_yet")}</p>
+              {/* Tres pasos: sin ellos no se sabía que el plano acaba siendo
+                  un botón de mapa en el visor publicado */}
+              <ol className="max-w-md space-y-2 text-left text-[13px]">
+                {(["floorplan_step_upload", "floorplan_step_place", "floorplan_step_publish"] as const).map((key, i) => (
+                  <li key={key} className="flex items-start gap-2.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--anda-primary-soft)] text-[11px] font-bold text-[var(--anda-primary-ink)]">
+                      {i + 1}
+                    </span>
+                    <span>{t(key)}</span>
+                  </li>
+                ))}
+              </ol>
               {/* El plano es de un área concreta: preguntarlo aquí evita
                   colgárselo a la primera de la lista y tener que deshacerlo */}
               <div className="flex items-center gap-2">
@@ -1288,6 +1310,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                   <Plus className="h-4 w-4" /> {t("add_plan")}
                 </Button>
               </div>
+              <DocsLink page="floorplan" />
             </div>
           ) : (
             <svg
@@ -1819,11 +1842,15 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
               aria-label={t("scene_title")}
               onBlur={(e) => {
                 const value = e.target.value.trim();
-                if (value !== "") {
+                const scene = snapshot.scenes.find((s) => s.id === renaming);
+                if (value !== "" && scene != null && value !== scene.title) {
                   editor.apply((draft) => {
                     const target = draft.scenes.find((s) => s.id === renaming);
                     if (target != null) target.title = value;
                   });
+                  // Como en el panel de propiedades: ofrecer que la foto se
+                  // llame igual que la escena
+                  void findMediaRename(scene.mediaId, value).then(setRenameOffer);
                 }
                 setRenaming(null);
               }}
@@ -1832,6 +1859,12 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 else if (e.key === "Escape") setRenaming(null);
               }}
             />
+          )}
+
+          {renameOffer != null && (
+            <div className="absolute bottom-3 left-1/2 z-30 w-80 -translate-x-1/2 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-1 shadow-[var(--anda-shadow-lg)]">
+              <MediaRenameOfferCard offer={renameOffer} onClose={() => setRenameOffer(null)} />
+            </div>
           )}
 
           {/* Menú contextual */}
@@ -2042,7 +2075,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
               panorama al que se entra; aquí solo se llega hasta allí. */}
           <div className="rounded-xl bg-[var(--anda-surface-2)] p-2.5">
             <p className="mb-1.5 text-xs text-[var(--anda-text-dim)]">
-              {t("entry_mode")}: <strong>{t(`entry_${selectedContent.entry?.mode ?? "forward"}` as never)}</strong>
+              {t("entry_mode")}: <strong>{t(`entry_${selectedContent.entry?.mode ?? DEFAULT_ENTRY_MODE}` as never)}</strong>
             </p>
             <Button
               size="sm"
@@ -2098,7 +2131,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                 onClick={() => {
                   const target = selectedContent.target;
                   if (target == null) return;
-                  editor.apply((draft) => createNavHotspot(draft, target, selectedHotspot.sceneId, { entryMode: "forward" }));
+                  editor.apply((draft) => createNavHotspot(draft, target, selectedHotspot.sceneId));
                 }}
               >
                 <Undo2 className="h-4 w-4" /> {t("add_return")}

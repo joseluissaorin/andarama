@@ -1,5 +1,5 @@
 import { AlertTriangle, Crosshair, DoorOpen, Play } from "lucide-react";
-import { Button, Tooltip, useToast } from "@andarama/ui";
+import { Button, HelpTip, Tooltip, useToast } from "@andarama/ui";
 import { useEditor } from "../stores";
 import { useT } from "../i18n";
 import {
@@ -46,6 +46,11 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
     a.kind === "start" ? (a.isStart === true ? t("arrival_start") : t("arrival_default")) : t("arrival_from", { name: a.fromTitle });
 
   return (
+    <>
+    <p className="flex items-center gap-1.5 text-[11px] text-[var(--anda-text-dim)]">
+      {t("arrival_modes_title")}
+      <HelpTip text={t("help_arrival_modes")} label={t("arrival_modes_title")} />
+    </p>
     <ul className="space-y-1.5">
       {arrivals.map((a) => {
         const view = resolveArrivalView(snapshot, sceneId, a);
@@ -100,6 +105,13 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
               )}
             </div>
 
+            {/* Qué vista se usará, dicho con palabras: los nombres cortos de
+                los botones no bastaban para saber si la vista por defecto de
+                la escena entraba en juego o no. */}
+            <p className="mt-1 text-[11px] leading-snug text-[var(--anda-text-dim)]">
+              {a.kind === "start" ? t(a.isStart === true ? "arrival_uses_start" : "arrival_uses_default_row") : t(`arrival_uses_${a.mode}` as never)}
+            </p>
+
             {falta && (
               <p className="mt-1 flex items-start gap-1 text-[11px] text-amber-600">
                 <AlertTriangle className="mt-px h-3 w-3 shrink-0" />
@@ -110,6 +122,7 @@ export function ArrivalsPanel({ sceneId, canEdit, onPreview, getCurrentView }: {
         );
       })}
     </ul>
+    </>
   );
 }
 

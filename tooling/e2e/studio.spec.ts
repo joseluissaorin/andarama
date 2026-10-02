@@ -186,6 +186,15 @@ test("el grafo tiene los cuatro modos y el plano ya no es una pestaña", async (
     { timeout: 20_000 },
   );
   await expect.poll(() => page.url()).toContain("mode=plan");
+
+  // Desde la lista de escenas se llega al plano con un botón a la vista
+  await page.goto(projectUrl);
+  await page.getByRole("button", { name: /Plano del recorrido/ }).click();
+  await expect(page.getByRole("group", { name: "Modo del lienzo" }).getByRole("button", { name: "Plano", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+    { timeout: 20_000 },
+  );
 });
 
 test("carpetas: crear, meter un tour dentro arrastrando y sacarlo", async ({ page }) => {
