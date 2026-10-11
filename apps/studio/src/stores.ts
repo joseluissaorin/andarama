@@ -69,6 +69,15 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
+/**
+ * Si la persona es de la organización (o administra la instancia) y puede ver
+ * su biblioteca entera. Quien entra en un recorrido que le ha compartido otra
+ * organización no lo es: ve y sube solo lo de ese recorrido.
+ */
+export function useLibraryAccess(orgId: string): boolean {
+  return useAuth((s) => s.me?.user?.roleGlobal === "admin" || (s.me?.orgs ?? []).some((o) => o.id === orgId));
+}
+
 export const useAuth = create<AuthState>((set, get) => ({
   me: null,
   loaded: false,

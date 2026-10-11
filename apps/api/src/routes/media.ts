@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import { hotspots, jobs, media, mediaDerivatives, orgs, scenes } from "@andarama/db";
 import { verifyUploadUrl } from "@andarama/adapters";
 import type { AppEnv } from "../lib/context.js";
@@ -8,7 +8,8 @@ import { badRequest, conflict, forbidden, notFound, payloadTooLarge, quotaExceed
 import { orgQuota, usedBytes } from "../lib/quota.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
-import { requireOrgRole } from "../lib/authz.js";
+import { orgRole, projectAccess, requireOrgRole, roleAtLeast } from "../lib/authz.js";
+import { mediaSharedAccess, sharedProjectsInOrg } from "../lib/media-access.js";
 import { requireActivePlan } from "../lib/capabilities.js";
 import { templateOrgIds } from "../lib/templates.js";
 import { guessContentType } from "./projects.js";
@@ -43,16 +44,40 @@ export function mediaRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const orgId = c.req.query("org");
     if (orgId == null) throw badRequest("Falta org");
-    await requireOrgRole(db, orgId, auth.user, "reader");
     const kind = c.req.query("kind");
     const folder = c.req.query("folder");
     const projectId = c.req.query("project");
     const order = c.req.query("order") ?? "recent";
     const search = c.req.query("q")?.toLowerCase();
-    let rows = await db
-      .select()
-      .from(media)
-      .where(and(eq(media.orgId, orgId), isNull(media.deletedAt)));
+    let rows: (typeof media.$inferSelect)[];
+    if ((await orgRole(db, orgId, auth.user)) != null) {
+      rows = await db
+        .select()
+        .from(media)
+        .where(and(eq(media.orgId, orgId), isNull(media.deletedAt)));
+    } else {
+      // Sin rol en la organización solo se ve lo de un recorrido compartido
+      // con la persona, y solo si ese recorrido es de esta organización: la
+      // biblioteca entera no se lista nunca.
+      if (projectId == null || projectId === "" || projectId === "none") {
+        throw forbidden("No tienes permisos suficientes en esta organización");
+      }
+      const access = await projectAccess(db, projectId, auth.user);
+      if (access.project.orgId !== orgId) throw forbidden("El recorrido no es de esta organización");
+      const sceneMedia = (await db.select({ mediaId: scenes.mediaId }).from(scenes).where(eq(scenes.projectId, projectId)))
+        .map((s) => s.mediaId)
+        .filter((id): id is string => id != null);
+      rows = await db
+        .select()
+        .from(media)
+        .where(
+          and(
+            eq(media.orgId, orgId),
+            isNull(media.deletedAt),
+            sceneMedia.length > 0 ? or(eq(media.projectId, projectId), inArray(media.id, sceneMedia)) : eq(media.projectId, projectId),
+          ),
+        );
+    }
     if (kind != null && kind !== "") rows = rows.filter((m) => m.kind === kind);
     if (folder != null) rows = rows.filter((m) => (m.folder ?? "") === folder);
     if (projectId === "none") {
@@ -89,15 +114,27 @@ export function mediaRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const runtime = c.get("runtime");
     const body = createSchema.parse(await c.req.json());
-    await requireOrgRole(db, body.orgId, auth.user, "collaborator");
+    // Lo que se sube a un recorrido es de la organización del recorrido y
+    // cuenta para su cuota, lo suba quien lo suba: así funciona también desde
+    // un recorrido compartido por otra organización.
+    let orgId = body.orgId;
+    let external = false;
+    if (body.projectId != null) {
+      const access = await projectAccess(db, body.projectId, auth.user);
+      if (!access.canEdit) throw forbidden("No puedes editar este recorrido");
+      orgId = access.project.orgId;
+      external = (await orgRole(db, orgId, auth.user)) == null;
+    } else {
+      await requireOrgRole(db, orgId, auth.user, "collaborator");
+    }
     // Al caducar la prueba no se sube nada más (lo subido se queda)
-    await requireActivePlan(db, c.get("config"), body.orgId);
+    await requireActivePlan(db, c.get("config"), orgId);
 
     const settings = await getSettings(db);
     if (body.bytes > settings.maxUploadMb * 1024 * 1024) {
       throw payloadTooLarge(`El límite de subida es ${settings.maxUploadMb} MB`);
     }
-    const org = (await db.select().from(orgs).where(eq(orgs.id, body.orgId)).limit(1))[0];
+    const org = (await db.select().from(orgs).where(eq(orgs.id, orgId)).limit(1))[0];
     if (org == null) throw notFound();
     // La cuota del plan es del dueño: se suma lo de todas sus organizaciones
     const quota = await orgQuota(db, c.get("config"), org);
@@ -109,12 +146,21 @@ export function mediaRoutes(): Hono<AppEnv> {
       });
     }
 
-    // Deduplicacion por hash de contenido (§3.2)
+    // Deduplicacion por hash de contenido (§3.2). Quien no es de la
+    // organización solo deduplica dentro del recorrido: si no, el hash
+    // serviría para sacar medios del resto de la biblioteca.
     if (body.sha256 != null) {
       const dup = await db
         .select()
         .from(media)
-        .where(and(eq(media.orgId, body.orgId), eq(media.sha256, body.sha256), isNull(media.deletedAt)))
+        .where(
+          and(
+            eq(media.orgId, orgId),
+            eq(media.sha256, body.sha256),
+            isNull(media.deletedAt),
+            external && body.projectId != null ? eq(media.projectId, body.projectId) : undefined,
+          ),
+        )
         .limit(1);
       if (dup[0] != null && dup[0].status === "ready") {
         return c.json({ deduplicated: true, media: dup[0] });
@@ -123,10 +169,10 @@ export function mediaRoutes(): Hono<AppEnv> {
 
     const id = newId();
     const ext = body.filename.split(".").pop()?.toLowerCase() ?? "bin";
-    const key = `media/${body.orgId}/${id}/original.${ext}`;
+    const key = `media/${orgId}/${id}/original.${ext}`;
     await db.insert(media).values({
       id,
-      orgId: body.orgId,
+      orgId,
       kind: body.kind,
       filename: body.filename,
       mime: body.mime,
@@ -458,6 +504,15 @@ export function mediaRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const row = await ownedMedia(c, auth, c.req.param("mediaId"));
     const body = patchSchema.parse(await c.req.json());
+    // Por un recorrido compartido, el medio puede pasar a otro recorrido
+    // compartido de la misma organización con permiso de edición, pero no
+    // salir de ellos ni ir a parar a uno ajeno.
+    if (body.projectId !== undefined && body.projectId !== row.projectId && !(await hasOrgRole(c, auth, row.orgId, "collaborator"))) {
+      const editable = (await sharedProjectsInOrg(c.get("db"), row.orgId, auth.user)).filter((p) => roleAtLeast(p.role, "collaborator"));
+      if (body.projectId == null || !editable.some((p) => p.id === body.projectId)) {
+        throw forbidden("Solo puedes asignar el medio a un recorrido que puedas editar");
+      }
+    }
     const patch: Record<string, unknown> = {};
     if (body.filename != null) patch.filename = body.filename;
     if (body.folder !== undefined) patch.folder = body.folder;
@@ -518,8 +573,21 @@ async function ownedMedia(
   // tour de ejemplo y en los proyectos hechos desde una plantilla: se leen
   // desde cualquier cuenta, pero solo se tocan desde la suya
   if (minRole === "reader" && (await templateOrgIds(db, c.get("config"))).has(row.orgId)) return row;
+  if (await hasOrgRole(c, auth, row.orgId, minRole)) return row;
+  // Sin rol suficiente en la organización: vale un recorrido compartido que
+  // use el medio (para leerlo) o al que esté asignado (para tocarlo)
+  if (await mediaSharedAccess(db, row, auth.user, minRole === "reader" ? "read" : "edit")) return row;
   await requireOrgRole(db, row.orgId, auth.user, minRole);
   return row;
+}
+
+async function hasOrgRole(
+  c: any,
+  auth: { user: import("../lib/context.js").UserRow },
+  orgId: string,
+  minRole: "reader" | "collaborator",
+): Promise<boolean> {
+  return roleAtLeast(await orgRole(c.get("db"), orgId, auth.user), minRole);
 }
 
 /** Endpoint de subida directa pass-through (URLs firmadas HMAC). */

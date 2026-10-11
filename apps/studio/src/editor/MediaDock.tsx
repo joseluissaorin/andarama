@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, ChevronDown, FolderOpen, Images, Search, UploadCloud } from "lucide-react";
 import { Button, Input, Select, Spinner, useToast } from "@andarama/ui";
 import { api } from "../api";
+import { useLibraryAccess } from "../stores";
 import { useT } from "../i18n";
 import { uploadMedia, type UploadProgress } from "../upload";
 import { PlanetThumb, Pano360Dialog, isPano, previewEquirect } from "../media/PanoPreview";
@@ -20,6 +21,11 @@ import type { MediaItem } from "../pages/MediaPage";
  * lienzo, **arranca mostrando solo lo de este tour**, deja comprobarlo en 360
  * antes de usarlo y se arrastra directamente al grafo o a la lista de escenas.
  * Lo que se sube desde aquí queda asignado al tour, así que sigue apareciendo.
+ *
+ * `orgId` es la organización del recorrido, no la de quien lo abre. Si se lo
+ * ha compartido otra organización, solo existe «Este tour»: su biblioteca no
+ * es suya, y la propia tampoco sirve, porque un medio de otra organización
+ * no se publica en este recorrido.
  */
 
 export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
@@ -33,7 +39,9 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
   const queryClient = useQueryClient();
   // Abierto de serie: el panel existe justamente para no tener que buscarlo.
   const [open, setOpen] = useState(() => localStorage.getItem("andarama.mediaDock") !== "off");
-  const [scope, setScope] = useState<"tour" | "all">("tour");
+  const libraryAccess = useLibraryAccess(orgId);
+  const [scopeChoice, setScope] = useState<"tour" | "all">("tour");
+  const scope = libraryAccess ? scopeChoice : "tour";
   const [folder, setFolder] = useState("");
   /** Con «toda la biblioteca», filtro por recorrido ("" = todos, "none" = sin recorrido). */
   const [tourFilter, setTourFilter] = useState("");
@@ -88,7 +96,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
         const key = `${file.name}-${Date.now()}-${i}`;
         setUploads((u) => ({ ...u, [key]: { phase: "hashing", percent: 0, name: file.name } }));
         try {
-          const result = await uploadMedia(orgId, file, null, (p) => setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })));
+          const result = await uploadMedia(orgId, file, null, (p) => setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })), { projectId });
           await api(`/media/${result.id}`, { method: "PATCH", body: { projectId, folder: projectTitle } });
           setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1200);
           void queryClient.invalidateQueries({ queryKey: ["media"] });
@@ -121,6 +129,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
         <h2 className="text-[13px] font-semibold">{t("media_dock")}</h2>
 
         {/* Por defecto, solo lo de este tour */}
+        {libraryAccess && (
         <div className="anda-pestanas ml-2">
           {(["tour", "all"] as const).map((s) => (
             <button
@@ -139,6 +148,7 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
             </button>
           ))}
         </div>
+        )}
 
         {scope === "all" && (
           <Select value={tourFilter} onChange={(e) => setTourFilter(e.target.value)} aria-label={t("filter_by_tour")} className="max-w-44">

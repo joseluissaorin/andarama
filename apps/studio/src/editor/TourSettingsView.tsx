@@ -6,7 +6,7 @@ import { MediaPicker } from "./MediaPicker";
 import { FAMILY_ORDER, HOTSPOT_CATALOG } from "./hotspotCatalog";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api";
-import { useEditor } from "../stores";
+import { useEditor, useLibraryAccess } from "../stores";
 import type { BrandKit } from "../pages/OrgDefaultsPage";
 import { useT } from "../i18n";
 import type { ProjectInfo } from "./EditorPage";
@@ -34,9 +34,13 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
   /** Qué selector de medios está abierto en Marca y música (null = ninguno). */
   const [assetPicker, setAssetPicker] = useState<"logo" | "watermark" | "nadirPatch" | "globalAudio" | null>(null);
   const globalAudio = (settings.globalAudio as Record<string, any> | undefined) ?? undefined;
+  // Los kits de marca son de la organización: quien edita un recorrido que
+  // le ha compartido otra no los ve (la API se lo negaría)
+  const orgMember = useLibraryAccess(_project.orgId);
   const kits = useQuery({
     queryKey: ["org-defaults-kits", _project.orgId],
     queryFn: () => api<{ brandKits?: BrandKit[] }>(`/orgs/${_project.orgId}/defaults`),
+    enabled: orgMember,
   }).data?.brandKits;
 
   const patch = (fn: (s: Record<string, any>) => void): void => {

@@ -102,3 +102,51 @@ test("al salir una persona, la otra deja de verla", async () => {
   await luis.page.goto("/studio/");
   await expect(ana.page.locator(`[data-collab-user="${LUIS.name}"]`)).toHaveCount(0, { timeout: 15_000 });
 });
+
+test("Luis, que es de otra organización, ve las miniaturas del recorrido", async () => {
+  const projectId = projectUrl.split("/").pop()!;
+  // Ana sube una foto al recorrido, con su miniatura, y la usa en una escena
+  await ana.page.goto("/studio/");
+  const jpeg = await ana.page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 32;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#c2410c";
+    ctx.fillRect(0, 0, 64, 32);
+    return canvas.toDataURL("image/jpeg").split(",")[1]!;
+  });
+  const bytes = Buffer.from(jpeg, "base64");
+  const put = async (url: string): Promise<void> => {
+    const u = new URL(url);
+    const res = await ana.context.request.put(`${u.pathname}${u.search}`, { data: bytes, headers: { "content-type": "image/jpeg" } });
+    expect(res.ok(), await res.text()).toBe(true);
+  };
+  const me = (await (await ana.context.request.get("/api/v1/me")).json()) as { orgs: { id: string }[] };
+  const created = (await post(ana.context, ana.context.request, "/media", {
+    orgId: me.orgs[0]!.id,
+    projectId,
+    kind: "image",
+    filename: "fachada.jpg",
+    mime: "image/jpeg",
+    bytes: bytes.length,
+  })) as unknown as { media: { id: string }; upload: { url: string } };
+  const mediaId = created.media.id;
+  await put(created.upload.url);
+  await post(ana.context, ana.context.request, `/media/${mediaId}/complete`, { width: 64, height: 32 });
+  const thumbKey = `derived/${mediaId}/thumb.jpg`;
+  const { urls } = (await post(ana.context, ana.context.request, `/media/${mediaId}/derivative-uploads`, { keys: [thumbKey] })) as unknown as {
+    urls: Record<string, string>;
+  };
+  await put(urls[thumbKey]!);
+  await post(ana.context, ana.context.request, `/media/${mediaId}/derivatives`, { kind: "thumb", manifest: {} });
+
+  // En el editor de Luis, la biblioteca del recorrido la enseña y la miniatura carga
+  await luis.page.goto(projectUrl);
+  const thumb = luis.page.locator(`img[src="/api/v1/media/${mediaId}/derived/thumb"]`).first();
+  await expect(thumb).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => thumb.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), { timeout: 15_000 }).toBe(true);
+  await expect(luis.page.getByText("Aún no hay medios en este tour")).toHaveCount(0);
+  // «Toda la biblioteca» es de la organización de Ana: a Luis no se le ofrece
+  await expect(luis.page.getByRole("button", { name: "Toda la biblioteca" })).toHaveCount(0);
+});

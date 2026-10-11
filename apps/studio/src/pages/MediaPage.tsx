@@ -53,12 +53,17 @@ export function MediaPage(): React.ReactNode {
 }
 
 /** Biblioteca reutilizable: pagina completa y selector desde el editor. */
-export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
+export function MediaLibrary({ orgId, onSelect, kindFilter, tourId, tourOnly = false }: {
   orgId: string;
   onSelect: ((item: MediaItem) => void) | null;
   kindFilter?: string;
   /** En el selector del editor: arranca mostrando solo los medios de este recorrido. */
   tourId?: string;
+  /**
+   * Solo el recorrido `tourId`, sin «Toda la biblioteca» ni carpetas: para
+   * quien edita un recorrido que le ha compartido otra organización.
+   */
+  tourOnly?: boolean;
 }): React.ReactNode {
   const t = useT();
   const toast = useToast();
@@ -135,16 +140,17 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
   // que la foto que se acaba de subir esté a la vista.
   const autoTodos = useRef(false);
   useEffect(() => {
-    if (autoTodos.current || tourId == null || project !== tourId || searchQ !== "" || folder !== "") return;
+    if (tourOnly || autoTodos.current || tourId == null || project !== tourId || searchQ !== "" || folder !== "") return;
     if (list.data != null && list.data.length === 0) {
       autoTodos.current = true;
       setProject("");
     }
-  }, [list.data, tourId, project, searchQ, folder]);
+  }, [list.data, tourId, tourOnly, project, searchQ, folder]);
 
   const folders = useQuery({
     queryKey: ["media-folders", orgId],
     queryFn: () => api<{ folder: string; total: number; panoramas: number }[]>(`/media/folders?org=${orgId}`),
+    enabled: !tourOnly,
   });
 
   // Al subir desde la biblioteca con un tour seleccionado, lo subido entra en
@@ -215,8 +221,12 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
           const key = `${file.name}-${Date.now()}-${i}`;
           setUploads((u) => ({ ...u, [key]: { phase: "hashing", percent: 0, name: file.name } }));
           try {
-            const result = await uploadMedia(orgId, file, kindGuess, (p) =>
-              setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })),
+            const result = await uploadMedia(
+              orgId,
+              file,
+              kindGuess,
+              (p) => setUploads((u) => ({ ...u, [key]: { ...p, name: file.name } })),
+              { projectId: assignAfterUpload ?? undefined },
             );
             if (result.deduplicated) toast.push(t("deduplicated"));
             if (assignAfterUpload != null) {
@@ -319,7 +329,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId }: {
         )}
         {/* En el selector del editor: lo de este recorrido o toda la
             biblioteca, que sirve para reutilizar lo subido para otro tour. */}
-        {!fullPage && tourId != null && (
+        {!fullPage && tourId != null && !tourOnly && (
           <div className="anda-pestanas" title={t("library_all_hint")}>
             {([tourId, ""] as const).map((value) => (
               <button

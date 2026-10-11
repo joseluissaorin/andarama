@@ -372,7 +372,7 @@ export function EditorPage(): React.ReactNode {
   ];
 
   return (
-    <PickerTourContext.Provider value={project.id}>
+    <PickerTourContext.Provider value={{ id: project.id, orgId: project.orgId }}>
     <div className="flex h-full flex-col bg-[var(--anda-bg)]">
       <header className="anda-barra flex items-center gap-2 px-3 py-2">
         <Tooltip content={t("projects")}>

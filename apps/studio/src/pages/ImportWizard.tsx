@@ -179,9 +179,15 @@ export function ImportWizard({ orgId, open, onClose, project }: {
       queue.map((item) => async () => {
         setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, status: "uploading", percent: 0 } : x)));
         try {
-          const result = await uploadMedia(orgId, item.file, null, (p) => {
-            setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, percent: p.percent } : x)));
-          });
+          const result = await uploadMedia(
+            orgId,
+            item.file,
+            null,
+            (p) => {
+              setItems((prev) => prev.map((x) => (x.key === item.key ? { ...x, percent: p.percent } : x)));
+            },
+            { projectId: projectId !== "" ? projectId : undefined },
+          );
           const mediaId = result.id;
           const ext = item.file.name.split(".").pop() ?? "";
           await api(`/media/${mediaId}`, {

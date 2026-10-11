@@ -12,6 +12,11 @@ import { forbidden, notFound } from "./errors.js";
 export type OrgRole = "admin" | "editor" | "collaborator" | "reader";
 const ORG_ORDER: Record<OrgRole, number> = { admin: 3, editor: 2, collaborator: 1, reader: 0 };
 
+/** Si un rol (de organizacion o de comparticion) llega al minimo pedido. */
+export function roleAtLeast(role: OrgRole | null | undefined, min: OrgRole): boolean {
+  return role != null && ORG_ORDER[role] >= ORG_ORDER[min];
+}
+
 export function isInstanceAdmin(user: UserRow): boolean {
   return user.roleGlobal === "admin";
 }

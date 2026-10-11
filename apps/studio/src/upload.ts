@@ -128,6 +128,12 @@ export async function uploadMedia(
   file: File,
   kindOverride: MediaKind | null,
   onProgress: (p: UploadProgress) => void,
+  /**
+   * Recorrido al que va lo subido. Con él, el servidor guarda el medio en la
+   * organización del recorrido aunque no sea la de quien sube (recorridos
+   * compartidos) y no deduplica contra el resto de su biblioteca.
+   */
+  opts: { projectId?: string } = {},
 ): Promise<UploadedMedia> {
   onProgress({ phase: "hashing", percent: 2 });
   // El resumen y la lectura del EXIF no dependen el uno del otro
@@ -159,6 +165,7 @@ export async function uploadMedia(
       bytes: file.size,
       sha256: hash,
       multipart: file.size > 100 * 1024 * 1024,
+      ...(opts.projectId != null ? { projectId: opts.projectId } : {}),
     },
   });
   if (created.deduplicated === true) {
