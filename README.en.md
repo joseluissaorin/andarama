@@ -53,7 +53,7 @@ The interface ships in Spanish and English; the documentation is in Spanish.
   </tr>
   <tr>
     <td width="22%"><b>Collaboration</b></td>
-    <td>Per-scene presence and locking on Durable Objects, comments, versions and live guided visits.</td>
+    <td>Live group editing (presence, changes without reloading with conflict merging, and per-panel soft locks) on Durable Objects, comments, versions and live guided visits.</td>
   </tr>
   <tr>
     <td width="22%"><b>Accessibility and languages</b></td>

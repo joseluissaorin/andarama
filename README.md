@@ -51,7 +51,7 @@ Andarama es una plataforma de código abierto para **crear, publicar y compartir
   </tr>
   <tr>
     <td width="22%"><b>Colaboración</b></td>
-    <td>Presencia y bloqueo por escena con Durable Objects, comentarios, versiones y visitas guiadas en directo.</td>
+    <td>Edición en grupo en directo (presencia, cambios sin recargar con fusión de conflictos y bloqueo blando por panel) con Durable Objects, comentarios, versiones y visitas guiadas en directo.</td>
   </tr>
   <tr>
     <td width="22%"><b>Accesibilidad y idiomas</b></td>

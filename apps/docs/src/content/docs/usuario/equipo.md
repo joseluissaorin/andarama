@@ -1,6 +1,6 @@
 ---
 title: Trabajar en equipo
-description: La página Equipo, qué puede hacer cada rol, cómo invitar a alguien, cómo compartir un solo recorrido con el botón Personas y cómo se reparten las escenas cuando varias personas editan a la vez.
+description: La página Equipo, qué puede hacer cada rol, cómo invitar a alguien, cómo compartir un solo recorrido con el botón Personas y cómo editar varias personas a la vez, en directo.
 ---
 
 Los recorridos pertenecen a una **organización**, no a una persona. Todas las
@@ -83,19 +83,42 @@ Detalles que conviene saber:
 
 ## Varias personas a la vez
 
-Varias personas pueden tener abierto el mismo recorrido al mismo tiempo, cada
-una en su escena:
+Varias personas pueden tener abierto el mismo recorrido y editarlo al mismo
+tiempo, como en un documento compartido. Pueden hacerlo quienes tienen
+permiso para editarlo: los colaboradores, editores y administradores del
+equipo y las personas con quienes se ha compartido como colaborador o editor.
 
-- El editor muestra **quién más está editando** y en qué escena.
-- Mientras alguien trabaja en una escena, en la lista de escenas de los demás
-  aparece un **candado** con su nombre: esa escena queda reservada para no
-  pisarse. El resto del recorrido se puede editar a la vez.
+- **Quién está.** En la cabecera del editor sale una burbuja por persona, con
+  sus iniciales y un color propio. Al pasar por encima dice en qué escena o
+  pestaña está, y al pulsarla te lleva allí. En la lista de escenas, cada
+  escena muestra también las burbujas de quienes están en ella.
+- **Dónde mira.** En el panorama ves un anillo del color de cada persona donde
+  está mirando y, si mueve el ratón por la escena, una flecha con su nombre.
+- **Los cambios llegan solos.** Lo que hace cada uno (crear, mover, editar o
+  borrar escenas y puntos, los pasos entre escenas, el orden y los ajustes del
+  recorrido) aparece en las pantallas de los demás sin recargar.
+- **Nadie pisa a nadie.** Si alguien tiene abierto el panel de una escena o de
+  un punto, los demás ven **«Lo está editando…»** con su nombre, y en sus
+  pantallas esos campos quedan en solo lectura mientras lo tenga abierto. En
+  la lista de escenas, un **candado** de su color marca la escena. El aviso no
+  es un cerrojo: **Editar igualmente** lo salta si hace falta.
 
-:::caution
-La reserva es un aviso, no un cerrojo, y Andarama **no admite la edición
-simultánea de la misma escena**: los cambios de dos personas en la misma
-escena no se fusionan en directo. Si ves el candado, trabaja en otra escena o
-espera a que termine.
+Si dos personas guardan cambios en el mismo elemento casi a la vez, Andarama
+no deja que uno borre al otro: trae lo que guardó la otra persona, lo junta con
+lo que estás escribiendo y vuelve a guardar. Si las dos cambiaron exactamente
+el mismo campo, se queda lo de quien lo escribía en ese momento; si una de las
+dos borró el elemento, el borrado gana y la otra recibe un aviso.
+
+Si se corta la conexión en directo (una wifi que cambia, un portátil que se
+duerme), la cabecera muestra un aviso discreto: **«Sin conexión en directo;
+los cambios se guardan igualmente»**. Mientras dura no ves a los demás, pero lo
+tuyo se sigue guardando; al volver, el editor se pone al día solo.
+
+:::note[En una instalación propia]
+La edición en grupo funciona igual en una instalación propia (Docker o Node) y
+en el ejecutable de escritorio. Si pones Andarama detrás de un proxy, este
+tiene que dejar pasar WebSocket en `/rt/`; está explicado en
+[Servidor propio](/docs/despliegue/servidor-propio/).
 :::
 
 Para coordinaros sin salir del editor, usad los

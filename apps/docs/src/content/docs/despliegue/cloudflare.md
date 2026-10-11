@@ -37,7 +37,7 @@ Tras el primer despliegue: pon tu correo en `ADMIN_EMAILS` (vars de `wrangler.js
 | Base de datos | D1 (Time Travel 30 días) |
 | Medios y tiles | R2 (+ caché CDN) |
 | Sesiones/caché | KV |
-| Tiempo real | Durable Objects (SQLite-backed, free tier) |
+| Tiempo real | Durable Objects con hibernación de WebSockets (SQLite-backed, free tier) |
 | Analítica | Workers Analytics Engine o tabla D1 (`ANALYTICS_BACKEND=d1`, por defecto) |
 | Colas | Cloudflare Queues (opcional, plan Paid) o tabla `jobs` + runner |
 | Anti-bots | Turnstile (opcional) |
