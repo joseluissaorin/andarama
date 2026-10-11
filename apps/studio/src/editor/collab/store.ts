@@ -142,3 +142,9 @@ export function initials(name: string): string {
   const last = parts.length > 1 ? parts[parts.length - 1]! : "";
   return (Array.from(first)[0]! + (last !== "" ? Array.from(last)[0]! : "")).toLocaleUpperCase();
 }
+
+/** Solo las miradas de quien sigue en la sala: la de quien se fue no se queda como un fantasma sin nombre. */
+export function viewsOfPresent(views: Record<string, RemoteView>, users: PresenceUser[]): Record<string, RemoteView> {
+  const present = new Set(users.map((u) => u.connectionId));
+  return Object.fromEntries(Object.entries(views).filter(([cid]) => present.has(cid)));
+}

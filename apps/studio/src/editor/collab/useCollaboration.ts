@@ -4,7 +4,7 @@ import { api, ApiRequestError } from "../../api";
 import { useEditor } from "../../stores";
 import { CollabConnection, CollabRefused, type SocketLike } from "./connection";
 import type { ChangeEvent } from "./merge";
-import { resendView, resetCollab, setCollabSender, useCollab, type PresenceLock, type PresenceUser, type RemoteView } from "./store";
+import { resendView, resetCollab, setCollabSender, useCollab, type PresenceLock, type PresenceUser, type RemoteView, viewsOfPresent } from "./store";
 import type { RemoteSync } from "./sync";
 
 /** Avisos que tocan el tour en pantalla (los demás solo refrescan otras vistas). */
@@ -102,12 +102,15 @@ export function useCollaboration(opts: {
             sendWhere();
             resendView();
             return;
-          case "presence":
+          case "presence": {
+            const users = (msg.users as PresenceUser[]) ?? [];
             useCollab.setState({
-              users: (msg.users as PresenceUser[]) ?? [],
+              users,
               locks: (msg.locks as Record<string, PresenceLock>) ?? {},
+              views: viewsOfPresent(useCollab.getState().views, users),
             });
             return;
+          }
           case "view": {
             const id = String(msg.connectionId);
             const view = msg.view as RemoteView | null;
