@@ -215,6 +215,34 @@ test("VR: entra en sesión immersive-vr y dibuja fotogramas estéreo", async ({ 
   expect(info.state.hotspots).toBeGreaterThan(0);
 });
 
+test("VR: la panorámica troceada se pinta en cubo y se completa sin errores", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+  await installXrMock(page);
+  await page.goto("/t/tour-e2e");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await page.locator('button[aria-label="Modo VR"]').click();
+  // El tour de pruebas se sube desde el Studio: multirresolución, como los reales
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          const vr = (window.Andarama!.instance!.viewer as unknown as { vr: { panoramaStats: { completeMs: number | null } | null } }).vr;
+          return vr.panoramaStats?.completeMs != null;
+        }),
+      { timeout: 20_000, message: () => errors.join("\n") },
+    )
+    .toBe(true);
+  const info = await page.evaluate(() => {
+    const vr = (window.Andarama!.instance!.viewer as unknown as { vr: { panoramaStats: { faceSize: number; tilesDone: number; tilesTotal: number } } }).vr;
+    return vr.panoramaStats;
+  });
+  expect(info.faceSize).toBeGreaterThanOrEqual(512);
+  expect(info.tilesDone).toBe(info.tilesTotal);
+  expect(errors).toEqual([]);
+});
+
 test("VR: la pinza sobre un hotspot abre su panel inmersivo", async ({ page }) => {
   await installXrMock(page);
   // Apuntar la mano al hotspot de texto del tour de pruebas.

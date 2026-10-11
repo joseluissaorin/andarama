@@ -256,7 +256,8 @@ export function tourRoutes(): Hono<AppEnv> {
         "default-src 'self'",
         `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com`,
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org",
+        // Miniatura de los vídeos de YouTube en el panel del modo VR
+        "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://i.ytimg.com",
         "media-src 'self' blob: data:",
         "connect-src 'self' blob: data: https://tile.openstreetmap.org https://*.tile.openstreetmap.org",
         "frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com https://challenges.cloudflare.com https:",

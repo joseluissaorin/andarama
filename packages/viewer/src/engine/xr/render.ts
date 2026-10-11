@@ -168,6 +168,38 @@ export class XrRenderer {
     return true;
   }
 
+  /**
+   * Textura vacía de `width` × `height`, transparente (WebGL la inicializa a
+   * ceros): se rellena por trozos con `uploadSub` y lo que falta no se pinta.
+   */
+  allocTexture(width: number, height: number): WebGLTexture | null {
+    const gl = this.gl;
+    for (let i = 0; i < 8 && gl.getError() !== gl.NO_ERROR; i++) {
+      // vaciar errores ajenos
+    }
+    const tex = this.createTexture();
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    if (gl.getError() !== gl.NO_ERROR) {
+      gl.deleteTexture(tex);
+      console.warn(`[andarama] no cabe una textura de ${width}×${height} en la GPU`);
+      return null;
+    }
+    return tex;
+  }
+
+  /** Sube `source` a la posición (x, y) de una textura ya reservada. */
+  uploadSub(texture: WebGLTexture, x: number, y: number, source: TexImageSource): boolean {
+    const gl = this.gl;
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    try {
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    } catch (error) {
+      console.warn("[andarama] no se pudo subir una tesela VR", error);
+      return false;
+    }
+    return gl.getError() === gl.NO_ERROR;
+  }
+
   /** Lado máximo de textura que se usará: el del dispositivo, sin pasar de 8192. */
   maxTextureSize(): number {
     const reported = Number(this.gl.getParameter(this.gl.MAX_TEXTURE_SIZE)) || 4096;
@@ -256,6 +288,26 @@ export function downscaleForTexture(source: TexImageSource, maxSize: number): Te
   if (ctx == null) return source;
   ctx.drawImage(source as CanvasImageSource, 0, 0, fit.width, fit.height);
   return canvas;
+}
+
+/**
+ * Como `downscaleForTexture`, pero sin bloquear: con `createImageBitmap` la
+ * reducción se hace fuera del hilo principal. Si no existe, se cae al lienzo.
+ */
+export async function fitForTexture(source: TexImageSource, maxSize: number): Promise<TexImageSource> {
+  if (typeof HTMLVideoElement !== "undefined" && source instanceof HTMLVideoElement) return source;
+  const { width, height } = sourceSize(source);
+  if (width === 0 || height === 0) return source;
+  const fit = fitTextureSize(width, height, maxSize);
+  if (!fit.scaled) return source;
+  if (typeof createImageBitmap === "function") {
+    try {
+      return await createImageBitmap(source as ImageBitmapSource, { resizeWidth: fit.width, resizeHeight: fit.height, resizeQuality: "high" });
+    } catch {
+      // algunos navegadores no aceptan el redimensionado: lienzo
+    }
+  }
+  return downscaleForTexture(source, maxSize);
 }
 
 function toF32(m: Float32Array | number[]): Float32Array {

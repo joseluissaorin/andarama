@@ -16,7 +16,7 @@ import type {
   WebHotspot,
 } from "@andarama/schema";
 import { isQuizAnswerCorrect, quizQuestionPoints, quizQuestions } from "@andarama/schema";
-import { resolveUrl, TourViewer } from "@andarama/viewer";
+import { resolveUrl, TourViewer, type VrPdfDocument } from "@andarama/viewer";
 import { el, trapFocus } from "./dom.js";
 import { renderMarkdown } from "./markdown.js";
 import { createIconSvg, LABEL_EXPAND_EVENT, type LabelExpandDetail } from "@andarama/viewer";
@@ -580,8 +580,8 @@ function pdfPanel(hs: PdfHotspot, ctx: PanelContext): PanelContent {
   };
 }
 
-/** Visor PDF.js con paginacion y zoom (carga perezosa del chunk). */
-async function renderPdf(holder: HTMLElement, url: string, ctx: PanelContext): Promise<void> {
+/** Abre un PDF con pdf.js (chunk y worker de carga perezosa). */
+async function openPdf(url: string): Promise<any> {
   const pdfjs: any = await import(/* @vite-ignore */ "pdfjs-dist" as string);
   if (pdfjs.GlobalWorkerOptions != null) {
     try {
@@ -590,7 +590,39 @@ async function renderPdf(holder: HTMLElement, url: string, ctx: PanelContext): P
       // el bundler resolvera el worker
     }
   }
-  const doc = await pdfjs.getDocument(url).promise;
+  return pdfjs.getDocument(url).promise;
+}
+
+/**
+ * El mismo PDF.js para el panel del modo inmersivo: cada página se dibuja
+ * en un lienzo del ancho pedido y el motor VR la pinta en su panel.
+ */
+export async function openPdfForVr(url: string): Promise<VrPdfDocument> {
+  const doc = await openPdf(url);
+  return {
+    numPages: doc.numPages as number,
+    async renderPage(pageNumber: number, width: number): Promise<HTMLCanvasElement> {
+      const page = await doc.getPage(pageNumber);
+      const base = page.getViewport({ scale: 1 });
+      const viewport = page.getViewport({ scale: width / base.width });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      const g = canvas.getContext("2d")!;
+      // Fondo blanco: las páginas sin fondo saldrían transparentes en el panel
+      g.fillStyle = "#fff";
+      g.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: g, viewport }).promise;
+      page.cleanup?.();
+      return canvas;
+    },
+    destroy: () => void doc.destroy?.(),
+  };
+}
+
+/** Visor PDF.js con paginacion y zoom (carga perezosa del chunk). */
+async function renderPdf(holder: HTMLElement, url: string, ctx: PanelContext): Promise<void> {
+  const doc = await openPdf(url);
   let page = 1;
   let zoom = 1.2;
   const canvas = el("canvas", { style: "display:block;margin:0 auto;max-width:100%;" });

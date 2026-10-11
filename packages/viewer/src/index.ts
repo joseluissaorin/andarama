@@ -7,7 +7,9 @@ export { VariableStore, evalConditions, evalVarCondition } from "./engine/state.
 export { parseDeepLink, buildDeepLink } from "./engine/deeplink.js";
 export { AnalyticsClient, yawBucket, pitchBucket } from "./analytics.js";
 export { AudioEngine } from "./engine/audio.js";
-export { VRManager } from "./engine/vr.js";
+export { VRManager, type VrEnvironment, type VrPrefetch } from "./engine/vr.js";
+export type { VrPdfDocument } from "./engine/xr/panel.js";
+export type { VrCubeSource } from "./engine/xr/panorama.js";
 export { DeviceOrientationControlMethod, orientationToYawPitch } from "./engine/gyro.js";
 export { ProjectionPass, littlePlanetIntroParams } from "./engine/projections.js";
 export { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";

@@ -87,7 +87,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
           "default-src 'self'",
           `script-src 'self' 'nonce-${c.get("cspNonce")}' https://challenges.cloudflare.com${plausible}`,
           "style-src 'self' 'unsafe-inline'",
-          "img-src 'self' data: blob: https://tile.openstreetmap.org",
+          "img-src 'self' data: blob: https://tile.openstreetmap.org https://i.ytimg.com",
           "media-src 'self' blob: data:",
           `connect-src 'self' https://tile.openstreetmap.org${plausible}`,
           // La vista previa del Studio incrusta lo mismo que el tour publicado:
