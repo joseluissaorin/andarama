@@ -22,9 +22,9 @@
   },
   "dependencies": {
     "@andarama/schema": "workspace:*",
-    "lucide": "^1.31.0",
+    "lucide": "^1.53.0",
     "marzipano": "0.10.2",
-    "hls.js": "^1.6.17"
+    "hls.js": "^1.7.3"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
