@@ -22,9 +22,10 @@ jobs:
         run: pnpm typecheck
       - name: Tests unitarios e integración
         run: pnpm test
-      - name: Compilar Studio + visor + docs
+      - name: Compilar Studio + visor + docs + web pública
         run: |
           pnpm --filter @andarama/docs build
+          pnpm --filter @andarama/web build
           pnpm --filter @andarama/studio build
       - name: Tests E2E (Playwright)
         run: |
