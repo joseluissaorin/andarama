@@ -158,7 +158,9 @@ test("en Proyectos, Luis encuentra el recorrido en «Compartidos contigo» y lo 
   await expect(bloque).toContainText(`De ${ANA.name}`);
   await expect(bloque).toContainText("Colaborador");
   await bloque.getByRole("button", { name: "Recorrido en grupo" }).first().click();
-  await expect(luis.page).toHaveURL(new RegExp(`${projectUrl}$`));
+  // El editor añade ?scene= en cuanto carga la primera escena: según lo
+  // rápido que vaya, la comprobación lo veía o no y la prueba fallaba a ratos
+  await expect(luis.page).toHaveURL(new RegExp(`${projectUrl}(\\?.*)?$`));
   // Ana no lo ve ahí: el recorrido es de su organización
   await ana.page.goto("/studio/");
   await expect(ana.page.getByRole("heading", { name: "Recorrido en grupo" }).first()).toBeVisible({ timeout: 15_000 });
