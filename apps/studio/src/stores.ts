@@ -189,6 +189,21 @@ interface EditorState {
    * se editó mientras volaba la petición, queda sucio y devuelve false.
    */
   markSaved: (saved: EditorSnapshot) => boolean;
+  /**
+   * Cambios de otras personas (edición en grupo): tour fusionado, historial
+   * de deshacer reescrito sobre lo nuevo y qué escenas tocaron (para que el
+   * visor se vuelva a montar solo si hace falta). No entra en el historial:
+   * deshacer no debe deshacer lo que hizo otra persona.
+   */
+  applyRemote: (next: {
+    snapshot: EditorSnapshot;
+    undoStack: EditorSnapshot[];
+    redoStack: EditorSnapshot[];
+    dirty: boolean;
+    scenes: string[] | "all";
+  }) => void;
+  /** Último cambio llegado de fuera: contador y escenas afectadas. */
+  remote: { tick: number; scenes: string[] | "all" };
 }
 
 const clone = <T>(v: T): T => structuredClone(v);
@@ -202,6 +217,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   selectedHotspotId: null,
   dirty: false,
   saving: "idle",
+  remote: { tick: 0, scenes: [] },
   load: (projectId, snapshot) =>
     set({
       projectId,
@@ -254,5 +270,20 @@ export const useEditor = create<EditorState>((set, get) => ({
     if (get().snapshot !== saved) return false;
     set({ dirty: false });
     return true;
+  },
+  applyRemote: ({ snapshot, undoStack, redoStack, dirty, scenes }) => {
+    const { selectedSceneId, selectedHotspotId, remote } = get();
+    // Si otra persona borró lo que había seleccionado, se cae a algo que exista
+    const sceneOk = selectedSceneId != null && snapshot.scenes.some((sc) => sc.id === selectedSceneId);
+    const hotspotOk = selectedHotspotId != null && snapshot.hotspots.some((h) => h.id === selectedHotspotId);
+    set({
+      snapshot,
+      undoStack,
+      redoStack,
+      dirty,
+      selectedSceneId: sceneOk ? selectedSceneId : (snapshot.scenes[0]?.id ?? null),
+      selectedHotspotId: sceneOk && hotspotOk ? selectedHotspotId : null,
+      remote: { tick: remote.tick + 1, scenes },
+    });
   },
 }));

@@ -1,14 +1,15 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { hotspots as hotspotsTable, media as mediaTable, projects, scenes as scenesTable } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
-import { badRequest, forbidden, notFound } from "../lib/errors.js";
+import { badRequest, conflict, forbidden, notFound, type ApiError } from "../lib/errors.js";
 import { newId, nowMs } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { audit } from "../lib/helpers.js";
 import { requireActivePlan } from "../lib/capabilities.js";
+import { publishChange } from "../lib/collab.js";
 
 const HOTSPOT_TYPES = [
   "navigation", "text", "image", "gallery", "videoFile", "embedVideo", "audio", "pdf",
@@ -36,6 +37,8 @@ const scenePatchSchema = z.object({
   map: z.record(z.unknown()).nullable().optional(),
   meta: z.record(z.unknown()).optional(),
   sort: z.number().int().optional(),
+  /** Versión que el cliente conoce: si alguien guardó antes, 409 con la fila vigente. */
+  baseVersion: z.number().int().nonnegative().optional(),
 });
 
 const hotspotSchema = z.object({
@@ -46,7 +49,21 @@ const hotspotSchema = z.object({
   content: z.record(z.unknown()).default({}),
   conditions: z.record(z.unknown()).nullable().optional(),
   sort: z.number().int().optional(),
+  baseVersion: z.number().int().nonnegative().optional(),
 });
+
+/**
+ * Otra persona guardó este elemento después de que el cliente lo leyera. El
+ * Studio recibe la fila vigente, la fusiona con lo que se está escribiendo y
+ * vuelve a guardar con la versión nueva: no se pierde ni lo suyo ni lo del otro.
+ */
+function versionConflict(entity: "scene" | "hotspot", current: unknown): ApiError {
+  return conflict("Otra persona ha guardado este elemento a la vez; se fusiona y se vuelve a guardar", {
+    code: "version_conflict",
+    entity,
+    current: current ?? null,
+  });
+}
 
 async function editableProject(c: Parameters<typeof projectAccess>[0] extends never ? never : any, projectId: string): Promise<{ project: typeof projects.$inferSelect }> {
   const auth = requireAuth(c);
@@ -105,19 +122,23 @@ export function contentRoutes(): Hono<AppEnv> {
     await assertMediaInOrg(db, body.mediaId, project.orgId);
     const existing = await db.select({ sort: scenesTable.sort }).from(scenesTable).where(eq(scenesTable.projectId, project.id));
     const id = body.id ?? newId();
-    await db.insert(scenesTable).values({
-      id,
-      projectId: project.id,
-      sort: existing.length,
-      title: body.title,
-      type: body.type,
-      mediaId: body.mediaId ?? null,
-      sourceJson: body.sourceJson != null ? JSON.stringify(body.sourceJson) : null,
-      metaJson: "{}",
-    });
+    const [row] = await db
+      .insert(scenesTable)
+      .values({
+        id,
+        projectId: project.id,
+        sort: existing.length,
+        title: body.title,
+        type: body.type,
+        mediaId: body.mediaId ?? null,
+        sourceJson: body.sourceJson != null ? JSON.stringify(body.sourceJson) : null,
+        metaJson: "{}",
+      })
+      .returning();
     await touchProject(c, project.id);
     await audit(c, "scene.create", "scene", id, {}, project.orgId);
-    return c.json({ id }, 201);
+    await publishChange(c, project.id, { kind: "scene", op: "upsert", row });
+    return c.json({ id, version: row?.version ?? 0 }, 201);
   });
 
   r.patch("/:projectId/scenes/:sceneId", async (c) => {
@@ -142,9 +163,21 @@ export function contentRoutes(): Hono<AppEnv> {
       patch.metaJson = JSON.stringify({ ...current, ...body.meta });
     }
     if (body.sort != null) patch.sort = body.sort;
-    await db.update(scenesTable).set(patch).where(eq(scenesTable.id, sceneId));
+    if (body.baseVersion != null && body.baseVersion !== scene.version) throw versionConflict("scene", scene);
+    // Escritura condicionada a la versión leída: dos guardados cruzados no
+    // se pisan, el segundo recibe 409 y fusiona
+    const [row] = await db
+      .update(scenesTable)
+      .set({ ...patch, version: sql`${scenesTable.version} + 1` })
+      .where(and(eq(scenesTable.id, sceneId), eq(scenesTable.version, scene.version)))
+      .returning();
+    if (row == null) {
+      const current = (await db.select().from(scenesTable).where(eq(scenesTable.id, sceneId)).limit(1))[0];
+      throw versionConflict("scene", current);
+    }
     await touchProject(c, project.id);
-    return c.json({ ok: true });
+    await publishChange(c, project.id, { kind: "scene", op: "upsert", row });
+    return c.json({ ok: true, version: row.version });
   });
 
   r.post("/:projectId/scenes/reorder", async (c) => {
@@ -155,6 +188,12 @@ export function contentRoutes(): Hono<AppEnv> {
       await db.update(scenesTable).set({ sort: i }).where(and(eq(scenesTable.id, sceneId), eq(scenesTable.projectId, project.id)));
     }
     await touchProject(c, project.id);
+    const final = await db
+      .select({ id: scenesTable.id })
+      .from(scenesTable)
+      .where(eq(scenesTable.projectId, project.id))
+      .orderBy(asc(scenesTable.sort));
+    await publishChange(c, project.id, { kind: "order", order: final.map((s) => s.id) });
     return c.json({ ok: true });
   });
 
@@ -165,6 +204,8 @@ export function contentRoutes(): Hono<AppEnv> {
     await db.delete(scenesTable).where(and(eq(scenesTable.id, sceneId), eq(scenesTable.projectId, project.id)));
     await touchProject(c, project.id);
     await audit(c, "scene.delete", "scene", sceneId, {}, project.orgId);
+    // Sus puntos caen en cascada: cada Studio los quita al quitar la escena
+    await publishChange(c, project.id, { kind: "scene", op: "delete", id: sceneId });
     return c.json({ ok: true });
   });
 
@@ -178,18 +219,22 @@ export function contentRoutes(): Hono<AppEnv> {
     if (scene == null) throw notFound("Escena no encontrada");
     const body = hotspotSchema.parse(await c.req.json());
     const id = body.id ?? newId();
-    await db.insert(hotspotsTable).values({
-      id,
-      sceneId,
-      type: body.type,
-      positionJson: JSON.stringify(body.position),
-      styleJson: body.style != null ? JSON.stringify(body.style) : null,
-      contentJson: JSON.stringify(body.content),
-      conditionsJson: body.conditions != null ? JSON.stringify(body.conditions) : null,
-      sort: body.sort ?? 0,
-    });
+    const [row] = await db
+      .insert(hotspotsTable)
+      .values({
+        id,
+        sceneId,
+        type: body.type,
+        positionJson: JSON.stringify(body.position),
+        styleJson: body.style != null ? JSON.stringify(body.style) : null,
+        contentJson: JSON.stringify(body.content),
+        conditionsJson: body.conditions != null ? JSON.stringify(body.conditions) : null,
+        sort: body.sort ?? 0,
+      })
+      .returning();
     await touchProject(c, project.id);
-    return c.json({ id }, 201);
+    await publishChange(c, project.id, { kind: "hotspot", op: "upsert", row });
+    return c.json({ id, version: row?.version ?? 0 }, 201);
   });
 
   r.patch("/:projectId/hotspots/:hotspotId", async (c) => {
@@ -211,9 +256,20 @@ export function contentRoutes(): Hono<AppEnv> {
     if (body.content != null) patch.contentJson = JSON.stringify(body.content);
     if (body.conditions !== undefined) patch.conditionsJson = body.conditions != null ? JSON.stringify(body.conditions) : null;
     if (body.sort != null) patch.sort = body.sort;
-    await db.update(hotspotsTable).set(patch).where(eq(hotspotsTable.id, hotspotId));
+    const before = rows[0].hs;
+    if (body.baseVersion != null && body.baseVersion !== before.version) throw versionConflict("hotspot", before);
+    const [row] = await db
+      .update(hotspotsTable)
+      .set({ ...patch, version: sql`${hotspotsTable.version} + 1` })
+      .where(and(eq(hotspotsTable.id, hotspotId), eq(hotspotsTable.version, before.version)))
+      .returning();
+    if (row == null) {
+      const current = (await db.select().from(hotspotsTable).where(eq(hotspotsTable.id, hotspotId)).limit(1))[0];
+      throw versionConflict("hotspot", current);
+    }
     await touchProject(c, project.id);
-    return c.json({ ok: true });
+    await publishChange(c, project.id, { kind: "hotspot", op: "upsert", row });
+    return c.json({ ok: true, version: row.version });
   });
 
   r.delete("/:projectId/hotspots/:hotspotId", async (c) => {
@@ -221,7 +277,7 @@ export function contentRoutes(): Hono<AppEnv> {
     const db = c.get("db");
     const hotspotId = c.req.param("hotspotId");
     const rows = await db
-      .select({ id: hotspotsTable.id, sceneProject: scenesTable.projectId })
+      .select({ id: hotspotsTable.id, sceneId: hotspotsTable.sceneId, sceneProject: scenesTable.projectId })
       .from(hotspotsTable)
       .innerJoin(scenesTable, eq(hotspotsTable.sceneId, scenesTable.id))
       .where(eq(hotspotsTable.id, hotspotId))
@@ -229,6 +285,7 @@ export function contentRoutes(): Hono<AppEnv> {
     if (rows[0] == null || rows[0].sceneProject !== project.id) throw notFound();
     await db.delete(hotspotsTable).where(eq(hotspotsTable.id, hotspotId));
     await touchProject(c, project.id);
+    await publishChange(c, project.id, { kind: "hotspot", op: "delete", id: hotspotId, sceneId: rows[0].sceneId });
     return c.json({ ok: true });
   });
 

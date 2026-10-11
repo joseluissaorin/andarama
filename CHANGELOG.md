@@ -4,6 +4,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y e
 
 ## [Sin publicar]
 
+### Edición en grupo en directo
+
+- **Varias personas editan el mismo recorrido a la vez.** La cabecera del Studio muestra quién está (iniciales y color) y dónde; en el panorama se ve dónde mira y apunta cada uno; los cambios de los demás (escenas, puntos, pasos, orden, ajustes, título, comentarios, traducciones y publicación) llegan sin recargar.
+- **Control de versiones optimista.** Escenas y hotspots llevan `version` y el proyecto `settingsVersion` (migración `0018_collab_versions.sql`). Los `PATCH` aceptan `baseVersion` / `baseSettingsVersion` y responden 409 `version_conflict` con lo vigente; el Studio fusiona a tres bandas sin perder lo que se está escribiendo y vuelve a guardar. Sin esos campos, la API se comporta como antes.
+- **Bloqueo blando por panel**: quien abre primero el panel de una escena o de un punto lo tiene; los demás lo ven en solo lectura con «Editar igualmente».
+- **Sala autenticada**: `POST /api/v1/projects/{id}/realtime` da un billete firmado de dos minutos solo a quien puede editar; antes la sala de presencia no comprobaba quién entraba. En Cloudflare, el Durable Object usa la hibernación de WebSockets.
+- Reconexión con espera exponencial, latido y un aviso discreto cuando se corta la conexión en directo. Tras un guardado cortado a la mitad, el siguiente rehace la base desde el servidor (antes podía quedarse atascado creando dos veces la misma escena).
+
 ### Corregido tras la primera ronda de pruebas
 
 - **El tesoro rompía el guardado y la publicación.** Ni la API ni el validador conocían el tipo «treasure»: el primer tesoro hacía fallar el guardado automático en silencio (nada de lo posterior llegaba al servidor) y publicar dejaba la versión anterior, sin los hotspots nuevos. Ahora se acepta, se ve en la vista previa y el editor avisa en rojo cuando algo no se guarda, y el diálogo de publicar lista los errores que lo impiden.

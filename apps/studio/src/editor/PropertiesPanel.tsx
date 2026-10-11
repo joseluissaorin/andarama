@@ -21,6 +21,7 @@ import {
 import { Button, Dialog, Field, HelpTip, Input, Select, Switch, Textarea } from "@andarama/ui";
 import { parseVideoRef, renderMarkdown } from "@andarama/viewer-ui";
 import { useEditor, type HotspotRow, type SceneRow } from "../stores";
+import { LockNotice, useSoftLock } from "./collab/LockNotice";
 import { useT } from "../i18n";
 import { clientId, readJson } from "./editorApi";
 import { areaOfScene, areasOf, assignScene, createArea } from "./areas";
@@ -87,11 +88,28 @@ export function PropertiesPanel({ project, scene, canEdit }: {
   const snapshot = editor.snapshot!;
   const hotspots = snapshot.hotspots.filter((h) => h.sceneId === scene.id);
   const selectedHotspot = hotspots.find((h) => h.id === editor.selectedHotspotId) ?? null;
+  // Bloqueo blando: si otra persona abrió antes este panel, aquí queda en
+  // solo lectura (con «Editar igualmente») para no pisaros lo que escribís
+  const soft = useSoftLock(selectedHotspot != null ? "hotspot" : "scene", selectedHotspot?.id ?? scene.id);
+  const editable = canEdit && soft.free;
+  const notice = canEdit && soft.lock != null ? <LockNotice lock={soft.lock} overridden={soft.free} onOverride={soft.override} /> : null;
 
   if (selectedHotspot != null) {
-    return <HotspotProperties project={project} scene={scene} hotspot={selectedHotspot} canEdit={canEdit} />;
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        {notice}
+        <div className="min-h-0 flex-1">
+          <HotspotProperties project={project} scene={scene} hotspot={selectedHotspot} canEdit={editable} />
+        </div>
+      </div>
+    );
   }
-  return <SceneProperties project={project} scene={scene} hotspots={hotspots} canEdit={canEdit} />;
+  return (
+    <>
+      {notice}
+      <SceneProperties project={project} scene={scene} hotspots={hotspots} canEdit={editable} />
+    </>
+  );
 }
 
 // ---------------------------------------------------------------------------

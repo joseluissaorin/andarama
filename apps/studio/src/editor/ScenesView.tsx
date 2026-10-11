@@ -35,15 +35,15 @@ import { areasOf } from "./areas";
 import { HotspotPalette } from "./HotspotPalette";
 import { sceneOwnAudio, setSceneAudioMuted } from "./sceneAudio";
 import { requestOpenSection } from "./sectionState";
+import { initials, lockedByOther, reportPointer, reportView, useCollab, type PresenceUser } from "./collab/store";
+import { RemoteCursors } from "./collab/RemoteCursors";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
 
 /** Vista principal: lista de escenas + previsualización WYSIWYG + propiedades. */
-export function ScenesView({ project, canEdit, locks, myConnId, onOpenFloorplan }: {
+export function ScenesView({ project, canEdit, onOpenFloorplan }: {
   project: ProjectInfo;
   canEdit: boolean;
-  locks: Record<string, { connectionId: string; name: string }>;
-  myConnId: string | null;
   /** Abre el grafo directamente en modo Plano. */
   onOpenFloorplan?: () => void;
 }): React.ReactNode {
@@ -66,6 +66,24 @@ export function ScenesView({ project, canEdit, locks, myConnId, onOpenFloorplan 
     : scenes.filter((s) => s.title.toLowerCase().includes(filter.trim().toLowerCase()));
 
   const [mediaOver, setMediaOver] = useState(false);
+  // Edición en grupo: quién está en cada escena y quién tiene abierto su panel
+  // (con selectores: las miradas de los demás cambian muchas veces por segundo
+  // y esta vista no las necesita)
+  const collabUsers = useCollab((st) => st.users);
+  const collabLocks = useCollab((st) => st.locks);
+  const collabConn = useCollab((st) => st.connectionId);
+  const collabMe = useCollab((st) => st.myUserId);
+  const collab = { users: collabUsers, locks: collabLocks, connectionId: collabConn, myUserId: collabMe, status: "online" as const, views: {} };
+  const peopleIn = (sceneId: string): PresenceUser[] => {
+    const seen = new Set<string>();
+    return collab.users.filter((u) => {
+      if (u.sceneId !== sceneId || u.tab !== "scenes" || u.connectionId === collab.connectionId) return false;
+      if (collab.myUserId != null && u.userId === collab.myUserId) return false;
+      if (seen.has(u.userId)) return false;
+      seen.add(u.userId);
+      return true;
+    });
+  };
   const hasPlan = areasOf(snapshot).some((a) => a.plan != null);
   const [panelWidth, setPanelWidth] = useState(readPanelWidth);
   const panelWidthRef = useRef(panelWidth);
@@ -202,8 +220,8 @@ export function ScenesView({ project, canEdit, locks, myConnId, onOpenFloorplan 
         )}
         <div className="flex-1 overflow-y-auto px-2 pb-2">
           {visible.map((scene) => {
-            const lock = locks[scene.id];
-            const lockedByOther = lock != null && lock.connectionId !== myConnId;
+            const lock = lockedByOther(collab, "scene", scene.id);
+            const here = peopleIn(scene.id);
             const isStart = snapshot.settings.startScene === scene.id;
             return (
               <div
@@ -249,13 +267,29 @@ export function ScenesView({ project, canEdit, locks, myConnId, onOpenFloorplan 
                     </span>
                   )}
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-medium">{scene.title}</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="block min-w-0 flex-1 truncate text-[13px] font-medium">{scene.title}</span>
+                      {here.length > 0 && (
+                        <span className="flex shrink-0 -space-x-1" aria-label={here.map((u) => u.name).join(", ")}>
+                          {here.slice(0, 3).map((u) => (
+                            <span
+                              key={u.userId}
+                              title={u.name}
+                              className="flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white ring-1 ring-[var(--anda-surface)]"
+                              style={{ background: u.color }}
+                            >
+                              {initials(u.name)}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                    </span>
                     <span className="flex items-center gap-1 text-[11px] text-[var(--anda-text-dim)]">
                       {isStart && <Badge tone="ok">{t("start_scene_badge")}</Badge>}
                       {scene.type !== "image" && <Badge>{scene.type}</Badge>}
-                      {lockedByOther && (
+                      {lock != null && (
                         <Tooltip content={t("scene_locked", { name: lock.name })}>
-                          <Lock className="h-3 w-3 text-[var(--anda-accent)]" />
+                          <Lock className="h-3 w-3" style={{ color: lock.color }} aria-label={t("scene_locked", { name: lock.name })} />
                         </Tooltip>
                       )}
                     </span>
@@ -742,9 +776,18 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
       skinRef.current = mounted;
       mountedViewer = mounted;
       mounted.viewer.audioEngine().setMuted(mutedRef.current, false);
+      // Centro de la vista en las mismas coordenadas que los puntos: así la
+      // mirada de cada uno se pinta bien también en las escenas planas
+      const reportCenter = (): void => {
+        const box = containerRef.current;
+        if (box == null) return;
+        reportView(sceneId, mounted.viewer.screenToHotspotCoords(box.clientWidth / 2, box.clientHeight / 2));
+      };
       mounted.viewer.on("viewChange", (v) => {
         lastView = v;
+        reportCenter();
       });
+      reportCenter();
       // Clic sobre un marcador = seleccionarlo (el motor no ejecuta efectos
       // en editMode: ni navegar, ni abrir enlaces, ni mutar estado).
       mounted.viewer.on("hotspotActivate", (e) => {
@@ -784,11 +827,43 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
       skinRef.current?.destroy();
       skinRef.current = null;
       mountedViewer = null;
+      reportView(null, null);
     };
   }, [remount]);
   useEffect(() => {
     if (saving === "saved" && !dirty) void remount();
   }, [saving, dirty]);
+  // Otra persona cambió esta escena o sus puntos: la vista previa se compila
+  // de lo guardado, así que se rehace (si hay algo propio sin guardar, ya se
+  // rehará al guardarlo)
+  const remoteChange = useEditor((s) => s.remote);
+  useEffect(() => {
+    if (remoteChange.tick === 0) return;
+    if (remoteChange.scenes !== "all" && !remoteChange.scenes.includes(sceneId)) return;
+    const id = setTimeout(() => {
+      if (!useEditor.getState().dirty) void remount();
+    }, 350);
+    return () => clearTimeout(id);
+  }, [remoteChange.tick]);
+
+  // Dónde apunta el ratón dentro del panorama, para los demás
+  useEffect(() => {
+    const node = containerRef.current;
+    if (node == null) return;
+    const ac = new AbortController();
+    node.addEventListener(
+      "pointermove",
+      (e) => {
+        const v = skinRef.current?.viewer;
+        if (v == null) return;
+        const rect = node.getBoundingClientRect();
+        reportPointer(sceneId, v.screenToHotspotCoords(e.clientX - rect.left, e.clientY - rect.top));
+      },
+      { signal: ac.signal },
+    );
+    node.addEventListener("pointerleave", () => reportPointer(sceneId, null), { signal: ac.signal });
+    return () => ac.abort();
+  }, [sceneId]);
 
   const scene = editor.snapshot?.scenes.find((s) => s.id === sceneId) ?? null;
   const hasAudio = sceneHasAudio(editor.snapshot, sceneId);
@@ -927,6 +1002,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
           className={`absolute inset-0 bg-[#0b1020] ${placement.kind !== "none" ? "cursor-crosshair" : ""}`}
         />
         <SaltoDeHotspot contenedor={containerRef} sceneId={sceneId} viewer={skinRef} />
+        <RemoteCursors contenedor={containerRef} viewer={skinRef} sceneId={sceneId} />
         {placement.kind === "polygon" && (
           <PoligonoEnCurso contenedor={containerRef} puntos={placement.points} viewer={skinRef} />
         )}

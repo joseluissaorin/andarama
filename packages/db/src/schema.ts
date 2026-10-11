@@ -269,6 +269,8 @@ export const projects = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
     /** Papelera con retencion de 30 dias. */
     deletedAt: integer("deleted_at"),
+    /** Versión de los ajustes: control optimista de la edición en grupo (409 si no coincide). */
+    settingsVersion: integer("settings_version").notNull().default(0),
   },
   (t) => [
     uniqueIndex("projects_org_slug_idx").on(t.orgId, t.slug),
@@ -314,6 +316,8 @@ export const scenes = sqliteTable(
     mapJson: text("map_json"),
     /** altText, description, category, hidden, autorotate, thumbnail... */
     metaJson: text("meta_json").notNull().default("{}"),
+    /** Versión de la fila: sube en cada cambio (control optimista, edición en grupo). */
+    version: integer("version").notNull().default(0),
   },
   (t) => [index("scenes_project_idx").on(t.projectId)],
 );
@@ -333,6 +337,8 @@ export const hotspots = sqliteTable(
     contentJson: text("content_json").notNull().default("{}"),
     conditionsJson: text("conditions_json"),
     sort: integer("sort").notNull().default(0),
+    /** Versión de la fila: sube en cada cambio (control optimista, edición en grupo). */
+    version: integer("version").notNull().default(0),
   },
   (t) => [index("hotspots_scene_idx").on(t.sceneId)],
 );

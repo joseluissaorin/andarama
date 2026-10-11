@@ -23,8 +23,13 @@ import { Badge, Button, Input, Spinner, Tooltip, useToast } from "@andarama/ui";
 import { api } from "../api";
 import { useAuth, useEditor, type EditorSnapshot } from "../stores";
 import { useT } from "../i18n";
-import { loadSnapshot, syncSnapshot } from "./editorApi";
+import { loadSnapshot, SaveConflictError, syncSnapshot } from "./editorApi";
 import { createAutosaver } from "./autosave";
+import type { VersionBook } from "./collab/merge";
+import { createRemoteSync, type RemoteSync } from "./collab/sync";
+import { useCollaboration } from "./collab/useCollaboration";
+import { PresenceBar } from "./collab/PresenceBar";
+import { useCollab } from "./collab/store";
 import { ScenesView } from "./ScenesView";
 import { GRAPH_MODES, GraphView, type GraphMode } from "./GraphView";
 import { PreviewView } from "./PreviewView";
@@ -93,11 +98,12 @@ export function EditorPage(): React.ReactNode {
   /** Título en edición (null = no se está renombrando). */
   const [renaming, setRenaming] = useState<string | null>(null);
   const lastSyncError = useRef<string | null>(null);
-  const [presence, setPresence] = useState<{ users: { connectionId: string; name: string; sceneId: string | null }[]; locks: Record<string, { connectionId: string; name: string }> }>({ users: [], locks: {} });
   const syncedRef = useRef<EditorSnapshot | null>(null);
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-  const connIdRef = useRef<string | null>(null);
+  /** Versión conocida de cada escena, punto y de los ajustes (edición en grupo). */
+  const versionsRef = useRef<VersionBook>(new Map());
+  /** Cambios de otras personas: avisos de la sala y resincronización. */
+  const remoteRef = useRef<RemoteSync | null>(null);
   /** Hay cambios guardados que el recorrido publicado todavía no tiene. */
   const [unpublished, setUnpublished] = useState(false);
   /** Se ha guardado algo en esta visita (la pista solo sale tras editar). */
@@ -114,8 +120,10 @@ export function EditorPage(): React.ReactNode {
   useEffect(() => {
     void refresh();
     void loadSnapshot(projectId)
-      .then(({ snapshot, project: p }) => {
+      .then(({ snapshot, project: p, versions }) => {
         syncedRef.current = structuredClone(snapshot);
+        versionsRef.current.clear();
+        for (const [k, v] of versions) versionsRef.current.set(k, v);
         editor.load(projectId, snapshot);
         const info = p as unknown as ProjectInfo;
         setProject(info);
@@ -164,13 +172,24 @@ export function EditorPage(): React.ReactNode {
         setBase: (saved) => {
           syncedRef.current = saved;
         },
-        save: (base, target) => syncSnapshot(projectId, base, target),
+        save: (base, target) =>
+          syncSnapshot(projectId, base, target, {
+            versions: versionsRef.current,
+            connectionId: () => useCollab.getState().connectionId,
+          }),
         clone: (s) => structuredClone(s),
+        // Otra persona guardó lo mismo antes: se trae, se fusiona sin perder lo
+        // que se está escribiendo y se vuelve a guardar
+        isConflict: (err) => err instanceof SaveConflictError,
+        resolveConflict: async () => {
+          await remoteRef.current?.resync(true);
+        },
+        resync: async () => {
+          await remoteRef.current?.resync(true);
+        },
         onSaved: () => {
           lastSyncError.current = null;
-          // Con la sala aún conectando, send lanzaría y el guardado (que sí se
-          // hizo) contaría como fallido
-          if (wsRef.current?.readyState === WebSocket.OPEN) wsRef.current.send(JSON.stringify({ type: "changed" }));
+          // Los demás se enteran por la API, que avisa a la sala tras guardar
           savedSinceLoad.current = true;
           setUnpublished(true);
         },
@@ -188,6 +207,41 @@ export function EditorPage(): React.ReactNode {
       }),
     [projectId],
   );
+  const remote = useMemo(
+    () =>
+      createRemoteSync({
+        projectId,
+        autosaver: () => autosaver,
+        base: syncedRef,
+        versions: versionsRef.current,
+        onProject: (p) => applyProjectInfo(p),
+      }),
+    [projectId, autosaver],
+  );
+  remoteRef.current = remote;
+
+  /** Datos del proyecto leídos de nuevo (otra persona publicó, renombró...). */
+  const applyProjectInfo = (p: Record<string, unknown>): void => {
+    const info = p as unknown as ProjectInfo;
+    setProject((prev) => (prev != null ? { ...prev, title: info.title, publication: info.publication, permissions: info.permissions ?? prev.permissions } : prev));
+    const publishedAt = info.publication?.publishedAt;
+    setUnpublished(publishedAt != null && info.updatedAt != null && info.updatedAt > publishedAt + 2000);
+  };
+
+  // Edición en grupo (§3.5): presencia, bloqueos blandos y cambios en directo
+  useCollaboration({
+    projectId,
+    enabled: me?.user != null && project?.permissions.canEdit === true,
+    myUserId: me?.user?.id ?? null,
+    tab,
+    remote,
+    onProject: (patch) => {
+      if (patch.title != null) setProject((prev) => (prev != null ? { ...prev, title: patch.title! } : prev));
+      if (patch.reload === true) void api<Record<string, unknown>>(`/projects/${projectId}`).then(applyProjectInfo).catch(() => {});
+    },
+    onLostSelection: (by) => toast.push(t("collab_deleted_by", { name: by ?? t("collab_someone") }), "info"),
+  });
+
   const doSync = useCallback(async (): Promise<void> => {
     if (syncTimer.current != null) clearTimeout(syncTimer.current);
     await autosaver.sync();
@@ -246,38 +300,6 @@ export function EditorPage(): React.ReactNode {
     toast.push(t("republish_hint"), "info");
   }, [unpublished, project?.publication, projectId]);
 
-  // Presencia y bloqueo blando (§3.5)
-  useEffect(() => {
-    if (me?.user == null) return;
-    const proto = location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(`${proto}://${location.host}/rt/project/${projectId}`);
-    wsRef.current = ws;
-    ws.addEventListener("open", () => {
-      ws.send(JSON.stringify({ type: "hello", userId: me.user!.id, name: me.user!.name }));
-    });
-    ws.addEventListener("message", (e) => {
-      try {
-        const msg = JSON.parse(String(e.data)) as { type: string; [k: string]: unknown };
-        if (msg.type === "presence") {
-          const users = msg.users as { connectionId: string; userId: string; name: string; sceneId: string | null }[];
-          const mine = users.find((u) => u.userId === me.user!.id && connIdRef.current == null);
-          if (mine != null) connIdRef.current = mine.connectionId;
-          setPresence({ users, locks: msg.locks as Record<string, { connectionId: string; name: string }> });
-        }
-      } catch {
-        // mensaje invalido
-      }
-    });
-    return () => ws.close();
-  }, [projectId, me?.user?.id]);
-
-  // Notificar escena seleccionada a la sala de presencia
-  useEffect(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "scene", sceneId: editor.selectedSceneId }));
-    }
-  }, [editor.selectedSceneId]);
-
   // Atajos de teclado (§3.5)
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
@@ -322,7 +344,6 @@ export function EditorPage(): React.ReactNode {
     );
   }
 
-  const others = presence.users.filter((u) => u.connectionId !== connIdRef.current);
   const canEdit = project.permissions.canEdit;
 
   /** Renombrar el tour desde su propia cabecera: era imposible desde el editor. */
@@ -391,17 +412,16 @@ export function EditorPage(): React.ReactNode {
         >
           {editor.saving === "saving" ? t("saving") : editor.saving === "error" ? t("save_failed_short") : editor.dirty ? "..." : t("saved")}
         </span>
-        {others.length > 0 && (
-          <div className="flex items-center gap-1" aria-label={t("a11y_editing_now")}>
-            {others.map((u) => (
-              <Tooltip key={u.connectionId} content={`${u.name} (${t("presence_editing")})`}>
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--anda-accent)] text-[11px] font-bold text-white">
-                  {u.name.slice(0, 1).toUpperCase()}
-                </span>
-              </Tooltip>
-            ))}
-          </div>
-        )}
+        <PresenceBar
+          onGoTo={(u) => {
+            // Ir a donde está: su escena, o su pestaña si no está en Escenas
+            if (u.tab != null && u.tab !== "scenes" && TAB_IDS.includes(u.tab as EditorTab)) setTab(u.tab as EditorTab);
+            else if (u.sceneId != null) {
+              setTab("scenes");
+              editor.select(u.sceneId);
+            }
+          }}
+        />
         <div className="flex-1" />
         <div className="flex items-center gap-0.5">
           <Tooltip content={`${t("undo")} (Ctrl+Z)`}>
@@ -484,8 +504,6 @@ export function EditorPage(): React.ReactNode {
           <ScenesView
             project={project}
             canEdit={canEdit}
-            locks={presence.locks}
-            myConnId={connIdRef.current}
             onOpenFloorplan={() => {
               setGraphMode("plan");
               setTab("graph");

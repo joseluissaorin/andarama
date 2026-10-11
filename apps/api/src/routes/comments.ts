@@ -7,6 +7,7 @@ import { forbidden, notFound } from "../lib/errors.js";
 import { newId, nowMs, parseJson } from "../lib/util.js";
 import { requireAuth } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
+import { publishChange } from "../lib/collab.js";
 
 /** Comentarios anclados a escenas/hotspots con hilos y estado (§3.5). */
 export function commentRoutes(): Hono<AppEnv> {
@@ -64,6 +65,7 @@ export function commentRoutes(): Hono<AppEnv> {
       createdAt: nowMs(),
       updatedAt: nowMs(),
     });
+    await publishChange(c, access.project.id, { kind: "comments" });
     return c.json({ id }, 201);
   });
 
@@ -87,6 +89,7 @@ export function commentRoutes(): Hono<AppEnv> {
         updatedAt: nowMs(),
       })
       .where(eq(comments.id, row.id));
+    await publishChange(c, access.project.id, { kind: "comments" });
     return c.json({ ok: true });
   });
 
@@ -102,6 +105,7 @@ export function commentRoutes(): Hono<AppEnv> {
     if (row == null) throw notFound();
     if (row.authorId !== auth.user.id && !access.canManage) throw forbidden();
     await db.delete(comments).where(eq(comments.id, row.id));
+    await publishChange(c, access.project.id, { kind: "comments" });
     return c.json({ ok: true });
   });
 

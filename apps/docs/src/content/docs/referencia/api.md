@@ -43,7 +43,31 @@ curl -s -X POST "$BASE/api/v1/projects/$PROJECT/publish" \
 | `/api/v1/live/*` | Salas de visita guiada |
 | `/t/{slug}` | Visor publicado (sirve desde almacenamiento con caché) |
 | `/ingest/e` | Ingesta de analítica sin cookies |
-| `/rt/project/{id}`, `/rt/live/{room}` | WebSockets de presencia y visitas en vivo |
+| `/rt/project/{id}`, `/rt/live/{room}` | WebSockets de edición en grupo y visitas en vivo |
+
+## Edición en grupo y versiones
+
+Varias personas pueden editar el mismo recorrido a la vez. La API sigue siendo
+la fuente de la verdad; el tiempo real solo avisa.
+
+- **Versiones.** Cada escena y cada hotspot llevan `version`, y el proyecto,
+  `settingsVersion`. Suben con cada cambio. `PATCH /projects/{id}/scenes/{sceneId}`
+  y `PATCH /projects/{id}/hotspots/{hotspotId}` aceptan `baseVersion`, y
+  `PATCH /projects/{id}` acepta `baseSettingsVersion`. Si no coincide con la
+  vigente, la respuesta es **409** con `code: "version_conflict"`, `entity` y
+  `current` (la fila o los ajustes vigentes): el cliente fusiona y vuelve a
+  guardar. Sin estos campos se guarda como siempre. Las respuestas devuelven la
+  versión nueva.
+- **Sala.** `POST /projects/{id}/realtime` da un billete firmado de dos minutos
+  a quien puede editar el recorrido (colaborador o más). Con él se abre
+  `/rt/project/{id}?t=<billete>`. La sala manda `welcome`, `presence` (personas,
+  escena, panel abierto y bloqueos blandos), `view` (dónde mira cada uno) y
+  `changed`, que es el aviso que la API difunde tras cada escritura correcta:
+  `scene`/`hotspot` con `op: "upsert"` y la fila, u `op: "delete"`; `order`,
+  `settings`, `project`, `translations`, `comments` y `publication`. El cliente
+  manda `where`, `view` y `"ping"` (respuesta `"pong"`). Si una escritura lleva
+  la cabecera `x-andarama-conn` con el identificador de la conexión, el aviso
+  lo incluye en `origin`.
 
 ## Cambios recientes
 

@@ -1,6 +1,17 @@
 [
   {
     "fecha": "2026-10-11",
+    "titulo": "Live group editing",
+    "items": [
+      "Several people can edit the same tour at once: each one appears in the header with their initials and colour, and clicking them takes you to the scene they are in.",
+      "What each person does reaches the others without reloading: scenes, hotspots, links, order and settings. If two people save at the same time, the changes are merged without losing what is being typed.",
+      "If someone has a scene or hotspot panel open, the others see \"… is editing this\" and those fields become read-only so nobody overwrites anybody, with \"Edit anyway\" if needed.",
+      "The panorama shows where each person is looking and pointing, with a mark in their colour and their name.",
+      "If the live connection drops, a discreet notice says so; changes are still saved and it reconnects on its own."
+    ]
+  },
+  {
+    "fecha": "2026-10-11",
     "titulo": "Sharper, more complete virtual reality",
     "items": [
       "In the headset, scenes look up to twice as sharp (8K photos or larger) and load sooner: full resolution arrives piece by piece, starting with what is in front of you, and neighbouring scenes download while you look around, so they appear complete when you jump.",

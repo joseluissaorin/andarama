@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, eq, inArray, isNotNull, lt } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, lt, sql } from "drizzle-orm";
 import {
   projectMembers,
   projects,
@@ -21,6 +21,7 @@ import { compileProject } from "../compiler.js";
 import { embedResponse } from "../lib/embed.js";
 import { PREVIEW_MAP_TTL_SECONDS, verifyExportToken } from "../lib/export-token.js";
 import { orgPlanActive, requireActivePlan } from "../lib/capabilities.js";
+import { publishChange } from "../lib/collab.js";
 import { cloneProjectContent, isOperatorTemplate, listSectorTemplates, templateOrgIds } from "../lib/templates.js";
 
 export function projectRoutes(): Hono<AppEnv> {
@@ -167,6 +168,7 @@ export function projectRoutes(): Hono<AppEnv> {
     return c.json({
       ...projectSummary(access.project),
       settings: parseJson(access.project.settingsJson, {}),
+      settingsVersion: access.project.settingsVersion,
       planLocked,
       permissions: {
         canEdit: access.canEdit && !planLocked,
@@ -191,6 +193,8 @@ export function projectRoutes(): Hono<AppEnv> {
         tags: z.array(z.string().max(40)).optional(),
         settings: z.record(z.unknown()).optional(),
         isTemplate: z.boolean().optional(),
+        /** Versión de los ajustes que conoce el cliente (edición en grupo). */
+        baseSettingsVersion: z.number().int().nonnegative().optional(),
       })
       .parse(await c.req.json());
     // Ordenar en carpetas y etiquetas sigue libre; el contenido pide plan
@@ -205,13 +209,33 @@ export function projectRoutes(): Hono<AppEnv> {
       if (!access.canManage) throw forbidden();
       patch.isTemplate = body.isTemplate;
     }
+    const settingsConflict = (row: typeof projects.$inferSelect | undefined): Error =>
+      conflict("Otra persona ha cambiado los ajustes a la vez; se fusionan y se vuelven a guardar", {
+        code: "version_conflict",
+        entity: "settings",
+        current: row != null ? { settings: parseJson(row.settingsJson, {}), version: row.settingsVersion } : null,
+      });
+    let where = eq(projects.id, access.project.id);
     if (body.settings != null) {
+      if (body.baseSettingsVersion != null && body.baseSettingsVersion !== access.project.settingsVersion) {
+        throw settingsConflict(access.project);
+      }
       const current = parseJson<Record<string, unknown>>(access.project.settingsJson, {});
       patch.settingsJson = JSON.stringify({ ...current, ...body.settings });
+      patch.settingsVersion = sql`${projects.settingsVersion} + 1`;
+      // Condicionado a la versión leída: dos guardados cruzados no se pisan
+      where = and(where, eq(projects.settingsVersion, access.project.settingsVersion))!;
     }
-    await db.update(projects).set(patch).where(eq(projects.id, access.project.id));
+    const [row] = await db.update(projects).set(patch).where(where).returning();
+    if (row == null) {
+      throw settingsConflict((await db.select().from(projects).where(eq(projects.id, access.project.id)).limit(1))[0]);
+    }
     await audit(c, "project.update", "project", access.project.id, {}, access.project.orgId);
-    return c.json({ ok: true });
+    if (body.settings != null) {
+      await publishChange(c, access.project.id, { kind: "settings", settings: parseJson(row.settingsJson, {}), version: row.settingsVersion });
+    }
+    if (body.title != null) await publishChange(c, access.project.id, { kind: "project", title: row.title });
+    return c.json({ ok: true, settingsVersion: row.settingsVersion });
   });
 
   // Papelera con retencion (§3.1)

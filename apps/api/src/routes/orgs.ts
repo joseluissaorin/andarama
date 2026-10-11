@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { orgInvites, orgMembers, orgs, projects, users } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, conflict, forbidden, notFound } from "../lib/errors.js";
@@ -12,6 +12,7 @@ import { orgQuota, usedBytes, usedTours } from "../lib/quota.js";
 import { orgPlanActive } from "../lib/capabilities.js";
 import { buildOrgExport } from "../lib/org-export.js";
 import { INHERITED_KEYS, propagateOrgDefaults, type OrgDefaults } from "../lib/defaults.js";
+import { publishChange } from "../lib/collab.js";
 
 const roleSchema = z.enum(["admin", "editor", "collaborator", "reader"]);
 
@@ -118,7 +119,13 @@ export function orgRoutes(): Hono<AppEnv> {
       const current = parseJson<Record<string, unknown>>(project.settingsJson, {});
       const updated = propagateOrgDefaults(current, next, changed);
       if (JSON.stringify(updated) === JSON.stringify(current)) continue;
-      await db.update(projects).set({ settingsJson: JSON.stringify(updated), updatedAt: nowMs() }).where(eq(projects.id, project.id));
+      const [row] = await db
+        .update(projects)
+        .set({ settingsJson: JSON.stringify(updated), settingsVersion: sql`${projects.settingsVersion} + 1`, updatedAt: nowMs() })
+        .where(eq(projects.id, project.id))
+        .returning();
+      // Quien tenga el recorrido abierto ve los valores heredados sin recargar
+      if (row != null) await publishChange(c, project.id, { kind: "settings", settings: updated, version: row.settingsVersion });
       propagated++;
     }
     await audit(c, "org.defaults", "org", orgId, { keys: changed, propagated }, orgId);

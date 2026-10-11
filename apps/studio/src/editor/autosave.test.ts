@@ -142,3 +142,118 @@ describe("autoguardado", () => {
     expect(saved).toEqual([]);
   });
 });
+
+class Conflict extends Error {}
+
+describe("autoguardado en grupo", () => {
+  it("un conflicto se resuelve fusionando y se vuelve a guardar sin perder lo escrito", async () => {
+    const ed = fakeEditor({ v: 0 });
+    let base: Snap & { other?: number } = { v: 0 };
+    let server = { v: 0, other: 0 };
+    const sent: number[] = [];
+    let resolved = 0;
+    const autosaver = createAutosaver<Snap>({
+      store: ed.store,
+      base: () => base,
+      setBase: (s) => {
+        base = s;
+      },
+      clone: (s) => ({ ...s }),
+      save: async (b, target) => {
+        // El servidor rechaza si la base no es la vigente (otra persona guardó)
+        if (server.other !== ((b as Snap & { other?: number }).other ?? 0)) throw new Conflict();
+        sent.push(target.v);
+        server = { ...server, v: target.v };
+      },
+      isConflict: (err) => err instanceof Conflict,
+      resolveConflict: async () => {
+        resolved++;
+        // Fusión: la base pasa a ser el servidor; en pantalla, lo escrito encima
+        base = { ...server };
+        ed.state.snapshot = { ...server, v: ed.state.snapshot!.v } as Snap;
+      },
+    });
+    // Otra persona guarda mientras tanto
+    server = { v: 0, other: 7 };
+    ed.edit(5);
+    await autosaver.sync();
+    expect(resolved).toBe(1);
+    expect(sent).toEqual([5]);
+    expect(ed.state.dirty).toBe(false);
+    expect(ed.state.saving).toBe("saved");
+    expect(server).toEqual({ v: 5, other: 7 });
+  });
+
+  it("un conflicto que no se arregla acaba en error en vez de girar para siempre", async () => {
+    const ed = fakeEditor({ v: 0 });
+    let resolved = 0;
+    const errors: unknown[] = [];
+    const autosaver = createAutosaver<Snap>({
+      store: ed.store,
+      base: () => ({ v: 0 }),
+      setBase: () => {},
+      clone: (s) => ({ ...s }),
+      save: async () => {
+        throw new Conflict();
+      },
+      isConflict: (err) => err instanceof Conflict,
+      resolveConflict: async () => {
+        resolved++;
+      },
+      onError: (err) => errors.push(err),
+    });
+    ed.edit(1);
+    await autosaver.sync();
+    expect(resolved).toBe(4);
+    expect(errors.length).toBe(1);
+    expect(ed.state.saving).toBe("error");
+  });
+
+  it("tras un fallo, el siguiente intento rehace la base antes de guardar", async () => {
+    const ed = fakeEditor({ v: 0 });
+    let fail = true;
+    const calls: string[] = [];
+    const autosaver = createAutosaver<Snap>({
+      store: ed.store,
+      base: () => ({ v: 0 }),
+      setBase: () => {},
+      clone: (s) => ({ ...s }),
+      save: async () => {
+        calls.push("save");
+        if (fail) throw new Error("red");
+      },
+      resync: async () => {
+        calls.push("resync");
+      },
+    });
+    ed.edit(1);
+    await autosaver.sync();
+    expect(ed.state.saving).toBe("error");
+    fail = false;
+    await autosaver.sync();
+    expect(calls).toEqual(["save", "resync", "save"]);
+    expect(ed.state.saving).toBe("saved");
+  });
+
+  it("exclusive espera al guardado en vuelo: lo de la sala nunca se cruza con un guardado", async () => {
+    const gate = deferred();
+    const order: string[] = [];
+    const { ed, autosaver } = setup(async () => {
+      order.push("save:start");
+      await gate.promise;
+      order.push("save:end");
+    });
+    ed.edit(1);
+    const saving = autosaver.sync();
+    await Promise.resolve();
+    const applied = autosaver.exclusive(() => {
+      order.push("remote");
+      return 42;
+    });
+    gate.resolve();
+    await saving;
+    expect(await applied).toBe(42);
+    expect(order).toEqual(["save:start", "save:end", "remote"]);
+    expect(autosaver.generation()).toBe(1);
+  });
+});
