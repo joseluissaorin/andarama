@@ -24,6 +24,8 @@
   "language": "Dil",
   "map": "Harita",
   "floorplan": "Kat planı",
+  "floorplan_enlarge": "Kat planını büyüt",
+  "floorplan_shrink": "Kat planını küçült",
   "compass": "Pusula",
   "loading": "Yükleniyor",
   "menu": "Menü",

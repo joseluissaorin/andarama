@@ -24,6 +24,8 @@
   "language": "Wika",
   "map": "Mapa",
   "floorplan": "Floor plan",
+  "floorplan_enlarge": "Palakihin ang floor plan",
+  "floorplan_shrink": "Paliitin ang floor plan",
   "compass": "Kompas",
   "loading": "Naglo-load",
   "menu": "Menu",

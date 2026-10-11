@@ -641,6 +641,8 @@
       "properties": {
         "titleBar": { "type": "boolean" },
         "autopilotButton": { "type": "boolean" },
+        "backButton": { "type": "boolean" },
+        "floorplanOpen": { "type": "boolean" },
         "sceneMenu": { "type": "boolean" },
         "thumbnails": { "type": "boolean" },
         "compass": { "type": "boolean" },

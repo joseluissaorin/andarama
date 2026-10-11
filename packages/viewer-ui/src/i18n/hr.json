@@ -24,6 +24,8 @@
   "language": "Jezik",
   "map": "Karta",
   "floorplan": "Tlocrt",
+  "floorplan_enlarge": "Povećaj tlocrt",
+  "floorplan_shrink": "Smanji tlocrt",
   "compass": "Kompas",
   "loading": "Učitavanje",
   "menu": "Izbornik",

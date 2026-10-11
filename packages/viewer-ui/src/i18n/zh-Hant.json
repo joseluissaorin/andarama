@@ -24,6 +24,8 @@
   "language": "語言",
   "map": "地圖",
   "floorplan": "平面圖",
+  "floorplan_enlarge": "放大平面圖",
+  "floorplan_shrink": "縮小平面圖",
   "compass": "羅盤",
   "loading": "載入中",
   "menu": "選單",

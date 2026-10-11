@@ -24,6 +24,8 @@
   "language": "ภาษา",
   "map": "แผนที่",
   "floorplan": "แปลน",
+  "floorplan_enlarge": "ขยายแผนผัง",
+  "floorplan_shrink": "ย่อแผนผัง",
   "compass": "เข็มทิศ",
   "loading": "กำลังโหลด",
   "menu": "เมนู",

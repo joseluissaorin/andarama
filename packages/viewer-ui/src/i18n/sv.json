@@ -24,6 +24,8 @@
   "language": "Språk",
   "map": "Karta",
   "floorplan": "Planritning",
+  "floorplan_enlarge": "Förstora planritningen",
+  "floorplan_shrink": "Förminska planritningen",
   "compass": "Kompass",
   "loading": "Läser in",
   "menu": "Meny",

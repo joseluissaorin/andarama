@@ -24,6 +24,8 @@
   "language": "Ngôn ngữ",
   "map": "Bản đồ",
   "floorplan": "Sơ đồ mặt bằng",
+  "floorplan_enlarge": "Phóng to sơ đồ mặt bằng",
+  "floorplan_shrink": "Thu nhỏ sơ đồ mặt bằng",
   "compass": "La bàn",
   "loading": "Đang tải",
   "menu": "Menu",

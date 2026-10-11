@@ -24,6 +24,8 @@
   "language": "言語",
   "map": "マップ",
   "floorplan": "間取り図",
+  "floorplan_enlarge": "平面図を拡大",
+  "floorplan_shrink": "平面図を縮小",
   "compass": "コンパス",
   "loading": "読み込み中",
   "menu": "メニュー",

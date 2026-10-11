@@ -24,6 +24,8 @@
   "language": "Sprache",
   "map": "Karte",
   "floorplan": "Grundriss",
+  "floorplan_enlarge": "Grundriss vergrößern",
+  "floorplan_shrink": "Grundriss verkleinern",
   "compass": "Kompass",
   "loading": "Wird geladen",
   "menu": "Menü",

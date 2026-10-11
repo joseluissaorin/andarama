@@ -47,6 +47,20 @@ export interface CompileOptions {
   sharedOrgIds?: ReadonlySet<string>;
 }
 
+/**
+ * El audio de una escena tal como se publica. Con `muted: true` el autor ha
+ * desactivado el sonido de la escena desde el Studio sin borrar los ficheros
+ * elegidos: no se publica ni se empaqueta nada de él. Solo se respeta
+ * `replaceGlobal: true`, que es callar la música del tour en esta escena.
+ */
+export function publishedSceneAudio(audioJson: string | null): Record<string, unknown> | undefined {
+  const audio = parseJson<Record<string, unknown> | null>(audioJson, null);
+  if (audio == null || typeof audio !== "object" || Array.isArray(audio)) return undefined;
+  if (audio.muted === true) return audio.replaceGlobal === true ? { replaceGlobal: true } : undefined;
+  const { muted: _muted, ...rest } = audio;
+  return Object.keys(rest).length > 0 ? rest : undefined;
+}
+
 export async function compileProject(db: Db, projectId: string, opts: CompileOptions = {}): Promise<CompiledTour> {
   const projectRows = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
   const project = projectRows[0];
@@ -87,7 +101,7 @@ export async function compileProject(db: Db, projectId: string, opts: CompileOpt
   for (const s of sceneRows) {
     if (s.mediaId != null) mediaIds.add(s.mediaId);
     collectMediaRefs(parseJson(s.sourceJson, {}));
-    collectMediaRefs(parseJson(s.audioJson, {}));
+    collectMediaRefs(publishedSceneAudio(s.audioJson) ?? {});
     collectMediaRefs(parseJson(s.metaJson, {}));
   }
   for (const h of hotspotRows) {
@@ -321,7 +335,7 @@ export async function compileProject(db: Db, projectId: string, opts: CompileOpt
       thumbnail: thumbnailRef != null ? resolveRef(thumbnailRef) : undefined,
       initialView: parseJson(row.initialViewJson, undefined as never) ?? undefined,
       limits: parseJson(row.limitsJson, undefined as never) ?? undefined,
-      audio: deepResolve(parseJson(row.audioJson, undefined as never) ?? undefined),
+      audio: deepResolve(publishedSceneAudio(row.audioJson)) as Scene["audio"],
       map: parseJson(row.mapJson, undefined as never) ?? undefined,
       hidden: meta.hidden === true ? true : undefined,
       autorotate: (meta.autorotate as Scene["autorotate"]) ?? undefined,

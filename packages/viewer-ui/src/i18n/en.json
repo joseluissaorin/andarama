@@ -24,6 +24,8 @@
   "language": "Language",
   "map": "Map",
   "floorplan": "Floor plan",
+  "floorplan_enlarge": "Enlarge the floor plan",
+  "floorplan_shrink": "Shrink the floor plan",
   "compass": "Compass",
   "loading": "Loading",
   "menu": "Menu",

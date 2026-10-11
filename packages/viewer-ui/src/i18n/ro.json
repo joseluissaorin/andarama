@@ -24,6 +24,8 @@
   "language": "Limbă",
   "map": "Hartă",
   "floorplan": "Plan",
+  "floorplan_enlarge": "Mărește planul",
+  "floorplan_shrink": "Micșorează planul",
   "compass": "Busolă",
   "loading": "Se încarcă",
   "menu": "Meniu",

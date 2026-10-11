@@ -4,8 +4,9 @@
  * recomprimirlos solo gasta tiempo. Los ficheros de texto (tour.json, el
  * visor, HTML, CSS, SVG…) se comprimen con DEFLATE usando CompressionStream,
  * que es nativo y no bloquea el hilo, si el entorno lo tiene; si no, STORE.
- * Funciona en navegador y Node sin dependencias. Límite: formato ZIP clásico
- * (< 4 GB y < 65535 entradas).
+ * Funciona en navegador y Node sin dependencias. Por encima de 4 GB o de
+ * 65535 entradas pasa solo a ZIP64: antes los desplazamientos se truncaban a
+ * 32 bits sin avisar y el paquete de un tour grande salía corrupto.
  */
 
 const CRC_TABLE = (() => {
@@ -65,7 +66,15 @@ export interface ZipWriterOptions {
    * función permite otro compresor (devuelve null para guardar sin comprimir).
    */
   deflate?: boolean | ((data: Uint8Array) => Promise<Uint8Array | null>);
+  /**
+   * Tamaño (bytes) o número de entradas a partir del cual se usan los campos
+   * ZIP64. Lo marca el formato (0xFFFFFFFF); solo las pruebas lo bajan.
+   */
+  zip64Limit?: number;
 }
+
+const ZIP32_MAX = 0xffffffff;
+const ZIP32_MAX_ENTRIES = 0xffff;
 
 function dosDateTime(date: Date): { dosTime: number; dosDate: number } {
   return {
@@ -80,6 +89,14 @@ function u16(v: number): Uint8Array {
 
 function u32(v: number): Uint8Array {
   return new Uint8Array([v & 0xff, (v >>> 8) & 0xff, (v >>> 16) & 0xff, (v >>> 24) & 0xff]);
+}
+
+/** Entero de 64 bits en little endian (exacto hasta 2^53, de sobra aquí). */
+function u64(v: number): Uint8Array {
+  const out = new Uint8Array(8);
+  out.set(u32(v >>> 0), 0);
+  out.set(u32(Math.floor(v / 0x100000000) >>> 0), 4);
+  return out;
 }
 
 function concat(...parts: Uint8Array[]): Uint8Array {
@@ -103,12 +120,16 @@ export class ZipWriter {
   private closed = false;
 
   private deflate: ((data: Uint8Array) => Promise<Uint8Array | null>) | null;
+  private limit: number;
+  private entryLimit: number;
 
   constructor(
     private write: (chunk: Uint8Array) => void | Promise<void>,
     options: ZipWriterOptions = {},
   ) {
     this.deflate = options.deflate === false ? null : typeof options.deflate === "function" ? options.deflate : deflateRaw;
+    this.limit = Math.min(ZIP32_MAX, options.zip64Limit ?? ZIP32_MAX);
+    this.entryLimit = Math.min(ZIP32_MAX_ENTRIES, options.zip64Limit ?? ZIP32_MAX_ENTRIES);
   }
 
   async addFile(name: string, data: Uint8Array, date = new Date(2024, 0, 1, 12, 0, 0)): Promise<void> {
@@ -125,19 +146,23 @@ export class ZipWriter {
         method = 8; // DEFLATE
       }
     }
+    // Un fichero de 4 GB o más lleva sus tamaños en el campo extra ZIP64
+    const big = body.length >= this.limit || data.length >= this.limit;
+    const extra = big ? concat(u16(0x0001), u16(16), u64(data.length), u64(body.length)) : new Uint8Array(0);
     const header = concat(
       u32(0x04034b50),
-      u16(20), // version needed
+      u16(big ? 45 : 20), // version needed
       u16(0x0800), // UTF-8 names
       u16(method),
       u16(dosTime),
       u16(dosDate),
       u32(crc),
-      u32(body.length),
-      u32(data.length),
+      u32(big ? ZIP32_MAX : body.length),
+      u32(big ? ZIP32_MAX : data.length),
       u16(nameBytes.length),
-      u16(0),
+      u16(extra.length),
       nameBytes,
+      extra,
     );
     this.entries.push({ name: nameBytes, crc, size: data.length, compressedSize: body.length, method, offset: this.offset, dosTime, dosDate });
     // Las longitudes se toman antes de escribir: quien recibe los trozos
@@ -154,42 +179,76 @@ export class ZipWriter {
     const centralStart = this.offset;
     let centralSize = 0;
     for (const e of this.entries) {
+      // Lo que no cabe en 32 bits va, en este orden, en el extra ZIP64
+      const bigSize = e.size >= this.limit;
+      const bigPacked = e.compressedSize >= this.limit;
+      const bigOffset = e.offset >= this.limit;
+      const fields: Uint8Array[] = [];
+      if (bigSize) fields.push(u64(e.size));
+      if (bigPacked) fields.push(u64(e.compressedSize));
+      if (bigOffset) fields.push(u64(e.offset));
+      const extra = fields.length > 0 ? concat(u16(0x0001), u16(fields.length * 8), ...fields) : new Uint8Array(0);
+      const version = fields.length > 0 ? 45 : 20;
       const record = concat(
         u32(0x02014b50),
-        u16(20),
-        u16(20),
+        u16(version),
+        u16(version),
         u16(0x0800),
         u16(e.method),
         u16(e.dosTime),
         u16(e.dosDate),
         u32(e.crc),
-        u32(e.compressedSize),
-        u32(e.size),
+        u32(bigPacked ? ZIP32_MAX : e.compressedSize),
+        u32(bigSize ? ZIP32_MAX : e.size),
         u16(e.name.length),
-        u16(0),
+        u16(extra.length),
         u16(0),
         u16(0),
         u16(0),
         u32(0),
-        u32(e.offset),
+        u32(bigOffset ? ZIP32_MAX : e.offset),
         e.name,
+        extra,
       );
       centralSize += record.length;
       await this.write(record);
+    }
+    let tail = 0;
+    const count = this.entries.length;
+    const zip64 = count >= this.entryLimit || centralSize >= this.limit || centralStart >= this.limit;
+    if (zip64) {
+      // Registro de fin de directorio ZIP64 y su localizador, antes del clásico
+      const zip64EndOffset = centralStart + centralSize;
+      const record = concat(
+        u32(0x06064b50),
+        u64(44), // tamaño del registro sin los 12 primeros bytes
+        u16(45),
+        u16(45),
+        u32(0),
+        u32(0),
+        u64(count),
+        u64(count),
+        u64(centralSize),
+        u64(centralStart),
+      );
+      const locator = concat(u32(0x07064b50), u32(0), u64(zip64EndOffset), u32(1));
+      await this.write(record);
+      await this.write(locator);
+      tail += record.length + locator.length;
     }
     const eocd = concat(
       u32(0x06054b50),
       u16(0),
       u16(0),
-      u16(this.entries.length),
-      u16(this.entries.length),
-      u32(centralSize),
-      u32(centralStart),
+      u16(zip64 ? ZIP32_MAX_ENTRIES : count),
+      u16(zip64 ? ZIP32_MAX_ENTRIES : count),
+      u32(zip64 ? ZIP32_MAX : centralSize),
+      u32(zip64 ? ZIP32_MAX : centralStart),
       u16(0),
     );
-    const eocdLength = eocd.length;
+    tail += eocd.length;
     await this.write(eocd);
-    this.offset += centralSize + eocdLength;
+    this.offset += centralSize + tail;
   }
 
   get bytesWritten(): number {
@@ -211,5 +270,14 @@ export async function buildZip(files: { name: string; data: Uint8Array }[], opti
     await writer.addFile(f.name, f.data);
   }
   await writer.close();
-  return concat(...chunks);
+  // Sin propagar los trozos como argumentos: con decenas de miles de
+  // entradas se desbordaba la pila
+  const total = chunks.reduce((a, p) => a + p.length, 0);
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const p of chunks) {
+    out.set(p, off);
+    off += p.length;
+  }
+  return out;
 }

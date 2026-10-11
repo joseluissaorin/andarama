@@ -40,3 +40,18 @@ export function writeSectionOpen(id: string, open: boolean, storage: MiniStorage
     // sin almacenamiento la preferencia dura lo que la pestaña
   }
 }
+
+/** Evento con el que otra parte del editor pide abrir una sección concreta. */
+export const OPEN_SECTION_EVENT = "andarama:open-section";
+
+/**
+ * Abre la sección `id` del panel de propiedades y la trae a la vista. Se
+ * guarda abierta antes de avisar: si el panel aún no la ha montado (había un
+ * hotspot seleccionado), saldrá ya abierta al montarse.
+ */
+export function requestOpenSection(id: string): void {
+  writeSectionOpen(id, true);
+  if (typeof window === "undefined") return;
+  // Tras el render que cambia la selección, para que la sección ya exista
+  setTimeout(() => window.dispatchEvent(new CustomEvent<string>(OPEN_SECTION_EVENT, { detail: id })), 60);
+}

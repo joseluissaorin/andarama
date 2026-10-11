@@ -16,6 +16,7 @@ import {
   showHelp,
   showShareDialog,
 } from "./components.js";
+import { shouldOpenFloorplanAtStart } from "./floorplan.js";
 import { startGaze, type GazeHandle } from "./gaze.js";
 import { buildAccessibleView } from "./accessible.js";
 import { downloadCertificate } from "./certificate.js";
@@ -292,6 +293,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
 
   if (mapPanel.available) {
     controlsLeft.appendChild(iconButton("map", t("map"), mapPanel.toggle));
+    // Minimapa abierto desde el principio si el autor lo pide (no en el editor)
+    if (!edit && shouldOpenFloorplanAtStart(tour, container.clientWidth || window.innerWidth)) mapPanel.root.hidden = false;
   }
   // Volver a la escena anterior (se puede quitar en los ajustes del tour)
   if (!edit && ui.backButton !== false) {

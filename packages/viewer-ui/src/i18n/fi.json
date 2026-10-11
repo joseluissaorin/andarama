@@ -24,6 +24,8 @@
   "language": "Kieli",
   "map": "Kartta",
   "floorplan": "Pohjapiirros",
+  "floorplan_enlarge": "Suurenna pohjapiirrosta",
+  "floorplan_shrink": "Pienennä pohjapiirrosta",
   "compass": "Kompassi",
   "loading": "Ladataan",
   "menu": "Valikko",

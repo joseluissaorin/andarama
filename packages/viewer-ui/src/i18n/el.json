@@ -24,6 +24,8 @@
   "language": "Γλώσσα",
   "map": "Χάρτης",
   "floorplan": "Κάτοψη",
+  "floorplan_enlarge": "Μεγέθυνση κάτοψης",
+  "floorplan_shrink": "Σμίκρυνση κάτοψης",
   "compass": "Πυξίδα",
   "loading": "Φόρτωση",
   "menu": "Μενού",

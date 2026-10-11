@@ -182,7 +182,27 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
   const closeBtn = el("button", { className: "anda-btn", "aria-label": t("close"), style: "width:36px;height:36px;" });
   closeBtn.appendChild(createIconSvg("x", 16));
   const title = el("span", { text: floorplans.length > 0 ? t("floorplan") : t("map") });
-  root.appendChild(el("div", { className: "anda-mappanel__head" }, title, closeBtn));
+  // Ampliar: en un móvil el plano a 400 px no deja pulsar bien los puntos,
+  // y en escritorio un plano detallado se lee mejor grande
+  const sizeBtn = el("button", {
+    className: "anda-btn anda-mappanel__size",
+    type: "button",
+    "aria-label": t("floorplan_enlarge"),
+    "aria-pressed": "false",
+    title: t("floorplan_enlarge"),
+    style: "width:36px;height:36px;",
+  });
+  sizeBtn.appendChild(createIconSvg("maximize", 16));
+  const setBig = (big: boolean): void => {
+    root.classList.toggle("anda-mappanel--big", big);
+    sizeBtn.setAttribute("aria-pressed", String(big));
+    const label = big ? t("floorplan_shrink") : t("floorplan_enlarge");
+    sizeBtn.setAttribute("aria-label", label);
+    sizeBtn.setAttribute("title", label);
+    sizeBtn.replaceChildren(createIconSvg(big ? "minimize" : "maximize", 16));
+  };
+  sizeBtn.addEventListener("click", () => setBig(!root.classList.contains("anda-mappanel--big")));
+  root.appendChild(el("div", { className: "anda-mappanel__head" }, title, sizeBtn, closeBtn));
   closeBtn.addEventListener("click", () => {
     root.hidden = true;
   });
@@ -212,7 +232,11 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
         "data-scene": scene.id,
         style: `left:${m.x * 100}%;top:${m.y * 100}%;`,
       });
-      marker.addEventListener("click", () => void viewer.goTo(scene.id));
+      marker.addEventListener("click", () => {
+        // Ampliado tapa el panorama: tras saltar vuelve al tamaño de minimapa
+        setBig(false);
+        void viewer.goTo(scene.id);
+      });
       wrap.appendChild(marker);
     }
     const update = (): void => {
@@ -346,6 +370,7 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
     available,
   };
 }
+
 
 // ---------------------------------------------------------------------------
 // Pantallas de bienvenida / final y ayuda

@@ -1,6 +1,6 @@
 import type { Tour } from "@andarama/schema";
 import {
-  AssetReadError,
+  fetchBytes,
   runExport,
   withRetry,
   ZipWriter,
@@ -35,17 +35,6 @@ export interface ExportJobHooks {
   /** Cada trozo del ZIP según se escribe: se puede volcar a disco sin acumularlo. */
   onChunk: (chunk: Uint8Array) => void | Promise<void>;
   onProgress: (p: ExportProgress) => void;
-}
-
-async function fetchBytes(url: string, label: string, init?: RequestInit): Promise<Uint8Array> {
-  let res: Response;
-  try {
-    res = await fetch(url, init);
-  } catch (err) {
-    throw new AssetReadError(`No se pudo leer ${label} (${err instanceof Error ? err.message : String(err)})`, null);
-  }
-  if (!res.ok) throw new AssetReadError(`No se pudo leer ${label} (${res.status})`, res.status);
-  return new Uint8Array(await res.arrayBuffer());
 }
 
 export async function runExportJob(job: ExportJob, hooks: ExportJobHooks): Promise<ExportResult> {

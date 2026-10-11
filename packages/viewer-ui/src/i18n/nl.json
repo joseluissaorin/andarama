@@ -24,6 +24,8 @@
   "language": "Taal",
   "map": "Kaart",
   "floorplan": "Plattegrond",
+  "floorplan_enlarge": "Plattegrond vergroten",
+  "floorplan_shrink": "Plattegrond verkleinen",
   "compass": "Kompas",
   "loading": "Bezig met laden",
   "menu": "Menu",

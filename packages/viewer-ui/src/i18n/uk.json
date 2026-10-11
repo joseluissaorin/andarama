@@ -24,6 +24,8 @@
   "language": "Мова",
   "map": "Мапа",
   "floorplan": "План",
+  "floorplan_enlarge": "Збільшити план",
+  "floorplan_shrink": "Зменшити план",
   "compass": "Компас",
   "loading": "Завантаження",
   "menu": "Меню",

@@ -24,6 +24,8 @@
   "language": "Jazyk",
   "map": "Mapa",
   "floorplan": "Pôdorys",
+  "floorplan_enlarge": "Zväčšiť pôdorys",
+  "floorplan_shrink": "Zmenšiť pôdorys",
   "compass": "Kompas",
   "loading": "Načítava sa",
   "menu": "Menu",

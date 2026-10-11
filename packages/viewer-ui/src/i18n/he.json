@@ -24,6 +24,8 @@
   "language": "שפה",
   "map": "מפה",
   "floorplan": "תוכנית קומה",
+  "floorplan_enlarge": "הגדל את תוכנית הקומה",
+  "floorplan_shrink": "הקטן את תוכנית הקומה",
   "compass": "מצפן",
   "loading": "טוען",
   "menu": "תפריט",

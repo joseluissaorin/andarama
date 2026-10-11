@@ -1,6 +1,6 @@
 ---
 title: Música y audio
-description: La música de fondo de todo el recorrido, el sonido de cada escena, cómo se combinan y cómo silenciar el editor mientras trabajas.
+description: La música de fondo de todo el recorrido, el sonido de cada escena, cómo se combinan, cómo silenciar el editor mientras trabajas y cómo quitar el sonido de una escena en el recorrido publicado.
 ---
 
 Un recorrido puede sonar de dos maneras: con una **música de fondo** que
@@ -69,6 +69,27 @@ te lo recuerda con un aviso.
 - El editor **lo recuerda** en ese navegador: si lo silencias, sigue silenciado
   la próxima vez.
 - Para volver a oírlo, pulsa **Activar sonido**.
+
+## Quitar el sonido de una escena en el recorrido publicado
+
+Si lo que quieres es que la escena **no suene para el visitante**, no basta con
+silenciar el editor. Hay dos caminos:
+
+- **Desde la barra del panorama.** Cuando la escena tiene ambiente, narración o
+  audio espacial, junto a **Silenciar** aparece una flecha. Abre un menú con
+  **Que no suene en el recorrido publicado** (y, si ya está desactivado,
+  **Volver a activar el sonido en el recorrido**) y con **Abrir el audio de la
+  escena**, que lleva directamente a esa sección de las propiedades.
+- **Desde Audio de la escena.** El interruptor **Suena en el recorrido
+  publicado** hace lo mismo. Mientras está apagado, la sección lo recuerda con
+  un aviso.
+
+Desactivar **no borra nada**: el ambiente y la narración elegidos se quedan en
+la escena por si los vuelves a activar, pero el recorrido publicado y los
+paquetes exportados no los llevan. Si prefieres quitarlos del todo, cada pista
+tiene su botón **Quitar**.
+
+Tras cambiarlo, vuelve a publicar para que llegue al recorrido.
 
 ## El botón de silencio del visitante
 

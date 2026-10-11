@@ -24,6 +24,8 @@
   "language": "Langue",
   "map": "Carte",
   "floorplan": "Plan",
+  "floorplan_enlarge": "Agrandir le plan",
+  "floorplan_shrink": "Réduire le plan",
   "compass": "Boussole",
   "loading": "Chargement",
   "menu": "Menu",

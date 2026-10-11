@@ -727,6 +727,11 @@ export interface UIConfig {
   /** Botón «Escena anterior» (abajo a la izquierda). */
   backButton?: boolean;
   /**
+   * Plano abierto como minimapa desde el principio (si el tour tiene plano).
+   * En pantallas estrechas empieza cerrado para no tapar el panorama.
+   */
+  floorplanOpen?: boolean;
+  /**
    * Selector de proyección. `false` lo quita; una lista deja elegir solo
    * esas proyecciones (con una sola, el botón no aparece).
    */

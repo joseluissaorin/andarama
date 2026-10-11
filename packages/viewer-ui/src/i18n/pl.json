@@ -24,6 +24,8 @@
   "language": "Język",
   "map": "Mapa",
   "floorplan": "Plan",
+  "floorplan_enlarge": "Powiększ plan",
+  "floorplan_shrink": "Zmniejsz plan",
   "compass": "Kompas",
   "loading": "Wczytywanie",
   "menu": "Menu",
