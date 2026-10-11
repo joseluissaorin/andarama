@@ -1,5 +1,14 @@
 [
   {
+    "fecha": "2026-10-11",
+    "titulo": "Sharper, more complete virtual reality",
+    "items": [
+      "In the headset, scenes look up to twice as sharp (8K photos or larger) and load sooner: full resolution arrives piece by piece, starting with what is in front of you, and neighbouring scenes download while you look around, so they appear complete when you jump.",
+      "PDFs can be read inside the headset, page by page, with previous, next and scrolling, using either the controllers or your gaze.",
+      "Uploaded videos play inside the headset with a play and pause button. YouTube, Vimeo or PeerTube videos show their title and thumbnail, plus a button to leave virtual reality and watch them in the tour."
+    ]
+  },
+  {
     "fecha": "2026-10-02",
     "titulo": "What the teaching team asked for",
     "items": [
