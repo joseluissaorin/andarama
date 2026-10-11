@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Doeltaal",
   "a11y_skip_to_content": "Naar de inhoud springen",
   "a11y_require_alt": "Alternatieve tekst vereisen om te publiceren",
-  "a11y_require_alt_desc": "Als een scène of een hotspot geen alternatieve tekst heeft, wordt de tour pas gepubliceerd zodra deze is toegevoegd. Aanbevolen voor overheidsinstanties, die verantwoordelijk zijn voor de toegankelijkheid van wat ze publiceren."
+  "a11y_require_alt_desc": "Als een scène of een hotspot geen alternatieve tekst heeft, wordt de tour pas gepubliceerd zodra deze is toegevoegd. Aanbevolen voor overheidsinstanties, die verantwoordelijk zijn voor de toegankelijkheid van wat ze publiceren.",
+  "shared_with_you": "Gedeeld met jou",
+  "shared_with_you_hint": "Tours van andere organisaties waarvoor je bent uitgenodigd om mee te werken.",
+  "shared_from_owner": "Van {owner}, in {org}",
+  "shared_from_org": "Van {org}"
 }

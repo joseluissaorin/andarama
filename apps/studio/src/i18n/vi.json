@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Ngôn ngữ đích",
   "a11y_skip_to_content": "Chuyển đến nội dung",
   "a11y_require_alt": "Bắt buộc có văn bản thay thế để xuất bản",
-  "a11y_require_alt_desc": "Nếu một cảnh hoặc một hotspot không có văn bản thay thế, tour sẽ không được xuất bản cho đến khi bổ sung đầy đủ. Khuyến nghị cho các tổ chức công lập chịu trách nhiệm về khả năng tiếp cận của nội dung xuất bản."
+  "a11y_require_alt_desc": "Nếu một cảnh hoặc một hotspot không có văn bản thay thế, tour sẽ không được xuất bản cho đến khi bổ sung đầy đủ. Khuyến nghị cho các tổ chức công lập chịu trách nhiệm về khả năng tiếp cận của nội dung xuất bản.",
+  "shared_with_you": "Được chia sẻ với bạn",
+  "shared_with_you_hint": "Các tour từ tổ chức khác mà bạn được mời tham gia.",
+  "shared_from_owner": "Bởi {owner}, tại {org}",
+  "shared_from_org": "Từ {org}"
 }

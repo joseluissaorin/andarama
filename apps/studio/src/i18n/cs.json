@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Cílový jazyk",
   "a11y_skip_to_content": "Přeskočit na obsah",
   "a11y_require_alt": "Vyžadovat alternativní text pro publikování",
-  "a11y_require_alt_desc": "Pokud scéna nebo hotspot nemá alternativní text, virtuální prohlídka se nepublikuje, dokud jej nebude mít. Doporučeno pro veřejné instituce, které odpovídají za přístupnost toho, co publikují."
+  "a11y_require_alt_desc": "Pokud scéna nebo hotspot nemá alternativní text, virtuální prohlídka se nepublikuje, dokud jej nebude mít. Doporučeno pro veřejné instituce, které odpovídají za přístupnost toho, co publikují.",
+  "shared_with_you": "Sdílené s tebou",
+  "shared_with_you_hint": "Prohlídky z jiných organizací, do kterých tě pozvali ke spolupráci.",
+  "shared_from_owner": "Od {owner}, v {org}",
+  "shared_from_org": "Od {org}"
 }

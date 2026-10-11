@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Hedef dil",
   "a11y_skip_to_content": "İçeriğe atla",
   "a11y_require_alt": "Yayınlamak için alternatif metin zorunlu olsun",
-  "a11y_require_alt_desc": "Bir sahnede veya hotspot'ta alternatif metin yoksa, eklenene kadar tur yayınlanmaz. Yayınladıkları içeriklerin erişilebilirliğinden sorumlu olan kamu kurumları için önerilir."
+  "a11y_require_alt_desc": "Bir sahnede veya hotspot'ta alternatif metin yoksa, eklenene kadar tur yayınlanmaz. Yayınladıkları içeriklerin erişilebilirliğinden sorumlu olan kamu kurumları için önerilir.",
+  "shared_with_you": "Seninle paylaşılanlar",
+  "shared_with_you_hint": "Başka organizasyonlardan katılmaya davet edildiğin turlar.",
+  "shared_from_owner": "{owner} tarafından, {org} içinde",
+  "shared_from_org": "{org} tarafından"
 }

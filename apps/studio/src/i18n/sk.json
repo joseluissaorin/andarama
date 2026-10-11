@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Cieľový jazyk",
   "a11y_skip_to_content": "Preskočiť na obsah",
   "a11y_require_alt": "Vyžadovať alternatívny text na publikovanie",
-  "a11y_require_alt_desc": "Ak scéna alebo hotspot nemá alternatívny text, tour sa nepublikuje, kým ho nebude mať. Odporúča sa pre verejné inštitúcie, ktoré zodpovedajú za prístupnosť publikovaného obsahu."
+  "a11y_require_alt_desc": "Ak scéna alebo hotspot nemá alternatívny text, tour sa nepublikuje, kým ho nebude mať. Odporúča sa pre verejné inštitúcie, ktoré zodpovedajú za prístupnosť publikovaného obsahu.",
+  "shared_with_you": "Zdieľané s tebou",
+  "shared_with_you_hint": "Prehliadky z iných organizácií, do ktorých ťa pozvali zapojiť sa.",
+  "shared_from_owner": "Od {owner}, v {org}",
+  "shared_from_org": "Z {org}"
 }

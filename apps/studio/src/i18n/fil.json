@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Target na wika",
   "a11y_skip_to_content": "Lumaktaw sa nilalaman",
   "a11y_require_alt": "Kailanganin ang alternatibong teksto para mag-publish",
-  "a11y_require_alt_desc": "Kung ang isang eksena o hotspot ay walang alternatibong teksto, hindi mai-publish ang tour hanggang sa magkaroon ito. Inirerekomenda para sa mga pampublikong ahensya, na may pananagutan sa accessibility ng kanilang ipinapa-publish."
+  "a11y_require_alt_desc": "Kung ang isang eksena o hotspot ay walang alternatibong teksto, hindi mai-publish ang tour hanggang sa magkaroon ito. Inirerekomenda para sa mga pampublikong ahensya, na may pananagutan sa accessibility ng kanilang ipinapa-publish.",
+  "shared_with_you": "Ibinahagi sa iyo",
+  "shared_with_you_hint": "Mga tour mula sa ibang organisasyon kung saan ka naimbitahang makibahagi.",
+  "shared_from_owner": "Ni {owner}, sa {org}",
+  "shared_from_org": "Mula sa {org}"
 }

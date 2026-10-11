@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Ciljni jezik",
   "a11y_skip_to_content": "Preskoči na sadržaj",
   "a11y_require_alt": "Zahtijevaj alternativni tekst za objavu",
-  "a11y_require_alt_desc": "Ako scena ili hotspot nema alternativni tekst, tura se neće objaviti dok ga ne dobije. Preporučuje se javnim tijelima koja odgovaraju za pristupačnost onoga što objavljuju."
+  "a11y_require_alt_desc": "Ako scena ili hotspot nema alternativni tekst, tura se neće objaviti dok ga ne dobije. Preporučuje se javnim tijelima koja odgovaraju za pristupačnost onoga što objavljuju.",
+  "shared_with_you": "Podijeljeno s tobom",
+  "shared_with_you_hint": "Ture drugih organizacija u kojima si pozvan sudjelovati.",
+  "shared_from_owner": "Od {owner}, u {org}",
+  "shared_from_org": "Iz {org}"
 }

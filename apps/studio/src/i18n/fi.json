@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Kohdekieli",
   "a11y_skip_to_content": "Siirry sisältöön",
   "a11y_require_alt": "Vaadi vaihtoehtoinen teksti julkaisemiseen",
-  "a11y_require_alt_desc": "Jos kohtauksella tai hotspotilla ei ole vaihtoehtoista tekstiä, kierrosta ei julkaista ennen kuin se on lisätty. Suositellaan julkisille organisaatioille, jotka vastaavat julkaisujensa saavutettavuudesta."
+  "a11y_require_alt_desc": "Jos kohtauksella tai hotspotilla ei ole vaihtoehtoista tekstiä, kierrosta ei julkaista ennen kuin se on lisätty. Suositellaan julkisille organisaatioille, jotka vastaavat julkaisujensa saavutettavuudesta.",
+  "shared_with_you": "Jaettu kanssasi",
+  "shared_with_you_hint": "Muiden organisaatioiden kierrokset, joihin sinut on kutsuttu osallistumaan.",
+  "shared_from_owner": "Käyttäjältä {owner}, organisaatiossa {org}",
+  "shared_from_org": "Organisaatiolta {org}"
 }

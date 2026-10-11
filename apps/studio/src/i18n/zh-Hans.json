@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "目标语言",
   "a11y_skip_to_content": "跳至主要内容",
   "a11y_require_alt": "发布需包含替代文本",
-  "a11y_require_alt_desc": "如果某个场景或热点缺少替代文本，则漫游在补全前无法发布。建议公共机构开启，此类机构须对其发布内容的无障碍访问负责。"
+  "a11y_require_alt_desc": "如果某个场景或热点缺少替代文本，则漫游在补全前无法发布。建议公共机构开启，此类机构须对其发布内容的无障碍访问负责。",
+  "shared_with_you": "与你共享",
+  "shared_with_you_hint": "其他组织邀请你参与的虚拟导览。",
+  "shared_from_owner": "来自 {org} 的 {owner}",
+  "shared_from_org": "来自 {org}"
 }

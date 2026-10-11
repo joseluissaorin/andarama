@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Bahasa tujuan",
   "a11y_skip_to_content": "Lompat ke konten",
   "a11y_require_alt": "Wajibkan teks alternatif untuk memublikasikan",
-  "a11y_require_alt_desc": "Jika sebuah adegan atau hotspot tidak memiliki teks alternatif, tur tidak akan dipublikasikan sampai teks tersebut ada. Disarankan untuk instansi publik yang bertanggung jawab atas aksesibilitas konten yang mereka publikasikan."
+  "a11y_require_alt_desc": "Jika sebuah adegan atau hotspot tidak memiliki teks alternatif, tur tidak akan dipublikasikan sampai teks tersebut ada. Disarankan untuk instansi publik yang bertanggung jawab atas aksesibilitas konten yang mereka publikasikan.",
+  "shared_with_you": "Dibagikan denganmu",
+  "shared_with_you_hint": "Tur dari organisasi lain tempat kamu diundang untuk berpartisipasi.",
+  "shared_from_owner": "Oleh {owner}, di {org}",
+  "shared_from_org": "Dari {org}"
 }

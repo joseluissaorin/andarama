@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Limba țintă",
   "a11y_skip_to_content": "Sari la conținut",
   "a11y_require_alt": "Solicită text alternativ pentru publicare",
-  "a11y_require_alt_desc": "Dacă o scenă sau un hotspot nu are text alternativ, turul nu va fi publicat până când nu are. Recomandat pentru instituțiile publice, care răspund de accesibilitatea conținutului publicat."
+  "a11y_require_alt_desc": "Dacă o scenă sau un hotspot nu are text alternativ, turul nu va fi publicat până când nu are. Recomandat pentru instituțiile publice, care răspund de accesibilitatea conținutului publicat.",
+  "shared_with_you": "Partajate cu tine",
+  "shared_with_you_hint": "Tururi din alte organizații la care ai fost invitat să participi.",
+  "shared_from_owner": "De {owner}, în {org}",
+  "shared_from_org": "De la {org}"
 }

@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "目標語言",
   "a11y_skip_to_content": "跳至主要內容",
   "a11y_require_alt": "發布前必須提供替代文字",
-  "a11y_require_alt_desc": "如果場景或熱點缺少替代文字，在補齊之前將無法發布導覽。建議須為發布內容之無障礙性負責的公家機關啟用。"
+  "a11y_require_alt_desc": "如果場景或熱點缺少替代文字，在補齊之前將無法發布導覽。建議須為發布內容之無障礙性負責的公家機關啟用。",
+  "shared_with_you": "與你共用",
+  "shared_with_you_hint": "其他組織邀請你參與的導覽。",
+  "shared_from_owner": "來自 {owner}，於 {org}",
+  "shared_from_org": "來自 {org}"
 }

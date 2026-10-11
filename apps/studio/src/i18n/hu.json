@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Célnyelv",
   "a11y_skip_to_content": "Ugrás a tartalomra",
   "a11y_require_alt": "Helyettesítő szöveg megkövetelése a közzétételhez",
-  "a11y_require_alt_desc": "Ha egy jelenetnek vagy hotspotnak nincs helyettesítő szövege, a virtuális túra mindaddig nem tehető közzé, amíg nem rendelkezik vele. Ajánlott a közzétett tartalmaik akadálymentességéért felelős közintézmények számára."
+  "a11y_require_alt_desc": "Ha egy jelenetnek vagy hotspotnak nincs helyettesítő szövege, a virtuális túra mindaddig nem tehető közzé, amíg nem rendelkezik vele. Ajánlott a közzétett tartalmaik akadálymentességéért felelős közintézmények számára.",
+  "shared_with_you": "Megosztva veled",
+  "shared_with_you_hint": "Más szervezetek túrái, amelyekben való részvételre meghívást kaptál.",
+  "shared_from_owner": "{owner} által, itt: {org}",
+  "shared_from_org": "Innen: {org}"
 }

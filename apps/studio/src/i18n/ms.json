@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Bahasa sasaran",
   "a11y_skip_to_content": "Langkau ke kandungan",
   "a11y_require_alt": "Wajibkan teks alternatif untuk menerbitkan",
-  "a11y_require_alt_desc": "Jika adegan atau hotspot tidak mempunyai teks alternatif, lawatan tidak akan diterbitkan sehingga ia memilikinya. Disyorkan untuk badan awam, yang bertanggungjawab terhadap kebolehcapaian kandungan yang mereka terbitkan."
+  "a11y_require_alt_desc": "Jika adegan atau hotspot tidak mempunyai teks alternatif, lawatan tidak akan diterbitkan sehingga ia memilikinya. Disyorkan untuk badan awam, yang bertanggungjawab terhadap kebolehcapaian kandungan yang mereka terbitkan.",
+  "shared_with_you": "Dikongsi dengan anda",
+  "shared_with_you_hint": "Lawatan daripada organisasi lain yang anda dijemput untuk sertai.",
+  "shared_from_owner": "Daripada {owner}, di {org}",
+  "shared_from_org": "Daripada {org}"
 }

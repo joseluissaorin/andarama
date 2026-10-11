@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Målspråk",
   "a11y_skip_to_content": "Hopp til innhold",
   "a11y_require_alt": "Krev alternativ tekst for å publisere",
-  "a11y_require_alt_desc": "Hvis en scene eller en hotspot mangler alternativ tekst, publiseres ikke omvisningen før den har det. Anbefales for offentlige virksomheter, som har ansvar for tilgjengeligheten til det de publiserer."
+  "a11y_require_alt_desc": "Hvis en scene eller en hotspot mangler alternativ tekst, publiseres ikke omvisningen før den har det. Anbefales for offentlige virksomheter, som har ansvar for tilgjengeligheten til det de publiserer.",
+  "shared_with_you": "Delt med deg",
+  "shared_with_you_hint": "Omvisninger fra andre organisasjoner du er invitert til å delta i.",
+  "shared_from_owner": "Av {owner}, i {org}",
+  "shared_from_org": "Fra {org}"
 }

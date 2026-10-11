@@ -150,3 +150,17 @@ test("Luis, que es de otra organización, ve las miniaturas del recorrido", asyn
   // «Toda la biblioteca» es de la organización de Ana: a Luis no se le ofrece
   await expect(luis.page.getByRole("button", { name: "Toda la biblioteca" })).toHaveCount(0);
 });
+
+test("en Proyectos, Luis encuentra el recorrido en «Compartidos contigo» y lo abre", async () => {
+  await luis.page.goto("/studio/");
+  const bloque = luis.page.getByTestId("shared-with-you");
+  await expect(bloque.getByRole("heading", { name: "Compartidos contigo" })).toBeVisible({ timeout: 15_000 });
+  await expect(bloque).toContainText(`De ${ANA.name}`);
+  await expect(bloque).toContainText("Colaborador");
+  await bloque.getByRole("button", { name: "Recorrido en grupo" }).first().click();
+  await expect(luis.page).toHaveURL(new RegExp(`${projectUrl}$`));
+  // Ana no lo ve ahí: el recorrido es de su organización
+  await ana.page.goto("/studio/");
+  await expect(ana.page.getByRole("heading", { name: "Recorrido en grupo" }).first()).toBeVisible({ timeout: 15_000 });
+  await expect(ana.page.getByTestId("shared-with-you")).toHaveCount(0);
+});

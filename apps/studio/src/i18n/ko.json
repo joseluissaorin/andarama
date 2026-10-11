@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "대상 언어",
   "a11y_skip_to_content": "본문으로 건너뛰기",
   "a11y_require_alt": "게시 시 대체 텍스트 필수 요구",
-  "a11y_require_alt_desc": "장면이나 핫스팟에 대체 텍스트가 없으면 해당 항목이 작성될 때까지 투어가 게시되지 않습니다. 게시물의 접근성 준수 의무가 있는 공공 기관에 권장합니다."
+  "a11y_require_alt_desc": "장면이나 핫스팟에 대체 텍스트가 없으면 해당 항목이 작성될 때까지 투어가 게시되지 않습니다. 게시물의 접근성 준수 의무가 있는 공공 기관에 권장합니다.",
+  "shared_with_you": "나와 공유됨",
+  "shared_with_you_hint": "참여하도록 초대받은 다른 조직의 투어입니다.",
+  "shared_from_owner": "{org}의 {owner}",
+  "shared_from_org": "{org}에서"
 }

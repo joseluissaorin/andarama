@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Język docelowy",
   "a11y_skip_to_content": "Przejdź do treści",
   "a11y_require_alt": "Wymagaj tekstu alternatywnego do publikacji",
-  "a11y_require_alt_desc": "Jeśli scena lub hotspot nie ma tekstu alternatywnego, wirtualny spacer nie zostanie opublikowany, dopóki go nie będzie mieć. Zalecane dla instytucji publicznych, które odpowiadają za dostępność publikowanych treści."
+  "a11y_require_alt_desc": "Jeśli scena lub hotspot nie ma tekstu alternatywnego, wirtualny spacer nie zostanie opublikowany, dopóki go nie będzie mieć. Zalecane dla instytucji publicznych, które odpowiadają za dostępność publikowanych treści.",
+  "shared_with_you": "Udostępnione Tobie",
+  "shared_with_you_hint": "Wirtualne spacery z innych organizacji, do których Cię zaproszono.",
+  "shared_from_owner": "Od: {owner}, w: {org}",
+  "shared_from_org": "Z: {org}"
 }

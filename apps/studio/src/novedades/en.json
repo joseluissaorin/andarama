@@ -7,7 +7,8 @@
       "What each person does reaches the others without reloading: scenes, hotspots, links, order and settings. If two people save at the same time, the changes are merged without losing what is being typed.",
       "If someone has a scene or hotspot panel open, the others see \"… is editing this\" and those fields become read-only so nobody overwrites anybody, with \"Edit anyway\" if needed.",
       "The panorama shows where each person is looking and pointing, with a mark in their colour and their name.",
-      "If the live connection drops, a discreet notice says so; changes are still saved and it reconnects on its own."
+      "If the live connection drops, a discreet notice says so; changes are still saved and it reconnects on its own.",
+      "Tours shared with you from another organization appear in Projects, under \"Shared with you\", showing whose they are and your role. Inside you see their thumbnails and library and, if you can edit, the photos you upload stay in the tour."
     ]
   },
   {

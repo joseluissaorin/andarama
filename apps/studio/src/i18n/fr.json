@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Langue cible",
   "a11y_skip_to_content": "Passer au contenu",
   "a11y_require_alt": "Exiger un texte alternatif pour publier",
-  "a11y_require_alt_desc": "Si une scène ou un hotspot n'a pas de texte alternatif, la visite virtuelle n'est pas publiée tant qu'il n'y en a pas. Recommandé pour les organismes publics, qui répondent de l'accessibilité de ce qu'ils publient."
+  "a11y_require_alt_desc": "Si une scène ou un hotspot n'a pas de texte alternatif, la visite virtuelle n'est pas publiée tant qu'il n'y en a pas. Recommandé pour les organismes publics, qui répondent de l'accessibilité de ce qu'ils publient.",
+  "shared_with_you": "Partagés avec toi",
+  "shared_with_you_hint": "Tours d'autres organisations auxquels tu as été invité à participer.",
+  "shared_from_owner": "De {owner}, dans {org}",
+  "shared_from_org": "De {org}"
 }

@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Målsprog",
   "a11y_skip_to_content": "Spring til indhold",
   "a11y_require_alt": "Kræv alternativ tekst for at publicere",
-  "a11y_require_alt_desc": "Hvis en scene eller et hotspot ikke har alternativ tekst, publiceres touren ikke, før den har det. Anbefales til offentlige institutioner, der er ansvarlige for tilgængeligheden af det, de publicerer."
+  "a11y_require_alt_desc": "Hvis en scene eller et hotspot ikke har alternativ tekst, publiceres touren ikke, før den har det. Anbefales til offentlige institutioner, der er ansvarlige for tilgængeligheden af det, de publicerer.",
+  "shared_with_you": "Delt med dig",
+  "shared_with_you_hint": "Tours fra andre organisationer, som du er inviteret til at deltage i.",
+  "shared_from_owner": "Af {owner}, i {org}",
+  "shared_from_org": "Fra {org}"
 }

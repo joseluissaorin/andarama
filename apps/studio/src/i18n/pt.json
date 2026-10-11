@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Idioma de destino",
   "a11y_skip_to_content": "Saltar para o conteúdo",
   "a11y_require_alt": "Exigir texto alternativo para publicar",
-  "a11y_require_alt_desc": "Se uma cena ou um hotspot não tiver texto alternativo, o tour não é publicado até que o tenha. Recomendado para organismos públicos, que respondem pela acessibilidade do que publicam."
+  "a11y_require_alt_desc": "Se uma cena ou um hotspot não tiver texto alternativo, o tour não é publicado até que o tenha. Recomendado para organismos públicos, que respondem pela acessibilidade do que publicam.",
+  "shared_with_you": "Partilhados contigo",
+  "shared_with_you_hint": "Tours de outras organizações em que foste convidado a participar.",
+  "shared_from_owner": "De {owner}, em {org}",
+  "shared_from_org": "De {org}"
 }

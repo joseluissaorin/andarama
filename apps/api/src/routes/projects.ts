@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, eq, inArray, isNotNull, lt, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
 import {
+  orgMembers,
+  orgs,
   projectMembers,
   projects,
   publications,
@@ -23,6 +25,26 @@ import { PREVIEW_MAP_TTL_SECONDS, verifyExportToken } from "../lib/export-token.
 import { orgPlanActive, requireActivePlan } from "../lib/capabilities.js";
 import { publishChange } from "../lib/collab.js";
 import { cloneProjectContent, isOperatorTemplate, listSectorTemplates, templateOrgIds } from "../lib/templates.js";
+
+/**
+ * Portada de cada tour: el panorama de su escena inicial, o el de la primera
+ * escena si aún no se ha elegido inicio.
+ */
+async function coverResolver(
+  db: import("../lib/context.js").Db,
+  rows: (typeof projects.$inferSelect)[],
+): Promise<(project: typeof projects.$inferSelect) => string | null> {
+  const ids = rows.map((p) => p.id);
+  const sceneRows = ids.length > 0
+    ? await db.select().from(scenesTable).where(inArray(scenesTable.projectId, ids)).orderBy(asc(scenesTable.sort))
+    : [];
+  return (project) => {
+    const own = sceneRows.filter((sc) => sc.projectId === project.id);
+    const start = parseJson<{ startScene?: string }>(project.settingsJson, {}).startScene;
+    const scene = own.find((sc) => sc.id === start) ?? own[0];
+    return scene?.mediaId ?? null;
+  };
+}
 
 export function projectRoutes(): Hono<AppEnv> {
   const r = new Hono<AppEnv>();
@@ -47,18 +69,7 @@ export function projectRoutes(): Hono<AppEnv> {
     const pubs = await db.select().from(publications);
     const pubByProject = new Map(pubs.map((p) => [p.projectId, p]));
 
-    // Portada de cada tour: el panorama de su escena inicial, o el de la
-    // primera escena si aún no se ha elegido inicio.
-    const ids = rows.map((p) => p.id);
-    const sceneRows = ids.length > 0
-      ? await db.select().from(scenesTable).where(inArray(scenesTable.projectId, ids)).orderBy(asc(scenesTable.sort))
-      : [];
-    const coverOf = (project: typeof rows[number]): string | null => {
-      const own = sceneRows.filter((sc) => sc.projectId === project.id);
-      const start = parseJson<{ startScene?: string }>(project.settingsJson, {}).startScene;
-      const scene = own.find((sc) => sc.id === start) ?? own[0];
-      return scene?.mediaId ?? null;
-    };
+    const coverOf = await coverResolver(c.get("db"), rows);
 
     return c.json(
       rows.map((p) => ({
@@ -75,6 +86,44 @@ export function projectRoutes(): Hono<AppEnv> {
   r.get("/sector-templates", async (c) => {
     requireAuth(c);
     return c.json(await listSectorTemplates(c.get("db"), c.get("config")));
+  });
+
+  /**
+   * Recorridos de otras organizaciones compartidos con la persona
+   * (project_members). El listado por organización no los enseña porque no es
+   * de esa organización: sin esto, solo se llegaba a ellos con el enlace.
+   */
+  r.get("/shared", async (c) => {
+    const auth = requireAuth(c);
+    requireScope(auth, "projects:read");
+    const db = c.get("db");
+    const rows = await db
+      .select({ project: projects, role: projectMembers.role, orgName: orgs.name, ownerName: users.name })
+      .from(projectMembers)
+      .innerJoin(projects, eq(projectMembers.projectId, projects.id))
+      .innerJoin(orgs, eq(projects.orgId, orgs.id))
+      .leftJoin(users, eq(projects.createdBy, users.id))
+      .where(and(eq(projectMembers.userId, auth.user.id), isNull(projects.deletedAt)));
+    if (rows.length === 0) return c.json([]);
+    // Lo de las organizaciones de la persona ya sale en su listado normal
+    const mine = new Set(
+      (await db.select({ orgId: orgMembers.orgId }).from(orgMembers).where(eq(orgMembers.userId, auth.user.id))).map((m) => m.orgId),
+    );
+    const ajenos = rows.filter((r) => !mine.has(r.project.orgId));
+    const coverOf = await coverResolver(db, ajenos.map((r) => r.project));
+    return c.json(
+      ajenos
+        .sort((a, b) => b.project.updatedAt - a.project.updatedAt)
+        .map((r) => ({
+          id: r.project.id,
+          title: r.project.title,
+          updatedAt: r.project.updatedAt,
+          coverMediaId: coverOf(r.project),
+          role: r.role,
+          org: { id: r.project.orgId, name: r.orgName },
+          owner: r.ownerName != null ? { name: r.ownerName } : null,
+        })),
+    );
   });
 
   r.post("/", async (c) => {

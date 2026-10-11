@@ -62,6 +62,7 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/orgs/{orgId}/members/{userId}": { patch: p("Cambiar rol", "orgs"), delete: p("Eliminar miembro", "orgs") },
       "/orgs/invites/accept": { post: p("Aceptar invitación", "orgs") },
       "/projects": { get: p("Listar proyectos (carpetas, etiquetas, papelera)", "projects"), post: p("Crear proyecto (opcionalmente desde plantilla)", "projects") },
+      "/projects/shared": { get: p("Recorridos de otras organizaciones compartidos contigo", "projects") },
       "/projects/{id}": { get: p("Detalle con permisos y publicación", "projects"), patch: p("Actualizar (título, carpeta, etiquetas, ajustes de tour)", "projects"), delete: p("Enviar a la papelera (retención 30 días)", "projects") },
       "/projects/{id}/restore": { post: p("Restaurar de la papelera", "projects") },
       "/projects/{id}/permanent": { delete: p("Borrado definitivo", "projects") },

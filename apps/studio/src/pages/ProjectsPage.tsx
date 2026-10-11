@@ -55,6 +55,17 @@ interface ProjectSummary {
   publishedSlug: string | null;
 }
 
+/** Recorrido de otra organización compartido con la persona (GET /projects/shared). */
+interface SharedProject {
+  id: string;
+  title: string;
+  updatedAt: number;
+  coverMediaId: string | null;
+  role: "editor" | "collaborator" | "reader";
+  org: { id: string; name: string };
+  owner: { name: string } | null;
+}
+
 interface Usage {
   quotaBytes: number;
   usedBytes: number;
@@ -104,6 +115,12 @@ export function ProjectsPage(): React.ReactNode {
     queryKey: ["projects", orgId, view === "trash"],
     queryFn: () => api<ProjectSummary[]>(`/projects?org=${orgId}${view === "trash" ? "&trashed=1" : ""}`),
     enabled: orgId != null,
+  });
+  // Recorridos de otras organizaciones: el listado por organización no los
+  // trae, y sin esto solo se llegaba a ellos con el enlace directo
+  const shared = useQuery({
+    queryKey: ["projects", "shared"],
+    queryFn: () => api<SharedProject[]>("/projects/shared"),
   });
   const usage = useQuery({
     queryKey: ["usage", orgId],
@@ -308,6 +325,23 @@ export function ProjectsPage(): React.ReactNode {
       </div>
 
       {view === "trash" && <p className="mb-4 text-[13px] text-[var(--anda-text-dim)]">{t("trash_note")}</p>}
+
+      {view === "active" && folder === "" && (() => {
+        const q = search.toLowerCase();
+        const lista = (shared.data ?? []).filter((p) => q === "" || p.title.toLowerCase().includes(q));
+        if (lista.length === 0) return null;
+        return (
+          <section className="mb-6" aria-labelledby="compartidos-contigo" data-testid="shared-with-you">
+            <h2 id="compartidos-contigo" className="text-[15px] font-semibold">{t("shared_with_you")}</h2>
+            <p className="mb-3 text-[13px] text-[var(--anda-text-dim)]">{t("shared_with_you_hint")}</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {lista.map((p) => (
+                <SharedProjectCard key={p.id} project={p} />
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {projects.isLoading ? (
         <div className="flex justify-center p-16">
@@ -584,6 +618,68 @@ function FolderCard({ name, count, dragOver, onOpen, onDragOver, onDropProject, 
 /** Tipo de arrastre propio: un tour que se suelta sobre una carpeta. */
 const PROJECT_DRAG = "application/x-andarama-project";
 
+/** Portada de un tour: su escena inicial vista como planeta, si la hay. */
+function usePlanet(mediaId: string | null): string | null {
+  const [planet, setPlanet] = useState<string | null>(null);
+  useEffect(() => {
+    if (mediaId == null) {
+      setPlanet(null);
+      return;
+    }
+    let alive = true;
+    void littlePlanetFor(mediaId, `/api/v1/media/${mediaId}/preview`, 320).then((url) => {
+      if (alive) setPlanet(url);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [mediaId]);
+  return planet;
+}
+
+/**
+ * Tarjeta de un recorrido que otra organización ha compartido contigo: se
+ * abre en el editor y dice de quién es y qué puedes hacer en él. Sin menú:
+ * moverlo, duplicarlo o borrarlo es cosa de su organización.
+ */
+function SharedProjectCard({ project }: { project: SharedProject }): React.ReactNode {
+  const t = useT();
+  const navigate = useNavigate();
+  const hue = [...project.id].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 360;
+  const planet = usePlanet(project.coverMediaId);
+  const abrir = (): void => void navigate({ to: "/p/$projectId", params: { projectId: project.id } });
+  return (
+    <div className="anda-tarjeta anda-enter group overflow-hidden">
+      <button
+        type="button"
+        className="anda-portada relative block h-24 w-full overflow-hidden border-b border-[var(--anda-border)] text-left"
+        aria-label={project.title}
+        onClick={abrir}
+      >
+        <span data-fondo className="absolute inset-0" style={{ background: `hsl(${hue}, 62%, 52%)` }} />
+        {planet != null ? (
+          <img src={planet} alt="" className="absolute inset-0 h-full w-full object-cover object-center" />
+        ) : (
+          <span className="pointer-events-none absolute bottom-1 right-4 drop-shadow-[0_2px_0_rgba(51,38,15,0.25)]">
+            <Criatura size={46} />
+          </span>
+        )}
+      </button>
+      <button type="button" className="block w-full p-4 pt-3 text-left" onClick={abrir}>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="min-w-0 flex-1 truncate font-semibold">{project.title}</h3>
+          <Badge>{t(`role_${project.role}`)}</Badge>
+        </div>
+        <p className="mt-1 truncate text-[12.5px] text-[var(--anda-text-dim)]">
+          {project.owner != null
+            ? t("shared_from_owner", { owner: project.owner.name, org: project.org.name })
+            : t("shared_from_org", { org: project.org.name })}
+        </p>
+      </button>
+    </div>
+  );
+}
+
 function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
   project: ProjectSummary;
   inTrash: boolean;
@@ -608,21 +704,7 @@ function ProjectCard({ project, inTrash, onChanged, onMoveOut }: {
 
   // Planeta de la escena inicial: se calcula del preview equirect del medio,
   // que pesa poco y se cachea, y se guarda en memoria entre navegaciones.
-  const [planet, setPlanet] = useState<string | null>(null);
-  useEffect(() => {
-    const mediaId = project.coverMediaId;
-    if (mediaId == null) {
-      setPlanet(null);
-      return;
-    }
-    let alive = true;
-    void littlePlanetFor(mediaId, `/api/v1/media/${mediaId}/preview`, 320).then((url) => {
-      if (alive) setPlanet(url);
-    });
-    return () => {
-      alive = false;
-    };
-  }, [project.coverMediaId]);
+  const planet = usePlanet(project.coverMediaId);
 
   return (
     <div

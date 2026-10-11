@@ -1274,5 +1274,9 @@
   "a11y_target_lang": "Målspråk",
   "a11y_skip_to_content": "Hoppa till innehållet",
   "a11y_require_alt": "Kräv alternativ text för att publicera",
-  "a11y_require_alt_desc": "Om en scen eller en hotspot saknar alternativ text publiceras inte rundturen förrän den har det. Rekommenderas för offentliga verksamheter, som ansvarar för tillgängligheten i det de publicerar."
+  "a11y_require_alt_desc": "Om en scen eller en hotspot saknar alternativ text publiceras inte rundturen förrän den har det. Rekommenderas för offentliga verksamheter, som ansvarar för tillgängligheten i det de publicerar.",
+  "shared_with_you": "Delat med dig",
+  "shared_with_you_hint": "Rundturer från andra organisationer som du har bjudits in att delta i.",
+  "shared_from_owner": "Av {owner}, i {org}",
+  "shared_from_org": "Från {org}"
 }

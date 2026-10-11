@@ -248,3 +248,41 @@ describe("subida y edición desde un recorrido compartido", () => {
     expect((await luis.call(`/media/${subido}`, { method: "DELETE" })).status).toBe(200);
   });
 });
+
+describe("recorridos compartidos contigo", () => {
+  type Compartido = { id: string; title: string; role: string; coverMediaId: string | null; org: { id: string; name: string }; owner: { name: string } | null };
+
+  it("lista los recorridos de otras organizaciones con su organización, su autora y el rol", async () => {
+    const res = await luis.call("/projects/shared");
+    expect(res.status).toBe(200);
+    const lista = (await res.json()) as Compartido[];
+    expect(lista).toHaveLength(1);
+    expect(lista[0]).toMatchObject({ id: tour, title: "Tour compartido", role: "collaborator", coverMediaId: "m-escena", org: { id: ana.orgId }, owner: { name: "Ana" } });
+    expect(lista[0]!.org.name.length).toBeGreaterThan(0);
+    expect((await lectora.json<Compartido[]>("/projects/shared"))[0]).toMatchObject({ id: tour, role: "reader" });
+  });
+
+  it("no incluye lo que no le han compartido ni lo de sus propias organizaciones", async () => {
+    expect(await ajeno.json<Compartido[]>("/projects/shared")).toEqual([]);
+    expect(await ana.json<Compartido[]>("/projects/shared")).toEqual([]);
+    // Luis comparte un tour suyo con la lectora: a ella le sale; a él no, que es suyo
+    const deLuis = (await luis.json<{ id: string }>("/projects", { method: "POST", body: { orgId: luis.orgId, title: "De Luis" } })).id;
+    expect((await luis.call(`/projects/${deLuis}/members`, { method: "POST", body: { email: lectora.email, role: "editor" } })).status).toBe(201);
+    const deLectora = await lectora.json<Compartido[]>("/projects/shared");
+    expect(deLectora.map((p) => p.id).sort()).toEqual([deLuis, tour].sort());
+    expect((await luis.json<Compartido[]>("/projects/shared")).map((p) => p.id)).toEqual([tour]);
+  });
+
+  it("lo que está en la papelera no sale", async () => {
+    await db.update(projects).set({ deletedAt: Date.now() }).where(eq(projects.id, tour));
+    try {
+      expect((await luis.json<Compartido[]>("/projects/shared")).map((p) => p.id)).not.toContain(tour);
+    } finally {
+      await db.update(projects).set({ deletedAt: null }).where(eq(projects.id, tour));
+    }
+  });
+
+  it("sin sesión, nada", async () => {
+    expect((await app.request("http://localhost/api/v1/projects/shared")).status).toBe(401);
+  });
+});
