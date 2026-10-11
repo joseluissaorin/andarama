@@ -24,6 +24,8 @@
   "language": "Bahasa",
   "map": "Peta",
   "floorplan": "Denah",
+  "floorplan_enlarge": "Perbesar denah",
+  "floorplan_shrink": "Perkecil denah",
   "compass": "Kompas",
   "loading": "Memuat",
   "menu": "Menu",

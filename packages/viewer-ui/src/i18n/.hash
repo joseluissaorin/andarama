@@ -154,7 +154,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "cs": {
     "scenes": "fc2bec7ca714",
@@ -311,7 +313,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "da": {
     "scenes": "fc2bec7ca714",
@@ -468,7 +472,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "de": {
     "help_drag": "065a596a3851",
@@ -625,7 +631,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "el": {
     "scenes": "fc2bec7ca714",
@@ -782,7 +790,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "fi": {
     "scenes": "fc2bec7ca714",
@@ -939,7 +949,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "fil": {
     "scenes": "fc2bec7ca714",
@@ -1096,7 +1108,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "fr": {
     "scenes": "fc2bec7ca714",
@@ -1253,7 +1267,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "he": {
     "scenes": "fc2bec7ca714",
@@ -1410,7 +1426,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "hr": {
     "scenes": "fc2bec7ca714",
@@ -1567,7 +1585,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "hu": {
     "scenes": "fc2bec7ca714",
@@ -1724,7 +1744,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "id": {
     "scenes": "fc2bec7ca714",
@@ -1881,7 +1903,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "it": {
     "scenes": "fc2bec7ca714",
@@ -2038,7 +2062,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "ja": {
     "scenes": "fc2bec7ca714",
@@ -2195,7 +2221,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "ko": {
     "scenes": "fc2bec7ca714",
@@ -2352,7 +2380,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "ms": {
     "scenes": "fc2bec7ca714",
@@ -2509,7 +2539,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "nl": {
     "scenes": "fc2bec7ca714",
@@ -2666,7 +2698,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "no": {
     "scenes": "fc2bec7ca714",
@@ -2823,7 +2857,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "pl": {
     "scenes": "fc2bec7ca714",
@@ -2980,7 +3016,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "pt": {
     "scenes": "fc2bec7ca714",
@@ -3137,7 +3175,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "ro": {
     "scenes": "fc2bec7ca714",
@@ -3294,7 +3334,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "ru": {
     "scenes": "fc2bec7ca714",
@@ -3451,7 +3493,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "sk": {
     "scenes": "fc2bec7ca714",
@@ -3608,7 +3652,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "sv": {
     "scenes": "fc2bec7ca714",
@@ -3765,7 +3811,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "th": {
     "scenes": "fc2bec7ca714",
@@ -3922,7 +3970,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "tr": {
     "scenes": "fc2bec7ca714",
@@ -4079,7 +4129,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "uk": {
     "scenes": "fc2bec7ca714",
@@ -4236,7 +4288,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "vi": {
     "scenes": "fc2bec7ca714",
@@ -4393,7 +4447,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "zh-Hans": {
     "scenes": "fc2bec7ca714",
@@ -4550,7 +4606,9 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   },
   "zh-Hant": {
     "scenes": "fc2bec7ca714",
@@ -4707,6 +4765,8 @@
     "quiz_see_result": "b275bd3ca82b",
     "quiz_review": "2a2bb02c1f67",
     "quiz_summary_title": "91cbeaf4ff45",
-    "quiz_summary": "5cf2492fa9f2"
+    "quiz_summary": "5cf2492fa9f2",
+    "floorplan_enlarge": "a38867727d07",
+    "floorplan_shrink": "25eaac17f9f5"
   }
 }

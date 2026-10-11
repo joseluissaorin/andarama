@@ -24,6 +24,8 @@
   "language": "Язык",
   "map": "Карта",
   "floorplan": "План этажа",
+  "floorplan_enlarge": "Увеличить план",
+  "floorplan_shrink": "Уменьшить план",
   "compass": "Компас",
   "loading": "Загрузка",
   "menu": "Меню",

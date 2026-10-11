@@ -785,3 +785,108 @@ async function login(page: Page): Promise<void> {
   await page.waitForURL("**/studio/");
   sessionCookies = await page.context().cookies();
 }
+
+test("el sonido de una escena se quita del recorrido publicado desde la barra del lienzo", async ({ page }) => {
+  // «Que el sonido de la escena se pueda silenciar en el editor (no he
+  // encontrado cómo hacerlo)»: silenciar el editor ya estaba; faltaba que
+  // dejara de sonar en el recorrido sin buscar por todo el panel
+  await login(page);
+  await page.goto("/studio/");
+  await page.getByText("Tour E2E").first().click();
+  await page.waitForURL("**/studio/p/**");
+  const projectId = new URL(page.url()).pathname.split("/").filter(Boolean).pop()!;
+  const { scenes: escenas } = (await (await page.request.get(`/api/v1/projects/${projectId}/scenes`)).json()) as { scenes: { id: string; title: string; mediaId: string | null }[] };
+  const escena = escenas.find((s) => s.title === "Escena E2E")!;
+  const patch = await page.request.patch(`/api/v1/projects/${projectId}/scenes/${escena.id}`, {
+    data: { audio: { ambient: { url: `media:${escena.mediaId}` } } },
+    headers: { "x-csrf-token": await csrf(page) },
+  });
+  expect(patch.ok()).toBeTruthy();
+  const compilar = async (): Promise<{ audio?: { ambient?: unknown } } | undefined> => {
+    const res = await page.request.post(`/api/v1/projects/${projectId}/compile`, { data: {}, headers: { "x-csrf-token": await csrf(page) } });
+    const { tour } = (await res.json()) as { tour: { scenes: { id: string; audio?: { ambient?: unknown } }[] } };
+    return tour.scenes.find((s) => s.id === escena.id);
+  };
+  expect((await compilar())?.audio?.ambient).toBeDefined();
+
+  await page.reload();
+  await abrirEscena(page, "Escena E2E");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  // Con sonido propio, junto a «Silenciar» está la flecha del sonido de la escena
+  await expect(page.getByRole("button", { name: "Silenciar el sonido mientras editas" })).toBeVisible();
+  await page.getByRole("button", { name: "Sonido de esta escena en el recorrido" }).click();
+  await page.getByRole("menuitem", { name: "Que no suene en el recorrido publicado" }).click();
+  await expect(page.getByText("Esta escena ya no suena en el recorrido publicado").first()).toBeVisible();
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+  await expect.poll(async () => (await compilar())?.audio?.ambient ?? null, { timeout: 15_000 }).toBeNull();
+
+  // «Abrir el audio de la escena» lleva a la sección, con el interruptor apagado
+  await page.getByRole("button", { name: "Sonido de esta escena en el recorrido" }).click();
+  await page.getByRole("menuitem", { name: "Abrir el audio de la escena" }).click();
+  const interruptor = page.locator("#sc-audio-on");
+  await expect(interruptor).toBeInViewport({ timeout: 10_000 });
+  await expect(interruptor).toHaveAttribute("aria-checked", "false");
+  await expect(page.getByText("Sonido desactivado: esta escena no suena en el recorrido publicado.")).toBeVisible();
+  // Y se vuelve a activar sin haber perdido el fichero
+  await interruptor.click();
+  await expect(page.getByText("Guardado").first()).toBeVisible({ timeout: 15_000 });
+  await expect.poll(async () => (await compilar())?.audio?.ambient ?? null, { timeout: 15_000 }).not.toBeNull();
+
+  // Se deja la escena como estaba para las pruebas siguientes
+  await page.request.patch(`/api/v1/projects/${projectId}/scenes/${escena.id}`, {
+    data: { audio: null },
+    headers: { "x-csrf-token": await csrf(page) },
+  });
+});
+
+test("el plano del visor se abre como minimapa, se amplía y lleva a otra escena", async ({ page }) => {
+  // Se añade un plano al tour publicado al vuelo: el visor no distingue un
+  // tour.json servido de uno modificado en la red
+  await page.route(/\/t\/tour-e2e\/tour\.json/, async (route) => {
+    const res = await route.fetch();
+    const tour = (await res.json()) as {
+      scenes: { id: string; thumbnail?: string; source: { preview?: string; url?: string }; map?: unknown; hotspots: { type: string }[] }[];
+      floorplans?: unknown[];
+      ui?: Record<string, unknown>;
+      treasureHunt?: unknown;
+    };
+    // Sin las compuertas de las pruebas anteriores (tesoro, quiz), que
+    // retendrían al visitante en la escena y no dejarían probar el salto
+    for (const s of tour.scenes) s.hotspots = s.hotspots.filter((h) => !["quiz", "form", "treasure"].includes(h.type));
+    delete tour.treasureHunt;
+    const imagen = tour.scenes[0]!.thumbnail ?? tour.scenes[0]!.source.preview ?? tour.scenes[0]!.source.url!;
+    tour.floorplans = [{ id: "planta-e2e", title: { es: "Planta baja" }, url: imagen }];
+    tour.scenes.forEach((s, i) => {
+      s.map = { floorplan: "planta-e2e", x: 0.25 + 0.5 * (i % 2), y: 0.5 };
+    });
+    tour.ui = { ...tour.ui, floorplanOpen: true };
+    await route.fulfill({ response: res, json: tour });
+  });
+  await page.goto("/t/tour-e2e");
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  const panel = page.locator(".anda-mappanel");
+  await expect(panel).toBeVisible();
+  // Escena actual marcada, con su cono de dirección
+  await expect(panel.locator('.anda-floorplan__marker[aria-current="true"]')).toHaveCount(1);
+  await expect(panel.locator(".anda-floorplan__radar")).toBeVisible();
+  const ancho = (await panel.boundingBox())!.width;
+  await panel.getByRole("button", { name: "Ampliar el plano" }).click();
+  await expect(panel).toHaveClass(/anda-mappanel--big/);
+  expect((await panel.boundingBox())!.width).toBeGreaterThan(ancho * 1.5);
+  const otra = panel.locator('.anda-floorplan__marker[aria-current="false"]').first();
+  if ((await otra.count()) > 0) {
+    const destino = await otra.getAttribute("data-scene");
+    await otra.click();
+    // Tras saltar, vuelve al tamaño de minimapa y marca la escena nueva
+    await expect(panel).not.toHaveClass(/anda-mappanel--big/);
+    await expect(panel.locator(`.anda-floorplan__marker[data-scene="${destino}"]`)).toHaveAttribute("aria-current", "true", { timeout: 15_000 });
+  }
+
+  // En un móvil empieza cerrado y se abre con el botón del mapa
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await expect(page.locator(".anda-viewer canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(panel).toBeHidden();
+  await page.locator(".anda-controls-left").getByRole("button", { name: "Mapa" }).click();
+  await expect(panel).toBeVisible();
+});

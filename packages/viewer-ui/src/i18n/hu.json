@@ -24,6 +24,8 @@
   "language": "Nyelv",
   "map": "Térkép",
   "floorplan": "Alaprajz",
+  "floorplan_enlarge": "Alaprajz nagyítása",
+  "floorplan_shrink": "Alaprajz kicsinyítése",
   "compass": "Iránytű",
   "loading": "Betöltés",
   "menu": "Menü",

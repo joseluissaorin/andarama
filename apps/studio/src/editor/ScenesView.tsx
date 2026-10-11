@@ -12,12 +12,14 @@ import {
   Play,
   Plus,
   Search,
+  ChevronDown,
+  SlidersHorizontal,
   Trash2,
   Volume2,
   VolumeX,
   X,
 } from "lucide-react";
-import { Badge, Button, Dialog, EmptyState, Field, HelpTip, Input, Tooltip, useToast } from "@andarama/ui";
+import { Badge, Button, Dialog, Dropdown, DropdownContent, DropdownItem, EmptyState, Field, HelpTip, Input, Tooltip, useToast } from "@andarama/ui";
 import type { Tour } from "@andarama/schema";
 import { mountViewer, type MountedSkin } from "@andarama/viewer-ui";
 import { api } from "../api";
@@ -31,6 +33,8 @@ import { DEFAULT_ENTRY_MODE, arrivalsOf, resolveArrivalView } from "./arrivals";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { areasOf } from "./areas";
 import { HotspotPalette } from "./HotspotPalette";
+import { sceneOwnAudio, setSceneAudioMuted } from "./sceneAudio";
+import { requestOpenSection } from "./sectionState";
 import type { ProjectInfo } from "./EditorPage";
 import type { MediaItem } from "../pages/MediaPage";
 
@@ -491,8 +495,7 @@ export function sceneHasAudio(snapshot: { scenes: { id: string; type: string; au
   if (snapshot == null) return false;
   const scene = snapshot.scenes.find((s) => s.id === sceneId);
   if (scene == null) return false;
-  const audio = readJson<{ ambient?: { url?: string }; narration?: { url?: string } }>(scene.audioJson, {});
-  if (audio.ambient?.url != null || audio.narration?.url != null) return true;
+  if (sceneOwnAudio(scene.audioJson) === "on") return true;
   if (snapshot.settings.globalAudio != null) return true;
   if (scene.type === "video") return true;
   return snapshot.hotspots.some((h) => h.sceneId === sceneId && h.type === "audio");
@@ -789,6 +792,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
 
   const scene = editor.snapshot?.scenes.find((s) => s.id === sceneId) ?? null;
   const hasAudio = sceneHasAudio(editor.snapshot, sceneId);
+  const ownAudio = sceneOwnAudio(scene?.audioJson ?? null);
 
   // La primera vez que suena una escena en el editor se señala el botón de
   // silenciar. Una sola vez por navegador.
@@ -830,7 +834,7 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
         )}
         {/* Con sonido en la escena, el botón lleva texto y se ve: como icono
             fantasma nadie lo encontraba y el ambiente sonaba sin parar. */}
-        <div className="relative">
+        <div className="relative flex items-center">
           <Tooltip content={muted ? t("editor_unmute") : t("editor_mute")}>
             <Button
               size={hasAudio ? "sm" : "icon"}
@@ -849,13 +853,49 @@ function ViewerPane({ project, sceneId, canEdit }: { project: ProjectInfo; scene
               {hasAudio && <span>{muted ? t("editor_unmute_short") : t("editor_mute_short")}</span>}
             </Button>
           </Tooltip>
+          {/* Junto a «Silenciar», lo que de verdad se buscaba al no encontrarlo:
+              que la escena no suene en el recorrido publicado */}
+          {canEdit && ownAudio !== "none" && (
+            <Dropdown.Root>
+              <Tooltip content={t("scene_audio_menu")}>
+                <Dropdown.Trigger asChild>
+                  <Button size="icon" variant="ghost" aria-label={t("scene_audio_menu")} className="ml-0.5">
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </Dropdown.Trigger>
+              </Tooltip>
+              <DropdownContent align="end">
+                <DropdownItem
+                  onSelect={() => {
+                    const off = ownAudio === "on";
+                    editor.apply((draft) => {
+                      const s = draft.scenes.find((x) => x.id === sceneId);
+                      if (s != null) s.audioJson = setSceneAudioMuted(s.audioJson, off);
+                    });
+                    toast.push(off ? t("scene_audio_disabled_toast") : t("scene_audio_enabled_toast"), "ok");
+                  }}
+                >
+                  {ownAudio === "on" ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  {ownAudio === "on" ? t("scene_audio_disable") : t("scene_audio_enable")}
+                </DropdownItem>
+                <DropdownItem
+                  onSelect={() => {
+                    editor.select(sceneId, null);
+                    requestOpenSection("scene-audio");
+                  }}
+                >
+                  <SlidersHorizontal className="h-4 w-4" /> {t("scene_audio_settings")}
+                </DropdownItem>
+              </DropdownContent>
+            </Dropdown.Root>
+          )}
           {muteHint && (
             <div
               role="status"
               className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border border-[var(--anda-border)] bg-[var(--anda-surface)] p-3 text-[12.5px] leading-snug shadow-[var(--anda-shadow-lg)]"
             >
               <span aria-hidden className="absolute -top-1.5 right-6 h-3 w-3 rotate-45 border-l border-t border-[var(--anda-border)] bg-[var(--anda-surface)]" />
-              <p>{t("editor_mute_hint")}</p>
+              <p>{canEdit && ownAudio === "on" ? t("editor_mute_hint_scene") : t("editor_mute_hint")}</p>
               <Button size="sm" variant="ghost" className="mt-1.5" onClick={() => setMuteHint(false)}>
                 {t("got_it")}
               </Button>
@@ -1188,7 +1228,9 @@ function defaultContent(type: string, otherSceneId?: string): Record<string, unk
     case "link":
       return { url: "https://", altText: "Enlace" };
     case "state":
-      return { actions: [{ var: "visitado", op: "set", value: true }], altText: "Acción" };
+      // El cambio de partida es el ejemplo de la ayuda (coger una llave): el
+      // resumen del panel ya cuenta qué hace sin tener que leer nada más
+      return { actions: [{ var: "llave", op: "set", value: true }], altText: "Acción" };
     default:
       return {};
   }

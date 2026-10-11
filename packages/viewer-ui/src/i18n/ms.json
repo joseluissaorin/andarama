@@ -24,6 +24,8 @@
   "language": "Bahasa",
   "map": "Peta",
   "floorplan": "Pelan",
+  "floorplan_enlarge": "Besarkan pelan lantai",
+  "floorplan_shrink": "Kecilkan pelan lantai",
   "compass": "Kompas",
   "loading": "Memuatkan",
   "menu": "Menu",

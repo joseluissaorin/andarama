@@ -24,6 +24,8 @@
   "language": "언어",
   "map": "지도",
   "floorplan": "평면도",
+  "floorplan_enlarge": "도면 확대",
+  "floorplan_shrink": "도면 축소",
   "compass": "나침반",
   "loading": "불러오는 중",
   "menu": "메뉴",

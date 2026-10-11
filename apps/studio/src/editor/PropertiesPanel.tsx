@@ -26,7 +26,7 @@ import { clientId, readJson } from "./editorApi";
 import { areaOfScene, areasOf, assignScene, createArea } from "./areas";
 import { getCurrentEditorView, highlightHotspot, setEditorView, setPlacementMode } from "./ScenesView";
 import { ArrivalsPanel } from "./ArrivalsPanel";
-import { readSectionOpen, writeSectionOpen } from "./sectionState";
+import { OPEN_SECTION_EVENT, readSectionOpen, writeSectionOpen } from "./sectionState";
 import {
   addQuestion,
   duplicateQuestion,
@@ -303,18 +303,41 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
       </Section>
 
       <Section id="scene-audio" title={t("scene_audio")} help={t("help_scene_audio")}>
+        {/* Desactivar conserva los ficheros elegidos: es lo que se busca cuando
+            el sonido molesta, sin tener que volver a elegirlo después */}
+        {(audio.ambient != null || audio.narration != null || Array.isArray(audio.spatial)) && (
+          <Switch
+            id="sc-audio-on"
+            checked={audio.muted !== true}
+            disabled={!canEdit}
+            onCheckedChange={(v) => patchScene((s) => {
+              const a = readJson<Record<string, unknown>>(s.audioJson, {});
+              if (v) delete a.muted;
+              else a.muted = true;
+              s.audioJson = Object.keys(a).length > 0 ? JSON.stringify(a) : null;
+            })}
+            label={t("scene_audio_enabled")}
+            help={t("help_scene_audio_enabled")}
+          />
+        )}
+        {audio.muted === true && (
+          <p className="rounded-lg bg-[var(--anda-surface-2)] px-3 py-2 text-[12.5px] leading-snug text-[var(--anda-text-dim)]" role="status">
+            {t("scene_audio_off_note")}
+          </p>
+        )}
         <Field label={t("ambient")}>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setPickerFor("ambient")}>
               {audio.ambient?.url != null ? String(audio.ambient.url).slice(0, 18) : t("select_media")}
             </Button>
             {audio.ambient != null && (
-              <Button size="sm" variant="ghost" aria-label={t("delete")} disabled={!canEdit} onClick={() => patchScene((s) => {
+              <Button size="sm" variant="ghost" disabled={!canEdit} onClick={() => patchScene((s) => {
                 const a = readJson<Record<string, unknown>>(s.audioJson, {});
                 delete a.ambient;
+                if (a.narration == null && a.spatial == null) delete a.muted;
                 s.audioJson = Object.keys(a).length > 0 ? JSON.stringify(a) : null;
               })}>
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4" /> {t("remove_audio")}
               </Button>
             )}
           </div>
@@ -324,6 +347,16 @@ function SceneProperties({ project: _project, scene, hotspots, canEdit }: {
             <Button size="sm" variant="outline" disabled={!canEdit} onClick={() => setPickerFor("narration")}>
               {audio.narration?.url != null ? String(audio.narration.url).slice(0, 18) : t("select_media")}
             </Button>
+            {audio.narration != null && (
+              <Button size="sm" variant="ghost" disabled={!canEdit} onClick={() => patchScene((s) => {
+                const a = readJson<Record<string, unknown>>(s.audioJson, {});
+                delete a.narration;
+                if (a.ambient == null && a.spatial == null) delete a.muted;
+                s.audioJson = Object.keys(a).length > 0 ? JSON.stringify(a) : null;
+              })}>
+                <Trash2 className="h-4 w-4" /> {t("remove_audio")}
+              </Button>
+            )}
           </div>
         </Field>
         {audio.narration != null && (
@@ -1141,6 +1174,12 @@ function HotspotProperties({ project: _project, scene, hotspot, canEdit }: {
             <p className="text-[12.5px] leading-relaxed text-[var(--anda-text-dim)]">
               {t("hotspot_desc_state")} <HelpTip text={t("help_state")} label={t("hotspot_state")} />
             </p>
+            {/* Un caso concreto explica más que la definición: «no entiendo
+                el hotspot de contador/estado; me aparece como un tesoro» */}
+            <div className="rounded-lg border border-[var(--anda-border)] px-3 py-2 text-[12.5px] leading-relaxed">
+              <p className="font-semibold">{t("state_example_title")}</p>
+              <p className="mt-1 whitespace-pre-line text-[var(--anda-text-dim)]">{t("state_example_body")}</p>
+            </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <DocsLink page="state" />
               <a
@@ -1597,8 +1636,23 @@ function Section({ id, defaultOpen = false, title, hint, help, children }: {
   children: React.ReactNode;
 }): React.ReactNode {
   const [open, setOpen] = useState(() => readSectionOpen(id, defaultOpen));
+  const ref = useRef<HTMLDetailsElement>(null);
+  // Otra parte del editor puede pedir abrirla (p. ej. «Sonido de la escena»
+  // desde la barra del lienzo): se abre y se trae a la vista
+  useEffect(() => {
+    const onOpen = (e: Event): void => {
+      if ((e as CustomEvent<string>).detail !== id) return;
+      setOpen(true);
+      writeSectionOpen(id, true);
+      ref.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      ref.current?.querySelector("summary")?.focus({ preventScroll: true });
+    };
+    window.addEventListener(OPEN_SECTION_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_SECTION_EVENT, onOpen);
+  }, [id]);
   return (
     <details
+      ref={ref}
       open={open}
       onToggle={(e) => {
         const next = e.currentTarget.open;

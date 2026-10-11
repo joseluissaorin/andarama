@@ -24,6 +24,8 @@
   "language": "اللغة",
   "map": "الخريطة",
   "floorplan": "المخطط",
+  "floorplan_enlarge": "تكبير المخطط",
+  "floorplan_shrink": "تصغير المخطط",
   "compass": "البوصلة",
   "loading": "جارٍ التحميل",
   "menu": "القائمة",

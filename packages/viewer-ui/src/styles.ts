@@ -392,6 +392,9 @@ export const VIEWER_CSS = `
   background: #7d879f; border: 2.5px solid #fff; cursor: pointer; padding: 0; box-shadow: 0 1px 6px rgba(0,0,0,.4);
   transition: transform .15s ease; }
 .anda-floorplan__marker:hover { transform: scale(1.35); }
+/* Zona de toque de 35 px alrededor del punto de 15: con el dedo no se acertaba */
+.anda-floorplan__marker::before { content: ""; position: absolute; inset: -12px; border-radius: 50%; }
+.anda-mappanel--big { width: min(960px, calc(100% - 32px)); max-height: calc(100% - 110px); overflow-y: auto; }
 .anda-floorplan__marker[aria-current="true"] { background: var(--u3-primary-strong); z-index: 2;
   box-shadow: 0 0 0 4px rgba(139,152,232,.35), 0 1px 6px rgba(0,0,0,.4); }
 .anda-floorplan__radar { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; pointer-events: none; z-index: 1; }

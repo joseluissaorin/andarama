@@ -180,6 +180,18 @@ export function TourSettingsView({ project: _project, canEdit }: { project: Proj
             </fieldset>
           )}
         </div>
+        {/* Al revés que los demás interruptores: el plano empieza cerrado salvo
+            que se pida verlo como minimapa nada más entrar */}
+        <div className="mt-4">
+          <Switch
+            id="ui-floorplanOpen"
+            checked={ui.floorplanOpen === true}
+            disabled={!canEdit}
+            onCheckedChange={(v) => patchUi({ floorplanOpen: v ? true : undefined })}
+            label={t("ui_floorplanOpen")}
+          />
+          <p className="ml-11 mt-0.5 text-xs leading-snug text-[var(--anda-text-dim)]">{t("ui_floorplanOpen_desc")}</p>
+        </div>
         <div className="mt-4">
           <Field label={t("hotspot_size_default")} htmlFor="ui-hssize" hint={t("hotspot_size_default_hint")}>
             <div className="flex items-center gap-3">
