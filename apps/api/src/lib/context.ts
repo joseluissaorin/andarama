@@ -62,6 +62,9 @@ export interface AppConfig {
 
 export type UserRow = typeof users.$inferSelect;
 
+/** Aviso a la sala de edición de un recorrido (Durable Object, ws o Bun). */
+export type NotifyProject = (projectId: string, event: Record<string, unknown>) => Promise<void>;
+
 export interface SessionInfo {
   id: string;
   userId: string;
@@ -85,6 +88,8 @@ export interface AppEnv {
     auth: AuthState | null;
     cspNonce: string;
     clerkVerifier: import("./clerk.js").ClerkVerifier | null;
+    /** Difunde un cambio guardado a la sala de edición del recorrido (null: sin tiempo real). */
+    notifyProject: NotifyProject | null;
   };
   Bindings: Record<string, unknown>;
 }

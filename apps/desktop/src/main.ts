@@ -114,8 +114,13 @@ async function main(): Promise<void> {
     maxUploadBytes: 512 * 1024 * 1024,
   };
 
-  const realtime = createDesktopRealtime();
-  const app = createApp({ runtime, config, createLiveRoom: async () => realtime.createLiveRoom() });
+  const realtime = createDesktopRealtime(secret);
+  const app = createApp({
+    runtime,
+    config,
+    createLiveRoom: async () => realtime.createLiveRoom(),
+    notifyProject: (projectId, event) => realtime.notifyProject(projectId, event),
+  });
 
   const server = Bun.serve({
     port,
@@ -124,7 +129,9 @@ async function main(): Promise<void> {
     async fetch(request, srv) {
       const url = new URL(request.url);
       if (url.pathname.startsWith("/rt/")) {
-        if (realtime.upgrade(request, srv)) return undefined as unknown as Response;
+        const upgraded = await realtime.upgrade(request, srv);
+        if (upgraded instanceof Response) return upgraded;
+        if (upgraded) return undefined as unknown as Response;
         return new Response("No encontrado", { status: 404 });
       }
       // La portada del escritorio es el Studio: no hay nada que vender

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { projects, translations as translationsTable } from "@andarama/db";
 import type { AppEnv } from "../lib/context.js";
 import { badRequest, forbidden } from "../lib/errors.js";
@@ -8,6 +8,7 @@ import { newId, parseJson } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { projectAccess } from "../lib/authz.js";
 import { requireActivePlan } from "../lib/capabilities.js";
+import { publishChange } from "../lib/collab.js";
 
 /**
  * Traducciones granulares (§3.4): la vista lado a lado del Studio lee y
@@ -86,8 +87,14 @@ export function translationRoutes(): Hono<AppEnv> {
     const langs = (settings.langs as string[]) ?? [];
     if (!langs.includes(lang)) {
       settings.langs = [...langs, lang];
-      await db.update(projects).set({ settingsJson: JSON.stringify(settings) }).where(eq(projects.id, access.project.id));
+      const [row] = await db
+        .update(projects)
+        .set({ settingsJson: JSON.stringify(settings), settingsVersion: sql`${projects.settingsVersion} + 1` })
+        .where(eq(projects.id, access.project.id))
+        .returning();
+      if (row != null) await publishChange(c, access.project.id, { kind: "settings", settings, version: row.settingsVersion });
     }
+    await publishChange(c, access.project.id, { kind: "translations", lang });
     return c.json({ ok: true });
   });
 
@@ -153,6 +160,7 @@ ${units}
     }
     if (entries.length === 0) throw badRequest("El XLIFF no contiene traducciones");
     await upsertMany(db, access.project.id, lang, entries);
+    await publishChange(c, access.project.id, { kind: "translations", lang });
     return c.json({ imported: entries.length });
   });
 
@@ -203,6 +211,7 @@ ${units}
     }
     if (entries.length === 0) throw badRequest("El CSV no contiene traducciones");
     await upsertMany(db, access.project.id, lang, entries);
+    await publishChange(c, access.project.id, { kind: "translations", lang });
     return c.json({ imported: entries.length });
   });
 

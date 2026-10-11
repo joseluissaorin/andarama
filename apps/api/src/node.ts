@@ -147,14 +147,15 @@ async function main(): Promise<void> {
     clerkWebhookSecret: process.env.CLERK_WEBHOOK_SECRET,
   };
 
-  const realtime = await createRealtimeServer({
-    authorizePresence: async () => true, // la sesion del Studio ya protege los datos; presencia es inocua
-  });
+  // La sala de edición solo deja entrar con un billete que firma la API
+  // (POST /api/v1/projects/{id}/realtime) con este mismo secreto
+  const realtime = await createRealtimeServer({ secret });
 
   const app = createApp({
     runtime,
     config,
     createLiveRoom: async () => realtime.createLiveRoom(),
+    notifyProject: (projectId, event) => realtime.notifyProject(projectId, event),
   });
 
   // Estaticos: Studio (SPA) y bundle del visor

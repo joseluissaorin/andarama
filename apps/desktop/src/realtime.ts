@@ -1,5 +1,5 @@
 import type { Server, ServerWebSocket } from "bun";
-import { LiveTourRoom, ProjectPresenceRoom } from "@andarama/realtime";
+import { LiveTourRoom, ProjectPresenceRoom, verifyRealtimeTicket, type RealtimeIdentity } from "@andarama/realtime";
 
 /**
  * Tiempo real del ejecutable de escritorio: las mismas salas que los Durable
@@ -12,20 +12,28 @@ interface SocketData {
   key: string;
   id: string;
   joined: boolean;
+  /** Sala de edición: quién es, según el billete que firmó la API. */
+  identity?: RealtimeIdentity;
 }
 
 export interface DesktopRealtime {
-  /** Intenta convertir la petición en WebSocket; false si no es una ruta de tiempo real. */
-  upgrade(req: Request, server: Server<SocketData>): boolean;
+  /**
+   * Intenta convertir la petición en WebSocket: true si lo hizo, false si no
+   * es una ruta de tiempo real y una respuesta si hay que rechazarla.
+   */
+  upgrade(req: Request, server: Server<SocketData>): Promise<boolean | Response>;
   websocket: {
     open(ws: ServerWebSocket<SocketData>): void;
     message(ws: ServerWebSocket<SocketData>, data: string | Buffer): void;
     close(ws: ServerWebSocket<SocketData>): void;
   };
   createLiveRoom(): { code: string; guideKey: string };
+  /** Difunde un cambio guardado a la sala de edición del recorrido. */
+  notifyProject(projectId: string, event: Record<string, unknown>): Promise<void>;
 }
 
-export function createDesktopRealtime(): DesktopRealtime {
+/** `secret`: el de la instancia, con el que la API firma los billetes de la sala de edición. */
+export function createDesktopRealtime(secret: string): DesktopRealtime {
   const liveRooms = new Map<string, { room: LiveTourRoom; guideKey: string }>();
   const presenceRooms = new Map<string, ProjectPresenceRoom>();
   let counter = 0;
@@ -66,7 +74,11 @@ export function createDesktopRealtime(): DesktopRealtime {
       return { code, guideKey };
     },
 
-    upgrade(req, server) {
+    async notifyProject(projectId, event) {
+      presenceRooms.get(projectId)?.publish(event);
+    },
+
+    async upgrade(req, server) {
       const url = new URL(req.url);
       const live = /^\/rt\/live\/([A-Za-z0-9-]+)$/.exec(url.pathname);
       const project = /^\/rt\/project\/([A-Za-z0-9_-]+)$/.exec(url.pathname);
@@ -77,12 +89,22 @@ export function createDesktopRealtime(): DesktopRealtime {
         id: `c${++counter}`,
         joined: false,
       };
+      if (project != null) {
+        const identity = await verifyRealtimeTicket(secret, url.searchParams.get("t"), data.key).catch(() => null);
+        if (identity == null) return new Response("No autorizado", { status: 401 });
+        data.identity = identity;
+      }
       return server.upgrade(req, { data });
     },
 
     websocket: {
-      open() {
-        // La sala se une al recibir el saludo, como en Node y en los DO
+      open(ws) {
+        // La visita en vivo se une al recibir el saludo; la sala de edición,
+        // en el acto, con la identidad del billete
+        const { data } = ws;
+        if (data.kind !== "project" || data.identity == null) return;
+        data.joined = true;
+        presenceRoom(data.key).join(data.id, ws as never, { userId: data.identity.userId, name: data.identity.name });
       },
       message(ws, raw) {
         const text = String(raw);
@@ -106,28 +128,19 @@ export function createDesktopRealtime(): DesktopRealtime {
           room.message(data.id, text);
           return;
         }
-        const room = presenceRoom(data.key);
-        if (!data.joined) {
-          try {
-            const hello = JSON.parse(text) as { type?: string; userId?: string; name?: string };
-            if (hello.type === "hello") {
-              data.joined = true;
-              room.join(data.id, ws as never, hello);
-              return;
-            }
-          } catch {
-            // inválido
-          }
-          ws.close(1002, "Se esperaba hello");
-          return;
-        }
-        room.message(data.id, text);
+        if (!data.joined) return;
+        presenceRoom(data.key).message(data.id, text);
       },
       close(ws) {
         const { data } = ws;
         if (!data.joined) return;
-        if (data.kind === "live") liveRooms.get(data.key)?.room.leave(data.id);
-        else presenceRooms.get(data.key)?.leave(data.id);
+        if (data.kind === "live") {
+          liveRooms.get(data.key)?.room.leave(data.id);
+          return;
+        }
+        const room = presenceRooms.get(data.key);
+        room?.leave(data.id);
+        if (room != null && room.size === 0) presenceRooms.delete(data.key);
       },
     },
   };

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { ZodError } from "zod";
 import type { PlatformRuntime } from "@andarama/adapters";
-import type { AppConfig, AppEnv, Db } from "./lib/context.js";
+import type { AppConfig, AppEnv, Db, NotifyProject } from "./lib/context.js";
 import { ApiError, badRequest, problem, serverError } from "./lib/errors.js";
 import { checkCsrf, resolveAuth } from "./lib/session.js";
 import { newToken } from "./lib/util.js";
@@ -28,6 +28,7 @@ import { trialEmailRoutes } from "./routes/trial-emails.js";
 import { feedbackRoutes } from "./routes/feedback.js";
 import { galleryApiRoutes, galleryPageRoutes } from "./routes/gallery.js";
 import { onboardingRoutes } from "./routes/onboarding.js";
+import { collabRoutes } from "./routes/collab.js";
 import { createClerkVerifier, type ClerkVerifier } from "./lib/clerk.js";
 import { effectivePlan, planCapabilities, planName } from "./lib/plans.js";
 import { attributionSchema, hasAttribution } from "./lib/attribution.js";
@@ -38,6 +39,12 @@ export interface CreateAppOptions {
   config: AppConfig;
   /** Crea una sala de visita en vivo (DO en Cloudflare, ws en Node). */
   createLiveRoom?: () => Promise<{ code: string; guideKey: string }>;
+  /**
+   * Avisa a la sala de edición de un recorrido de un cambio ya guardado (DO
+   * en Cloudflare, ws en Node, Bun en escritorio). Sin él, no hay edición en
+   * grupo en directo, pero todo lo demás funciona igual.
+   */
+  notifyProject?: NotifyProject;
   /** Binding de Workers AI (opcional; sugerencia de alt-text §2.11). */
   getAi?: () => { run(model: string, input: Record<string, unknown>): Promise<unknown> } | null;
   /** Verificador de tokens de Clerk (las pruebas inyectan uno falso). */
@@ -74,6 +81,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
     c.set("db", opts.runtime.db as Db);
     c.set("config", opts.config);
     c.set("clerkVerifier", clerkVerifier);
+    c.set("notifyProject", opts.notifyProject ?? null);
     c.set("cspNonce", newToken(12));
     await next();
     // Cabeceras de seguridad completas (§4.2)
@@ -145,6 +153,7 @@ export function createApp(opts: CreateAppOptions): Hono<AppEnv> {
   api.route("/projects", translationRoutes());
   api.route("/projects", commentRoutes());
   api.route("/projects", publishRoutes());
+  api.route("/projects", collabRoutes());
   api.route("/media", mediaRoutes());
   api.route("/lti", ltiRoutes());
   // Antes que /admin: admite el secreto CONVERSIONS_TOKEN sin sesión

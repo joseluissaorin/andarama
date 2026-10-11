@@ -72,6 +72,7 @@ export function openApiSpec(publicUrl: string): Record<string, unknown> {
       "/projects/{id}/scenes/reorder": { post: p("Reordenar escenas", "content") },
       "/projects/{id}/scenes/{sceneId}/hotspots": { post: p("Crear hotspot (17 tipos)", "content") },
       "/projects/{id}/hotspots/{hotspotId}": { patch: p("Editar hotspot", "content"), delete: p("Eliminar hotspot", "content") },
+      "/projects/{id}/realtime": { post: p("Billete de la sala de edición en grupo (/rt/project/{id}?t=...)", "content") },
       "/projects/{id}/translations/{lang}": { get: p("Traducciones de un idioma", "translations"), put: p("Guardar traducciones", "translations") },
       "/projects/{id}/translations/{lang}/xliff": { get: p("Export XLIFF 1.2", "translations"), post: p("Import XLIFF", "translations") },
       "/projects/{id}/translations/{lang}/csv": { get: p("Export CSV", "translations"), post: p("Import CSV", "translations") },

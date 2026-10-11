@@ -24,6 +24,8 @@ import { parseAdminEmails } from "./lib/admins.js";
 import { sendTrialEmails } from "./lib/trial-emails.js";
 
 export { LiveTourRoomDO, ProjectPresenceDO } from "@andarama/realtime/durable-objects";
+import { RT_USER_ID_HEADER, RT_USER_NAME_HEADER } from "@andarama/realtime/durable-objects";
+import { verifyRealtimeTicket } from "@andarama/realtime";
 
 /**
  * Entrada Cloudflare Workers: construye el PlatformRuntime a partir de los
@@ -171,10 +173,22 @@ export default {
       const stub = env.LIVE_DO.get(env.LIVE_DO.idFromName(liveMatch[1]!));
       return stub.fetch(request);
     }
-    const projectMatch = /^\/rt\/project\/([A-Za-z0-9_-]+)/.exec(url.pathname);
+    const projectMatch = /^\/rt\/project\/([A-Za-z0-9_-]+)$/.exec(url.pathname);
     if (projectMatch != null) {
-      const stub = env.PRESENCE_DO.get(env.PRESENCE_DO.idFromName(projectMatch[1]!));
-      return stub.fetch(request);
+      // Sala de edición: el Worker comprueba el billete que firmó la API y
+      // presenta a la persona al Durable Object. El DO nunca ve la petición
+      // original, así que nadie puede colarle cabeceras ni el /notify interno.
+      if (request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+        return new Response("Se esperaba WebSocket", { status: 426 });
+      }
+      const projectId = projectMatch[1]!;
+      const identity = await verifyRealtimeTicket(env.APP_SECRET, url.searchParams.get("t"), projectId);
+      if (identity == null) return new Response("No autorizado", { status: 401 });
+      const headers = new Headers(request.headers);
+      headers.set(RT_USER_ID_HEADER, identity.userId);
+      headers.set(RT_USER_NAME_HEADER, encodeURIComponent(identity.name));
+      const stub = env.PRESENCE_DO.get(env.PRESENCE_DO.idFromName(projectId));
+      return stub.fetch(new Request("https://do/connect", { headers }));
     }
 
     const runtime = buildRuntime(env, publicUrl, (p) => ctx.waitUntil(p), url.origin);
@@ -182,6 +196,13 @@ export default {
       runtime,
       config: buildConfig(env, publicUrl),
       getAi: () => env.AI ?? null,
+      notifyProject: async (projectId, event) => {
+        const stub = env.PRESENCE_DO.get(env.PRESENCE_DO.idFromName(projectId));
+        const res = await stub.fetch(
+          new Request("https://do/notify", { method: "POST", body: JSON.stringify(event), headers: { "content-type": "application/json" } }),
+        );
+        await res.body?.cancel();
+      },
       createLiveRoom: async () => {
         const code = randomRoomCode();
         const stub = env.LIVE_DO.get(env.LIVE_DO.idFromName(code));

@@ -8,6 +8,7 @@ import { newId, nowMs, parseJson, slugify } from "../lib/util.js";
 import { requireAuth, requireScope } from "../lib/session.js";
 import { templateOrgIds } from "../lib/templates.js";
 import { isInstanceAdmin, projectAccess } from "../lib/authz.js";
+import { publishChange } from "../lib/collab.js";
 import { audit } from "../lib/helpers.js";
 import { assertTourQuota } from "../lib/quota.js";
 import { orgHas, requireActivePlan, requireOrgCapability } from "../lib/capabilities.js";
@@ -433,6 +434,8 @@ export function publishRoutes(): Hono<AppEnv> {
     await db.update(projects).set({ status: "published", updatedAt: nowMs() }).where(eq(projects.id, access.project.id));
     await audit(c, "project.publish", "project", access.project.id, { slug, version: number }, access.project.orgId);
     await fireWebhooks(c, access.project.orgId, access.project.id, "publish", { slug, version: number });
+    // Los demás editores ven el recorrido publicado sin recargar
+    await publishChange(c, access.project.id, { kind: "publication" });
 
     return c.json({
       slug,
@@ -485,6 +488,7 @@ export function publishRoutes(): Hono<AppEnv> {
     await db.update(projects).set({ status: "draft", updatedAt: nowMs() }).where(eq(projects.id, access.project.id));
     await audit(c, "project.unpublish", "project", access.project.id, { slug: pub.slug }, access.project.orgId);
     await fireWebhooks(c, access.project.orgId, access.project.id, "unpublish", { slug: pub.slug });
+    await publishChange(c, access.project.id, { kind: "publication" });
     return c.json({ ok: true });
   });
 
@@ -583,6 +587,7 @@ export function publishRoutes(): Hono<AppEnv> {
     await runtime.kv.delete(`pub:${pub.slug}`);
     await db.update(publications).set({ versionId: row.id, publishedAt: nowMs(), publishedBy: auth.user.id }).where(eq(publications.projectId, access.project.id));
     await audit(c, "project.restore_version", "project", access.project.id, { version: number }, access.project.orgId);
+    await publishChange(c, access.project.id, { kind: "publication" });
     return c.json({ ok: true, version: number });
   });
 
