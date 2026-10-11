@@ -27,7 +27,8 @@
       "Next to “Mute”, an arrow opens the scene's sound: one click stops it playing in the published tour without losing the files, and it turns back on the same way. “Scene audio” has the same switch and a “Remove” button for ambient sound and for narration.",
       "The “Action (variables)” hotspot is explained with an example, the key and the door, and comes with that change already in place when you add it. Its description makes clear that it is not a treasure or a question.",
       "The viewer's floor plan can be enlarged to almost full screen, its points are easier to hit with a finger and, with “Floor plan open at start” in the tour settings, it shows as a minimap from the beginning.",
-      "ZIP export no longer stalls near the end: a download that stops receiving data is cut off and retried, and packages over 4 GB or with more than 65,535 files come out whole."
+      "ZIP export no longer stalls near the end: a download that stops receiving data is cut off and retried, and packages over 4 GB or with more than 65,535 files come out whole.",
+      "The tour floor plan in the viewer: the map button at the bottom left (or the M key) shows and hides it, and the plan no longer covers that button. The panel has a cross to close it and a \"Show spots\" checkbox to see the plan without the dots. In the editor, an unplaced scene is placed by clicking it and then its spot on the plan, and the image you upload from \"Add plan\" is set straight away."
     ]
   },
   {
