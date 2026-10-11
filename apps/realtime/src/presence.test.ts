@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ProjectPresenceRoom, PRESENCE_COLORS, type SocketLike } from "./rooms.js";
 import { ProjectPresenceDO, RT_USER_ID_HEADER, RT_USER_NAME_HEADER } from "./durable-objects.js";
 import { signRealtimeTicket, verifyRealtimeTicket } from "./ticket.js";
@@ -321,13 +321,22 @@ describe("Durable Object de la sala", () => {
     const first = new ProjectPresenceDO(state);
     const ana = await connect(first, state, "u-ana", "Ana");
     const luis = await connect(first, state, "u-luis", "Luis");
-    first.webSocketMessage(ana, where("s1", { kind: "hotspot", id: "h1" }));
+    // Reloj fijo: si los dos abren el panel en el mismo milisegundo, el
+    // desempate por identificador de conexión haría la prueba aleatoria
+    vi.useFakeTimers({ toFake: ["Date"], now: 1_000 });
+    let woken: ProjectPresenceDO;
+    try {
+      first.webSocketMessage(ana, where("s1", { kind: "hotspot", id: "h1" }));
 
-    // El objeto se duerme: la memoria se pierde, los sockets y adjuntos no
-    const woken = new ProjectPresenceDO(state);
-    woken.webSocketMessage(luis, where("s1", { kind: "hotspot", id: "h1" }));
-    const locks = luis.last("presence")!.locks as Record<string, { name: string }>;
-    expect(locks["hotspot:h1"]!.name).toBe("Ana");
+      // El objeto se duerme: la memoria se pierde, los sockets y adjuntos no
+      vi.setSystemTime(2_000);
+      woken = new ProjectPresenceDO(state);
+      woken.webSocketMessage(luis, where("s1", { kind: "hotspot", id: "h1" }));
+      const locks = luis.last("presence")!.locks as Record<string, { name: string }>;
+      expect(locks["hotspot:h1"]!.name).toBe("Ana");
+    } finally {
+      vi.useRealTimers();
+    }
 
     // Aviso interno de la API tras guardar
     await woken.fetch(new Request("https://do/notify", { method: "POST", body: JSON.stringify({ kind: "settings", version: 2 }) }));
