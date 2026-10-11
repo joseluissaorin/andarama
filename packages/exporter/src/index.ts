@@ -11,10 +11,13 @@ import {
   renderWebManifest,
 } from "./templates.js";
 import { renderImsManifest, renderScormAdapter, type ScormVersion } from "./scorm.js";
+import { AssetReadError } from "./errors.js";
 
 export { ZipWriter, buildZip, crc32, deflateRaw, isCompressible, type ZipWriterOptions } from "./zip.js";
 export * from "./templates.js";
 export { renderImsManifest, renderScormAdapter, type ScormVersion } from "./scorm.js";
+export { AssetReadError } from "./errors.js";
+export { fetchBytes, type FetchBytesOptions } from "./fetch.js";
 
 /**
  * Exportador de paquetes estaticos autocontenidos: carpeta con index.html +
@@ -77,16 +80,6 @@ export interface ExportResult {
   files: number;
   bytes: number;
   missing: string[];
-}
-
-/** Lectura fallida de un asset, con el estado HTTP si lo hubo (null: red). */
-export class AssetReadError extends Error {
-  readonly status: number | null;
-  constructor(message: string, status: number | null) {
-    super(message);
-    this.name = "AssetReadError";
-    this.status = status;
-  }
 }
 
 export interface RetryOptions {
