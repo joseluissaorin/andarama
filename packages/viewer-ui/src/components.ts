@@ -167,19 +167,59 @@ export function buildCompass(viewer: TourViewer, t: Translator): HTMLElement {
 // Plano de planta con radar + mapa geografico
 // ---------------------------------------------------------------------------
 
-export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string): {
+export interface MapPanel {
   root: HTMLElement;
-  toggle: () => void;
+  /** Abre o cierra el panel; con `focus`, al abrir lleva el foco dentro (teclado). */
+  toggle: (opts?: { focus?: boolean }) => void;
+  setOpen: (open: boolean, opts?: { focus?: boolean }) => void;
+  isOpen: () => boolean;
+  /** Avisa cada vez que el panel se abre o se cierra (para el aria-expanded del botón). */
+  onChange: (fn: (open: boolean) => void) => void;
+  /** Adónde vuelve el foco al cerrar si al abrir no había otro sitio (el botón del mapa). */
+  setFocusReturn: (target: HTMLElement) => void;
   available: boolean;
-} {
+}
+
+/** Preferencia del visitante: ¿se ven los puntos sobre el plano? */
+const SPOTS_KEY = "andarama.floorplanSpots";
+
+function readSpotsPref(): boolean {
+  try {
+    return localStorage.getItem(SPOTS_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+
+function writeSpotsPref(on: boolean): void {
+  try {
+    localStorage.setItem(SPOTS_KEY, on ? "on" : "off");
+  } catch {
+    // almacenamiento bloqueado (modo privado, iframe sin permisos)
+  }
+}
+
+let mapPanelSeq = 0;
+
+export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string): MapPanel {
   const tour = viewer.tour;
   const floorplans = tour.floorplans ?? [];
   const hasGeo = tour.geoMap?.enabled === true && tour.scenes.some((s) => s.map?.lat != null);
   const available = floorplans.length > 0 || hasGeo;
-  const root = el("div", { className: "anda-mappanel", hidden: true });
-  if (!available) return { root, toggle: () => {}, available };
+  const panelId = `anda-mappanel-${++mapPanelSeq}`;
+  // Región con nombre: el lector de pantalla anuncia «Plano» al entrar y el
+  // botón del mapa la señala con aria-controls
+  const root = el("section", {
+    className: "anda-mappanel",
+    id: panelId,
+    hidden: true,
+    "aria-label": floorplans.length > 0 ? t("floorplan") : t("map"),
+  });
+  const listeners: ((open: boolean) => void)[] = [];
+  if (!available) return { root, toggle: () => {}, setOpen: () => {}, isOpen: () => false, onChange: () => {}, setFocusReturn: () => {}, available };
 
-  const closeBtn = el("button", { className: "anda-btn", "aria-label": t("close"), style: "width:36px;height:36px;" });
+  const closeLabel = floorplans.length > 0 ? t("floorplan_close") : t("close");
+  const closeBtn = el("button", { className: "anda-btn", type: "button", "aria-label": closeLabel, title: closeLabel, style: "width:36px;height:36px;" });
   closeBtn.appendChild(createIconSvg("x", 16));
   const title = el("span", { text: floorplans.length > 0 ? t("floorplan") : t("map") });
   // Ampliar: en un móvil el plano a 400 px no deja pulsar bien los puntos,
@@ -202,14 +242,92 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
     sizeBtn.replaceChildren(createIconSvg(big ? "minimize" : "maximize", 16));
   };
   sizeBtn.addEventListener("click", () => setBig(!root.classList.contains("anda-mappanel--big")));
-  root.appendChild(el("div", { className: "anda-mappanel__head" }, title, sizeBtn, closeBtn));
-  closeBtn.addEventListener("click", () => {
-    root.hidden = true;
+  const head = el("div", { className: "anda-mappanel__head" }, title, sizeBtn, closeBtn);
+  root.appendChild(head);
+
+  // Abrir y cerrar. Al cerrar con el foco dentro, vuelve a donde estaba (el
+  // botón del mapa): si no, el teclado se quedaba en el vacío del <body>.
+  let returnFocus: HTMLElement | null = null;
+  let fallbackFocus: HTMLElement | null = null;
+  const focusInside = (): void => {
+    // Al punto de la escena actual; con los puntos ocultos (o sin puntos en
+    // esta planta), al aspa de cerrar
+    const target = root.classList.contains("anda-mappanel--nospots")
+      ? null
+      : (root.querySelector<HTMLElement>('.anda-floorplan__marker[aria-current="true"]') ??
+        root.querySelector<HTMLElement>(".anda-floorplan__marker"));
+    (target ?? closeBtn).focus();
+  };
+  const setOpen = (open: boolean, opts: { focus?: boolean } = {}): void => {
+    const wasOpen = !root.hidden;
+    if (open === wasOpen) {
+      if (open && opts.focus === true) focusInside();
+      return;
+    }
+    if (open) {
+      returnFocus = document.activeElement as HTMLElement | null;
+      root.hidden = false;
+      if (opts.focus === true) focusInside();
+    } else {
+      const hadFocus = root.contains(document.activeElement);
+      root.hidden = true;
+      setBig(false);
+      if (hadFocus) {
+        const back = returnFocus != null && returnFocus !== document.body && returnFocus.isConnected ? returnFocus : fallbackFocus;
+        back?.focus();
+      }
+      returnFocus = null;
+    }
+    for (const fn of listeners) fn(open);
+  };
+  closeBtn.addEventListener("click", () => setOpen(false));
+  root.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setOpen(false);
+    }
   });
 
   let currentFloor: string | null = null;
+  let geoMode = false;
   const holder = el("div");
   root.appendChild(holder);
+
+  // Casilla «Mostrar puntos», como el «Show Spots» de otros visores: deja ver
+  // el plano limpio sin los puntos de las escenas encima
+  let spotsOn = readSpotsPref();
+  const spotsInput = el("input", { type: "checkbox", id: `${panelId}-spots` });
+  spotsInput.checked = spotsOn;
+  const spotsRow = el(
+    "label",
+    { className: "anda-mappanel__spots", for: `${panelId}-spots` },
+    spotsInput,
+    el("span", { text: t("floorplan_show_spots") }),
+  );
+  const applySpots = (): void => {
+    root.classList.toggle("anda-mappanel--nospots", !spotsOn);
+    spotsInput.checked = spotsOn;
+  };
+  spotsInput.addEventListener("change", () => {
+    spotsOn = spotsInput.checked;
+    writeSpotsPref(spotsOn);
+    applySpots();
+  });
+  applySpots();
+
+  // Un solo par de suscripciones al visor para todo el panel: antes cada
+  // cambio de planta añadía otras dos y se iban acumulando
+  let updateMarkers: () => void = () => {};
+  viewer.on("viewChange", () => updateMarkers());
+  viewer.on("sceneChange", () => {
+    // cambiar de planta automaticamente si la escena esta en otra
+    const targetFloor = viewer.currentScene()?.map?.floorplan;
+    if (!geoMode && targetFloor != null && targetFloor !== currentFloor) {
+      const target = floorplans.find((f) => f.id === targetFloor);
+      if (target != null) renderAll(target);
+    }
+    updateMarkers();
+  });
 
   const renderFloorplan = (fp: Floorplan): void => {
     currentFloor = fp.id;
@@ -239,7 +357,7 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
       });
       wrap.appendChild(marker);
     }
-    const update = (): void => {
+    updateMarkers = (): void => {
       const sceneId = viewer.currentSceneId();
       const scene = viewer.tour.scenes.find((s) => s.id === sceneId);
       wrap.querySelectorAll(".anda-floorplan__marker").forEach((mk) => {
@@ -257,42 +375,37 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
         radar.hidden = true;
       }
     };
-    viewer.on("viewChange", update);
-    viewer.on("sceneChange", () => {
-      // cambiar de planta automaticamente si la escena esta en otra
-      const scene = viewer.currentScene();
-      const targetFloor = scene?.map?.floorplan;
-      if (targetFloor != null && targetFloor !== currentFloor) {
-        const target = floorplans.find((f) => f.id === targetFloor);
-        if (target != null) renderAll(target);
-      }
-      update();
-    });
-    update();
+    updateMarkers();
     holder.replaceChildren(wrap);
   };
 
   const renderAll = (fp: Floorplan): void => {
     renderFloorplan(fp);
     if (floorplans.length > 1) {
-      const levels = el("div", { className: "anda-floorplan__levels", role: "tablist" });
+      const levels = el("div", { className: "anda-floorplan__levels", role: "group", "aria-label": t("floorplan_levels") });
       for (const f of [...floorplans].sort((a, b) => (b.level ?? 0) - (a.level ?? 0))) {
         const b = el("button", {
           type: "button",
           text: viewer.text(f.title) || t("floor", { level: f.level ?? 0 }),
           "aria-pressed": f.id === fp.id ? "true" : "false",
         });
-        b.addEventListener("click", () => renderAll(f));
+        b.addEventListener("click", () => {
+          renderAll(f);
+          // El botón pulsado se ha vuelto a crear: el foco sigue en él
+          holder.querySelector<HTMLElement>('.anda-floorplan__levels button[aria-pressed="true"]')?.focus();
+        });
         levels.appendChild(b);
       }
       holder.appendChild(levels);
     }
+    holder.appendChild(spotsRow);
   };
 
   const renderGeo = (): void => {
     // Leaflet coloca las teselas contando de izquierda a derecha: en árabe y
     // hebreo el mapa se queda en ltr aunque el resto del cromo vaya en rtl.
     const mapDiv = el("div", { className: "anda-geomap", dir: "ltr" });
+    updateMarkers = () => {};
     holder.replaceChildren(mapDiv);
     void (async () => {
       // CSS de Leaflet: servido junto al bundle (autocontenido, sin CDN).
@@ -346,31 +459,36 @@ export function buildMapPanel(viewer: TourViewer, t: Translator, baseUrl: string
 
   // Alternar plano <-> mapa geografico si hay ambos
   if (floorplans.length > 0 && hasGeo) {
-    const swap = el("button", { className: "anda-btn", "aria-label": t("map"), style: "width:36px;height:36px;" });
+    const swap = el("button", { className: "anda-btn", type: "button", "aria-label": t("map"), "aria-pressed": "false", title: t("map"), style: "width:36px;height:36px;" });
     swap.appendChild(createIconSvg("map", 16));
-    let geoMode = false;
     swap.addEventListener("click", () => {
       geoMode = !geoMode;
+      swap.setAttribute("aria-pressed", String(geoMode));
       if (geoMode) {
         title.textContent = t("map");
         renderGeo();
       } else {
         title.textContent = t("floorplan");
-        renderAll(initialFloor!);
+        renderAll(floorplans.find((f) => f.id === viewer.currentScene()?.map?.floorplan) ?? initialFloor!);
       }
     });
-    root.querySelector(".anda-mappanel__head")!.insertBefore(swap, closeBtn);
+    head.insertBefore(swap, closeBtn);
   }
 
   return {
     root,
-    toggle: () => {
-      root.hidden = !root.hidden;
+    toggle: (opts) => setOpen(root.hidden, opts),
+    setOpen,
+    isOpen: () => !root.hidden,
+    onChange: (fn) => {
+      listeners.push(fn);
+    },
+    setFocusReturn: (target) => {
+      fallbackFocus = target;
     },
     available,
   };
 }
-
 
 // ---------------------------------------------------------------------------
 // Pantallas de bienvenida / final y ayuda
@@ -423,11 +541,11 @@ export function showFinalScreen(viewer: TourViewer, t: Translator, container: HT
   close.addEventListener("click", cerrar);
 }
 
-export function showHelp(t: Translator, container: HTMLElement): void {
+export function showHelp(t: Translator, container: HTMLElement, extra: string[] = []): void {
   const card = el("div", { className: "anda-screen__card" });
   card.appendChild(el("h1", { text: t("help_title") }));
   const list = el("div", { style: "text-align:left;line-height:2;" });
-  for (const key of ["help_drag", "help_zoom", "help_keys", "help_dblclick"]) {
+  for (const key of ["help_drag", "help_zoom", "help_keys", "help_dblclick", ...extra]) {
     list.appendChild(el("p", { text: t(key), style: "margin:4px 0;color:var(--u3-fg-dim);" }));
   }
   card.appendChild(list);

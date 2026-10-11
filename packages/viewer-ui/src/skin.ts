@@ -15,6 +15,7 @@ import {
   showFinalScreen,
   showHelp,
   showShareDialog,
+  type MapPanel,
 } from "./components.js";
 import { shouldOpenFloorplanAtStart } from "./floorplan.js";
 import { startGaze, type GazeHandle } from "./gaze.js";
@@ -258,8 +259,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   renderThumbs();
 
   // ------- Plano / mapa -------
-  const mapPanel = edit
-    ? { root: el("div"), toggle: (): void => {}, available: false }
+  const mapPanel: MapPanel = edit
+    ? { root: el("div"), toggle: () => {}, setOpen: () => {}, isOpen: () => false, onChange: () => {}, setFocusReturn: () => {}, available: false }
     : buildMapPanel(viewer, t, baseUrl);
   if (mapPanel.available) container.appendChild(mapPanel.root);
 
@@ -294,9 +295,49 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   const controlsLeft = el("div", { className: "anda-controls-left" });
 
   if (mapPanel.available) {
-    controlsLeft.appendChild(iconButton("map", t("map"), mapPanel.toggle));
+    // Botón de mostrar/ocultar: un clic con el ratón no mueve el foco; con
+    // Enter o Espacio (clic sin puntero, detail 0) lo lleva al punto actual
+    const mapBtn = iconButton("map", t("map"), () => {});
+    mapBtn.addEventListener("click", (e) => mapPanel.toggle({ focus: e.detail === 0 }));
+    mapBtn.title = t("map_toggle_hint");
+    mapBtn.setAttribute("aria-controls", mapPanel.root.id);
+    mapBtn.setAttribute("aria-expanded", "false");
+    mapBtn.setAttribute("aria-keyshortcuts", "M");
+    mapPanel.onChange((open) => mapBtn.setAttribute("aria-expanded", String(open)));
+    mapPanel.setFocusReturn(mapBtn);
+    controlsLeft.appendChild(mapBtn);
+    // Tecla M: mostrar u ocultar el plano desde cualquier sitio del visor,
+    // salvo mientras se escribe o con un diálogo encima
+    const onMapKey = (e: KeyboardEvent): void => {
+      if (e.key !== "m" && e.key !== "M") return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable=''], [contenteditable='true']") != null) return;
+      if (container.querySelector(".anda-screen, .anda-panel-backdrop") != null) return;
+      // Fuera del visor solo cuenta el <body>, y solo si el visor ocupa la
+      // página (el recorrido publicado): incrustado entre otros contenidos,
+      // la M es de la página hasta que se entra en el visor
+      const ocupaLaPagina = container.clientWidth >= window.innerWidth * 0.9 && container.clientHeight >= window.innerHeight * 0.9;
+      if (target != null && !container.contains(target) && !(target === document.body && ocupaLaPagina)) return;
+      e.preventDefault();
+      mapPanel.toggle({ focus: true });
+    };
+    document.addEventListener("keydown", onMapKey);
+    cleanups.push(() => document.removeEventListener("keydown", onMapKey));
+    // El panel sale justo encima del dique izquierdo, que crece con el botón
+    // de volver y el de la visita automática: con una altura fija lo tapaba
+    // y el botón del mapa quedaba debajo del propio plano
+    const syncDock = (): void => {
+      container.style.setProperty("--anda-dock-left-h", `${controlsLeft.offsetHeight}px`);
+    };
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(syncDock);
+      ro.observe(controlsLeft);
+      cleanups.push(() => ro.disconnect());
+    }
+    requestAnimationFrame(syncDock);
     // Minimapa abierto desde el principio si el autor lo pide (no en el editor)
-    if (!edit && shouldOpenFloorplanAtStart(tour, container.clientWidth || window.innerWidth)) mapPanel.root.hidden = false;
+    if (!edit && shouldOpenFloorplanAtStart(tour, container.clientWidth || window.innerWidth)) mapPanel.setOpen(true);
   }
   // Volver a la escena anterior (se puede quitar en los ajustes del tour)
   if (!edit && ui.backButton !== false) {
@@ -499,7 +540,7 @@ export function mountViewer(options: SkinOptions): MountedSkin {
   }
 
   if (ui.help !== false) {
-    controls.appendChild(iconButton("circle-help", t("help"), () => showHelp(t, container)));
+    controls.appendChild(iconButton("circle-help", t("help"), () => showHelp(t, container, mapPanel.available ? ["help_map_key"] : [])));
   }
 
   // Modo accesible

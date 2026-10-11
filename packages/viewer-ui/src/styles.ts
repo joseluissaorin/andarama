@@ -154,7 +154,7 @@ export const VIEWER_CSS = `
 .anda-btn:hover { background: rgba(255, 255, 255, 0.14); transform: scale(1.06); }
 .anda-viewer[data-theme="light"] .anda-btn:hover, .anda-viewer[data-theme="auto"] .anda-btn:hover { background: rgba(15, 23, 42, 0.09); }
 .anda-btn:active { transform: scale(.97); }
-.anda-btn[aria-pressed="true"] { background: var(--u3-primary); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
+.anda-btn[aria-pressed="true"], .anda-controls-left .anda-btn[aria-expanded="true"] { background: var(--u3-primary); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
 .anda-btn:disabled { opacity: .35; cursor: default; transform: none; }
 .anda-btn:disabled:hover { background: transparent; }
 /* botones sueltos (fuera de un dock) llevan su propio cristal */
@@ -381,7 +381,9 @@ export const VIEWER_CSS = `
 .anda-quiz__summary-score { margin: 0; font-size: 18px; font-weight: 650; }
 
 /* ============ Plano de planta / mapa ============ */
-.anda-mappanel { position: absolute; left: 16px; bottom: 78px; width: min(400px, 74vw); background: var(--u3-bg-solid);
+/* Justo encima del dique izquierdo (su altura la pone la skin): el botón del
+   mapa queda siempre a la vista para volver a cerrarlo */
+.anda-mappanel { position: absolute; left: 16px; bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--anda-dock-left-h, 56px) + 10px); width: min(400px, 74vw); background: var(--u3-bg-solid);
   color: var(--u3-fg); border-radius: 18px; z-index: 21; overflow: hidden; border: 1px solid var(--u3-border);
   box-shadow: 0 16px 56px rgba(0,0,0,.5); animation: u3panelin .2s ease; }
 .anda-mappanel__head { display: flex; align-items: center; gap: 6px; padding: 10px 10px 10px 16px; }
@@ -394,7 +396,18 @@ export const VIEWER_CSS = `
 .anda-floorplan__marker:hover { transform: scale(1.35); }
 /* Zona de toque de 35 px alrededor del punto de 15: con el dedo no se acertaba */
 .anda-floorplan__marker::before { content: ""; position: absolute; inset: -12px; border-radius: 50%; }
-.anda-mappanel--big { width: min(960px, calc(100% - 32px)); max-height: calc(100% - 110px); overflow-y: auto; }
+/* Con el teclado, el punto con foco crece y dice su escena: el title solo sale con el ratón */
+.anda-floorplan__marker:focus-visible { outline: 3px solid var(--u3-primary-strong); outline-offset: 3px; border-radius: 50%; z-index: 3; }
+.anda-floorplan__marker:focus-visible::after { content: attr(aria-label); position: absolute; left: 50%; bottom: calc(100% + 10px);
+  transform: translateX(-50%); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
+  background: rgba(4, 7, 18, .88); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 8px; pointer-events: none; }
+.anda-mappanel--big { width: min(960px, calc(100% - 32px)); max-height: calc(100% - var(--anda-dock-left-h, 56px) - 60px); overflow-y: auto; }
+.anda-mappanel { max-height: calc(100% - var(--anda-dock-left-h, 56px) - 60px); overflow-y: auto; }
+/* «Mostrar puntos»: sin ellos queda el plano limpio */
+.anda-mappanel__spots { display: flex; align-items: center; gap: 8px; padding: 10px 16px 12px; font-size: 13px; font-weight: 600;
+  cursor: pointer; user-select: none; }
+.anda-mappanel__spots input { width: 18px; height: 18px; margin: 0; accent-color: var(--u3-primary); cursor: pointer; }
+.anda-mappanel--nospots .anda-floorplan__marker, .anda-mappanel--nospots .anda-floorplan__radar { display: none; }
 .anda-floorplan__marker[aria-current="true"] { background: var(--u3-primary-strong); z-index: 2;
   box-shadow: 0 0 0 4px rgba(139,152,232,.35), 0 1px 6px rgba(0,0,0,.4); }
 .anda-floorplan__radar { position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; pointer-events: none; z-index: 1; }
