@@ -1,6 +1,6 @@
 ---
 title: Plano del recorrido
-description: "Cómo añadir el plano de planta, colocar cada escena encima y qué ve el visitante en el visor publicado: un botón de mapa con puntos pulsables, radar y selector de plantas."
+description: "Cómo añadir el plano de planta, colocar cada escena encima y qué ve el visitante en el visor publicado: un botón de mapa con puntos pulsables, radar, selector de plantas, plano ampliable y minimapa abierto al empezar."
 ---
 
 El **plano del recorrido** es un dibujo de la planta con un punto por escena.
@@ -58,14 +58,26 @@ Cada área con plano es una **planta**. Con dos o más plantas:
 ## Qué ve el visitante
 
 - Un **botón de mapa abajo a la izquierda** abre y cierra el panel del plano.
+- El botón **Ampliar el plano** de la cabecera del panel lo agranda casi a toda
+  la pantalla, útil en el móvil o con planos detallados. Al saltar a una
+  escena, vuelve solo al tamaño de minimapa.
 - Cada escena colocada es un **punto pulsable** con el nombre de la escena: al
-  pulsarlo, el visor salta a ella.
+  pulsarlo, el visor salta a ella. Alrededor de cada punto hay una zona de
+  toque más grande que el propio punto, para acertar con el dedo.
 - El punto de la escena actual queda marcado, con el **radar** encima.
 - Si el recorrido tiene además escenas con coordenadas y el mapa geográfico
   activado, el panel lleva un botón para alternar entre el plano y el mapa.
 
 El plano viaja también en los paquetes exportados, porque forma parte del
 `tour.json`.
+
+## Plano abierto al empezar
+
+Por defecto el plano empieza cerrado. Para que el visitante lo tenga a la vista
+desde el principio, como un minimapa, activa **Plano abierto al empezar** en
+**Ajustes del tour › Componentes de interfaz**. En pantallas estrechas, como
+la de un móvil, empieza cerrado igualmente para no tapar el panorama, y se
+abre con el botón del mapa.
 
 ## Calibrar y otras opciones
 

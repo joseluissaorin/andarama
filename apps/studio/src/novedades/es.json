@@ -1,5 +1,15 @@
 [
   {
+    "fecha": "2026-10-11",
+    "titulo": "Más de lo que pidió el equipo docente",
+    "items": [
+      "Junto a «Silenciar», una flecha abre el sonido de la escena: con un clic deja de sonar en el recorrido publicado sin perder los ficheros, y se vuelve a activar igual. En «Audio de la escena» está el mismo interruptor y un botón «Quitar» para el ambiente y para la narración.",
+      "El hotspot «Acción (variables)» se explica con un ejemplo, la llave y la puerta, y al añadirlo ya trae ese cambio puesto. La descripción aclara que no es un tesoro ni una pregunta.",
+      "El plano del visor se puede ampliar casi a toda la pantalla, sus puntos se aciertan mejor con el dedo y, con «Plano abierto al empezar» en los ajustes del tour, sale como minimapa desde el principio.",
+      "Exportar en ZIP ya no se queda parado en la recta final: una descarga que deja de recibir datos se corta y se reintenta, y los paquetes de más de 4 GB o de más de 65 535 ficheros salen enteros."
+    ]
+  },
+  {
     "fecha": "2026-10-02",
     "titulo": "Lo que pidió el equipo docente",
     "items": [

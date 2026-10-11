@@ -16,6 +16,17 @@ estado». Hace lo mismo; ha cambiado el nombre y ahora se configura con filas
 en lugar de JSON. Los recorridos que ya lo usaban siguen funcionando igual.
 :::
 
+:::tip[No es un tesoro ni una pregunta]
+El **Tesoro** es un objeto que el visitante busca, y el recorrido lleva la
+cuenta de los encontrados por sí solo. El **Quiz** hace una pregunta. La
+**Acción** no busca ni pregunta nada: es un botón que apunta algo en la
+memoria del recorrido («ha cogido la llave», «lleva tres pistas») para que
+otros hotspots aparezcan o se oculten según eso. En el marcador se ve con un
+icono de interruptor, que puedes cambiar en su pestaña **Estilo** (una llave,
+una puerta…). Al añadirla, el editor ya trae el cambio de ejemplo
+`llave` · Poner a · `true`, y el panel lo resume en una línea.
+:::
+
 ## Las variables
 
 Se declaran en **Ajustes del tour**, bloque **Recorridos guiados / Variables

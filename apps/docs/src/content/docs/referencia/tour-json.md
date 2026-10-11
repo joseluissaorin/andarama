@@ -98,6 +98,9 @@ El esquema está **versionado**: `@andarama/schema` incluye migradores automáti
 - **`ui.badgeText`** (nuevo): texto propio de la insignia «Hecho con
   Andarama», recortado a 80 caracteres. Solo se ve en los planes que muestran
   la insignia, y sigue enlazando a andarama.com.
+- **`ui.floorplanOpen`** (nuevo): con `true`, el plano se abre como minimapa
+  nada más entrar en pantallas de 720 px de ancho o más; en las más estrechas
+  empieza cerrado. Sin indicar, el plano empieza cerrado.
 - **Vista en el enlace**: el visor escribe `#s=escena&y=…&p=…&f=…` en la
   dirección mientras se mira alrededor, pero solo aplica la orientación del
   hash si lleva además `v=1`, que es lo que añade el botón de compartir. Sin
