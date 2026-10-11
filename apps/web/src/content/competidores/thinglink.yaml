@@ -3,42 +3,43 @@ web: https://www.thinglink.com
 pais: "FI"
 tipo: saas
 gratis: false
-gratis_detalle: "Prueba gratuita; no hay plan gratuito permanente"
+gratis_detalle: "Prueba gratuita de 30 días (Teacher) o de 14 días (Create); no hay plan gratuito permanente"
 planes:
-  - nombre: Starter
-    precio: 29
-    moneda: USD
-    periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: true
-  - nombre: XR
-    precio: 99
-    moneda: USD
-    periodo: month
-    precio_mes_anual: null
-    precio_anual: null
-    verificado: true
   - nombre: Teacher
-    precio: 35
+    precio: 108
+    moneda: USD
+    periodo: year
+    precio_mes_anual: 9
+    precio_anual: null
+    verificado: true
+  - nombre: Create Starter / XR
+    precio: 86
+    moneda: EUR
+    periodo: month
+    precio_mes_anual: 57
+    precio_anual: 684
+    verificado: true
+  - nombre: Department
+    precio: 4250
     moneda: USD
     periodo: year
     precio_mes_anual: null
-    precio_anual: 35
+    precio_anual: null
     verificado: true
-cuotas: null
+cuotas: "Teacher: 5000 visualizaciones y 25 imágenes 360 compartidas; Create: 250 visualizaciones al mes; planes de centro: ilimitadas"
 rv: true
-scorm: parcial
-lti: true
-exportacion: parcial
-exportacion_detalle: "Exportación SCORM y HTML solo en los planes superiores"
+scorm: null
+lti: parcial
+exportacion: null
+exportacion_detalle: "Sus páginas de precios no mencionan un paquete descargable; el plan Enterprise ofrece nube privada o instalación local"
 codigo_abierto: false
 marca_blanca: parcial
-dominio_propio: false
+dominio_propio: null
 analitica_sin_cookies: null
 street_view: false
 verificado: true
+fecha_verificacion: 2026-10-11
 descripcion:
-  es: "Herramienta finlandesa de imágenes y vídeos interactivos con fuerte presencia en educación; el 360 es una función más."
-  en: "Finnish tool for interactive images and videos with a strong presence in education; 360 is just one feature."
-notas: "Plan docente de 35 $/año más 2 $ por alumno. Integración LTI con los LMS habituales y exportación SCORM en los planes altos."
+  es: "Herramienta finlandesa de imágenes, vídeos y escenarios interactivos con fuerte presencia en educación; el 360 es una función más."
+  en: "Finnish tool for interactive images, videos and scenarios with a strong presence in education; 360 is just one feature."
+notas: "Precios comprobados el 11-10-2026 en https://www.thinglink.com/plans/edu, /plans/higher-education y /plans/business. Teacher: 9 $ al mes con pago anual, para un docente, sin cuentas gratuitas para el alumnado. Planes de centro (Essential, Enhanced) con precio a medida; Department desde 4250 $ al año y College desde 8500 $ al año, con LTI 1.3. Create Starter / XR: 57 € al mes con pago anual u 86 € al mes. Apps para Meta Quest, PICO, HTC VIVE y ClassVR. Dice cumplir WCAG 2.2 AA e integra Immersive Reader. Empresa: Thinglink Oy (Kontiolahti, Finlandia), ISO 27001."
