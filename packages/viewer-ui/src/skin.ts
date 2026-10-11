@@ -4,7 +4,7 @@ import { injectStyles } from "./styles.js";
 import { createTranslator, ensureUiLang, type Translator } from "./i18n.js";
 import { registerUiIcons } from "./icons.js";
 import { el, iconButton, mountScreen, toast } from "./dom.js";
-import { PanelHost } from "./panels.js";
+import { openPdfForVr, PanelHost } from "./panels.js";
 import { badgeLabel } from "./badge.js";
 import {
   buildCompass,
@@ -96,6 +96,8 @@ export function mountViewer(options: SkinOptions): MountedSkin {
     analyticsEndpoint: options.analyticsEndpoint,
     // Los textos del modo inmersivo (paneles VR) siguen el idioma del tour
     translate: (key, params) => t(key as never, params),
+    // Los PDF se leen también dentro de las gafas, con el mismo pdf.js
+    loadPdf: (url) => openPdfForVr(url),
   });
 
   const t0 = createTranslator(viewer.currentLang());

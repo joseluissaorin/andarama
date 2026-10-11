@@ -1,4 +1,5 @@
 import type { Hotspot, Scene, Tour, ViewParams } from "@andarama/schema";
+import type { VrPdfDocument } from "./engine/xr/panel.js";
 
 export interface TourViewerOptions {
   /** Contenedor DOM donde montar el visor. */
@@ -23,6 +24,12 @@ export interface TourViewerOptions {
    * inmersivo (paneles, botones) sigan el idioma del tour.
    */
   translate?: (key: string, params?: Record<string, string | number>) => string;
+  /**
+   * Abre un PDF para enseñarlo dentro de las gafas. Lo aporta la skin, que
+   * ya carga pdf.js de forma perezosa para el panel plano; sin él, el PDF se
+   * ofrece para verlo al salir de VR.
+   */
+  loadPdf?: (url: string) => Promise<VrPdfDocument>;
 }
 
 export interface ViewerAnalyticsEvent {

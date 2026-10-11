@@ -81,11 +81,11 @@ describe("entrada de manos", () => {
 
 describe("paneles inmersivos", () => {
   it("clasifica qué tipos se consumen dentro de VR", () => {
-    for (const type of ["text", "image", "gallery", "videoFile", "audio", "quiz", "compare", "tooltip"]) {
+    for (const type of ["text", "image", "gallery", "videoFile", "audio", "quiz", "compare", "tooltip", "pdf"]) {
       expect(isImmersivePanel(type)).toBe(true);
       expect(needsExternalContinuation(type)).toBe(false);
     }
-    for (const type of ["pdf", "web", "form", "embedVideo", "model3d"]) {
+    for (const type of ["web", "form", "embedVideo", "model3d"]) {
       expect(needsExternalContinuation(type)).toBe(true);
       expect(isImmersivePanel(type)).toBe(false);
     }

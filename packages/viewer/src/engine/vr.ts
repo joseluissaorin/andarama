@@ -1,6 +1,17 @@
 import type { Hotspot, QuizHotspot, QuizQuestion } from "@andarama/schema";
 import { isQuizAnswerCorrect, quizQuestionPoints, quizQuestions } from "@andarama/schema";
-import { XrRenderer, downscaleForTexture } from "./xr/render.js";
+import { XrRenderer, fitForTexture } from "./xr/render.js";
+import {
+  CubePanorama,
+  TileStore,
+  chooseCubeLevel,
+  cubeLevelSizes,
+  cubeLevelTiles,
+  loadImageElement,
+  vrTargetFaceSize,
+  type CubePanoramaStats,
+  type VrCubeSource,
+} from "./xr/panorama.js";
 import { XrInput, isTrackedPointer, type XrPointer } from "./xr/input.js";
 import { GazeDwell, gazeHitRadius } from "./xr/gaze.js";
 import { SceneTransition } from "./xr/transition.js";
@@ -12,14 +23,19 @@ import {
   panelImageUrls,
   PANEL_HEIGHT,
   PANEL_WIDTH,
+  PDF_PAGE_WIDTH,
+  VIDEO_RECT,
   type PanelContext,
+  type PanelPdfView,
   type PanelState,
   type PanelZone,
+  type VrPdfDocument,
 } from "./xr/panel.js";
 import {
   arrivalYawOffset,
   dirFromYawPitch,
   matForward,
+  matMultiply,
   matPosition,
   matTranslateScale,
   matTranslateYawScale,
@@ -75,17 +91,44 @@ export interface VrHotspot {
 }
 
 export interface VrEnvironment {
-  /** Imagen/lienzo/vídeo equirectangular a proyectar. */
-  element: TexImageSource & { videoWidth?: number };
+  /**
+   * Imagen/lienzo/vídeo equirectangular que se enseña ya. En las panorámicas
+   * es la vista previa (pequeña, va dentro del tour.json): algo que ver
+   * mientras llega lo bueno. null si no hay nada inmediato.
+   */
+  element: (TexImageSource & { videoWidth?: number }) | null;
   /** Layout estéreo del contenido. */
   stereo: "mono" | "tb" | "sbs";
   /** true si es vídeo (retexturizar cada fotograma). */
   dynamic: boolean;
-  /**
-   * Imagen de respaldo (la vista previa de la escena) si la panorámica no se
-   * puede subir a la GPU. Sin ella, un fallo dejaba la escena anterior.
-   */
-  fallback?: () => Promise<TexImageSource | null>;
+  /** Panorámica multirresolución: se pinta el cubo y se refina por teselas (xr/panorama.ts). */
+  cube?: VrCubeSource;
+  /** Equirectangular a resolución completa que sustituye a `element` cuando llega. */
+  fullUrl?: string;
+}
+
+/** Lo que conviene tener descargado antes de saltar: las escenas vecinas. */
+export type VrPrefetch = { cube: VrCubeSource } | { url: string };
+
+/** Escena lista para pintar: texturas en la GPU y teselas en camino. */
+interface PreparedScene {
+  env: VrEnvironment;
+  renderer: XrRenderer | null;
+  /** Esfera equirectangular: vista previa, imagen completa o vídeo. */
+  tex: WebGLTexture | null;
+  cube: CubePanorama | null;
+  disposed: boolean;
+}
+
+/** Cuánto se espera en negro, como mucho, a que la escena llegue entera. */
+const WAIT_CACHED_MS = 1500;
+/** Sin caché, cuánto se espera a la etapa rápida si ya hay vista previa. */
+const WAIT_BASE_MS = 700;
+/** Sin vista previa no hay nada que enseñar: se espera más. */
+const WAIT_NOTHING_MS = 8000;
+
+function within<T>(promise: Promise<T>, ms: number): Promise<T | void> {
+  return Promise.race([promise, new Promise<void>((r) => setTimeout(r, ms))]);
 }
 
 /** Por qué no se puede salir de la escena desde VR (compuerta pendiente). */
@@ -116,6 +159,15 @@ export interface VrCallbacks {
   onQuizAnswer(hotspotId: string, correct: boolean, points: number, selected?: string[], questionId?: string): void;
   /** Contenido que se continúa fuera de VR: se abre al terminar la sesión. */
   onExternalRequest(url: string): void;
+  /**
+   * Abrir el hotspot en el visor plano en cuanto acabe la sesión (vídeos de
+   * YouTube, páginas web…). Sin esto se cae a `onExternalRequest`.
+   */
+  onOpenAfterExit?(hotspotId: string): void;
+  /** Escenas a las que se puede saltar desde la actual, para descargarlas antes. */
+  getPrefetch?(): VrPrefetch[];
+  /** Abre un PDF (pdf.js, carga perezosa) para enseñar sus páginas en el panel. */
+  loadPdf?(url: string): Promise<VrPdfDocument>;
   onExit(): void;
   /** Vista del visor plano, ya en el convenio VR (pitch positivo hacia arriba). */
   getViewYawPitch(): { yaw: number; pitch: number };
@@ -161,8 +213,13 @@ export class VRManager {
   private xrSession: any = null;
   private refSpace: any = null;
   private mode: "xr" | "cardboard" | null = null;
-  private env: VrEnvironment | null = null;
-  private envTex: WebGLTexture | null = null;
+  /** Escena que se ve. */
+  private scene: PreparedScene | null = null;
+  /** Escenas en preparación (para soltarlas si se sale de VR a medias). */
+  private preparing = new Set<PreparedScene>();
+  /** Teselas descargadas: las de la escena actual y las de sus vecinas. */
+  private store = new TileStore();
+  private prefetchAbort: AbortController | null = null;
   private iconTex = new Map<string, WebGLTexture>();
   private raf = 0;
   private cardboardYawPitch = { yaw: 0, pitch: 0 };
@@ -171,10 +228,10 @@ export class VRManager {
   private orientationGate: HTMLElement | null = null;
   private exitButton: HTMLButtonElement | null = null;
   /** Cambio de escena con fundido, al ritmo del bucle de la sesión. */
-  private transition = new SceneTransition<VrEnvironment>({
+  private transition = new SceneTransition<PreparedScene>({
     navigate: (target) => this.callbacks.onNavigate(target, this.navHotspot),
-    load: () => this.callbacks.getEnvironment(),
-    apply: (env) => this.applyEnvironment(env),
+    load: async () => this.prepareScene(await this.callbacks.getEnvironment()),
+    apply: (scene) => this.applyScene(scene),
     onError: (error) => console.warn("[andarama] no se pudo cambiar de escena en VR", error),
   });
   /** Opacidad del velo negro del fundido en el fotograma actual. */
@@ -203,6 +260,21 @@ export class VRManager {
   private panelAnchor: { center: Vec3; right: Vec3; up: Vec3 } | null = null;
   private panelMedia: HTMLVideoElement | HTMLAudioElement | null = null;
   private panelDirty = true;
+  /** Último repintado del panel con medios (la barra de progreso). */
+  private panelDrawnAt = 0;
+  /** Textura del vídeo del panel, encima del lienzo (no se redibuja el panel por fotograma). */
+  private videoTex: WebGLTexture | null = null;
+  private videoTime = -1;
+  /** El vídeo arrancó sin sonido porque el navegador no dejó reproducirlo con él. */
+  private videoMutedByPolicy = false;
+  /** Documento PDF del panel abierto y sus páginas ya dibujadas. */
+  private pdf: {
+    token: object;
+    status: "loading" | "ready" | "error";
+    doc: VrPdfDocument | null;
+    pages: Map<number, HTMLCanvasElement>;
+    rendering: number | null;
+  } | null = null;
 
   // Estado de punteros
   private hover = new Map<string, PointerTarget>();
@@ -289,7 +361,7 @@ export class VRManager {
     const gl = this.canvas.getContext("webgl", { xrCompatible, antialias: true } as WebGLContextAttributes) as WebGLRenderingContext;
     this.gl = gl;
     this.renderer = new XrRenderer(gl);
-    this.envTex = null;
+    this.scene = null;
     this.panelCanvas = document.createElement("canvas");
     this.panelTex = this.renderer.createTexture();
     return gl;
@@ -297,39 +369,168 @@ export class VRManager {
 
   async refreshEnvironment(): Promise<void> {
     if (this.renderer == null) return;
-    this.applyEnvironment(await this.callbacks.getEnvironment());
+    this.applyScene(await this.prepareScene(await this.callbacks.getEnvironment()));
     this.closePanel();
   }
 
   /**
-   * Escena nueva: textura nueva (se borra la anterior), reducida al tamaño
-   * que admite la GPU, y desfase de yaw pendiente para mirar la vista de
-   * llegada en cuanto se conozca la orientación de la cabeza.
+   * Prepara una escena sin tocar la que se ve: sube la vista previa, empieza
+   * a traer las teselas (o la equirectangular completa) y espera un poco
+   * —con la pantalla en negro del fundido— para no enseñar una etapa borrosa
+   * que se va a sustituir enseguida:
+   * - si todo está ya descargado (escena vecina), hasta que se ve entera;
+   * - si no, solo hasta la etapa rápida (nivel 0), y lo demás se refina a la vista.
    */
-  private applyEnvironment(env: VrEnvironment): void {
-    this.env = env;
-    this.iconTex.clear();
-    this.pendingArrivalYaw = this.callbacks.getViewYawPitch().yaw;
+  private async prepareScene(env: VrEnvironment): Promise<PreparedScene> {
     const r = this.renderer;
+    const scene: PreparedScene = { env, renderer: r, tex: null, cube: null, disposed: false };
+    if (r == null) return scene;
+    this.preparing.add(scene);
+    try {
+      if (env.element != null) {
+        const tex = r.createTexture();
+        const source = env.dynamic ? env.element : await fitForTexture(env.element, r.maxTextureSize());
+        if (r.upload(tex, source)) scene.tex = tex;
+        else r.deleteTexture(tex);
+      }
+      let full: Promise<void> | null = null;
+      let cached = false;
+      if (env.cube != null) {
+        scene.cube = new CubePanorama(r, env.cube, {
+          store: this.store,
+          targetFace: this.targetFace(r),
+          priorityYaw: this.callbacks.getViewYawPitch().yaw,
+        });
+        cached = scene.cube.allCached();
+        scene.cube.start();
+      } else if (env.fullUrl != null && !env.dynamic) {
+        cached = this.store.has(env.fullUrl);
+        full = this.loadFullEquirect(scene, env.fullUrl);
+      }
+      const done = scene.cube?.complete ?? full;
+      const quick = scene.cube?.baseReady ?? full;
+      if (done != null && cached) await within(done, WAIT_CACHED_MS);
+      else if (quick != null) await within(quick, scene.tex != null ? WAIT_BASE_MS : WAIT_NOTHING_MS);
+    } finally {
+      this.preparing.delete(scene);
+    }
+    return scene;
+  }
+
+  private targetFace(r: XrRenderer): number {
+    return vrTargetFaceSize(r.maxTextureSize(), this.mode === "cardboard" ? "cardboard" : "xr");
+  }
+
+  /**
+   * Equirectangular completa: se descarga y decodifica fuera del hilo
+   * principal (`createImageBitmap`), se reduce si no cabe en la GPU y
+   * sustituye a la vista previa en cuanto está.
+   */
+  private async loadFullEquirect(scene: PreparedScene, url: string): Promise<void> {
+    const r = scene.renderer;
     if (r == null) return;
-    r.deleteTexture(this.envTex);
-    this.envTex = r.createTexture();
-    const source = env.dynamic ? env.element : downscaleForTexture(env.element, r.maxTextureSize());
-    if (r.upload(this.envTex, source)) return;
-    console.warn("[andarama] la panorámica no cabe en la GPU; se usa la vista previa");
-    void env
-      .fallback?.()
-      .then((preview) => {
-        if (preview == null || this.env !== env || this.renderer !== r || this.envTex == null) return;
-        r.upload(this.envTex, downscaleForTexture(preview, r.maxTextureSize()));
-      })
-      .catch((error: unknown) => console.warn("[andarama] tampoco se pudo cargar la vista previa", error));
+    try {
+      let image: TexImageSource & { close?: () => void };
+      try {
+        if (typeof createImageBitmap !== "function") throw new Error("sin createImageBitmap");
+        image = await createImageBitmap(await this.store.blob(url));
+      } catch {
+        image = await loadImageElement(url);
+      }
+      const fitted: TexImageSource & { close?: () => void } = await fitForTexture(image, r.maxTextureSize());
+      if (fitted !== image) image.close?.();
+      if (scene.disposed) {
+        fitted.close?.();
+        return;
+      }
+      const tex = r.createTexture();
+      const ok = r.upload(tex, fitted);
+      fitted.close?.();
+      if (!ok) {
+        r.deleteTexture(tex);
+        // Meta Quest: si la grande no entra, se queda la vista previa
+        console.warn("[andarama] la panorámica no cabe en la GPU; se queda la vista previa");
+        return;
+      }
+      r.deleteTexture(scene.tex);
+      scene.tex = tex;
+    } catch (error) {
+      console.warn("[andarama] no cargó la panorámica para VR; se queda la vista previa", error);
+    }
+  }
+
+  /**
+   * Escena nueva: se suelta la anterior (texturas y teselas pendientes), se
+   * fija el desfase de yaw pendiente para mirar la vista de llegada en cuanto
+   * se conozca la orientación de la cabeza, y se empiezan a descargar las
+   * escenas vecinas.
+   */
+  private applyScene(scene: PreparedScene): void {
+    this.pendingArrivalYaw = this.callbacks.getViewYawPitch().yaw;
+    if (scene.renderer !== this.renderer || this.renderer == null) {
+      this.disposeScene(scene);
+      return;
+    }
+    const old = this.scene;
+    this.scene = scene;
+    if (old != null && old !== scene) this.disposeScene(old);
+    for (const tex of this.iconTex.values()) this.renderer.deleteTexture(tex);
+    this.iconTex.clear();
+    this.prefetchNeighbors(scene);
+  }
+
+  private disposeScene(scene: PreparedScene): void {
+    if (scene.disposed) return;
+    scene.disposed = true;
+    scene.cube?.dispose();
+    if (scene.renderer != null && scene.renderer === this.renderer) scene.renderer.deleteTexture(scene.tex);
+    scene.tex = null;
+  }
+
+  /**
+   * Descarga en segundo plano las escenas a las que se puede saltar, cuando
+   * la actual ya está entera (no compiten con ella). Las teselas de escenas
+   * que ya no son vecinas se sueltan.
+   */
+  private prefetchNeighbors(scene: PreparedScene): void {
+    this.prefetchAbort?.abort();
+    const ctrl = new AbortController();
+    this.prefetchAbort = ctrl;
+    const r = this.renderer;
+    const targets = this.callbacks.getPrefetch?.() ?? [];
+    const keep: string[] = [];
+    if (scene.env.cube != null) keep.push(`${scene.env.cube.base}/`);
+    if (scene.env.fullUrl != null) keep.push(scene.env.fullUrl);
+    const urls: string[] = [];
+    for (const t of targets) {
+      if ("cube" in t) {
+        keep.push(`${t.cube.base}/`);
+        const level = r != null ? chooseCubeLevel(cubeLevelSizes(t.cube.faceSize, t.cube.levels), this.targetFace(r)) : 0;
+        urls.push(...cubeLevelTiles(t.cube, 0).map((x) => x.url));
+        if (level > 0) urls.push(...cubeLevelTiles(t.cube, level).map((x) => x.url));
+      } else {
+        keep.push(t.url);
+        urls.push(t.url);
+      }
+    }
+    this.store.keepOnly(keep);
+    if (urls.length === 0) return;
+    const ready = scene.cube?.complete ?? Promise.resolve();
+    void ready.then(() => {
+      if (!ctrl.signal.aborted) void this.store.prefetch(urls, ctrl.signal);
+    });
+  }
+
+  /** Progreso de la panorámica en cubo de la escena actual (pruebas y medidas). */
+  get panoramaStats(): CubePanoramaStats | null {
+    return this.scene?.cube?.stats ?? null;
   }
 
   /** Vídeo: se retexturiza cada fotograma sobre la textura de la escena. */
   private uploadEnv(): void {
-    if (this.renderer == null || this.env == null || this.envTex == null) return;
-    this.renderer.upload(this.envTex, this.env.element as TexImageSource);
+    const scene = this.scene;
+    if (this.renderer == null || scene?.tex == null || scene.env.element == null) return;
+    this.renderer.upload(scene.tex, scene.env.element);
   }
 
   /**
@@ -398,7 +599,8 @@ export class VRManager {
       gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      if (this.env?.dynamic === true) this.uploadEnv();
+      if (this.scene?.env.dynamic === true) this.uploadEnv();
+      this.updateVideoTexture();
       let eye = 0;
       for (const view of pose.views) {
         const vp = glLayer.getViewport(view);
@@ -605,7 +807,8 @@ export class VRManager {
       // En cartón el rumbo del móvil al entrar ya se descuenta (headingOffset);
       // tras cada salto se gira además la panorámica para mirar la llegada.
       this.resolveArrival(this.cardboardYawPitch.yaw);
-      if (this.env?.dynamic === true) this.uploadEnv();
+      if (this.scene?.env.dynamic === true) this.uploadEnv();
+      this.updateVideoTexture();
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       const { yaw, pitch } = this.cardboardYawPitch;
@@ -755,10 +958,17 @@ export class VRManager {
       case "prev":
         if (hs.type === "quiz") this.goToQuizQuestion(hs, this.panelState.index - 1);
         else this.panelState.index = Math.max(0, this.panelState.index - 1);
+        if (hs.type === "pdf") this.turnPdfPage();
         break;
       case "next": {
         if (hs.type === "quiz") {
           this.goToQuizQuestion(hs, this.panelState.index + 1);
+          break;
+        }
+        if (hs.type === "pdf") {
+          const total = this.pdf?.doc?.numPages ?? 1;
+          this.panelState.index = Math.min(total - 1, this.panelState.index + 1);
+          this.turnPdfPage();
           break;
         }
         const items = (hs.hotspot as { items?: unknown[] }).items ?? [];
@@ -776,8 +986,14 @@ export class VRManager {
         break;
       case "toggle":
         if (this.panelMedia != null) {
-          if (this.panelMedia.paused) void this.panelMedia.play().catch(() => {});
-          else this.panelMedia.pause();
+          const media = this.panelMedia;
+          if (this.videoMutedByPolicy) {
+            // Primer toque tras arrancar sin sonido: activarlo (ahora sí hay gesto)
+            this.videoMutedByPolicy = false;
+            media.muted = false;
+            if (media.paused) void media.play().catch(() => {});
+          } else if (media.paused) void media.play().catch(() => {});
+          else media.pause();
         }
         break;
       case "check":
@@ -788,6 +1004,19 @@ export class VRManager {
         const url = content.url != null ? this.callbacks.url(content.url) : "";
         if (url !== "") this.callbacks.onExternalRequest(url);
         this.closePanel();
+        return;
+      }
+      case "exit-open": {
+        // Salir de las gafas y abrir el hotspot en el visor plano (el vídeo de
+        // YouTube con su reproductor, la página web…). Sin el hueco en el
+        // visor, como antes: la dirección se abre al terminar la sesión.
+        if (this.callbacks.onOpenAfterExit != null) this.callbacks.onOpenAfterExit(hs.id);
+        else {
+          const content = hs.hotspot as { url?: string };
+          if (content.url != null) this.callbacks.onExternalRequest(this.callbacks.url(content.url));
+        }
+        this.closePanel();
+        this.exit();
         return;
       }
       default:
@@ -806,6 +1035,12 @@ export class VRManager {
         break;
     }
     this.panelDirty = true;
+  }
+
+  /** Página nueva del PDF: arriba del todo y a dibujarla si no lo está. */
+  private turnPdfPage(): void {
+    this.panelState.scroll = 0;
+    this.ensurePdfPage();
   }
 
   /** Pregunta que enseña ahora el panel de quiz (la única, en la forma heredada). */
@@ -886,15 +1121,21 @@ export class VRManager {
       this.loadImage(url);
     }
     // Medios reproducibles
-    const content = hs.hotspot as { url?: string; loop?: boolean; volume?: number };
+    const content = hs.hotspot as { url?: string; loop?: boolean; volume?: number; muted?: boolean };
     if (hs.type === "videoFile" && content.url != null) {
       const video = document.createElement("video");
       video.src = this.callbacks.url(content.url);
       video.crossOrigin = "anonymous";
       video.loop = content.loop ?? false;
+      video.muted = content.muted === true;
       video.playsInline = true;
+      video.preload = "auto";
+      video.addEventListener("play", () => (this.panelDirty = true));
+      video.addEventListener("pause", () => (this.panelDirty = true));
+      video.addEventListener("loadeddata", () => (this.panelDirty = true));
       this.panelMedia = video;
-      void video.play().catch(() => {});
+      this.videoTime = -1;
+      this.playPanelMedia(video);
     } else if (hs.type === "audio" && content.url != null) {
       const audio = new Audio(this.callbacks.url(content.url));
       audio.crossOrigin = "anonymous";
@@ -902,14 +1143,109 @@ export class VRManager {
       if (content.volume != null) audio.volume = content.volume;
       this.panelMedia = audio;
       void audio.play().catch(() => {});
+    } else if (hs.type === "pdf" && content.url != null && this.callbacks.loadPdf != null) {
+      this.openPdf(this.callbacks.url(content.url));
     }
+  }
+
+  /**
+   * Reproduce el medio del panel. Con mando, el `select` de WebXR cuenta como
+   * gesto y suena; con la mirada no hay gesto y el navegador lo rechaza: se
+   * arranca sin sonido y el botón ofrece activarlo.
+   */
+  private playPanelMedia(media: HTMLVideoElement): void {
+    this.videoMutedByPolicy = false;
+    void media.play().catch(() => {
+      if (this.panelMedia !== media || media.muted) return;
+      media.muted = true;
+      this.videoMutedByPolicy = true;
+      this.panelDirty = true;
+      void media.play().catch(() => {});
+    });
+  }
+
+  private openPdf(url: string): void {
+    const token = {};
+    const state: NonNullable<VRManager["pdf"]> = { token, status: "loading", doc: null, pages: new Map(), rendering: null };
+    this.pdf = state;
+    this.callbacks
+      .loadPdf!(url)
+      .then((doc) => {
+        if (this.pdf?.token !== token) {
+          doc.destroy?.();
+          return;
+        }
+        state.doc = doc;
+        state.status = doc.numPages > 0 ? "ready" : "error";
+        this.panelDirty = true;
+        this.ensurePdfPage();
+      })
+      .catch((error: unknown) => {
+        console.warn("[andarama] no se pudo abrir el PDF en VR", error);
+        if (this.pdf?.token !== token) return;
+        state.status = "error";
+        this.panelDirty = true;
+      });
+  }
+
+  /**
+   * Dibuja con pdf.js la página que toca (y después la siguiente, para que
+   * pasar de página sea inmediato). Se guardan solo unas pocas páginas.
+   */
+  private ensurePdfPage(): void {
+    const pdf = this.pdf;
+    if (pdf?.doc == null || pdf.rendering != null) return;
+    const current = Math.min(this.panelState.index, pdf.doc.numPages - 1);
+    const wanted = [current, current + 1].filter((p) => p < pdf.doc!.numPages && !pdf.pages.has(p));
+    const page = wanted[0];
+    if (page == null) return;
+    pdf.rendering = page;
+    const token = pdf.token;
+    pdf.doc
+      .renderPage(page + 1, PDF_PAGE_WIDTH)
+      .then((canvas) => {
+        if (this.pdf?.token !== token) return;
+        pdf.pages.set(page, canvas);
+        // Memoria: fuera las páginas que quedan lejos de la actual
+        const now = this.panelState.index;
+        for (const p of pdf.pages.keys()) if (Math.abs(p - now) > 1) pdf.pages.delete(p);
+        if (page === Math.min(this.panelState.index, pdf.doc!.numPages - 1)) this.panelDirty = true;
+      })
+      .catch((error: unknown) => {
+        console.warn("[andarama] no se pudo dibujar la página del PDF", error);
+        if (this.pdf?.token === token && !pdf.pages.has(page)) {
+          pdf.status = "error";
+          this.panelDirty = true;
+        }
+      })
+      .finally(() => {
+        if (this.pdf?.token !== token) return;
+        pdf.rendering = null;
+        if (pdf.status === "ready") this.ensurePdfPage();
+      });
+  }
+
+  private pdfView(): PanelPdfView | null {
+    const pdf = this.pdf;
+    if (pdf == null) return null;
+    const total = pdf.doc?.numPages ?? 0;
+    const index = Math.min(this.panelState.index, Math.max(0, total - 1));
+    return { status: pdf.status, page: pdf.pages.get(index) ?? null, index, total };
   }
 
   private closePanel(): void {
     if (this.panelMedia != null) {
       this.panelMedia.pause();
-      this.panelMedia.src = "";
+      this.panelMedia.removeAttribute("src");
+      this.panelMedia.load();
       this.panelMedia = null;
+    }
+    if (this.videoTex != null) this.renderer?.deleteTexture(this.videoTex);
+    this.videoTex = null;
+    this.videoMutedByPolicy = false;
+    if (this.pdf != null) {
+      this.pdf.doc?.destroy?.();
+      this.pdf = null;
     }
     this.openHotspot = null;
     this.panelAnchor = null;
@@ -923,16 +1259,63 @@ export class VRManager {
       t: (key, params) => this.callbacks.t(key, params),
       image: (url) => this.images.get(url) ?? this.loadImage(url),
       video: () => this.panelMedia as HTMLVideoElement | null,
+      // El vídeo va en su propia textura encima del panel (updateVideoTexture)
+      videoOverlay: true,
+      videoMutedByPolicy: this.videoMutedByPolicy,
+      pdf: this.callbacks.loadPdf != null ? () => this.pdfView() : undefined,
+      exitToOpen: this.callbacks.onOpenAfterExit != null,
     };
   }
 
   private refreshPanelTexture(): void {
     if (this.openHotspot == null || this.panelCanvas == null || this.panelTex == null || this.renderer == null) return;
-    const isDynamic = this.openHotspot.type === "videoFile" || this.openHotspot.type === "audio";
-    if (!this.panelDirty && !isDynamic) return;
+    // Vídeo y audio: el lienzo solo lleva botones y la barra de progreso, así
+    // que basta con repintarlo dos veces por segundo; la imagen del vídeo
+    // tiene su propia textura.
+    const isMedia = this.openHotspot.type === "videoFile" || this.openHotspot.type === "audio";
+    const due = isMedia && this.frameTime - this.panelDrawnAt > 500;
+    if (!this.panelDirty && !due) return;
     this.panelZones = drawPanel(this.panelCanvas, this.openHotspot.hotspot, this.panelState, this.panelContext());
     this.renderer.upload(this.panelTex, this.panelCanvas);
     this.panelDirty = false;
+    this.panelDrawnAt = this.frameTime;
+  }
+
+  /** Sube el fotograma nuevo del vídeo del panel, si lo hay. */
+  private updateVideoTexture(): void {
+    const video = this.panelMedia;
+    const r = this.renderer;
+    if (r == null || !(video instanceof HTMLVideoElement) || video.readyState < 2 || video.videoWidth === 0) return;
+    if (video.currentTime === this.videoTime && this.videoTex != null) return;
+    if (this.videoTex == null) this.videoTex = r.createTexture();
+    if (r.upload(this.videoTex, video)) this.videoTime = video.currentTime;
+  }
+
+  /** Cuadrilátero del vídeo sobre su hueco del panel, con su proporción. */
+  private drawPanelVideo(r: XrRenderer, panelModel: Float32Array): void {
+    const video = this.panelMedia;
+    if (this.videoTex == null || !(video instanceof HTMLVideoElement) || video.videoWidth === 0) return;
+    const rect = VIDEO_RECT;
+    const k = Math.min(rect.w / video.videoWidth, rect.h / video.videoHeight);
+    const wPx = video.videoWidth * k;
+    const hPx = video.videoHeight * k;
+    const cx = (rect.x + rect.w / 2) / PANEL_WIDTH - 0.5;
+    const cy = 0.5 - (rect.y + rect.h / 2) / PANEL_HEIGHT;
+    const right: Vec3 = [panelModel[0]!, panelModel[1]!, panelModel[2]!];
+    const up: Vec3 = [panelModel[4]!, panelModel[5]!, panelModel[6]!];
+    const fwd: Vec3 = [panelModel[8]!, panelModel[9]!, panelModel[10]!];
+    const base: Vec3 = [panelModel[12]!, panelModel[13]!, panelModel[14]!];
+    // Un centímetro por delante del panel, hacia quien mira
+    const center = vecAdd(vecAdd(base, vecScale(fwd, 0.01)), vecAdd(vecScale(right, cx * PANEL_WIDTH_M), vecScale(up, cy * PANEL_HEIGHT_M)));
+    const w = (wPx / PANEL_WIDTH) * PANEL_WIDTH_M;
+    const h = (hPx / PANEL_HEIGHT) * PANEL_HEIGHT_M;
+    const model = new Float32Array([
+      right[0] * w, right[1] * w, right[2] * w, 0,
+      up[0] * h, up[1] * h, up[2] * h, 0,
+      fwd[0], fwd[1], fwd[2], 0,
+      center[0], center[1], center[2], 1,
+    ]);
+    r.draw(r.quad, model, { texture: this.videoTex, depthTest: false });
   }
 
   private loadImage(url: string): HTMLImageElement | null {
@@ -967,20 +1350,21 @@ export class VRManager {
     // en el centro del panorama aunque se desplace por la sala.
     let uvOffset: [number, number] = [0, 0];
     let uvScale: [number, number] = [1, 1];
-    if (this.env?.stereo === "tb") {
+    const scene = this.scene;
+    if (scene?.env.stereo === "tb") {
       uvScale = [1, 0.5];
       uvOffset = eyeIndex === 0 ? [0, 0] : [0, 0.5];
-    } else if (this.env?.stereo === "sbs") {
+    } else if (scene?.env.stereo === "sbs") {
       uvScale = [0.5, 1];
       uvOffset = eyeIndex === 0 ? [0, 0] : [0.5, 0];
     }
-    if (this.envTex != null) {
-      r.draw(r.envSphere, matTranslateYawScale(this.headPosition, this.sceneYawOffset, 1), {
-        texture: this.envTex,
-        uvOffset,
-        uvScale,
-        depthTest: false,
-      });
+    if (scene != null) {
+      const sceneModel = matTranslateYawScale(this.headPosition, this.sceneYawOffset, 1);
+      // La vista previa queda debajo hasta que el cubo cubre todas las caras
+      if (scene.tex != null && scene.cube?.covers !== true) {
+        r.draw(r.envSphere, sceneModel, { texture: scene.tex, uvOffset, uvScale, depthTest: false });
+      }
+      scene.cube?.draw(sceneModel, matMultiply);
     }
 
     // Hotspots
@@ -1011,6 +1395,7 @@ export class VRManager {
         scaled[4 + i] = model[4 + i]! * PANEL_HEIGHT_M;
       }
       r.draw(r.quad, scaled, { texture: this.panelTex });
+      this.drawPanelVideo(r, model);
       // Punto de mira sobre la zona apuntada
       for (const target of this.hover.values()) {
         if (target?.kind !== "panel") continue;
@@ -1324,7 +1709,11 @@ export class VRManager {
     this.pendingArrivalYaw = null;
     this.navHotspot = undefined;
     this.notice = null;
-    this.envTex = null;
+    for (const scene of [this.scene, ...this.preparing]) if (scene != null) this.disposeScene(scene);
+    this.preparing.clear();
+    this.scene = null;
+    this.prefetchAbort?.abort();
+    this.prefetchAbort = null;
     this.xrGazeTarget = null;
     this.trackedPointerSeen = false;
     this.xrForward = null;

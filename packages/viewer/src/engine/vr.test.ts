@@ -9,6 +9,7 @@ import { FADE_IN_MS, FADE_OUT_MS } from "./xr/transition.js";
 import { GazeDwell, GAZE_GRACE_MS, GAZE_STICKY_FACTOR, gazeHitRadius } from "./xr/gaze.js";
 import { isPhysicalPointer, isTrackedPointer, XrInput } from "./xr/input.js";
 import { fitTextureSize, MAX_ENV_TEXTURE } from "./xr/render.js";
+import { embedThumbnail, panelImageUrls, youtubeId, type VrPdfDocument } from "./xr/panel.js";
 import {
   angleDiff,
   arrivalYawOffset,
@@ -339,5 +340,116 @@ describe("Meta Quest: tamaño de la textura del entorno", () => {
     expect(MAX_ENV_TEXTURE).toBe(8192);
     const tope = Math.min(16384, MAX_ENV_TEXTURE);
     expect(fitTextureSize(16384, 8192, tope).width).toBe(8192);
+  });
+});
+
+describe("Meta Quest: PDF y vídeos de YouTube dentro de las gafas (7-10-2026)", () => {
+  type ConPanel = Interno & {
+    activateZone(zone: { id: string }, u: number): void;
+    panelState: { index: number; scroll: number };
+    pdf: { status: string; pages: Map<number, unknown> } | null;
+    openHotspot: VrHotspot | null;
+  };
+
+  function documento(paginas: number) {
+    const dibujadas: number[] = [];
+    const doc: VrPdfDocument = {
+      numPages: paginas,
+      renderPage: async (n: number, ancho: number) => {
+        dibujadas.push(n);
+        return { width: ancho, height: ancho * 1.41 } as unknown as HTMLCanvasElement;
+      },
+    };
+    return { doc, dibujadas };
+  }
+
+  it("el PDF se abre en el panel y se pasa de página con anterior y siguiente", async () => {
+    const pdf = hotspot("doc", "pdf", { hotspot: { id: "doc", type: "pdf", yaw: 0, pitch: 0, url: "m/folleto.pdf" } as unknown as Hotspot });
+    const m = montar([pdf]);
+    const { doc, dibujadas } = documento(3);
+    const pedidos: string[] = [];
+    const cb = (m.vr as unknown as { callbacks: VrCallbacks }).callbacks;
+    cb.url = (v) => `/t/demo/${v}`;
+    cb.loadPdf = async (url) => {
+      pedidos.push(url);
+      return doc;
+    };
+    const i = interno(m.vr) as ConPanel;
+    i.activateHotspot(pdf);
+    await vaciarMicrotareas();
+    expect(pedidos).toEqual(["/t/demo/m/folleto.pdf"]);
+    expect(i.pdf?.status).toBe("ready");
+    // La primera página y, por adelantado, la segunda
+    expect(dibujadas).toEqual([1, 2]);
+
+    i.activateZone({ id: "scroll-down" }, 0);
+    expect(i.panelState.scroll).toBeGreaterThan(0);
+    i.activateZone({ id: "next" }, 0);
+    // Página nueva: arriba del todo
+    expect(i.panelState).toMatchObject({ index: 1, scroll: 0 });
+    await vaciarMicrotareas();
+    expect(dibujadas).toEqual([1, 2, 3]);
+    i.activateZone({ id: "next" }, 0);
+    i.activateZone({ id: "next" }, 0);
+    expect(i.panelState.index).toBe(2);
+    i.activateZone({ id: "prev" }, 0);
+    i.activateZone({ id: "prev" }, 0);
+    i.activateZone({ id: "prev" }, 0);
+    expect(i.panelState.index).toBe(0);
+    // Cerrar suelta el documento
+    i.activateZone({ id: "close" }, 0);
+    expect(i.pdf).toBeNull();
+    expect(i.openHotspot).toBeNull();
+  });
+
+  it("si el PDF no se puede abrir, el panel lo dice y ofrece verlo fuera", async () => {
+    const pdf = hotspot("doc", "pdf", { hotspot: { id: "doc", type: "pdf", yaw: 0, pitch: 0, url: "x.pdf" } as unknown as Hotspot });
+    const m = montar([pdf]);
+    (m.vr as unknown as { callbacks: VrCallbacks }).callbacks.loadPdf = async () => {
+      throw new Error("404");
+    };
+    const i = interno(m.vr) as ConPanel;
+    i.activateHotspot(pdf);
+    await vaciarMicrotareas();
+    expect(i.pdf?.status).toBe("error");
+  });
+
+  it("un vídeo de YouTube ofrece salir de VR y verlo en el recorrido", () => {
+    const yt = hotspot("yt", "embedVideo", {
+      hotspot: { id: "yt", type: "embedVideo", yaw: 0, pitch: 0, provider: "youtube", videoId: "dQw4w9WgXcQ" } as unknown as Hotspot,
+    });
+    // La miniatura se pide con un <img>: aquí no hay navegador
+    vi.stubGlobal("Image", class {
+      complete = false;
+      crossOrigin = "";
+      src = "";
+    });
+    const m = montar([yt]);
+    const abiertos: string[] = [];
+    (m.vr as unknown as { callbacks: VrCallbacks }).callbacks.onOpenAfterExit = (id) => abiertos.push(id);
+    // Salir de la sesión necesita WebXR: se cuenta la petición
+    let salidas = 0;
+    m.vr.exit = () => {
+      salidas++;
+    };
+    const i = interno(m.vr) as ConPanel;
+    i.activateHotspot(yt);
+    expect(i.openHotspot?.id).toBe("yt");
+    i.activateZone({ id: "exit-open" }, 0);
+    expect(abiertos).toEqual(["yt"]);
+    expect(salidas).toBe(1);
+    expect(i.openHotspot).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it("la miniatura de YouTube sale del id o de cualquier forma de su dirección", () => {
+    for (const ref of ["dQw4w9WgXcQ", "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=3", "https://youtu.be/dQw4w9WgXcQ", "https://www.youtube.com/shorts/dQw4w9WgXcQ"]) {
+      expect(youtubeId(ref)).toBe("dQw4w9WgXcQ");
+    }
+    expect(youtubeId("https://vimeo.com/123")).toBeNull();
+    const hs = { id: "v", type: "embedVideo", yaw: 0, pitch: 0, provider: "youtube", videoId: "dQw4w9WgXcQ" } as unknown as Hotspot;
+    expect(embedThumbnail(hs)).toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(panelImageUrls(hs, { url: (u) => u })).toEqual(["https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"]);
+    expect(embedThumbnail({ ...hs, provider: "vimeo" } as Hotspot)).toBeNull();
   });
 });

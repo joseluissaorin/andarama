@@ -32,7 +32,8 @@ import { littlePlanetIntroParams, ProjectionPass, projectToScreen, type Projecti
 import { Autopilot, normalizeAutorotate } from "./engine/autopilot.js";
 import { resolveStartView } from "./engine/startView.js";
 import { anglesToViewCoords, viewCoordsToAngles } from "./engine/flatCoords.js";
-import { VRManager, type VrEnvironment, type VrHotspot } from "./engine/vr.js";
+import { VRManager, type VrEnvironment, type VrHotspot, type VrPrefetch } from "./engine/vr.js";
+import type { VrCubeSource } from "./engine/xr/panorama.js";
 import { marzipanoToVr } from "./engine/xr/math.js";
 import { switchMarzipanoScene } from "./engine/xr/transition.js";
 import { SceneMarkers } from "./hotspots/markers.js";
@@ -94,6 +95,8 @@ export class TourViewer {
   private sceneUse = new Map<string, number>();
   /** URL solicitada dentro de VR: se abre al terminar la sesión inmersiva. */
   private pendingExternalUrl: string | null = null;
+  /** Hotspot que se abre en el visor plano al salir de VR (vídeo de YouTube, web…). */
+  private pendingHotspotId: string | null = null;
   private baseUrl: string;
   private destroyed = false;
   private idleMovementActive = false;
@@ -214,8 +217,23 @@ export class TourViewer {
       onExternalRequest: (url) => {
         this.pendingExternalUrl = url;
       },
+      onOpenAfterExit: (hotspotId) => {
+        this.pendingHotspotId = hotspotId;
+      },
+      getPrefetch: () => this.vrPrefetch(),
+      loadPdf: this.options.loadPdf,
       onExit: () => {
-        // Al salir de VR se abre el contenido que quedó pendiente
+        // Al salir de VR se abre el contenido que quedó pendiente: el hotspot
+        // en su panel de siempre (sin ventanas emergentes, que el navegador
+        // bloquea fuera de un gesto) o, si no, la dirección en otra pestaña.
+        const hotspotId = this.pendingHotspotId;
+        this.pendingHotspotId = null;
+        const hotspot = hotspotId != null ? this.currentScene()?.hotspots.find((h) => h.id === hotspotId) : undefined;
+        if (hotspot != null) {
+          this.pendingExternalUrl = null;
+          this.activateHotspot(hotspot, this.currentMarkers()?.elementFor(hotspot.id) ?? null);
+          return;
+        }
         const url = this.pendingExternalUrl;
         this.pendingExternalUrl = null;
         if (url != null) window.open(url, "_blank", "noopener");
@@ -246,8 +264,8 @@ export class TourViewer {
         getView: () => (this.currentId != null ? this.view() : null),
         getEnvironment: async () => {
           try {
-            const env = await this.buildVrEnvironment();
-            return { element: env.element as TexImageSource, dynamic: env.dynamic };
+            const env = await this.buildProjectionEnvironment();
+            return { element: env.element, dynamic: env.dynamic };
           } catch {
             return null;
           }
@@ -1415,6 +1433,11 @@ export class TourViewer {
       });
   }
 
+  /**
+   * Entorno del modo inmersivo. Lo inmediato es la vista previa (va dentro
+   * del tour.json); lo bueno llega después sin bloquear: las teselas del cubo
+   * en las multirresolución y la imagen completa en las equirectangulares.
+   */
   private async buildVrEnvironment(): Promise<VrEnvironment> {
     const entry = this.currentId != null ? this.loaded.get(this.currentId) : null;
     if (entry == null) throw new Error("Sin escena activa");
@@ -1422,33 +1445,75 @@ export class TourViewer {
     if (src.kind === "video" && entry.built.video != null) {
       return { element: entry.built.video, stereo: src.stereo ?? "mono", dynamic: true };
     }
-    // Vista previa de respaldo: si la panorámica no carga o no cabe en la GPU
-    // (Meta Quest), mejor la previa borrosa que la escena anterior.
-    const preview = "preview" in src && src.preview != null ? resolveUrl(this.baseUrl, src.preview) : null;
-    const fallback = preview != null ? () => loadImageAsync(preview) : undefined;
+    const previewUrl = "preview" in src && src.preview != null ? resolveUrl(this.baseUrl, src.preview) : null;
+    const preview = previewUrl != null ? await loadImageAsync(previewUrl).catch(() => null) : null;
     if (src.kind === "equirect") {
-      // La reducción a MAX_TEXTURE_SIZE la hace el modo VR al subirla.
-      const img = await loadImageAsync(resolveUrl(this.baseUrl, src.url)).catch((error: unknown) => {
-        if (fallback == null) throw error;
-        console.warn("[andarama] no cargó la panorámica para VR; se usa la vista previa", error);
-        return fallback();
-      });
-      return { element: img, stereo: src.stereo ?? "mono", dynamic: false, fallback };
+      return { element: preview, stereo: src.stereo ?? "mono", dynamic: false, fullUrl: resolveUrl(this.baseUrl, src.url) };
     }
     if (src.kind === "multires") {
-      const canvas = await assembleEquirectFromCube(resolveUrl(this.baseUrl, src.base), src, 2048);
-      if (canvas != null) return { element: canvas, stereo: "mono", dynamic: false, fallback };
-      if (src.preview != null) {
-        const img = await loadImageAsync(resolveUrl(this.baseUrl, src.preview));
-        return { element: img, stereo: "mono", dynamic: false };
-      }
+      return { element: preview, stereo: "mono", dynamic: false, cube: this.vrCubeSource(src) };
     }
-    if (src.kind === "cubemap" && src.preview != null) {
-      const img = await loadImageAsync(resolveUrl(this.baseUrl, src.preview));
-      return { element: img, stereo: "mono", dynamic: false };
+    if (src.kind === "cubemap" && preview != null) {
+      return { element: preview, stereo: "mono", dynamic: false };
     }
     throw new Error("Esta escena no soporta VR");
   }
+
+  private vrCubeSource(src: { base: string; faceSize: number; levels: number; tileSize: number; extension?: string }): VrCubeSource {
+    return {
+      base: resolveUrl(this.baseUrl, src.base).replace(/\/$/, ""),
+      faceSize: src.faceSize,
+      levels: src.levels,
+      tileSize: src.tileSize,
+      extension: src.extension ?? "webp",
+    };
+  }
+
+  /** Escenas a las que se puede saltar desde la actual: el modo VR las descarga antes. */
+  private vrPrefetch(): VrPrefetch[] {
+    const scene = this.currentScene();
+    if (scene == null) return [];
+    const out: VrPrefetch[] = [];
+    const seen = new Set<string>();
+    for (const h of scene.hotspots) {
+      if (h.type !== "navigation") continue;
+      const target = (h as NavigationHotspot).target;
+      if (seen.has(target) || target === scene.id) continue;
+      seen.add(target);
+      const dest = this.tour.scenes.find((s) => s.id === target);
+      if (dest == null) continue;
+      const src = dest.source;
+      if (src.kind === "multires") out.push({ cube: this.vrCubeSource(src) });
+      else if (src.kind === "equirect") out.push({ url: resolveUrl(this.baseUrl, src.url) });
+    }
+    return out;
+  }
+
+  /**
+   * Equirectangular para las proyecciones (planeta pequeño, etc.): esas sí
+   * necesitan una imagen entera, así que las multirresolución se recomponen.
+   */
+  private async buildProjectionEnvironment(): Promise<{ element: TexImageSource; dynamic: boolean }> {
+    const entry = this.currentId != null ? this.loaded.get(this.currentId) : null;
+    if (entry == null) throw new Error("Sin escena activa");
+    const src = entry.scene.source;
+    if (src.kind === "video" && entry.built.video != null) return { element: entry.built.video, dynamic: true };
+    const preview = "preview" in src && src.preview != null ? resolveUrl(this.baseUrl, src.preview) : null;
+    if (src.kind === "equirect") {
+      const img = await loadImageAsync(resolveUrl(this.baseUrl, src.url)).catch((error: unknown) => {
+        if (preview == null) throw error;
+        return loadImageAsync(preview);
+      });
+      return { element: img, dynamic: false };
+    }
+    if (src.kind === "multires") {
+      const canvas = await assembleEquirectFromCube(resolveUrl(this.baseUrl, src.base), src, 2048);
+      if (canvas != null) return { element: canvas, dynamic: false };
+    }
+    if (preview != null) return { element: await loadImageAsync(preview), dynamic: false };
+    throw new Error("Esta escena no tiene imagen equirectangular");
+  }
+
 
   // -----------------------------------------------------------------------
   // Rendimiento

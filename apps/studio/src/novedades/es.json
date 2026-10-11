@@ -1,6 +1,15 @@
 [
   {
     "fecha": "2026-10-11",
+    "titulo": "Realidad virtual más nítida y más completa",
+    "items": [
+      "En las gafas, las escenas se ven hasta el doble de nítidas (las fotos de 8K o más) y cargan antes: la buena resolución llega por partes, empezando por lo que tienes delante, y las escenas vecinas se descargan mientras miras, así que al saltar aparecen ya enteras.",
+      "Los PDF se leen dentro de las gafas, página a página, con anterior, siguiente y desplazamiento, tanto con los mandos como con la mirada.",
+      "Los vídeos subidos se reproducen dentro de las gafas con su botón de reproducir y pausar. Los de YouTube, Vimeo o PeerTube enseñan su título y su miniatura, y un botón para salir de la realidad virtual y verlos en el recorrido."
+    ]
+  },
+  {
+    "fecha": "2026-10-11",
     "titulo": "Más de lo que pidió el equipo docente",
     "items": [
       "Junto a «Silenciar», una flecha abre el sonido de la escena: con un clic deja de sonar en el recorrido publicado sin perder los ficheros, y se vuelve a activar igual. En «Audio de la escena» está el mismo interruptor y un botón «Quitar» para el ambiente y para la narración.",
