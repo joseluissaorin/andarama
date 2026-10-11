@@ -234,6 +234,15 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId, tourOnly = f
             }
             setTimeout(() => setUploads((u) => Object.fromEntries(Object.entries(u).filter(([k]) => k !== key))), 1500);
             void queryClient.invalidateQueries({ queryKey: ["media"] });
+            // Subir un plano desde «Añadir plano» es elegirlo: antes había que
+            // buscarlo después en la cuadrícula y pulsarlo otra vez
+            if (onSelect != null && kindFilter === "floorplan" && list.length === 1) {
+              const items = await api<MediaItem[]>(
+                `/media?org=${orgId}&kind=floorplan${assignAfterUpload != null ? `&project=${assignAfterUpload}` : ""}`,
+              );
+              const item = items.find((m) => m.id === result.id);
+              if (item != null) onSelect(item);
+            }
           } catch (err) {
             setUploads((u) => ({ ...u, [key]: { phase: "error", percent: 0, name: file.name, detail: String(err instanceof Error ? err.message : err) } }));
           }
@@ -241,7 +250,7 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId, tourOnly = f
         deviceConcurrency().files,
       );
     },
-    [orgId, kindFilter, queryClient, toast, t, assignAfterUpload],
+    [orgId, kindFilter, queryClient, toast, t, assignAfterUpload, onSelect],
   );
 
   return (
@@ -429,7 +438,9 @@ export function MediaLibrary({ orgId, onSelect, kindFilter, tourId, tourOnly = f
         </div>
       ) : (list.data ?? []).length === 0 ? (
         <button type="button" className="w-full" onClick={() => fileInput.current?.click()}>
-          <EmptyState icon={<Criatura size={72} andando />} title={t("no_media")} hint={t("drop_files")} />
+          {/* Eligiendo un plano, la biblioteca no está vacía: lo que falta es
+              un plano, y pedir «panoramas» despistaba */}
+          <EmptyState icon={<Criatura size={72} andando />} title={t(kindFilter === "floorplan" ? "no_floorplans" : "no_media")} hint={t("drop_files")} />
         </button>
       ) : (
         <div className="grid select-none grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

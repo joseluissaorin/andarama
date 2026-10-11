@@ -720,7 +720,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -1279,7 +1279,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "cs": {
     "app_name": "2084835f110d",
@@ -2002,7 +2004,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -2561,7 +2563,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "da": {
     "app_name": "2084835f110d",
@@ -3284,7 +3288,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -3843,7 +3847,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "de": {
     "app_name": "2084835f110d",
@@ -4566,7 +4572,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -5125,7 +5131,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "el": {
     "app_name": "2084835f110d",
@@ -5848,7 +5856,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -6407,7 +6415,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "fi": {
     "app_name": "2084835f110d",
@@ -7130,7 +7140,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -7689,7 +7699,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "fil": {
     "app_name": "2084835f110d",
@@ -8412,7 +8424,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -8971,7 +8983,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "fr": {
     "app_name": "2084835f110d",
@@ -9693,7 +9707,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -10253,7 +10267,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "he": {
     "app_name": "2084835f110d",
@@ -10976,7 +10992,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -11535,7 +11551,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "hr": {
     "app_name": "2084835f110d",
@@ -12257,7 +12275,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -12817,7 +12835,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "hu": {
     "app_name": "2084835f110d",
@@ -13540,7 +13560,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -14099,7 +14119,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "id": {
     "app_name": "2084835f110d",
@@ -14822,7 +14844,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -15381,7 +15403,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "it": {
     "app_name": "2084835f110d",
@@ -16104,7 +16128,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -16663,7 +16687,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "ja": {
     "app_name": "2084835f110d",
@@ -17386,7 +17412,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -17945,7 +17971,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "ko": {
     "app_name": "2084835f110d",
@@ -18668,7 +18696,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -19227,7 +19255,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "ms": {
     "app_name": "2084835f110d",
@@ -19950,7 +19980,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -20509,7 +20539,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "nl": {
     "app_name": "2084835f110d",
@@ -21232,7 +21264,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -21791,7 +21823,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "no": {
     "app_name": "2084835f110d",
@@ -22514,7 +22548,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -23073,7 +23107,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "pl": {
     "app_name": "2084835f110d",
@@ -23796,7 +23832,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -24355,7 +24391,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "pt": {
     "app_name": "2084835f110d",
@@ -25075,7 +25113,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -25637,7 +25675,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "ro": {
     "app_name": "2084835f110d",
@@ -26360,7 +26400,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -26919,7 +26959,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "ru": {
     "app_name": "2084835f110d",
@@ -27642,7 +27684,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -28201,7 +28243,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "sk": {
     "app_name": "2084835f110d",
@@ -28923,7 +28967,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -29483,7 +29527,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "sv": {
     "app_name": "2084835f110d",
@@ -30206,7 +30252,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -30765,7 +30811,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "th": {
     "app_name": "2084835f110d",
@@ -31488,7 +31536,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -32047,7 +32095,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "tr": {
     "app_name": "2084835f110d",
@@ -32770,7 +32820,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -33329,7 +33379,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "uk": {
     "app_name": "2084835f110d",
@@ -34052,7 +34104,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -34611,7 +34663,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "vi": {
     "app_name": "2084835f110d",
@@ -35334,7 +35388,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -35893,7 +35947,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "zh-Hans": {
     "app_name": "2084835f110d",
@@ -36616,7 +36672,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -37175,7 +37231,9 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   },
   "zh-Hant": {
     "app_name": "2084835f110d",
@@ -37898,7 +37956,7 @@
     "graph_mode_plan": "60f7ef87b2d3",
     "graph_mode_geo": "366b9270024d",
     "unplaced_scenes": "6efc2bcc5083",
-    "unplaced_hint_drag": "2bfcdec72a3a",
+    "unplaced_hint_drag": "728743486997",
     "steps_leaving_plan": "a05b13b3616f",
     "align_left": "f9d8ab3a264b",
     "align_hcenter": "4c15cf76bbfe",
@@ -38457,6 +38515,8 @@
     "shared_with_you": "e22c67214361",
     "shared_with_you_hint": "764e7f4454e5",
     "shared_from_owner": "5cd20815120e",
-    "shared_from_org": "e9225193c1e1"
+    "shared_from_org": "e9225193c1e1",
+    "no_floorplans": "1dc86b9e4db9",
+    "plan_placed_keyboard": "c6e5cd54e3f2"
   }
 }

@@ -343,6 +343,16 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
   searchRef.current = search;
   const calibratingRef = useRef(calibrating);
   calibratingRef.current = calibrating;
+  // Escena «en la mano» para colocarla con un clic en el plano (o en el mapa):
+  // pulsar su nombre en «Sin colocar» y luego el sitio. Arrastrar sigue valiendo.
+  const [placing, setPlacing] = useState<string | null>(null);
+  const placingRef = useRef(placing);
+  placingRef.current = placing;
+  // Cambiar de modo o de planta suelta la escena que se tenía en la mano
+  useEffect(() => {
+    setPlacing(null);
+    if (placeGhostRef.current != null) placeGhostRef.current.style.display = "none";
+  }, [mode, planArea]);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinchRef = useRef<{ distance: number; scale: number; cx: number; cy: number } | null>(null);
 
@@ -651,6 +661,11 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           setCalibrating(null);
           return;
         }
+        if (placingRef.current != null) {
+          setPlacing(null);
+          if (placeGhostRef.current != null) placeGhostRef.current.style.display = "none";
+          return;
+        }
         if (searchRef.current != null) {
           setSearch(null);
           return;
@@ -707,6 +722,14 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
     }
     (e.target as Element).setPointerCapture?.(e.pointerId);
     const { x, y } = toWorld(e.clientX, e.clientY);
+
+    if (placing != null && e.button === 0 && ((mode === "plan" && currentPlan != null) || mode === "geo")) {
+      const sceneId = placing;
+      setPlacing(null);
+      if (placeGhostRef.current != null) placeGhostRef.current.style.display = "none";
+      placeAt(sceneId, x, y);
+      return;
+    }
 
     if (calibrating != null && mode === "plan") {
       const point = { x: x / PLAN_W, y: y / planH };
@@ -776,6 +799,15 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
     return null;
   };
 
+  /** Coloca una escena en el punto (x, y) del mundo: en el plano o en el mapa. */
+  const placeAt = (sceneId: string, x: number, y: number): void => {
+    if (mode === "plan" && currentPlan != null) {
+      editor.apply((draft) => placeScene(draft, sceneId, currentPlan.id, x / PLAN_W, y / planH));
+    } else if (mode === "geo") {
+      editor.apply((draft) => setGeo(draft, sceneId, worldYToLat(y), worldXToLng(x)));
+    }
+  };
+
   const drawGhostPlacement = (x: number, y: number): void => {
     const el = placeGhostRef.current;
     if (el == null) return;
@@ -789,6 +821,10 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
 
   const onPointerMove = (e: React.PointerEvent): void => {
     if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (placing != null && dragRef.current == null) {
+      const w = toWorld(e.clientX, e.clientY);
+      drawGhostPlacement(w.x, w.y);
+    }
     if (pointers.current.size === 2 && pinchRef.current != null) {
       const [p1, p2] = [...pointers.current.values()];
       const distance = Math.hypot(p1!.x - p2!.x, p1!.y - p2!.y);
@@ -913,11 +949,7 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
       }
     } else if (st.kind === "place") {
       if (placeGhostRef.current != null) placeGhostRef.current.style.display = "none";
-      if (mode === "plan" && currentPlan != null) {
-        editor.apply((draft) => placeScene(draft, st.sceneId, currentPlan.id, x / PLAN_W, y / planH));
-      } else if (mode === "geo") {
-        editor.apply((draft) => setGeo(draft, st.sceneId, worldYToLat(y), worldXToLng(x)));
-      }
+      placeAt(st.sceneId, x, y);
     } else if (st.kind === "marquee" && marquee != null) {
       const x0 = Math.min(marquee.x0, marquee.x1);
       const x1 = Math.max(marquee.x0, marquee.x1);
@@ -1256,6 +1288,21 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
           {keyboardConnect != null && (
             <div className="absolute left-1/2 top-3 z-20 -translate-x-1/2 rounded-full bg-[var(--anda-primary)] px-3 py-1.5 text-xs font-medium text-white shadow-lg">
               {t("keyboard_connect_from", { name: snapshot.scenes.find((s) => s.id === keyboardConnect)?.title ?? "" })}
+            </div>
+          )}
+          {placing != null && (
+            <div className="absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-xl bg-[var(--anda-surface)] px-3 py-2 text-[13px] shadow-[var(--anda-shadow-lg)]">
+              <span>{t("plan_place_next", { name: snapshot.scenes.find((sc) => sc.id === placing)?.title ?? "" })}</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setPlacing(null);
+                  if (placeGhostRef.current != null) placeGhostRef.current.style.display = "none";
+                }}
+              >
+                {t("cancel")}
+              </Button>
             </div>
           )}
           {calibrating != null && (
@@ -1981,12 +2028,34 @@ export function GraphView({ canEdit, onOpenScene, mode, onModeChange }: {
                     <button
                       type="button"
                       disabled={!canEdit}
-                      className="w-full cursor-grab truncate rounded-lg px-2 py-1 text-left text-[13px] hover:bg-[var(--anda-surface-2)] disabled:cursor-default"
+                      aria-pressed={placing === s.id}
+                      className={`w-full cursor-grab truncate rounded-lg px-2 py-1 text-left text-[13px] hover:bg-[var(--anda-surface-2)] disabled:cursor-default ${placing === s.id ? "bg-[var(--anda-primary-soft)] text-[var(--anda-primary-ink)]" : ""}`}
                       onPointerDown={(e) => {
                         if (!canEdit) return;
                         e.preventDefault();
                         dragRef.current = { kind: "place", sceneId: s.id };
                         (e.target as Element).releasePointerCapture?.(e.pointerId);
+                      }}
+                      onClick={(e) => {
+                        if (!canEdit) return;
+                        // Un clic sin arrastrar dejaba el arrastre a medias: el
+                        // fantasma seguía al cursor y el clic en el plano no hacía nada
+                        dragRef.current = null;
+                        if (e.detail === 0) {
+                          // Con el teclado: al centro de lo que se ve, seleccionada,
+                          // y las flechas la llevan a su sitio
+                          const rect = svgRef.current?.getBoundingClientRect();
+                          if (rect == null) return;
+                          const c = toWorld(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                          const cx = mode === "plan" ? Math.min(Math.max(c.x, 0), PLAN_W) : c.x;
+                          const cy = mode === "plan" ? Math.min(Math.max(c.y, 0), planH) : c.y;
+                          placeAt(s.id, cx, cy);
+                          setPlacing(null);
+                          setSelectedNodes(new Set([s.id]));
+                          toast.push(t("plan_placed_keyboard", { name: s.title }), "ok");
+                          return;
+                        }
+                        setPlacing((cur) => (cur === s.id ? null : s.id));
                       }}
                     >
                       {s.title}

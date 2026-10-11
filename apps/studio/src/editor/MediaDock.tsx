@@ -268,8 +268,16 @@ export function MediaDock({ orgId, projectId, projectTitle, canEdit }: {
                 <div className="relative h-20 overflow-hidden">
                   {isPano(m) ? (
                     <PlanetThumb media={m} onOpen360={() => setPreview(m)} />
-                  ) : (
+                  ) : m.derivatives.some((d) => d.kind === "thumb") ? (
                     <img src={`/api/v1/media/${m.id}/derived/thumb`} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  ) : m.kind === "image" || m.kind === "floorplan" ? (
+                    // Un plano o una imagen suelta no tienen miniatura derivada:
+                    // se pedía y salía el icono de imagen rota
+                    <img src={`/api/v1/media/${m.id}/file`} alt="" className="h-full w-full object-contain bg-[var(--anda-surface-2)]" loading="lazy" />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center bg-[var(--anda-surface-2)] text-[11px] text-[var(--anda-text-dim)]">
+                      {t(`media_kind_${m.kind}`)}
+                    </span>
                   )}
                 </div>
                 <span className="truncate px-2 py-1 text-[11px]">{m.filename}</span>
