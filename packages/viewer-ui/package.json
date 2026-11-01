@@ -22,14 +22,14 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@google/model-viewer": "^4.0.0",
+    "@google/model-viewer": "^4.4.0",
     "@andarama/schema": "workspace:*",
     "@andarama/viewer": "workspace:*",
     "leaflet": "^1.9.4",
-    "lucide": "^1.31.0",
-    "pdfjs-dist": "^4.10.38",
-    "hls.js": "^1.6.17",
-    "three": "^0.170.0"
+    "lucide": "^1.64.0",
+    "pdfjs-dist": "^6.4.299",
+    "hls.js": "^1.7.4",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.16",
