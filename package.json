@@ -51,14 +51,14 @@
     "build:desktop": "pnpm build:packages && pnpm --filter @andarama/docs build && pnpm --filter @andarama/web build && pnpm --filter @andarama/studio build && bun run apps/desktop/build.ts"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "^1.50.1",
-    "@types/node": "^22.13.0",
-    "@typescript-eslint/eslint-plugin": "^8.24.0",
-    "@typescript-eslint/parser": "^8.24.0",
-    "eslint": "^9.20.0",
-    "prettier": "^3.5.0",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.5"
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.6",
+    "@typescript-eslint/eslint-plugin": "^8.72.1",
+    "@typescript-eslint/parser": "^8.72.1",
+    "eslint": "^10.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
   }
 }
